@@ -64,16 +64,24 @@ expect(spy).toHaveBeenCalledTimes(2);
 
 ### Pre-configured App
 
-Use `createMockApp()` for a fully wired `App` instance with optional files and folders:
+Use `createMockApp()` for a fully wired `App` instance. Parent folders are created automatically from file paths:
 
 ```typescript
 import { createMockApp } from 'obsidian';
 
 const app = await createMockApp({
-  folders: ['notes', 'notes/daily'],
   files: [
-    { path: 'notes/hello.md', content: '# Hello' },
+    { path: 'notes/daily/2024-01-01.md', content: '# New Year' },
   ],
+});
+// folders "notes" and "notes/daily" are created automatically
+```
+
+You can also create empty folders explicitly:
+
+```typescript
+const app = await createMockApp({
+  folders: ['archive/2023'],
 });
 ```
 
