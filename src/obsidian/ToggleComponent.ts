@@ -1,5 +1,6 @@
 import type { TooltipOptions } from 'obsidian';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ToggleComponent extends ValueComponent<boolean> {
@@ -17,6 +18,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
     super();
     this.toggleEl = createDiv();
     ToggleComponent.__constructor(this, _containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

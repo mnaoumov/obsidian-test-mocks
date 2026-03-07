@@ -1,4 +1,5 @@
 import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class FileSystemAdapter extends InMemoryAdapter {
   public static __create(): FileSystemAdapter {
@@ -12,6 +13,7 @@ export class FileSystemAdapter extends InMemoryAdapter {
   protected constructor() {
     super();
     FileSystemAdapter.__constructor(this);
+    return strictMock(this);
   }
 
   public getBasePath(): string {

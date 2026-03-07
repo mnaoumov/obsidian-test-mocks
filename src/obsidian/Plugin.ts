@@ -10,6 +10,7 @@ import type {
 
 import type { App } from './App.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
@@ -31,6 +32,7 @@ export abstract class Plugin extends Component {
     this.app = app;
     this.manifest = manifest;
     Plugin.__constructor(this, app, manifest);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: Plugin, _app: App, _manifest: PluginManifest): void {

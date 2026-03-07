@@ -16,6 +16,7 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { debounce } from './debounce.ts';
 import { Events } from './Events.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -42,6 +43,7 @@ export class Workspace extends Events {
   protected constructor() {
     super();
     Workspace.__constructor(this);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: Workspace, ..._args: unknown[]): void {

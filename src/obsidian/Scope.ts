@@ -5,6 +5,8 @@ import type {
   Modifier
 } from 'obsidian';
 
+import { strictMock } from '../internal/StrictMock.ts';
+
 interface MockKeyScope {
   func(): void;
   key: null | string;
@@ -29,6 +31,7 @@ export class Scope {
   protected constructor(parent?: Scope) {
     this.parent = parent;
     Scope.__constructor(this, parent);
+    return strictMock(this);
   }
 
   public constructor__(_parent?: Scope): this {

@@ -1,6 +1,9 @@
+import { strictMock } from '../internal/StrictMock.ts';
+
 export class WorkspaceWindow {
   protected constructor() {
     WorkspaceWindow.__constructor(this);
+    return strictMock(this);
   }
 
   public static __create(): WorkspaceWindow {

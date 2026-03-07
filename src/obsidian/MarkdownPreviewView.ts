@@ -1,6 +1,7 @@
 import type { TFile } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
 export class MarkdownPreviewView extends MarkdownRenderer {
@@ -10,6 +11,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   public constructor() {
     super(createDiv());
     MarkdownPreviewView.__constructor(this);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: MarkdownPreviewView): void {

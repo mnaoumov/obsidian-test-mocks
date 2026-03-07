@@ -1,5 +1,6 @@
 import type { TooltipOptions } from 'obsidian';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
@@ -13,6 +14,7 @@ export class ButtonComponent extends BaseComponent {
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Initializing mock-only tracking field.
     ButtonComponent.instances.push(this);
     ButtonComponent.__constructor(this, _containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: BaseComponent, ..._args: unknown[]): void {

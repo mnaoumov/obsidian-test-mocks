@@ -16,6 +16,7 @@ import type {
 import type { BaseComponent } from './BaseComponent.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { ButtonComponent as MockButtonComponent } from './ButtonComponent.ts';
 import { ColorComponent as MockColorComponent } from './ColorComponent.ts';
 import { DropdownComponent as MockDropdownComponent } from './DropdownComponent.ts';
@@ -43,6 +44,7 @@ export class Setting {
     this.settingEl.appendChild(this.controlEl);
     containerEl.appendChild(this.settingEl);
     Setting.__constructor(this, containerEl);
+    return strictMock(this);
   }
 
   public static __constructor(_instance: Setting, _containerEl: HTMLElement): void {

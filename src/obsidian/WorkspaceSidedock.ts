@@ -1,8 +1,11 @@
+import { strictMock } from '../internal/StrictMock.ts';
+
 export class WorkspaceSidedock {
   public collapsed = false;
 
   protected constructor() {
     WorkspaceSidedock.__constructor(this);
+    return strictMock(this);
   }
 
   public static __create(): WorkspaceSidedock {

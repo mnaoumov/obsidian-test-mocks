@@ -1,5 +1,6 @@
 import type { ValueComponent } from './ValueComponent.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { TextComponent } from './TextComponent.ts';
 
 export class MomentFormatComponent extends TextComponent {
@@ -9,6 +10,7 @@ export class MomentFormatComponent extends TextComponent {
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
     MomentFormatComponent.__constructor(this, containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

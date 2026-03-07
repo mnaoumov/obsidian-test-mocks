@@ -1,5 +1,6 @@
 import type { ValueComponent } from './ValueComponent.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -24,6 +25,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     TextComponent.instances.push(this);
     /* eslint-enable @typescript-eslint/no-deprecated -- Mock internals. */
     TextComponent.__constructor(this, _containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

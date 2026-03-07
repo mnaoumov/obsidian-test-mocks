@@ -1,3 +1,4 @@
+import { strictMock } from '../internal/StrictMock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceMobileDrawer extends WorkspaceParent {
@@ -6,6 +7,7 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
   protected constructor() {
     super();
     WorkspaceMobileDrawer.__constructor(this);
+    return strictMock(this);
   }
 
   public static __create(): WorkspaceMobileDrawer {

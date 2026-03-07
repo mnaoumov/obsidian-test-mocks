@@ -1,6 +1,9 @@
+import { strictMock } from '../internal/StrictMock.ts';
+
 export class WorkspaceRibbon {
   protected constructor() {
     WorkspaceRibbon.__constructor(this);
+    return strictMock(this);
   }
 
   public static __create(): WorkspaceRibbon {

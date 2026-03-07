@@ -1,5 +1,6 @@
 import type { App } from './App.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
@@ -8,6 +9,7 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
     super(app);
     this.inputEl = inputEl;
     AbstractInputSuggest.__constructor(this, app, inputEl);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: AbstractInputSuggest<unknown>, _app: App, _inputEl: HTMLInputElement | HTMLTextAreaElement): void {

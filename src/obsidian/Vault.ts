@@ -5,6 +5,7 @@ import type {
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { TFile } from './TFile.ts';
@@ -30,6 +31,7 @@ export class Vault extends Events {
     this.fileMap['/'] = root;
     root.deleted = false;
     Vault.__constructor(this);
+    return strictMock(this);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {

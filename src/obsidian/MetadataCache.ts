@@ -3,6 +3,7 @@ import type { CachedMetadata } from 'obsidian';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 export class MetadataCache extends Events {
@@ -22,6 +23,7 @@ export class MetadataCache extends Events {
   protected constructor() {
     super();
     MetadataCache.__constructor(this);
+    return strictMock(this);
   }
 
   public fileToLinktext(file: TFile, _sourcePath: string, omitMdExtension?: boolean): string {

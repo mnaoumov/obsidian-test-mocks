@@ -1,5 +1,6 @@
 import type { IconName } from 'obsidian';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -9,6 +10,7 @@ export abstract class ItemView extends View {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     ItemView.__constructor(this, leaf);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: ItemView, _leaf: WorkspaceLeaf): void {

@@ -1,3 +1,5 @@
+import { strictMock } from '../internal/StrictMock.ts';
+
 export class Notice {
   public containerEl: HTMLElement = createDiv();
   public messageEl: HTMLElement = createDiv();
@@ -13,6 +15,7 @@ export class Notice {
     }
     (this as { duration: number }).duration = duration ?? 0;
     Notice.__constructor(this, message, duration);
+    return strictMock(this);
   }
 
   public static __constructor(_instance: Notice, _message: DocumentFragment | string, _duration?: number): void {

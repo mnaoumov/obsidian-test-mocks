@@ -2,6 +2,7 @@ import type { FileStats } from 'obsidian';
 
 import type { Vault } from './Vault.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
 export class TFile extends TAbstractFile {
@@ -23,5 +24,6 @@ export class TFile extends TAbstractFile {
     this.extension = dotIndex >= 0 ? this.name.slice(dotIndex + 1) : '';
     this.basename = dotIndex >= 0 ? this.name.slice(0, dotIndex) : this.name;
     TFile.__constructor(this, vault, path);
+    return strictMock(this);
   }
 }

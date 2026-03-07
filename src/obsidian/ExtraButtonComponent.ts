@@ -1,3 +1,4 @@
+import { strictMock } from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ExtraButtonComponent extends BaseComponent {
@@ -7,6 +8,7 @@ export class ExtraButtonComponent extends BaseComponent {
   public constructor(_containerEl: HTMLElement) {
     super();
     ExtraButtonComponent.__constructor(this, _containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: BaseComponent, ..._args: unknown[]): void {

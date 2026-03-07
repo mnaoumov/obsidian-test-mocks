@@ -5,6 +5,7 @@ import type {
   ViewStateResult
 } from 'obsidian';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -20,6 +21,7 @@ export abstract class View extends Component {
   public constructor(_leaf: WorkspaceLeaf) {
     super();
     View.__constructor(this, _leaf);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: View, _leaf: WorkspaceLeaf): void {

@@ -2,6 +2,7 @@ import type { Instruction } from 'obsidian';
 
 import type { App } from './App.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class SuggestModal<T> extends Modal {
@@ -14,6 +15,7 @@ export abstract class SuggestModal<T> extends Modal {
   public constructor(app: App) {
     super(app);
     SuggestModal.__constructor(this, app);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: SuggestModal<unknown>, _app: App): void {

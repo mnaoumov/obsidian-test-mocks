@@ -4,6 +4,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
 import { MenuItem } from './MenuItem.ts';
 
@@ -21,6 +22,7 @@ export class Menu extends Component {
   protected constructor() {
     super();
     Menu.__constructor(this);
+    return strictMock(this);
   }
 
   public addItem(cb: (item: ObsidianMenuItem) => unknown): this {

@@ -5,6 +5,7 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { parseYaml } from './parseYaml.ts';
 import { stringifyYaml } from './stringifyYaml.ts';
 
@@ -22,6 +23,7 @@ export class FileManager {
   protected constructor(app: App) {
     this.app = app;
     FileManager.__constructor(this, app);
+    return strictMock(this);
   }
 
   public generateMarkdownLink(file: TFile, _sourcePath: string, subpath?: string, alias?: string): string {

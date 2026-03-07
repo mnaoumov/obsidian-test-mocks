@@ -1,12 +1,14 @@
 import type { WorkspaceContainer } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {
   protected constructor() {
     super();
     WorkspaceItem.__constructor(this);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: WorkspaceItem, ..._args: unknown[]): void {

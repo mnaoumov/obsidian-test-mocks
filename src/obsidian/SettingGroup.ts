@@ -4,12 +4,15 @@ import type {
   Setting
 } from 'obsidian';
 
+import { strictMock } from '../internal/StrictMock.ts';
+
 export class SettingGroup {
   public listEl: HTMLElement = createDiv();
 
   public constructor(containerEl: HTMLElement) {
     containerEl.appendChild(this.listEl);
     SettingGroup.__constructor(this, containerEl);
+    return strictMock(this);
   }
 
   public static __constructor(_instance: SettingGroup, _containerEl: HTMLElement): void {

@@ -1,3 +1,4 @@
+import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ProgressBarComponent extends ValueComponent<number> {
@@ -14,6 +15,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
     super();
     this.progressBar = createDiv();
     ProgressBarComponent.__constructor(this, _containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

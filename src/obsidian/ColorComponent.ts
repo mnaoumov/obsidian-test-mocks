@@ -3,6 +3,7 @@ import type {
   RGB
 } from 'obsidian';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ColorComponent extends ValueComponent<string> {
@@ -21,6 +22,7 @@ export class ColorComponent extends ValueComponent<string> {
     this.colorPickerEl = createEl('input');
     this.colorPickerEl.type = 'color';
     ColorComponent.__constructor(this, _containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

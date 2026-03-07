@@ -1,4 +1,5 @@
 import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class CapacitorAdapter extends InMemoryAdapter {
   public static __create(): CapacitorAdapter {
@@ -12,6 +13,7 @@ export class CapacitorAdapter extends InMemoryAdapter {
   protected constructor() {
     super();
     CapacitorAdapter.__constructor(this);
+    return strictMock(this);
   }
 
   public getBasePath(): string {

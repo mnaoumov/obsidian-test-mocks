@@ -1,10 +1,12 @@
 import type { IconName } from 'obsidian';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { Menu } from './Menu.ts';
 
 export class MenuItem {
   private constructor() {
     MenuItem.__constructor(this);
+    return strictMock(this);
   }
 
   public static __create(): MenuItem {

@@ -1,5 +1,6 @@
 import type { ValueComponent } from './ValueComponent.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -11,6 +12,7 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     this.inputEl.type = 'search';
     this.clearButtonEl = createDiv();
     SearchComponent.__constructor(this, _containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

@@ -1,5 +1,7 @@
 import type { EventRef } from 'obsidian';
 
+import { strictMock } from '../internal/StrictMock.ts';
+
 export class Component {
   public _children: Component[] = [];
   public _cleanups: (() => unknown)[] = [];
@@ -9,6 +11,7 @@ export class Component {
 
   protected constructor() {
     Component.__constructor(this);
+    return strictMock(this);
   }
 
   public static __constructor(_instance: Component, ..._args: unknown[]): void {
