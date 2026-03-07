@@ -11,8 +11,14 @@
 - `npm run test:watch` — watch mode
 - `npm run lint` — run ESLint
 - `npm run lint:fix` — auto-fix lint issues
+- `npm run format` — format with dprint
+- `npm run format:check` — check formatting
+- `npm run lint:md` — lint markdown files
+- `npm run lint:md:fix` — auto-fix markdown lint issues
+- `npm run spellcheck` — spell check with cspell
 - `npm run build` — full build pipeline
 - `npm run build:compile:typescript` — TypeScript type-check only
+- `npm run version` — run build (used as npm version hook)
 
 ## Architecture
 

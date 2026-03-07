@@ -1,8 +1,4 @@
-import { execSync } from 'node:child_process';
-import process from 'node:process';
+import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
+import { lint } from 'obsidian-dev-utils/ScriptUtils/ESLint/ESLint';
 
-try {
-  execSync('eslint . --fix', { stdio: 'inherit' });
-} catch {
-  process.exit(1);
-}
+await wrapCliTask(() => lint(true));

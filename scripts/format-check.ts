@@ -1,3 +1,4 @@
-import { execSync } from 'node:child_process';
+import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
+import { format } from 'obsidian-dev-utils/ScriptUtils/format';
 
-execSync('dprint check', { stdio: 'inherit' });
+await wrapCliTask(() => format(false));

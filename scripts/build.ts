@@ -1,12 +1,9 @@
-import { execSync } from 'node:child_process';
+import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
+import { npmRun } from 'obsidian-dev-utils/ScriptUtils/NpmRun';
 
-const steps = [
-  'npm run build:clean',
-  'npm run build:compile:typescript',
-  'npm run build:types',
-  'npm run build:lib',
-];
-
-for (const step of steps) {
-  execSync(step, { stdio: 'inherit' });
-}
+await wrapCliTask(async () => {
+  await npmRun('build:clean');
+  await npmRun('build:compile:typescript');
+  await npmRun('build:types');
+  await npmRun('build:lib');
+});

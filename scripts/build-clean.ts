@@ -1,3 +1,4 @@
-import { rmSync } from 'node:fs';
+import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
+import { buildClean } from 'obsidian-dev-utils/ScriptUtils/build';
 
-rmSync('dist', { recursive: true, force: true });
+await wrapCliTask(() => buildClean());

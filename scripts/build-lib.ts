@@ -2,6 +2,8 @@ import { build } from 'esbuild';
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
+
 function getEntryPoints(dir: string): string[] {
   const entries: string[] = [];
   for (const entry of readdirSync(dir)) {
@@ -15,27 +17,29 @@ function getEntryPoints(dir: string): string[] {
   return entries;
 }
 
-const entryPoints = getEntryPoints('src');
+await wrapCliTask(async () => {
+  const entryPoints = getEntryPoints('src');
 
-const commonOptions = {
-  entryPoints,
-  bundle: false,
-  platform: 'node' as const,
-  target: 'es2024',
-  sourcemap: 'inline' as const,
-};
+  const commonOptions = {
+    entryPoints,
+    bundle: false,
+    platform: 'node' as const,
+    target: 'es2024',
+    sourcemap: 'inline' as const,
+  };
 
-await Promise.all([
-  build({
-    ...commonOptions,
-    outdir: 'dist/lib/esm',
-    format: 'esm',
-    outExtension: { '.js': '.mjs' },
-  }),
-  build({
-    ...commonOptions,
-    outdir: 'dist/lib/cjs',
-    format: 'cjs',
-    outExtension: { '.js': '.cjs' },
-  }),
-]);
+  await Promise.all([
+    build({
+      ...commonOptions,
+      outdir: 'dist/lib/esm',
+      format: 'esm',
+      outExtension: { '.js': '.mjs' },
+    }),
+    build({
+      ...commonOptions,
+      outdir: 'dist/lib/cjs',
+      format: 'cjs',
+      outExtension: { '.js': '.cjs' },
+    }),
+  ]);
+});
