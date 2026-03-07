@@ -1,9 +1,11 @@
 {
   "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
+    "allowArbitraryExtensions": true,
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
     "inlineSourceMap": true,
     "inlineSources": true,
     "lib": [
@@ -22,6 +24,10 @@
     "verbatimModuleSyntax": true
   },
   "include": [
+    "./__tests__/**/*.ts",
+    "./commitlint.config.ts",
+    "./eslint.config.*ts",
+    "./scripts/**/*.ts",
     "./src/**/*.ts",
     "./vitest.config.ts"
   ]
