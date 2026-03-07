@@ -1,15 +1,15 @@
 export class SecretStorage {
   private store = new Map<string, string>();
 
-  public async delete(key: string): Promise<void> {
-    this.store.delete(key);
+  public getSecret(id: string): string | null {
+    return this.store.get(id) ?? null;
   }
 
-  public async get(key: string): Promise<string | undefined> {
-    return this.store.get(key);
+  public listSecrets(): string[] {
+    return [...this.store.keys()];
   }
 
-  public async set(key: string, value: string): Promise<void> {
-    this.store.set(key, value);
+  public setSecret(id: string, secret: string): void {
+    this.store.set(id, secret);
   }
 }

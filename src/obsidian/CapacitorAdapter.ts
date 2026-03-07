@@ -16,11 +16,7 @@ export class CapacitorAdapter extends InMemoryAdapter {
     return strictMock(this);
   }
 
-  public getBasePath(): string {
-    return this.basePath;
-  }
-
-  public override getFilePath(normalizedPath: string): string {
+  public getFullPath(normalizedPath: string): string {
     return `${this.basePath}/${normalizedPath}`;
   }
 }

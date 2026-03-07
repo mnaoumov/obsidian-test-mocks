@@ -42,7 +42,7 @@ export class App {
   }
 
   protected constructor() {
-    this.metadataCache.app = this;
+    this.metadataCache._app = this;
     App.__constructor(this);
     return strictMock(this);
   }

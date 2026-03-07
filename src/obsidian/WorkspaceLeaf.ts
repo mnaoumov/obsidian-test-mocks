@@ -15,13 +15,12 @@ let nextLeafId = 1;
 
 export class WorkspaceLeaf extends Events {
   public hoverPopover: HoverPopover | null = null;
-  public id: string;
+  public _id: string;
   public readonly isDeferred = false;
   public view: View | null = null;
 
-  private _detached = false;
   private _ephemeralState: Record<string, unknown> = {};
-  private _file: TFile | null = null;
+  private __file: TFile | null = null;
   private _group: string | null = null;
   private _pinned = false;
   private _viewState: ViewState = { type: '' };
@@ -32,7 +31,7 @@ export class WorkspaceLeaf extends Events {
 
   protected constructor() {
     super();
-    this.id = String(nextLeafId++);
+    this._id = String(nextLeafId++);
     WorkspaceLeaf.__constructor(this);
     return strictMock(this);
   }
@@ -42,7 +41,7 @@ export class WorkspaceLeaf extends Events {
   }
 
   public detach(): void {
-    this._detached = true;
+    // Detach is a no-op in the mock.
   }
 
   public getDisplayText(): string {
@@ -67,10 +66,6 @@ export class WorkspaceLeaf extends Events {
     return { ...this._viewState };
   }
 
-  public isDetached(): boolean {
-    return this._detached;
-  }
-
   public async loadIfDeferred(): Promise<void> {
     // isDeferred is always false; nothing to load.
   }
@@ -82,11 +77,11 @@ export class WorkspaceLeaf extends Events {
   }
 
   public async openFile(file: TFile, _openState?: OpenViewState): Promise<void> {
-    this._file = file;
+    this.__file = file;
   }
 
-  public get file(): TFile | null {
-    return this._file;
+  public get _file(): TFile | null {
+    return this.__file;
   }
 
   public setEphemeralState(state: Record<string, unknown>): void {
@@ -97,19 +92,19 @@ export class WorkspaceLeaf extends Events {
     this._group = group;
   }
 
-  public getGroup(): string | null {
+  public _getGroup(): string | null {
     return this._group;
   }
 
   public setGroupMember(other: WorkspaceLeaf): void {
-    this._group = other.getGroup();
+    this._group = other._getGroup();
   }
 
   public setPinned(pinned: boolean): void {
     this._pinned = pinned;
   }
 
-  public isPinned(): boolean {
+  public _isPinned(): boolean {
     return this._pinned;
   }
 

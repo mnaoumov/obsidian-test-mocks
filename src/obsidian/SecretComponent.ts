@@ -1,12 +1,13 @@
+import type { App } from './App.ts';
+
 import { BaseComponent } from './BaseComponent.ts';
 
 export class SecretComponent extends BaseComponent {
-  public inputEl: HTMLInputElement = createEl('input');
   private _onChange: ((value: string) => unknown) | null = null;
-  private _value = '';
 
-  public getValue(): string {
-    return this._value;
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- Match obsidian.d.ts constructor signature.
+  public constructor(_app: App, _containerEl: HTMLElement) {
+    super();
   }
 
   public onChange(callback: (value: string) => unknown): this {
@@ -14,17 +15,7 @@ export class SecretComponent extends BaseComponent {
     return this;
   }
 
-  public onChanged(): void {
-    this._onChange?.(this._value);
-  }
-
-  public setPlaceholder(placeholder: string): this {
-    this.inputEl.placeholder = placeholder;
-    return this;
-  }
-
   public setValue(value: string): this {
-    this._value = value;
     this._onChange?.(value);
     return this;
   }

@@ -15,7 +15,7 @@ export class Vault extends Events {
   public adapter: DataAdapter = FileSystemAdapter.__create() as unknown as DataAdapter;
   // eslint-disable-next-line obsidianmd/hardcoded-config-path -- Default value for testing.
   public configDir = '.obsidian';
-  public fileMap: Record<string, TAbstractFile> = {};
+  public _fileMap: Record<string, TAbstractFile> = {};
 
   public static __create(): Vault {
     return new Vault();
@@ -28,7 +28,7 @@ export class Vault extends Events {
   protected constructor() {
     super();
     const root = TFolder.__create(this, '/');
-    this.fileMap['/'] = root;
+    this._fileMap['/'] = root;
     root.deleted = false;
     Vault.__constructor(this);
     return strictMock(this);
@@ -94,60 +94,34 @@ export class Vault extends Events {
     this.trigger('delete', file);
   }
 
-  public async exists(path: string): Promise<boolean> {
-    return this.adapter.exists(path);
-  }
-
   public getAbstractFileByPath(path: string): null | TAbstractFile {
-    return this.fileMap[path] ?? null;
-  }
-
-  public getAbstractFileByPathInsensitive(path: string): null | TAbstractFile {
-    const lower = path.toLowerCase();
-    for (const [key, value] of Object.entries(this.fileMap)) {
-      if (key.toLowerCase() === lower) {
-        return value;
-      }
-    }
-    return null;
+    return this._fileMap[path] ?? null;
   }
 
   public getAllFolders(_includeRoot?: boolean): TFolder[] {
-    return Object.values(this.fileMap).filter((f): f is TFolder => f instanceof TFolder);
+    return Object.values(this._fileMap).filter((f): f is TFolder => f instanceof TFolder);
   }
 
   public getAllLoadedFiles(): TAbstractFile[] {
-    return Object.values(this.fileMap);
-  }
-
-  public getAvailablePath(base: string, ext: string): string {
-    const candidate = `${base}.${ext}`;
-    if (!this.fileMap[candidate]) {
-      return candidate;
-    }
-    let counter = 1;
-    while (this.fileMap[`${base} ${String(counter)}.${ext}`]) {
-      counter++;
-    }
-    return `${base} ${String(counter)}.${ext}`;
+    return Object.values(this._fileMap);
   }
 
   public getFileByPath(path: string): null | TFile {
-    const f = this.fileMap[path];
+    const f = this._fileMap[path];
     return f instanceof TFile ? f : null;
   }
 
   public getFiles(): TFile[] {
-    return Object.values(this.fileMap).filter((f): f is TFile => f instanceof TFile);
+    return Object.values(this._fileMap).filter((f): f is TFile => f instanceof TFile);
   }
 
   public getFolderByPath(path: string): null | TFolder {
-    const f = this.fileMap[path];
+    const f = this._fileMap[path];
     return f instanceof TFolder ? f : null;
   }
 
   public getMarkdownFiles(): TFile[] {
-    return Object.values(this.fileMap).filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
+    return Object.values(this._fileMap).filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
   }
 
   public getName(): string {
@@ -159,12 +133,12 @@ export class Vault extends Events {
   }
 
   public getRoot(): TFolder {
-    const root = this.fileMap['/'];
+    const root = this._fileMap['/'];
     if (root instanceof TFolder) {
       return root;
     }
     const fallback = TFolder.__create(this, '/');
-    this.fileMap['/'] = fallback;
+    this._fileMap['/'] = fallback;
     return fallback;
   }
 
@@ -198,9 +172,9 @@ export class Vault extends Events {
     const oldPath = file.path;
     await this.adapter.rename(oldPath, newPath);
 
-    // Remove old entry from fileMap and parent's children
+    // Remove old entry from _fileMap and parent's children
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-    delete this.fileMap[oldPath];
+    delete this._fileMap[oldPath];
     if (file.parent) {
       const idx = file.parent.children.indexOf(file);
       if (idx !== -1) {
@@ -218,7 +192,7 @@ export class Vault extends Events {
       file.basename = dotIndex >= 0 ? file.name.slice(0, dotIndex) : file.name;
     }
 
-    // Re-register in fileMap with new path and attach to new parent
+    // Re-register in _fileMap with new path and attach to new parent
     setVaultAbstractFile(this, newPath, file);
 
     this.trigger('rename', file, oldPath);
@@ -237,7 +211,7 @@ export class Vault extends Events {
 
 export function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void {
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-  delete vault.fileMap[file.path];
+  delete vault._fileMap[file.path];
   file.deleted = true;
   if (file.parent) {
     const idx = file.parent.children.indexOf(file);
@@ -248,12 +222,12 @@ export function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void
 }
 
 export function setVaultAbstractFile(vault: Vault, path: string, file: TAbstractFile): void {
-  vault.fileMap[path] = file;
+  vault._fileMap[path] = file;
   file.deleted = false;
   if (path !== '/' && path !== '') {
     const lastSlash = path.lastIndexOf('/');
     const parentKey = lastSlash > 0 ? path.slice(0, lastSlash) : '/';
-    const parentFile = vault.fileMap[parentKey];
+    const parentFile = vault._fileMap[parentKey];
     if (parentFile instanceof TFolder) {
       file.parent = parentFile;
       parentFile.children.push(file);
