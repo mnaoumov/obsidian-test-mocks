@@ -57,6 +57,13 @@
 - `verbatimModuleSyntax: true` — use explicit `import type` for type-only imports
 - `allowImportingTsExtensions: true` — always use `.ts` extension in imports
 
+## Testing
+
+- The project aims for 100% test coverage.
+- Test files: `__tests__/[ModulePath].test.ts` (mirrors `src/` structure)
+- Vitest with explicit imports (globals: false) — always import `describe`, `it`, `expect`, etc. from `'vitest'`
+- Coverage provider: v8
+
 ## Commits
 
 - Commit after each logical step. Do not batch unrelated changes into a single commit.
