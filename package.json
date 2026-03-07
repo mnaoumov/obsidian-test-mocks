@@ -60,16 +60,16 @@
     "**/package.json"
   ],
   "scripts": {
-    "build": "npm-run-all build:clean build:compile:typescript build:types build:lib",
-    "build:clean": "rimraf dist",
-    "build:compile:typescript": "tsc --noEmit",
+    "build": "jiti scripts/build.ts",
+    "build:clean": "jiti scripts/build-clean.ts",
+    "build:compile:typescript": "jiti scripts/build-compile-typescript.ts",
     "build:lib": "jiti scripts/build-lib.ts",
-    "build:types": "tsc --project tsconfig.build.json",
-    "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest"
+    "build:types": "jiti scripts/build-types.ts",
+    "lint": "jiti scripts/lint.ts",
+    "lint:fix": "jiti scripts/lint.ts --fix",
+    "test": "jiti scripts/test.ts run",
+    "test:coverage": "jiti scripts/test.ts run --coverage",
+    "test:watch": "jiti scripts/test.ts"
   },
   "dependencies": {
     "moment": ">=2.29.0",
@@ -83,12 +83,10 @@
     "@tsconfig/strictest": "latest",
     "@vitest/coverage-v8": "latest",
     "esbuild": "latest",
-    "jiti": "^2.6.1",
+    "jiti": "latest",
     "jsdom": "latest",
-    "npm-run-all2": "latest",
     "obsidian": "latest",
     "obsidian-typings": "obsidian-public-latest",
-    "rimraf": "latest",
     "typescript": "latest",
     "vitest": "latest"
   }
