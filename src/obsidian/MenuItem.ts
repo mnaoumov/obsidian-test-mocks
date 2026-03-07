@@ -10,7 +10,7 @@ export class MenuItem {
   }
 
   public static __create(): MenuItem {
-    return Reflect.construct(MenuItem, []) as MenuItem;
+    return Reflect.construct(MenuItem as unknown as new () => MenuItem, []) as MenuItem;
   }
 
   public static __constructor(_instance: MenuItem): void {
