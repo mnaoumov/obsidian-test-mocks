@@ -65,11 +65,13 @@
     "build:compile:typescript": "jiti scripts/build-compile-typescript.ts",
     "build:lib": "jiti scripts/build-lib.ts",
     "build:types": "jiti scripts/build-types.ts",
+    "commit": "jiti scripts/commit.ts",
+    "format": "jiti scripts/format.ts",
+    "format:check": "jiti scripts/format-check.ts",
     "lint": "jiti scripts/lint.ts",
-    "lint:fix": "jiti scripts/lint.ts --fix",
-    "test": "jiti scripts/test.ts run",
-    "test:coverage": "jiti scripts/test.ts run --coverage",
-    "test:watch": "jiti scripts/test.ts"
+    "lint:fix": "jiti scripts/lint-fix.ts",
+    "prepare": "jiti scripts/prepare.ts",
+    "test": "jiti scripts/test.ts"
   },
   "dependencies": {
     "moment": ">=2.29.0",
@@ -80,14 +82,31 @@
     "obsidian-typings": "*"
   },
   "devDependencies": {
+    "@commitlint/cli": "latest",
+    "@commitlint/config-conventional": "latest",
+    "@commitlint/types": "latest",
+    "@eslint-community/eslint-plugin-eslint-comments": "latest",
+    "@eslint/js": "latest",
+    "@stylistic/eslint-plugin": "latest",
     "@tsconfig/strictest": "latest",
     "@vitest/coverage-v8": "latest",
+    "commitizen": "latest",
+    "cz-conventional-changelog": "latest",
+    "dprint": "latest",
     "esbuild": "latest",
+    "eslint": "latest",
+    "eslint-import-resolver-typescript": "latest",
+    "eslint-plugin-import-x": "latest",
+    "eslint-plugin-modules-newlines": "latest",
+    "eslint-plugin-perfectionist": "latest",
+    "globals": "latest",
+    "husky": "latest",
     "jiti": "latest",
     "jsdom": "latest",
     "obsidian": "latest",
     "obsidian-typings": "obsidian-public-latest",
     "typescript": "latest",
+    "typescript-eslint": "latest",
     "vitest": "latest"
   }
 }

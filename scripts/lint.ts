@@ -1,4 +1,8 @@
 import { execSync } from 'node:child_process';
+import process from 'node:process';
 
-const fix = process.argv.includes('--fix');
-execSync(`eslint src/${fix ? ' --fix' : ''}`, { stdio: 'inherit' });
+try {
+  execSync('eslint .', { stdio: 'inherit' });
+} catch {
+  process.exit(1);
+}
