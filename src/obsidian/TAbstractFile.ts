@@ -4,7 +4,7 @@ import type { Vault } from './Vault.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export abstract class TAbstractFile {
-  public deleted = true;
+  public deleted = false;
   public name: string;
   public parent: null | TFolder = null;
   public path: string;

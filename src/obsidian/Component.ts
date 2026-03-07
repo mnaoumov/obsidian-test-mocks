@@ -87,6 +87,9 @@ export class Component {
   }
 
   public unload(): void {
+    if (!this._loaded) {
+      return;
+    }
     this.onunload();
 
     for (const child of [...this._children]) {
