@@ -230,7 +230,9 @@ export function setVaultAbstractFile(vault: Vault, path: string, file: TAbstract
     const parentFile = vault._fileMap[parentKey];
     if (parentFile instanceof TFolder) {
       file.parent = parentFile;
-      parentFile.children.push(file);
+      if (!parentFile.children.includes(file)) {
+        parentFile.children.push(file);
+      }
     }
   }
 }

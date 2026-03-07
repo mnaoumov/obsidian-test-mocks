@@ -10,7 +10,10 @@ export class MarkdownEditView {
   public editor: Editor = new MockEditor();
   public hoverPopover: HoverPopover | null = null;
 
-  public applyScroll(_scroll: number): void {
+  private _scroll = 0;
+
+  public applyScroll(scroll: number): void {
+    this._scroll = scroll;
   }
 
   public clear(): void {
@@ -22,7 +25,7 @@ export class MarkdownEditView {
   }
 
   public getScroll(): number {
-    return 0;
+    return this._scroll;
   }
 
   public getSelection(): string {

@@ -4,6 +4,15 @@ import { strictMock } from '../internal/StrictMock.ts';
 import { Menu } from './Menu.ts';
 
 export class MenuItem {
+  public _checked: boolean | null = null;
+  public _disabled = false;
+  public _icon: IconName | null = null;
+  public _isLabel = false;
+  public _onClick: ((evt: KeyboardEvent | MouseEvent) => unknown) | null = null;
+  public _section = '';
+  public _title: DocumentFragment | string = '';
+  public _warning = false;
+
   private constructor() {
     MenuItem.__constructor(this);
     return strictMock(this);
@@ -17,27 +26,33 @@ export class MenuItem {
     // Spy hook.
   }
 
-  public onClick(_callback: (evt: KeyboardEvent | MouseEvent) => unknown): this {
+  public onClick(callback: (evt: KeyboardEvent | MouseEvent) => unknown): this {
+    this._onClick = callback;
     return this;
   }
 
-  public setChecked(_checked: boolean | null): this {
+  public setChecked(checked: boolean | null): this {
+    this._checked = checked;
     return this;
   }
 
-  public setDisabled(_disabled: boolean): this {
+  public setDisabled(disabled: boolean): this {
+    this._disabled = disabled;
     return this;
   }
 
-  public setIcon(_icon: IconName | null): this {
+  public setIcon(icon: IconName | null): this {
+    this._icon = icon;
     return this;
   }
 
-  public setIsLabel(_isLabel: boolean): this {
+  public setIsLabel(isLabel: boolean): this {
+    this._isLabel = isLabel;
     return this;
   }
 
-  public setSection(_section: string): this {
+  public setSection(section: string): this {
+    this._section = section;
     return this;
   }
 
@@ -45,11 +60,13 @@ export class MenuItem {
     return Menu.__create();
   }
 
-  public setTitle(_title: DocumentFragment | string): this {
+  public setTitle(title: DocumentFragment | string): this {
+    this._title = title;
     return this;
   }
 
-  public setWarning(_isWarning: boolean): this {
+  public setWarning(isWarning: boolean): this {
+    this._warning = isWarning;
     return this;
   }
 }

@@ -30,7 +30,7 @@ export class Notice {
     if (typeof message === 'string') {
       this.messageEl.textContent = message;
     } else {
-      this.messageEl.appendChild(message);
+      this.messageEl.appendChild(message.cloneNode(true));
     }
     return this;
   }

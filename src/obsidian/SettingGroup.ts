@@ -1,10 +1,14 @@
 import type {
   ExtraButtonComponent,
   SearchComponent,
-  Setting
+  Setting as ObsidianSetting
 } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { strictMock } from '../internal/StrictMock.ts';
+import { ExtraButtonComponent as MockExtraButtonComponent } from './ExtraButtonComponent.ts';
+import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
+import { Setting } from './Setting.ts';
 
 export class SettingGroup {
   public listEl: HTMLElement = createDiv();
@@ -24,15 +28,21 @@ export class SettingGroup {
     return this;
   }
 
-  public addExtraButton(_cb: (component: ExtraButtonComponent) => unknown): this {
+  public addExtraButton(cb: (component: ExtraButtonComponent) => unknown): this {
+    const comp = new MockExtraButtonComponent(this.listEl);
+    cb(castTo<ExtraButtonComponent>(comp));
     return this;
   }
 
-  public addSearch(_cb: (component: SearchComponent) => unknown): this {
+  public addSearch(cb: (component: SearchComponent) => unknown): this {
+    const comp = new MockSearchComponent(this.listEl);
+    cb(castTo<SearchComponent>(comp));
     return this;
   }
 
-  public addSetting(_cb: (setting: Setting) => void): this {
+  public addSetting(cb: (setting: ObsidianSetting) => void): this {
+    const setting = new Setting(this.listEl);
+    cb(castTo<ObsidianSetting>(setting));
     return this;
   }
 
