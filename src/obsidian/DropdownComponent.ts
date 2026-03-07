@@ -14,8 +14,9 @@ export class DropdownComponent extends ValueComponent<string> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated ValueComponent constructor.
     super();
     this.selectEl = createEl('select');
-    DropdownComponent.__constructor(this, _containerEl);
-    return strictMock(this);
+    const mock = strictMock(this);
+    DropdownComponent.__constructor(mock, _containerEl);
+    return mock;
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

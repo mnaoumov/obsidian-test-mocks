@@ -10,8 +10,9 @@ export class Component {
   public _loaded = false;
 
   protected constructor() {
-    Component.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Component.__constructor(mock);
+    return mock;
   }
 
   public static __constructor(_instance: Component, ..._args: unknown[]): void {

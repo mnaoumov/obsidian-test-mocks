@@ -31,8 +31,9 @@ export class Vault extends Events {
     const root = TFolder.__create(this, '/');
     this._fileMap['/'] = root;
     root.deleted = false;
-    Vault.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Vault.__constructor(mock);
+    return mock;
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {

@@ -16,8 +16,9 @@ export class TFolder extends TAbstractFile {
 
   protected constructor(vault: Vault, path: string) {
     super(vault, path);
-    TFolder.__constructor(this, vault, path);
-    return strictMock(this);
+    const mock = strictMock(this);
+    TFolder.__constructor(mock, vault, path);
+    return mock;
   }
 
   public isRoot(): boolean {

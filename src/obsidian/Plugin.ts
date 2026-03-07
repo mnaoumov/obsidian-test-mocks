@@ -31,8 +31,9 @@ export abstract class Plugin extends Component {
     super();
     this.app = app;
     this.manifest = manifest;
-    Plugin.__constructor(this, app, manifest);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Plugin.__constructor(mock, app, manifest);
+    return mock;
   }
 
   public static override __constructor(_instance: Plugin, _app: App, _manifest: PluginManifest): void {

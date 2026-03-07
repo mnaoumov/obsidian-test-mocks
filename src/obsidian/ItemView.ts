@@ -10,8 +10,9 @@ export abstract class ItemView extends View {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.contentEl = createDiv();
-    ItemView.__constructor(this, leaf);
-    return strictMock(this);
+    const mock = strictMock(this);
+    ItemView.__constructor(mock, leaf);
+    return mock;
   }
 
   public static override __constructor(_instance: ItemView, _leaf: WorkspaceLeaf): void {

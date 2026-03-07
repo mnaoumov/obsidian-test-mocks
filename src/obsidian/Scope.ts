@@ -25,8 +25,9 @@ export class Scope {
   }
 
   protected constructor(parent?: Scope) {
-    Scope.__constructor(this, parent);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Scope.__constructor(mock, parent);
+    return mock;
   }
 
   public register(modifiers: Modifier[] | null, key: null | string, _func: KeymapEventListener): KeymapEventHandler {

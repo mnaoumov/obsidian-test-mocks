@@ -4,8 +4,9 @@ import { WorkspaceParent } from './WorkspaceParent.ts';
 export class WorkspaceFloating extends WorkspaceParent {
   protected constructor() {
     super();
-    WorkspaceFloating.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    WorkspaceFloating.__constructor(mock);
+    return mock;
   }
 
   public static __create(): WorkspaceFloating {

@@ -8,8 +8,9 @@ export class ExtraButtonComponent extends BaseComponent {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.extraSettingsEl = createDiv();
-    ExtraButtonComponent.__constructor(this, _containerEl);
-    return strictMock(this);
+    const mock = strictMock(this);
+    ExtraButtonComponent.__constructor(mock, _containerEl);
+    return mock;
   }
 
   public static override __constructor(_instance: BaseComponent, ..._args: unknown[]): void {

@@ -23,7 +23,8 @@ export class TFile extends TAbstractFile {
     const dotIndex = this.name.lastIndexOf('.');
     this.extension = dotIndex >= 0 ? this.name.slice(dotIndex + 1) : '';
     this.basename = dotIndex >= 0 ? this.name.slice(0, dotIndex) : this.name;
-    TFile.__constructor(this, vault, path);
-    return strictMock(this);
+    const mock = strictMock(this);
+    TFile.__constructor(mock, vault, path);
+    return mock;
   }
 }

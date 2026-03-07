@@ -15,8 +15,9 @@ export abstract class TAbstractFile {
     this.path = path;
     const parts = path.split('/');
     this.name = parts[parts.length - 1] ?? '';
-    TAbstractFile.__constructor(this, vault, path);
-    return strictMock(this);
+    const mock = strictMock(this);
+    TAbstractFile.__constructor(mock, vault, path);
+    return mock;
   }
 
   public static __constructor(_instance: TAbstractFile, _vault: Vault, _path: string): void {

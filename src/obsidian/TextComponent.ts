@@ -24,8 +24,9 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     } as HTMLInputElement['addEventListener'];
     TextComponent.instances.push(this);
     /* eslint-enable @typescript-eslint/no-deprecated -- Mock internals. */
-    TextComponent.__constructor(this, _containerEl);
-    return strictMock(this);
+    const mock = strictMock(this);
+    TextComponent.__constructor(mock, _containerEl);
+    return mock;
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

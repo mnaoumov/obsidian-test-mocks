@@ -7,8 +7,9 @@ import { Events } from './Events.ts';
 export abstract class WorkspaceItem extends Events {
   protected constructor() {
     super();
-    WorkspaceItem.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    WorkspaceItem.__constructor(mock);
+    return mock;
   }
 
   public static override __constructor(_instance: WorkspaceItem, ..._args: unknown[]): void {

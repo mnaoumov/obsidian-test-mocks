@@ -10,8 +10,9 @@ export class MomentFormatComponent extends TextComponent {
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
     this.sampleEl = createDiv();
-    MomentFormatComponent.__constructor(this, containerEl);
-    return strictMock(this);
+    const mock = strictMock(this);
+    MomentFormatComponent.__constructor(mock, containerEl);
+    return mock;
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

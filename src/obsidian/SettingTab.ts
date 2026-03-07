@@ -9,8 +9,9 @@ export abstract class SettingTab {
   public constructor(app: App) {
     this.app = app;
     this.containerEl = createDiv();
-    SettingTab.__constructor(this, app);
-    return strictMock(this);
+    const mock = strictMock(this);
+    SettingTab.__constructor(mock, app);
+    return mock;
   }
 
   public static __constructor(_instance: SettingTab, _app: App, ..._args: unknown[]): void {

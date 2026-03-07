@@ -22,8 +22,9 @@ export class FileManager {
 
   protected constructor(app: App) {
     this.app = app;
-    FileManager.__constructor(this, app);
-    return strictMock(this);
+    const mock = strictMock(this);
+    FileManager.__constructor(mock, app);
+    return mock;
   }
 
   public generateMarkdownLink(file: TFile, _sourcePath: string, subpath?: string, alias?: string): string {

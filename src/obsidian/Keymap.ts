@@ -24,8 +24,9 @@ export class Keymap {
   }
 
   protected constructor() {
-    Keymap.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Keymap.__constructor(mock);
+    return mock;
   }
 
   public static isModifier(_evt: KeyboardEvent | MouseEvent | TouchEvent, _modifier: Modifier): boolean {

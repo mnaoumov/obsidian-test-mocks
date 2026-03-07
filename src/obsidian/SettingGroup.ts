@@ -16,8 +16,9 @@ export class SettingGroup {
   public constructor(containerEl: HTMLElement) {
     this.listEl = createDiv();
     containerEl.appendChild(this.listEl);
-    SettingGroup.__constructor(this, containerEl);
-    return strictMock(this);
+    const mock = strictMock(this);
+    SettingGroup.__constructor(mock, containerEl);
+    return mock;
   }
 
   public static __constructor(_instance: SettingGroup, _containerEl: HTMLElement): void {
