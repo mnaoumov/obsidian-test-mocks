@@ -7,12 +7,7 @@ import { FileManager } from './FileManager.ts';
 import { Keymap } from './Keymap.ts';
 import { MetadataCache } from './MetadataCache.ts';
 import { Scope } from './Scope.ts';
-import { TFile } from './TFile.ts';
-import { TFolder } from './TFolder.ts';
-import {
-  setVaultAbstractFile,
-  Vault
-} from './Vault.ts';
+import { Vault } from './Vault.ts';
 import { Workspace } from './Workspace.ts';
 
 export interface MockAppParams {
@@ -22,7 +17,6 @@ export interface MockAppParams {
 
 export interface MockFileEntry {
   content?: string;
-  extension?: string;
   path: string;
 }
 
@@ -63,20 +57,15 @@ export class App {
   }
 }
 
-export function createMockApp(params: MockAppParams = {}): ObsidianApp {
+export async function createMockApp(params: MockAppParams = {}): Promise<ObsidianApp> {
   const app = App.__create();
 
   for (const folderPath of params.folders ?? []) {
-    const folder = TFolder.__create(app.vault, folderPath);
-    setVaultAbstractFile(app.vault, folderPath, folder);
-    app.vault.adapter.mkdir(folderPath);
+    await app.vault.createFolder(folderPath);
   }
 
   for (const fileOpt of params.files ?? []) {
-    const file = TFile.__create(app.vault, fileOpt.path);
-    setVaultAbstractFile(app.vault, fileOpt.path, file);
-    const content = fileOpt.content ?? '';
-    app.vault.adapter.write(fileOpt.path, content);
+    await app.vault.create(fileOpt.path, fileOpt.content ?? '');
   }
 
   return castTo<ObsidianApp>(app);

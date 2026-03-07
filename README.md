@@ -69,7 +69,7 @@ Use `createMockApp()` for a fully wired `App` instance with optional files and f
 ```typescript
 import { createMockApp } from 'obsidian';
 
-const app = createMockApp({
+const app = await createMockApp({
   folders: ['notes', 'notes/daily'],
   files: [
     { path: 'notes/hello.md', content: '# Hello' },
