@@ -14,8 +14,9 @@ export class MenuItem {
   public _warning = false;
 
   private constructor() {
-    MenuItem.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    MenuItem.__constructor(mock);
+    return mock;
   }
 
   public static __create(): MenuItem {

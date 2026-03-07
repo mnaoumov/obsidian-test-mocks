@@ -8,8 +8,9 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   public constructor(app: App, inputEl: HTMLInputElement | HTMLTextAreaElement) {
     super(app);
     this.inputEl = inputEl;
-    AbstractInputSuggest.__constructor(this, app, inputEl);
-    return strictMock(this);
+    const mock = strictMock(this);
+    AbstractInputSuggest.__constructor(mock, app, inputEl);
+    return mock;
   }
 
   public static override __constructor(_instance: AbstractInputSuggest<unknown>, _app: App, _inputEl: HTMLInputElement | HTMLTextAreaElement): void {

@@ -34,8 +34,9 @@ export class App {
     this.metadataCache = MetadataCache.__create(this);
     this.scope = Scope.__create();
     this.workspace = Workspace.__create();
-    App.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    App.__constructor(mock);
+    return mock;
   }
 
   public isDarkMode(): boolean {

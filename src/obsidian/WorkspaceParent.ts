@@ -4,8 +4,9 @@ import { WorkspaceItem } from './WorkspaceItem.ts';
 export abstract class WorkspaceParent extends WorkspaceItem {
   protected constructor() {
     super();
-    WorkspaceParent.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    WorkspaceParent.__constructor(mock);
+    return mock;
   }
 
   public static override __constructor(_instance: WorkspaceParent, ..._args: unknown[]): void {

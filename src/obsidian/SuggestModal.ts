@@ -16,8 +16,9 @@ export abstract class SuggestModal<T> extends Modal {
     super(app);
     this.inputEl = createEl('input');
     this.resultContainerEl = createDiv();
-    SuggestModal.__constructor(this, app);
-    return strictMock(this);
+    const mock = strictMock(this);
+    SuggestModal.__constructor(mock, app);
+    return mock;
   }
 
   public static override __constructor(_instance: SuggestModal<unknown>, _app: App): void {

@@ -21,8 +21,9 @@ export class Modal {
     this.modalEl = createDiv();
     this.scope = Scope.__create();
     this.titleEl = createDiv();
-    Modal.__constructor(this, app);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Modal.__constructor(mock, app);
+    return mock;
   }
 
   public static __constructor(_instance: Modal, _app: App): void {

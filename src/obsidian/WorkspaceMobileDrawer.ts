@@ -6,8 +6,9 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
 
   protected constructor() {
     super();
-    WorkspaceMobileDrawer.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    WorkspaceMobileDrawer.__constructor(mock);
+    return mock;
   }
 
   public static __create(): WorkspaceMobileDrawer {

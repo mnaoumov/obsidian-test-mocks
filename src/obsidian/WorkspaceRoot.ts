@@ -2,8 +2,9 @@ import { strictMock } from '../internal/StrictMock.ts';
 
 export class WorkspaceRoot {
   protected constructor() {
-    WorkspaceRoot.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    WorkspaceRoot.__constructor(mock);
+    return mock;
   }
 
   public static __create(): WorkspaceRoot {

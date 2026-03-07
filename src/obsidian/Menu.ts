@@ -23,8 +23,9 @@ export class Menu extends Component {
   protected constructor() {
     super();
     this.dom = createDiv();
-    Menu.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Menu.__constructor(mock);
+    return mock;
   }
 
   public addItem(cb: (item: ObsidianMenuItem) => unknown): this {

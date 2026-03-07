@@ -12,8 +12,9 @@ export class FileSystemAdapter extends InMemoryAdapter {
 
   protected constructor() {
     super();
-    FileSystemAdapter.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    FileSystemAdapter.__constructor(mock);
+    return mock;
   }
 
   public getBasePath(): string {

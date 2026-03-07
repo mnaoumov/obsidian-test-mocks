@@ -13,8 +13,9 @@ export abstract class FileView extends ItemView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    FileView.__constructor(this, leaf);
-    return strictMock(this);
+    const mock = strictMock(this);
+    FileView.__constructor(mock, leaf);
+    return mock;
   }
 
   public static override __constructor(_instance: FileView, _leaf: WorkspaceLeaf): void {

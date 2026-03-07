@@ -10,8 +10,9 @@ export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
   protected constructor() {
-    Events.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Events.__constructor(mock);
+    return mock;
   }
 
   public static __constructor(_instance: Events, ..._args: unknown[]): void {

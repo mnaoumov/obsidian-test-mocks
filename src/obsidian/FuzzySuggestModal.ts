@@ -11,8 +11,9 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   public constructor(app: App) {
     super(app);
     this.inputEl = createEl('input');
-    FuzzySuggestModal.__constructor(this, app);
-    return strictMock(this);
+    const mock = strictMock(this);
+    FuzzySuggestModal.__constructor(mock, app);
+    return mock;
   }
 
   public static override __constructor(_instance: FuzzySuggestModal<unknown>, _app: App): void {

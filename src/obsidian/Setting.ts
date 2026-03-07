@@ -48,8 +48,9 @@ export class Setting {
     this.infoEl.appendChild(this.descEl);
     this.settingEl.appendChild(this.controlEl);
     containerEl.appendChild(this.settingEl);
-    Setting.__constructor(this, containerEl);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Setting.__constructor(mock, containerEl);
+    return mock;
   }
 
   public static __constructor(_instance: Setting, _containerEl: HTMLElement): void {

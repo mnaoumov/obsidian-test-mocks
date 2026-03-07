@@ -17,8 +17,9 @@ export class Notice {
       this.messageEl.appendChild(message.cloneNode(true));
     }
     (this as { duration: number }).duration = duration ?? 0;
-    Notice.__constructor(this, message, duration);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Notice.__constructor(mock, message, duration);
+    return mock;
   }
 
   public static __constructor(_instance: Notice, _message: DocumentFragment | string, _duration?: number): void {

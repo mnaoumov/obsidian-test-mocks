@@ -12,8 +12,9 @@ export class CapacitorAdapter extends InMemoryAdapter {
 
   protected constructor() {
     super();
-    CapacitorAdapter.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    CapacitorAdapter.__constructor(mock);
+    return mock;
   }
 
   public getFullPath(normalizedPath: string): string {

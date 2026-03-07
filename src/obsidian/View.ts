@@ -23,8 +23,9 @@ export abstract class View extends Component {
     this.app = App.__create();
     this.containerEl = createDiv();
     this.leaf = leaf;
-    View.__constructor(this, leaf);
-    return strictMock(this);
+    const mock = strictMock(this);
+    View.__constructor(mock, leaf);
+    return mock;
   }
 
   public static override __constructor(_instance: View, _leaf: WorkspaceLeaf): void {

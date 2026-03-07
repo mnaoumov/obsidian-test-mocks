@@ -21,8 +21,9 @@ export class ColorComponent extends ValueComponent<string> {
     super();
     this.colorPickerEl = createEl('input');
     this.colorPickerEl.type = 'color';
-    ColorComponent.__constructor(this, _containerEl);
-    return strictMock(this);
+    const mock = strictMock(this);
+    ColorComponent.__constructor(mock, _containerEl);
+    return mock;
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

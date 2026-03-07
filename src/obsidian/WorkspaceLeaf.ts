@@ -32,8 +32,9 @@ export class WorkspaceLeaf extends Events {
   protected constructor() {
     super();
     this._id = String(nextLeafId++);
-    WorkspaceLeaf.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    WorkspaceLeaf.__constructor(mock);
+    return mock;
   }
 
   public static override __constructor(_instance: WorkspaceLeaf, ..._args: unknown[]): void {

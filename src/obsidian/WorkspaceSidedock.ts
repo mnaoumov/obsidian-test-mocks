@@ -4,8 +4,9 @@ export class WorkspaceSidedock {
   public collapsed = false;
 
   protected constructor() {
-    WorkspaceSidedock.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    WorkspaceSidedock.__constructor(mock);
+    return mock;
   }
 
   public static __create(): WorkspaceSidedock {

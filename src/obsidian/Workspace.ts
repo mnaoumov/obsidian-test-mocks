@@ -47,8 +47,9 @@ export class Workspace extends Events {
     this.rightRibbon = WorkspaceRibbon.__create();
     this.rightSplit = WorkspaceSidedock.__create();
     this.rootSplit = WorkspaceRoot.__create();
-    Workspace.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    Workspace.__constructor(mock);
+    return mock;
   }
 
   public static override __constructor(_instance: Workspace, ..._args: unknown[]): void {

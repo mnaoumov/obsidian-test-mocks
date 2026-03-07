@@ -14,8 +14,9 @@ export class ButtonComponent extends BaseComponent {
     this.buttonEl = createEl('button');
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Initializing mock-only tracking field.
     ButtonComponent.instances.push(this);
-    ButtonComponent.__constructor(this, _containerEl);
-    return strictMock(this);
+    const mock = strictMock(this);
+    ButtonComponent.__constructor(mock, _containerEl);
+    return mock;
   }
 
   public static override __constructor(_instance: BaseComponent, ..._args: unknown[]): void {

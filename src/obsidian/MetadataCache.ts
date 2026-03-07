@@ -23,8 +23,9 @@ export class MetadataCache extends Events {
   protected constructor(app: App) {
     super();
     this._app = app;
-    MetadataCache.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    MetadataCache.__constructor(mock);
+    return mock;
   }
 
   public fileToLinktext(file: TFile, _sourcePath: string, omitMdExtension?: boolean): string {

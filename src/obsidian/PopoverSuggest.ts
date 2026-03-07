@@ -11,8 +11,9 @@ export abstract class PopoverSuggest<T> {
   public constructor(app: App, scope?: Scope) {
     this.app = app;
     this.scope = scope ?? Scope.__create();
-    PopoverSuggest.__constructor(this, app, scope);
-    return strictMock(this);
+    const mock = strictMock(this);
+    PopoverSuggest.__constructor(mock, app, scope);
+    return mock;
   }
 
   public static __constructor(_instance: PopoverSuggest<unknown>, ..._args: unknown[]): void {

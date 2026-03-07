@@ -4,8 +4,9 @@ import { WorkspaceParent } from './WorkspaceParent.ts';
 export class WorkspaceSplit extends WorkspaceParent {
   protected constructor() {
     super();
-    WorkspaceSplit.__constructor(this);
-    return strictMock(this);
+    const mock = strictMock(this);
+    WorkspaceSplit.__constructor(mock);
+    return mock;
   }
 
   public static __create(): WorkspaceSplit {
