@@ -1,4 +1,7 @@
-import { noop } from '../internal/Noop.ts';
+import {
+  delegatedOff,
+  delegatedOn
+} from '../internal/DelegatedEventRegistry.ts';
 import { ensureNonNullable } from '../internal/TypeGuards.ts';
 
 export function find(this: HTMLElement, selector: string): HTMLElement {
@@ -37,12 +40,12 @@ export function isShown(this: HTMLElement): boolean {
 
 export function off(
   this: HTMLElement,
-  _type: string,
+  type: string,
   _selector: string,
-  _listener: unknown,
-  _options?: AddEventListenerOptions | boolean
+  listener: unknown,
+  options?: AddEventListenerOptions | boolean
 ): void {
-  noop();
+  delegatedOff(this, type, listener, options);
 }
 
 export function on(
@@ -52,11 +55,7 @@ export function on(
   listener: (this: HTMLElement, ev: Event, delegateTarget: HTMLElement) => unknown,
   options?: AddEventListenerOptions | boolean
 ): void {
-  const that = this;
-  function cb(ev: Event): void {
-    listener.call(that, ev, ev.target as HTMLElement);
-  }
-  this.addEventListener(type, cb, options);
+  delegatedOn(this, type, listener, options);
 }
 
 export function onClickEvent(
@@ -78,14 +77,14 @@ export function onNodeInserted(
 ): () => void {
   // Jsdom doesn't implement real insertion observers; invoke immediately for safety.
   listener();
-  return noop;
+  return (): void => {};
 }
 
 export function onWindowMigrated(
   this: HTMLElement,
   _listener: (win: Window) => unknown
 ): () => void {
-  return noop;
+  return (): void => {};
 }
 
 export function setCssProps(this: HTMLElement, props: Record<string, string>): void {

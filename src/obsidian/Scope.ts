@@ -5,8 +5,6 @@ import type {
   Modifier
 } from 'obsidian';
 
-import { noop } from '../internal/Noop.ts';
-
 interface MockKeyScope {
   func(): void;
   key: null | string;
@@ -20,8 +18,17 @@ export class Scope {
   public parent: Scope | undefined = undefined;
   public tabFocusContainerEl: HTMLElement | null = null;
 
-  public constructor(_parent?: Scope) {
-    this.parent = _parent;
+  public static __create(parent?: Scope): Scope {
+    return new Scope(parent);
+  }
+
+  public static __constructor(_instance: Scope, _parent?: Scope): void {
+    // Spy hook.
+  }
+
+  protected constructor(parent?: Scope) {
+    this.parent = parent;
+    Scope.__constructor(this, parent);
   }
 
   public constructor__(_parent?: Scope): this {
@@ -32,16 +39,20 @@ export class Scope {
     return false;
   }
 
-  public register(_modifiers: Modifier[] | null, _key: null | string, _func: KeymapEventListener): KeymapEventHandler {
-    const handler = { key: _key, modifiers: _modifiers?.join(',') ?? null, scope: this };
+  public register(modifiers: Modifier[] | null, key: null | string, _func: KeymapEventListener): KeymapEventHandler {
+    const handler = { key: key, modifiers: modifiers?.join(',') ?? null, scope: this };
+    this.keys.push(handler as unknown as MockKeyScope);
     return handler;
   }
 
-  public setTabFocusContainer(_container: HTMLElement): void {
-    noop();
+  public setTabFocusContainer(container: HTMLElement): void {
+    this.tabFocusContainerEl = container;
   }
 
-  public unregister(_handler: KeymapEventHandler): void {
-    noop();
+  public unregister(handler: KeymapEventHandler): void {
+    const index = this.keys.indexOf(handler as unknown as MockKeyScope);
+    if (index !== -1) {
+      this.keys.splice(index, 1);
+    }
   }
 }

@@ -14,8 +14,7 @@ export function createTFolderInstance(app: App, path: string): TFolder {
     return folder;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Mock implementation requires deprecated constructor.
-  const mockFolder = new MockTFolder(castTo<MockVault>(app.vault), path);
+  const mockFolder = MockTFolder.__create(castTo<MockVault>(app.vault), path);
   if (path !== '/') {
     mockFolder.parent = castTo(createTFolderInstance(app, parentFolderPath(path)));
   }

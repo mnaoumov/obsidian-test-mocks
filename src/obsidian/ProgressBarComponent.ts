@@ -13,6 +13,11 @@ export class ProgressBarComponent extends ValueComponent<number> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated ValueComponent constructor.
     super();
     this.progressBar = createDiv();
+    ProgressBarComponent.__constructor(this, _containerEl);
+  }
+
+  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+    // Spy hook.
   }
 
   public override getValue(): number {
@@ -21,6 +26,8 @@ export class ProgressBarComponent extends ValueComponent<number> {
 
   public override setValue(value: number): this {
     this._value = value;
+    this.progressBar.style.width = `${String(value)}%`;
+    this.progressBar.dataset['value'] = String(value);
     return this;
   }
 }

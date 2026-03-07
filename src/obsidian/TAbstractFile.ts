@@ -8,11 +8,15 @@ export abstract class TAbstractFile {
   public path: string;
   public vault: Vault;
 
-  /** @deprecated Mock-only constructor. TAbstractFile has no public constructor in the Obsidian API. */
-  public constructor(vault: Vault, path: string) {
+  protected constructor(vault: Vault, path: string) {
     this.vault = vault;
     this.path = path;
     const parts = path.split('/');
     this.name = parts[parts.length - 1] ?? '';
+    TAbstractFile.__constructor(this, vault, path);
+  }
+
+  public static __constructor(_instance: TAbstractFile, _vault: Vault, _path: string): void {
+    // Spy hook.
   }
 }

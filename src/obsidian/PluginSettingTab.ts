@@ -9,5 +9,10 @@ export abstract class PluginSettingTab extends SettingTab {
   public constructor(app: App, plugin: Plugin) {
     super(app);
     this.plugin = plugin;
+    PluginSettingTab.__constructor(this, app, plugin);
+  }
+
+  public static override __constructor(_instance: PluginSettingTab, _app: App, _plugin: Plugin): void {
+    // Spy hook.
   }
 }

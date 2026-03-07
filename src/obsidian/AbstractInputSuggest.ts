@@ -1,6 +1,5 @@
 import type { App } from './App.ts';
 
-import { noop } from '../internal/Noop.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
@@ -8,6 +7,11 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   public constructor(app: App, inputEl: HTMLInputElement | HTMLTextAreaElement) {
     super(app);
     this.inputEl = inputEl;
+    AbstractInputSuggest.__constructor(this, app, inputEl);
+  }
+
+  public static override __constructor(_instance: AbstractInputSuggest<unknown>, _app: App, _inputEl: HTMLInputElement | HTMLTextAreaElement): void {
+    // Spy hook.
   }
 
   public getValue(): string {
@@ -18,7 +22,7 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
     return this;
   }
 
-  public setValue(_value: string): void {
-    noop();
+  public setValue(value: string): void {
+    this.inputEl.value = value;
   }
 }

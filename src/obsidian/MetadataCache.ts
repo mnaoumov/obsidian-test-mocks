@@ -11,6 +11,19 @@ export class MetadataCache extends Events {
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
+  public static __create(): MetadataCache {
+    return new MetadataCache();
+  }
+
+  public static override __constructor(_instance: MetadataCache): void {
+    // Spy hook.
+  }
+
+  protected constructor() {
+    super();
+    MetadataCache.__constructor(this);
+  }
+
   public fileToLinktext(file: TFile, _sourcePath: string, omitMdExtension?: boolean): string {
     if (omitMdExtension && file.extension === 'md') {
       return file.basename;

@@ -1,13 +1,16 @@
-import { noop } from '../internal/Noop.ts';
+import {
+  delegatedOff,
+  delegatedOn
+} from '../internal/DelegatedEventRegistry.ts';
 
 export function off(
   this: Document,
-  _type: string,
+  type: string,
   _selector: string,
-  _listener: unknown,
-  _options?: AddEventListenerOptions | boolean
+  listener: unknown,
+  options?: AddEventListenerOptions | boolean
 ): void {
-  noop();
+  delegatedOff(this, type, listener, options);
 }
 
 export function on(
@@ -17,9 +20,5 @@ export function on(
   listener: (this: Document, ev: Event, delegateTarget: HTMLElement) => unknown,
   options?: AddEventListenerOptions | boolean
 ): void {
-  const that = this;
-  function cb(ev: Event): void {
-    listener.call(that, ev, ev.target as HTMLElement);
-  }
-  this.addEventListener(type, cb, options);
+  delegatedOn(this, type, listener, options);
 }

@@ -5,30 +5,31 @@ import type {
   ViewStateResult
 } from 'obsidian';
 
-import {
-  noop,
-  noopAsync
-} from '../internal/Noop.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 export abstract class View extends Component {
-  public app: App = new App();
+  public app: App = App.__create();
   public containerEl: HTMLElement = createDiv();
   public icon: IconName = '';
-  public leaf: WorkspaceLeaf = new WorkspaceLeaf();
+  public leaf: WorkspaceLeaf = WorkspaceLeaf.__create();
   public navigation = true;
   public scope: Scope | null = null;
 
   public constructor(_leaf: WorkspaceLeaf) {
     super();
+    View.__constructor(this, _leaf);
+  }
+
+  public static override __constructor(_instance: View, _leaf: WorkspaceLeaf): void {
+    // Spy hook.
   }
 
   public abstract getDisplayText(): string;
 
   public getEphemeralState(): Record<string, unknown> {
-    return {};
+    return this._ephemeralState as Record<string, unknown>;
   }
 
   public getIcon(): IconName {
@@ -36,32 +37,31 @@ export abstract class View extends Component {
   }
 
   public getState(): Record<string, unknown> {
-    return {};
+    return this._state as Record<string, unknown>;
   }
 
   public abstract getViewType(): string;
 
   protected async onClose(): Promise<void> {
-    await noopAsync();
   }
 
   protected async onOpen(): Promise<void> {
-    await noopAsync();
   }
 
   public onPaneMenu(_menu: Menu, _source: string): void {
-    noop();
   }
 
   public onResize(): void {
-    noop();
   }
 
-  public setEphemeralState(_state: unknown): void {
-    noop();
+  public setEphemeralState(state: unknown): void {
+    this._ephemeralState = state;
   }
 
-  public async setState(_state: unknown, _result: ViewStateResult): Promise<void> {
-    await noopAsync();
+  public async setState(state: unknown, _result: ViewStateResult): Promise<void> {
+    this._state = state;
   }
+
+  private _ephemeralState: unknown = {};
+  private _state: unknown = {};
 }

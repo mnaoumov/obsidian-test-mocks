@@ -1,4 +1,4 @@
-import type { ParsedLinktext } from 'obsidian-typings';
+import type { ParsedLinktext } from '../internal/Types.ts';
 
 export function parseLinktext(linktext: string): ParsedLinktext {
   const hashIndex = linktext.indexOf('#');

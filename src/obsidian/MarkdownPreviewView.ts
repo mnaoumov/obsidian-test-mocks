@@ -1,22 +1,26 @@
 import type { TFile } from 'obsidian';
 
-import { noop } from '../internal/Noop.ts';
 import { castTo } from '../internal/Cast.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
 export class MarkdownPreviewView extends MarkdownRenderer {
+  private _data = '';
   public override containerEl: HTMLElement = createDiv();
 
   public constructor() {
     super(createDiv());
+    MarkdownPreviewView.__constructor(this);
+  }
+
+  public static override __constructor(_instance: MarkdownPreviewView): void {
+    // Spy hook.
   }
 
   public applyScroll(_scroll: number): void {
-    noop();
   }
 
   public clear(): void {
-    noop();
+    this._data = '';
   }
 
   public get file(): TFile {
@@ -24,7 +28,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public get(): string {
-    return '';
+    return this._data;
   }
 
   public getScroll(): number {
@@ -32,10 +36,9 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public rerender(_full?: boolean): void {
-    noop();
   }
 
-  public set(_data: string, _clear: boolean): void {
-    noop();
+  public set(data: string, _clear: boolean): void {
+    this._data = data;
   }
 }

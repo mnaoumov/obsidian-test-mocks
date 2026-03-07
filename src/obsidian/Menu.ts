@@ -3,7 +3,6 @@ import type {
   MenuItem as ObsidianMenuItem
 } from 'obsidian';
 
-import { noop } from '../internal/Noop.ts';
 import { castTo } from '../internal/Cast.ts';
 import { Component } from './Component.ts';
 import { MenuItem } from './MenuItem.ts';
@@ -11,8 +10,21 @@ import { MenuItem } from './MenuItem.ts';
 export class Menu extends Component {
   public dom: HTMLElement = createDiv();
 
+  public static __create(): Menu {
+    return new Menu();
+  }
+
+  public static override __constructor(_instance: Menu): void {
+    // Spy hook.
+  }
+
+  protected constructor() {
+    super();
+    Menu.__constructor(this);
+  }
+
   public addItem(cb: (item: ObsidianMenuItem) => unknown): this {
-    cb(castTo<ObsidianMenuItem>(new MenuItem()));
+    cb(castTo<ObsidianMenuItem>(MenuItem.__create()));
     return this;
   }
 
@@ -21,16 +33,18 @@ export class Menu extends Component {
   }
 
   public close(): void {
-    noop();
+    this._onHideCallback?.();
   }
 
   public hide(): this {
     return this;
   }
 
-  public onHide(_callback: () => unknown): void {
-    noop();
+  public onHide(callback: () => unknown): void {
+    this._onHideCallback = callback;
   }
+
+  private _onHideCallback: (() => unknown) | null = null;
 
   public setNoIcon(): this {
     return this;
@@ -49,6 +63,6 @@ export class Menu extends Component {
   }
 
   public static forEvent(_evt: MouseEvent | PointerEvent): Menu {
-    return new Menu();
+    return Menu.__create();
   }
 }

@@ -8,14 +8,13 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import { noopAsync } from '../internal/Noop.ts';
 import { Events } from './Events.ts';
 
 let nextLeafId = 1;
 
 export class WorkspaceLeaf extends Events {
   public hoverPopover: HoverPopover | null = null;
-  public readonly id: string;
+  public id: string;
   public readonly isDeferred = false;
   public view: View | null = null;
 
@@ -26,9 +25,18 @@ export class WorkspaceLeaf extends Events {
   private _pinned = false;
   private _viewState: ViewState = { type: '' };
 
-  public constructor() {
+  public static __create(): WorkspaceLeaf {
+    return new WorkspaceLeaf();
+  }
+
+  protected constructor() {
     super();
     this.id = String(nextLeafId++);
+    WorkspaceLeaf.__constructor(this);
+  }
+
+  public static override __constructor(_instance: WorkspaceLeaf, ..._args: unknown[]): void {
+    // Spy hook.
   }
 
   public detach(): void {
@@ -62,7 +70,7 @@ export class WorkspaceLeaf extends Events {
   }
 
   public async loadIfDeferred(): Promise<void> {
-    await noopAsync();
+    // isDeferred is always false; nothing to load.
   }
 
   public onResize(): void {
@@ -73,7 +81,6 @@ export class WorkspaceLeaf extends Events {
 
   public async openFile(file: TFile, _openState?: OpenViewState): Promise<void> {
     this._file = file;
-    await noopAsync();
   }
 
   public get file(): TFile | null {
@@ -110,7 +117,6 @@ export class WorkspaceLeaf extends Events {
       this._ephemeralState = { ...eState };
     }
     this.trigger('view-state-change');
-    await noopAsync();
   }
 
   public togglePinned(): void {

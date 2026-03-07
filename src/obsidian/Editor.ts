@@ -7,25 +7,27 @@ import type {
   EditorSelectionOrCaret,
   EditorTransaction
 } from 'obsidian';
-import type { CoordsLeftTop } from 'obsidian-typings';
-
-import { noop } from '../internal/Noop.ts';
+import type { CoordsLeftTop } from '../internal/Types.ts';
 
 export abstract class Editor {
+  private _focused = false;
+  private _redoStack: string[] = [];
+  private _scrollLeft = 0;
+  private _scrollTop = 0;
+  private _undoStack: string[] = [];
   private anchor: EditorPosition = { ch: 0, line: 0 };
   private content = '';
   private head: EditorPosition = { ch: 0, line: 0 };
 
   public blur(): void {
-    noop();
+    this._focused = false;
   }
 
   public exec(_command: EditorCommandName): void {
-    noop();
   }
 
   public focus(): void {
-    noop();
+    this._focused = true;
   }
 
   public getCursor(side?: 'anchor' | 'from' | 'head' | 'to'): EditorPosition {
@@ -56,7 +58,7 @@ export abstract class Editor {
   }
 
   public getScrollInfo(): CoordsLeftTop {
-    return { left: 0, top: 0 };
+    return { left: this._scrollLeft, top: this._scrollTop };
   }
 
   public getSelection(): string {
@@ -73,7 +75,7 @@ export abstract class Editor {
   }
 
   public hasFocus(): boolean {
-    return false;
+    return this._focused;
   }
 
   public lastLine(): number {
@@ -134,14 +136,22 @@ export abstract class Editor {
   }
 
   public redo(): void {
-    noop();
+    const entry = this._redoStack.pop();
+    if (entry !== undefined) {
+      this._undoStack.push(this.content);
+      this.content = entry;
+      const endPos = this.offsetToPos(this.content.length);
+      this.anchor = { ...endPos };
+      this.head = { ...endPos };
+    }
   }
 
   public refresh(): void {
-    noop();
   }
 
   public replaceRange(replacement: string, from: EditorPosition, to?: EditorPosition, _origin?: string): void {
+    this._undoStack.push(this.content);
+    this._redoStack = [];
     const startOffset = this.posToOffset(from);
     const endOffset = to ? this.posToOffset(to) : startOffset;
     this.content = this.content.slice(0, startOffset) + replacement + this.content.slice(endOffset);
@@ -158,11 +168,15 @@ export abstract class Editor {
   }
 
   public scrollIntoView(_range: EditorRange, _center?: boolean): void {
-    noop();
   }
 
-  public scrollTo(_x?: null | number, _y?: null | number): void {
-    noop();
+  public scrollTo(x?: null | number, y?: null | number): void {
+    if (x != null) {
+      this._scrollLeft = x;
+    }
+    if (y != null) {
+      this._scrollTop = y;
+    }
   }
 
   public setCursor(pos: EditorPosition | number, ch?: number): void {
@@ -221,7 +235,14 @@ export abstract class Editor {
   }
 
   public undo(): void {
-    noop();
+    const entry = this._undoStack.pop();
+    if (entry !== undefined) {
+      this._redoStack.push(this.content);
+      this.content = entry;
+      const endPos = this.offsetToPos(this.content.length);
+      this.anchor = { ...endPos };
+      this.head = { ...endPos };
+    }
   }
 
   public wordAt(pos: EditorPosition): EditorRange | null {

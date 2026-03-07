@@ -3,6 +3,18 @@ import type { IconName } from 'obsidian';
 import { Menu } from './Menu.ts';
 
 export class MenuItem {
+  private constructor() {
+    MenuItem.__constructor(this);
+  }
+
+  public static __create(): MenuItem {
+    return Reflect.construct(MenuItem, []) as MenuItem;
+  }
+
+  public static __constructor(_instance: MenuItem): void {
+    // Spy hook.
+  }
+
   public onClick(_callback: (evt: KeyboardEvent | MouseEvent) => unknown): this {
     return this;
   }
@@ -28,7 +40,7 @@ export class MenuItem {
   }
 
   public setSubmenu(): Menu {
-    return new Menu();
+    return Menu.__create();
   }
 
   public setTitle(_title: DocumentFragment | string): this {

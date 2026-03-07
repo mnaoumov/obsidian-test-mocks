@@ -12,6 +12,11 @@ export class ButtonComponent extends BaseComponent {
     super();
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Initializing mock-only tracking field.
     ButtonComponent.instances.push(this);
+    ButtonComponent.__constructor(this, _containerEl);
+  }
+
+  public static override __constructor(_instance: BaseComponent, ..._args: unknown[]): void {
+    // Spy hook.
   }
 
   public onClick(callback: (evt: MouseEvent) => unknown): this {
@@ -20,30 +25,37 @@ export class ButtonComponent extends BaseComponent {
   }
 
   public removeCta(): this {
+    this.buttonEl.removeClass('mod-cta');
     return this;
   }
 
-  public setButtonText(_name: string): this {
+  public setButtonText(name: string): this {
+    this.buttonEl.textContent = name;
     return this;
   }
 
-  public setClass(_cls: string): this {
+  public setClass(cls: string): this {
+    this.buttonEl.addClass(cls);
     return this;
   }
 
   public setCta(): this {
+    this.buttonEl.addClass('mod-cta');
     return this;
   }
 
-  public setIcon(_icon: string): this {
+  public setIcon(icon: string): this {
+    this.buttonEl.dataset['icon'] = icon;
     return this;
   }
 
-  public setTooltip(_tooltip: string, _options?: TooltipOptions): this {
+  public setTooltip(tooltip: string, _options?: TooltipOptions): this {
+    this.buttonEl.setAttribute('aria-label', tooltip);
     return this;
   }
 
   public setWarning(): this {
+    this.buttonEl.addClass('mod-warning');
     return this;
   }
 

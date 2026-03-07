@@ -1,24 +1,35 @@
-import type { DataWriteOptions } from 'obsidian';
+import type {
+  DataAdapter,
+  DataWriteOptions
+} from 'obsidian';
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
-import { DataAdapter } from './DataAdapter.ts';
 import { Events } from './Events.ts';
+import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
 
 export class Vault extends Events {
-  public adapter: DataAdapter = new DataAdapter();
+  public adapter: DataAdapter = FileSystemAdapter.__create() as unknown as DataAdapter;
   // eslint-disable-next-line obsidianmd/hardcoded-config-path -- Default value for testing.
   public configDir = '.obsidian';
   public fileMap: Record<string, TAbstractFile> = {};
 
-  public constructor() {
+  public static __create(): Vault {
+    return new Vault();
+  }
+
+  public static override __constructor(_instance: Vault): void {
+    // Spy hook.
+  }
+
+  protected constructor() {
     super();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Creating root folder entry.
-    const root = new TFolder(this, '/');
+    const root = TFolder.__create(this, '/');
     this.fileMap['/'] = root;
     root.deleted = false;
+    Vault.__constructor(this);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {
@@ -41,8 +52,7 @@ export class Vault extends Events {
 
   public async copy(file: TFile, newPath: string): Promise<TFile> {
     await this.adapter.copy(file.path, newPath);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated TFile constructor.
-    const newFile = new TFile(this, newPath);
+    const newFile = TFile.__create(this, newPath);
     setVaultAbstractFile(this, newPath, newFile);
     this.trigger('create', newFile);
     return newFile;
@@ -50,8 +60,7 @@ export class Vault extends Events {
 
   public async create(path: string, data: string, options?: DataWriteOptions): Promise<TFile> {
     await this.adapter.write(path, data, options);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated TFile constructor.
-    const file = new TFile(this, path);
+    const file = TFile.__create(this, path);
     setVaultAbstractFile(this, path, file);
     this.trigger('create', file);
     return file;
@@ -59,8 +68,7 @@ export class Vault extends Events {
 
   public async createBinary(path: string, data: ArrayBuffer, options?: DataWriteOptions): Promise<TFile> {
     await this.adapter.writeBinary(path, data, options);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated TFile constructor.
-    const file = new TFile(this, path);
+    const file = TFile.__create(this, path);
     setVaultAbstractFile(this, path, file);
     this.trigger('create', file);
     return file;
@@ -68,8 +76,7 @@ export class Vault extends Events {
 
   public async createFolder(path: string): Promise<TFolder> {
     await this.adapter.mkdir(path);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated TFolder constructor.
-    const folder = new TFolder(this, path);
+    const folder = TFolder.__create(this, path);
     setVaultAbstractFile(this, path, folder);
     this.trigger('create', folder);
     return folder;
@@ -154,8 +161,7 @@ export class Vault extends Events {
     if (root instanceof TFolder) {
       return root;
     }
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Fallback root folder creation.
-    const fallback = new TFolder(this, '/');
+    const fallback = TFolder.__create(this, '/');
     this.fileMap['/'] = fallback;
     return fallback;
   }

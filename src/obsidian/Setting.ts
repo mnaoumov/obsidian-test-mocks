@@ -15,7 +15,18 @@ import type {
 
 import type { BaseComponent } from './BaseComponent.ts';
 
-import { noop } from '../internal/Noop.ts';
+import { castTo } from '../internal/Cast.ts';
+import { ButtonComponent as MockButtonComponent } from './ButtonComponent.ts';
+import { ColorComponent as MockColorComponent } from './ColorComponent.ts';
+import { DropdownComponent as MockDropdownComponent } from './DropdownComponent.ts';
+import { ExtraButtonComponent as MockExtraButtonComponent } from './ExtraButtonComponent.ts';
+import { MomentFormatComponent as MockMomentFormatComponent } from './MomentFormatComponent.ts';
+import { ProgressBarComponent as MockProgressBarComponent } from './ProgressBarComponent.ts';
+import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
+import { SliderComponent as MockSliderComponent } from './SliderComponent.ts';
+import { TextAreaComponent as MockTextAreaComponent } from './TextAreaComponent.ts';
+import { TextComponent as MockTextComponent } from './TextComponent.ts';
+import { ToggleComponent as MockToggleComponent } from './ToggleComponent.ts';
 
 export class Setting {
   public components: BaseComponent[] = [];
@@ -25,15 +36,30 @@ export class Setting {
   public nameEl: HTMLElement = createDiv();
   public settingEl: HTMLElement = createDiv();
 
-  public constructor(_containerEl: HTMLElement) {
-    noop();
+  public constructor(containerEl: HTMLElement) {
+    this.settingEl.appendChild(this.infoEl);
+    this.infoEl.appendChild(this.nameEl);
+    this.infoEl.appendChild(this.descEl);
+    this.settingEl.appendChild(this.controlEl);
+    containerEl.appendChild(this.settingEl);
+    Setting.__constructor(this, containerEl);
   }
 
-  public addButton(_cb: (component: ButtonComponent) => unknown): this {
+  public static __constructor(_instance: Setting, _containerEl: HTMLElement): void {
+    // Spy hook.
+  }
+
+  public addButton(cb: (component: ButtonComponent) => unknown): this {
+    const comp = new MockButtonComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<ButtonComponent>(comp));
     return this;
   }
 
-  public addColorPicker(_cb: (component: ColorComponent) => unknown): this {
+  public addColorPicker(cb: (component: ColorComponent) => unknown): this {
+    const comp = new MockColorComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<ColorComponent>(comp));
     return this;
   }
 
@@ -43,39 +69,66 @@ export class Setting {
     return this;
   }
 
-  public addDropdown(_cb: (component: DropdownComponent) => unknown): this {
+  public addDropdown(cb: (component: DropdownComponent) => unknown): this {
+    const comp = new MockDropdownComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<DropdownComponent>(comp));
     return this;
   }
 
-  public addExtraButton(_cb: (component: ExtraButtonComponent) => unknown): this {
+  public addExtraButton(cb: (component: ExtraButtonComponent) => unknown): this {
+    const comp = new MockExtraButtonComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<ExtraButtonComponent>(comp));
     return this;
   }
 
-  public addMomentFormat(_cb: (component: MomentFormatComponent) => unknown): this {
+  public addMomentFormat(cb: (component: MomentFormatComponent) => unknown): this {
+    const comp = new MockMomentFormatComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<MomentFormatComponent>(comp));
     return this;
   }
 
-  public addProgressBar(_cb: (component: ProgressBarComponent) => unknown): this {
+  public addProgressBar(cb: (component: ProgressBarComponent) => unknown): this {
+    const comp = new MockProgressBarComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<ProgressBarComponent>(comp));
     return this;
   }
 
-  public addSearch(_cb: (component: SearchComponent) => unknown): this {
+  public addSearch(cb: (component: SearchComponent) => unknown): this {
+    const comp = new MockSearchComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<SearchComponent>(comp));
     return this;
   }
 
-  public addSlider(_cb: (component: SliderComponent) => unknown): this {
+  public addSlider(cb: (component: SliderComponent) => unknown): this {
+    const comp = new MockSliderComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<SliderComponent>(comp));
     return this;
   }
 
-  public addText(_cb: (component: TextComponent) => unknown): this {
+  public addText(cb: (component: TextComponent) => unknown): this {
+    const comp = new MockTextComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<TextComponent>(comp));
     return this;
   }
 
-  public addTextArea(_cb: (component: TextAreaComponent) => unknown): this {
+  public addTextArea(cb: (component: TextAreaComponent) => unknown): this {
+    const comp = new MockTextAreaComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<TextAreaComponent>(comp));
     return this;
   }
 
-  public addToggle(_cb: (component: ToggleComponent) => unknown): this {
+  public addToggle(cb: (component: ToggleComponent) => unknown): this {
+    const comp = new MockToggleComponent(this.controlEl);
+    this.components.push(castTo<BaseComponent>(comp));
+    cb(castTo<ToggleComponent>(comp));
     return this;
   }
 
@@ -84,27 +137,41 @@ export class Setting {
     return this;
   }
 
-  public setClass(_cls: string): this {
+  public setClass(cls: string): this {
+    this.settingEl.classList.add(cls);
     return this;
   }
 
-  public setDesc(_desc: DocumentFragment | string): this {
+  public setDesc(desc: DocumentFragment | string): this {
+    if (typeof desc === 'string') {
+      this.descEl.textContent = desc;
+    } else {
+      this.descEl.appendChild(desc);
+    }
     return this;
   }
 
-  public setDisabled(_disabled: boolean): this {
+  public setDisabled(disabled: boolean): this {
+    this.settingEl.classList.toggle('is-disabled', disabled);
     return this;
   }
 
   public setHeading(): this {
+    this.settingEl.classList.add('setting-item-heading');
     return this;
   }
 
-  public setName(_name: DocumentFragment | string): this {
+  public setName(name: DocumentFragment | string): this {
+    if (typeof name === 'string') {
+      this.nameEl.textContent = name;
+    } else {
+      this.nameEl.appendChild(name);
+    }
     return this;
   }
 
-  public setTooltip(_tooltip: string, _options?: TooltipOptions): this {
+  public setTooltip(tooltip: string, _options?: TooltipOptions): this {
+    this.settingEl.setAttribute('aria-label', tooltip);
     return this;
   }
 
