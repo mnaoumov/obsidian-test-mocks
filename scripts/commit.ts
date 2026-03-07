@@ -1,3 +1,4 @@
-import { execSync } from 'node:child_process';
+import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
+import { execFromRoot } from 'obsidian-dev-utils/ScriptUtils/Root';
 
-execSync('cz', { stdio: 'inherit' });
+await wrapCliTask(() => execFromRoot('cz'));

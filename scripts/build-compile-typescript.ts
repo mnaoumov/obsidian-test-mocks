@@ -1,3 +1,4 @@
-import { execSync } from 'node:child_process';
+import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
+import { buildCompileTypeScript } from 'obsidian-dev-utils/ScriptUtils/build';
 
-execSync('tsc --noEmit', { stdio: 'inherit' });
+await wrapCliTask(() => buildCompileTypeScript());

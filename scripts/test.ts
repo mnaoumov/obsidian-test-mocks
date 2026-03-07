@@ -1,8 +1,4 @@
-import { execSync } from 'node:child_process';
-import process from 'node:process';
+import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
+import { execFromRoot } from 'obsidian-dev-utils/ScriptUtils/Root';
 
-try {
-  execSync('vitest run', { stdio: 'inherit' });
-} catch {
-  process.exit(1);
-}
+await wrapCliTask(() => execFromRoot('vitest run'));

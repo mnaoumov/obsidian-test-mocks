@@ -1,4 +1,4 @@
 import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
 import { execFromRoot } from 'obsidian-dev-utils/ScriptUtils/Root';
 
-await wrapCliTask(() => execFromRoot('tsc --project tsconfig.build.json'));
+await wrapCliTask(() => execFromRoot('vitest'));
