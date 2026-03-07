@@ -105,7 +105,7 @@ export class Workspace extends Events {
 
   public getActiveFile(): null | TFile {
     if (this.activeLeaf) {
-      return this.activeLeaf.file;
+      return this.activeLeaf._file;
     }
     return null;
   }
@@ -115,7 +115,7 @@ export class Workspace extends Events {
   }
 
   public getGroupLeaves(group: string): WorkspaceLeaf[] {
-    return this._leaves.filter((leaf) => leaf.getGroup() === group);
+    return this._leaves.filter((leaf) => leaf._getGroup() === group);
   }
 
   public getLastOpenFiles(): string[] {
@@ -144,7 +144,7 @@ export class Workspace extends Events {
   }
 
   public getLeafById(id: string): null | WorkspaceLeaf {
-    return this._leaves.find((leaf) => leaf.id === id) ?? null;
+    return this._leaves.find((leaf) => leaf._id === id) ?? null;
   }
 
   public getLeavesOfType(viewType: string): WorkspaceLeaf[] {
@@ -171,7 +171,7 @@ export class Workspace extends Events {
   }
 
   public getUnpinnedLeaf(): WorkspaceLeaf {
-    const unpinned = this._leaves.find((leaf) => !leaf.isPinned());
+    const unpinned = this._leaves.find((leaf) => !leaf._isPinned());
     if (unpinned) {
       return unpinned;
     }
@@ -229,7 +229,7 @@ export class Workspace extends Events {
     this.trigger('active-leaf-change', leaf);
   }
 
-  public setLayoutReady(): void {
+  public _setLayoutReady(): void {
     this.layoutReady = true;
     for (const callback of this._layoutReadyCallbacks) {
       callback();

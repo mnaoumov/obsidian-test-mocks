@@ -1,7 +1,6 @@
 import type {
   KeymapEventHandler,
   KeymapEventListener,
-  KeymapInfo,
   Modifier
 } from 'obsidian';
 
@@ -15,10 +14,7 @@ interface MockKeyScope {
 }
 
 export class Scope {
-  public cb: (() => boolean) | undefined = undefined;
-  public keys: MockKeyScope[] = [];
-  public parent: Scope | undefined = undefined;
-  public tabFocusContainerEl: HTMLElement | null = null;
+  private _keys: MockKeyScope[] = [];
 
   public static __create(parent?: Scope): Scope {
     return new Scope(parent);
@@ -29,33 +25,20 @@ export class Scope {
   }
 
   protected constructor(parent?: Scope) {
-    this.parent = parent;
     Scope.__constructor(this, parent);
     return strictMock(this);
   }
 
-  public constructor__(_parent?: Scope): this {
-    return this;
-  }
-
-  public handleKey(_event: KeyboardEvent, _keypress: KeymapInfo): unknown {
-    return false;
-  }
-
   public register(modifiers: Modifier[] | null, key: null | string, _func: KeymapEventListener): KeymapEventHandler {
-    const handler = { key: key, modifiers: modifiers?.join(',') ?? null, scope: this };
-    this.keys.push(handler as unknown as MockKeyScope);
+    const handler = { key: key, modifiers: modifiers?.join(',') ?? null, scope: this } as unknown as KeymapEventHandler;
+    this._keys.push(handler as unknown as MockKeyScope);
     return handler;
   }
 
-  public setTabFocusContainer(container: HTMLElement): void {
-    this.tabFocusContainerEl = container;
-  }
-
   public unregister(handler: KeymapEventHandler): void {
-    const index = this.keys.indexOf(handler as unknown as MockKeyScope);
+    const index = this._keys.indexOf(handler as unknown as MockKeyScope);
     if (index !== -1) {
-      this.keys.splice(index, 1);
+      this._keys.splice(index, 1);
     }
   }
 }

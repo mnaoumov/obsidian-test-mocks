@@ -8,7 +8,7 @@ import { Events } from './Events.ts';
 
 export class MetadataCache extends Events {
   public _cache: Map<string, CachedMetadata> = new Map();
-  public app: App | null = null;
+  public _app: App | null = null;
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
@@ -42,18 +42,18 @@ export class MetadataCache extends Events {
   }
 
   public getFirstLinkpathDest(linkpath: string, _sourcePath: string): null | TFile {
-    if (!this.app) {
+    if (!this._app) {
       return null;
     }
-    const found = this.app.vault.getFileByPath(linkpath);
+    const found = this._app.vault.getFileByPath(linkpath);
     if (found) {
       return found;
     }
-    const withMd = this.app.vault.getFileByPath(`${linkpath}.md`);
+    const withMd = this._app.vault.getFileByPath(`${linkpath}.md`);
     if (withMd) {
       return withMd;
     }
-    for (const f of this.app.vault.getFiles()) {
+    for (const f of this._app.vault.getFiles()) {
       if (f.basename === linkpath || f.name === linkpath) {
         return f;
       }
@@ -61,7 +61,7 @@ export class MetadataCache extends Events {
     return null;
   }
 
-  public setCache(path: string, cache: CachedMetadata): void {
+  public _setCache(path: string, cache: CachedMetadata): void {
     this._cache.set(path, cache);
     this.trigger('changed');
   }
