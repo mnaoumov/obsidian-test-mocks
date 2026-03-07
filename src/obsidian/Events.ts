@@ -4,12 +4,14 @@ import type { Events as ObsidianEvents } from 'obsidian';
 import type { EventsEntry } from '../internal/Types.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
   protected constructor() {
     Events.__constructor(this);
+    return strictMock(this);
   }
 
   public static __constructor(_instance: Events, ..._args: unknown[]): void {

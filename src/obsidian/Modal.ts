@@ -1,5 +1,6 @@
 import type { App } from './App.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { Scope } from './Scope.ts';
 
 export class Modal {
@@ -16,6 +17,7 @@ export class Modal {
   public constructor(app: App) {
     this.app = app;
     Modal.__constructor(this, app);
+    return strictMock(this);
   }
 
   public static __constructor(_instance: Modal, _app: App): void {

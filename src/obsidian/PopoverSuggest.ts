@@ -1,5 +1,6 @@
 import type { App } from './App.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { Scope } from './Scope.ts';
 
 export abstract class PopoverSuggest<T> {
@@ -11,6 +12,7 @@ export abstract class PopoverSuggest<T> {
     this.app = app;
     this.scope = scope ?? Scope.__create();
     PopoverSuggest.__constructor(this, app, scope);
+    return strictMock(this);
   }
 
   public static __constructor(_instance: PopoverSuggest<unknown>, ..._args: unknown[]): void {

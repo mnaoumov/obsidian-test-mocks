@@ -1,3 +1,4 @@
+import { strictMock } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
 
 export class MarkdownRenderChild extends Component {
@@ -7,6 +8,7 @@ export class MarkdownRenderChild extends Component {
     super();
     this.containerEl = containerEl;
     MarkdownRenderChild.__constructor(this, containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: MarkdownRenderChild, _containerEl: HTMLElement): void {

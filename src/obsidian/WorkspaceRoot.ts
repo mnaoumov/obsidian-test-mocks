@@ -1,6 +1,9 @@
+import { strictMock } from '../internal/StrictMock.ts';
+
 export class WorkspaceRoot {
   protected constructor() {
     WorkspaceRoot.__constructor(this);
+    return strictMock(this);
   }
 
   public static __create(): WorkspaceRoot {

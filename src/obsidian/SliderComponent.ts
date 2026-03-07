@@ -1,3 +1,4 @@
+import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class SliderComponent extends ValueComponent<number> {
@@ -19,6 +20,7 @@ export class SliderComponent extends ValueComponent<number> {
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
     SliderComponent.__constructor(this, _containerEl);
+    return strictMock(this);
   }
 
   public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {

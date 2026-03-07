@@ -1,9 +1,11 @@
+import { strictMock } from '../internal/StrictMock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceTabs extends WorkspaceParent {
   protected constructor() {
     super();
     WorkspaceTabs.__constructor(this);
+    return strictMock(this);
   }
 
   public static __create(): WorkspaceTabs {

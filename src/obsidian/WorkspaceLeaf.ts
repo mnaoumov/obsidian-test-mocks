@@ -8,6 +8,7 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 let nextLeafId = 1;
@@ -33,6 +34,7 @@ export class WorkspaceLeaf extends Events {
     super();
     this.id = String(nextLeafId++);
     WorkspaceLeaf.__constructor(this);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: WorkspaceLeaf, ..._args: unknown[]): void {

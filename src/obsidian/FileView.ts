@@ -2,6 +2,7 @@ import type { ViewStateResult } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -13,6 +14,7 @@ export abstract class FileView extends ItemView {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     FileView.__constructor(this, leaf);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: FileView, _leaf: WorkspaceLeaf): void {

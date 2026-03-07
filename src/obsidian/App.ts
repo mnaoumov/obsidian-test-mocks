@@ -4,6 +4,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { FileManager } from './FileManager.ts';
 import { Keymap } from './Keymap.ts';
 import { MetadataCache } from './MetadataCache.ts';
@@ -43,6 +44,7 @@ export class App {
   protected constructor() {
     this.metadataCache.app = this;
     App.__constructor(this);
+    return strictMock(this);
   }
 
   public isDarkMode(): boolean {

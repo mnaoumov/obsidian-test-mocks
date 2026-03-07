@@ -9,6 +9,7 @@ import type {
 
 import type { App } from './App.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
@@ -18,6 +19,7 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
   public constructor(app: App) {
     super(app);
     EditorSuggest.__constructor(this, app);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: EditorSuggest<unknown>, _app: App): void {

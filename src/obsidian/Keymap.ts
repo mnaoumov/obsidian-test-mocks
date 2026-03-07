@@ -6,6 +6,8 @@ import type {
 
 import type { Scope } from './Scope.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
+
 export class Keymap {
   private _scopeStack: Scope[] = [];
 
@@ -23,6 +25,7 @@ export class Keymap {
 
   protected constructor() {
     Keymap.__constructor(this);
+    return strictMock(this);
   }
 
   public static isModifier(_evt: KeyboardEvent | MouseEvent | TouchEvent, _modifier: Modifier): boolean {

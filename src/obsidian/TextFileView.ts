@@ -1,5 +1,6 @@
 import type { TFile } from './TFile.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { EditableFileView } from './EditableFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -9,6 +10,7 @@ export abstract class TextFileView extends EditableFileView {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     TextFileView.__constructor(this, leaf);
+    return strictMock(this);
   }
 
   public static override __constructor(_instance: TextFileView, _leaf: WorkspaceLeaf): void {

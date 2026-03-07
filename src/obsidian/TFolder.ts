@@ -1,5 +1,6 @@
 import type { Vault } from './Vault.ts';
 
+import { strictMock } from '../internal/StrictMock.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
 export class TFolder extends TAbstractFile {
@@ -16,6 +17,7 @@ export class TFolder extends TAbstractFile {
   protected constructor(vault: Vault, path: string) {
     super(vault, path);
     TFolder.__constructor(this, vault, path);
+    return strictMock(this);
   }
 
   public isRoot(): boolean {
