@@ -9,6 +9,7 @@ import { Component } from './Component.ts';
 import { MenuItem } from './MenuItem.ts';
 
 export class Menu extends Component {
+  public _items: MenuItem[] = [];
   public dom: HTMLElement = createDiv();
 
   public static __create(): Menu {
@@ -26,7 +27,9 @@ export class Menu extends Component {
   }
 
   public addItem(cb: (item: ObsidianMenuItem) => unknown): this {
-    cb(castTo<ObsidianMenuItem>(MenuItem.__create()));
+    const item = MenuItem.__create();
+    this._items.push(item);
+    cb(castTo<ObsidianMenuItem>(item));
     return this;
   }
 

@@ -1,9 +1,11 @@
 import type moment from 'moment';
 
+import momentFn from 'moment';
+
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DateValue extends NotNullValue {
-  public value!: moment.Moment;
+  public value: moment.Moment = momentFn();
 
   public isTruthy(): boolean {
     return true;
