@@ -100,9 +100,25 @@ vi.spyOn(app.vault, 'read').mockResolvedValue('spied content');
 Object.assign(app, { commands: { addCommand: vi.fn() } });
 ```
 
-To access properties beyond `obsidian.d.ts` (such as `app.internalPlugins`):
+### Accessing Unimplemented Properties
 
-**Recommended** — use [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings) for full type coverage, or augment the types manually:
+Properties not implemented in the mock (such as `app.internalPlugins`) will throw at runtime:
+
+```
+Property "internalPlugins" is not mocked in App. To override, assign a value first: mock.internalPlugins = ...
+```
+
+You can add them by assigning a value first:
+
+```typescript
+app.internalPlugins = { manifests: {} };
+```
+
+But since `internalPlugins` is not declared in `obsidian.d.ts`, TypeScript won't compile that assignment. Here are the options to make it work, from best to worst:
+
+**1. Use `obsidian-typings`** (recommended) — install [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings) which declares the full internal API. The assignment compiles with no extra work.
+
+**2. Manual module augmentation** (recommended) — declare only what you need:
 
 ```typescript
 declare module 'obsidian' {
@@ -110,19 +126,21 @@ declare module 'obsidian' {
     internalPlugins: { manifests: Record<string, unknown> };
   }
 }
+
+app.internalPlugins = { manifests: {} };
 ```
 
-**Less recommended** — cast to `Record<string, unknown>` for quick one-off access:
+**3. Cast to `Record<string, unknown>`** (less recommended) — quick one-off escape hatch, still catches typos in the value:
 
 ```typescript
 (app as Record<string, unknown>).internalPlugins = { manifests: {} };
 ```
 
-**Not recommended** — `as any`, `@ts-ignore`, or `@ts-expect-error` suppress all type checking and hide real errors:
+**4. `as any` / `@ts-expect-error` / `@ts-ignore`** (not recommended) — suppresses all type checking and hides real errors:
 
 ```typescript
-// Avoid these — they silence the compiler entirely
 (app as any).internalPlugins = { manifests: {} };
+
 // @ts-expect-error -- accessing internal API
 app.internalPlugins = { manifests: {} };
 ```
