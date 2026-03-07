@@ -100,7 +100,9 @@ vi.spyOn(app.vault, 'read').mockResolvedValue('spied content');
 Object.assign(app, { commands: { addCommand: vi.fn() } });
 ```
 
-To access properties beyond `obsidian.d.ts` (such as `app.internalPlugins`), use [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings) for full type coverage, or augment the types manually:
+To access properties beyond `obsidian.d.ts` (such as `app.internalPlugins`):
+
+**Recommended** — use [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings) for full type coverage, or augment the types manually:
 
 ```typescript
 declare module 'obsidian' {
@@ -108,6 +110,21 @@ declare module 'obsidian' {
     internalPlugins: { manifests: Record<string, unknown> };
   }
 }
+```
+
+**Less recommended** — cast to `Record<string, unknown>` for quick one-off access:
+
+```typescript
+(app as Record<string, unknown>).internalPlugins = { manifests: {} };
+```
+
+**Not recommended** — `as any`, `@ts-ignore`, or `@ts-expect-error` suppress all type checking and hide real errors:
+
+```typescript
+// Avoid these — they silence the compiler entirely
+(app as any).internalPlugins = { manifests: {} };
+// @ts-expect-error -- accessing internal API
+app.internalPlugins = { manifests: {} };
 ```
 
 ## Design Principles
