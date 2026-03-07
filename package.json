@@ -81,6 +81,7 @@
   },
   "dependencies": {
     "moment": ">=2.29.0",
+    "turndown": ">=7.0.0",
     "yaml": ">=2.0.0"
   },
   "peerDependencies": {
@@ -100,6 +101,7 @@
     "@eslint/js": "latest",
     "@stylistic/eslint-plugin": "latest",
     "@types/markdown-it": "latest",
+    "@types/turndown": "latest",
     "@tsconfig/strictest": "latest",
     "@vitest/coverage-v8": "latest",
     "commitizen": "latest",
