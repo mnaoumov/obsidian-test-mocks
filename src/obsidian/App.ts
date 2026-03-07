@@ -63,8 +63,22 @@ export class App {
 export async function createMockApp(params: MockAppParams = {}): Promise<ObsidianApp> {
   const app = App.__create();
 
+  const neededFolders = new Set<string>();
+
   for (const folderPath of params.folders ?? []) {
-    await app.vault.createFolder(folderPath);
+    addFolderAndParents(neededFolders, folderPath);
+  }
+
+  for (const fileOpt of params.files ?? []) {
+    const lastSlash = fileOpt.path.lastIndexOf('/');
+    if (lastSlash > 0) {
+      addFolderAndParents(neededFolders, fileOpt.path.slice(0, lastSlash));
+    }
+  }
+
+  const sortedFolders = [...neededFolders].sort();
+  for (const folder of sortedFolders) {
+    await app.vault.createFolder(folder);
   }
 
   for (const fileOpt of params.files ?? []) {
@@ -72,4 +86,16 @@ export async function createMockApp(params: MockAppParams = {}): Promise<Obsidia
   }
 
   return castTo<ObsidianApp>(app);
+}
+
+function addFolderAndParents(folders: Set<string>, path: string): void {
+  let current = path;
+  while (current && current !== '/') {
+    if (folders.has(current)) {
+      break;
+    }
+    folders.add(current);
+    const lastSlash = current.lastIndexOf('/');
+    current = lastSlash > 0 ? current.slice(0, lastSlash) : '';
+  }
 }
