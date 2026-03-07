@@ -2,14 +2,7 @@ export { AbstractInputSuggest } from './AbstractInputSuggest.ts';
 export { AbstractTextComponent } from './AbstractTextComponent.ts';
 export { addIcon } from './addIcon.ts';
 export { apiVersion } from './apiVersion.ts';
-export {
-  App,
-  createMockApp
-} from './App.ts';
-export type {
-  MockAppParams,
-  MockFileEntry
-} from './App.ts';
+export { App } from './App.ts';
 export { arrayBufferToBase64 } from './arrayBufferToBase64.ts';
 export { arrayBufferToHex } from './arrayBufferToHex.ts';
 export { base64ToArrayBuffer } from './base64ToArrayBuffer.ts';
@@ -198,11 +191,7 @@ export type { TooltipOptions } from 'obsidian';
 export { UrlValue } from './UrlValue.ts';
 export { Value } from './Value.ts';
 export { ValueComponent } from './ValueComponent.ts';
-export {
-  deleteVaultAbstractFile,
-  setVaultAbstractFile,
-  Vault
-} from './Vault.ts';
+export { Vault } from './Vault.ts';
 export type { ViewCreator } from 'obsidian';
 export type { ViewState } from 'obsidian';
 export type { ViewStateResult } from 'obsidian';

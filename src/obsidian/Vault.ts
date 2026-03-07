@@ -209,7 +209,7 @@ export class Vault extends Events {
   }
 }
 
-export function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void {
+function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void {
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
   delete vault._fileMap[file.path];
   file.deleted = true;
@@ -221,7 +221,7 @@ export function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void
   }
 }
 
-export function setVaultAbstractFile(vault: Vault, path: string, file: TAbstractFile): void {
+function setVaultAbstractFile(vault: Vault, path: string, file: TAbstractFile): void {
   vault._fileMap[path] = file;
   file.deleted = false;
   if (path !== '/' && path !== '') {
