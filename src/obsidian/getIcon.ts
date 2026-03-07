@@ -1,3 +1,11 @@
-export function getIcon(_iconId: string): SVGSVGElement | null {
-  return null;
+import { iconRegistry } from './iconRegistry.ts';
+
+export function getIcon(iconId: string): SVGSVGElement | null {
+  const svgContent = iconRegistry.get(iconId);
+  if (!svgContent) {
+    return null;
+  }
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.innerHTML = svgContent;
+  return svg;
 }

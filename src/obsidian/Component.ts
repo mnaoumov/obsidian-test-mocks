@@ -1,26 +1,35 @@
 import type { EventRef } from 'obsidian';
 
-import { noop } from '../internal/Noop.ts';
-
 export class Component {
+  public _children: Component[] = [];
+  public _cleanups: (() => unknown)[] = [];
+  public _events: EventRef[] = [];
+  public _intervals: number[] = [];
+  public _loaded = false;
+
   public addChild<T extends Component>(component: T): T {
+    this._children.push(component);
+    if (this._loaded) {
+      component.load();
+    }
     return component;
   }
 
   public load(): void {
-    noop();
+    this._loaded = true;
+    this.onload();
   }
 
   public onload(): void {
-    noop();
+    // override point
   }
 
   public onunload(): void {
-    noop();
+    // override point
   }
 
-  public register(_cb: () => unknown): void {
-    noop();
+  public register(cb: () => unknown): void {
+    this._cleanups.push(cb);
   }
 
   public registerDomEvent<K extends keyof WindowEventMap>(
@@ -41,23 +50,51 @@ export class Component {
     callback: (this: HTMLElement, ev: HTMLElementEventMap[K]) => unknown,
     options?: AddEventListenerOptions | boolean
   ): void;
-  public registerDomEvent(_el: Document | HTMLElement | Window, _type: string, _callback: unknown, _options?: AddEventListenerOptions | boolean): void {
-    noop();
+  public registerDomEvent(el: Document | HTMLElement | Window, type: string, callback: EventListenerOrEventListenerObject, options?: AddEventListenerOptions | boolean): void {
+    el.addEventListener(type, callback, options);
+    this.register(() => {
+      el.removeEventListener(type, callback, options);
+    });
   }
 
-  public registerEvent(_ref: EventRef): void {
-    noop();
+  public registerEvent(ref: EventRef): void {
+    this._events.push(ref);
   }
 
-  public registerInterval(_id: number): number {
-    return _id;
+  public registerInterval(id: number): number {
+    this._intervals.push(id);
+    return id;
   }
 
   public removeChild<T extends Component>(component: T): T {
+    const index = this._children.indexOf(component);
+    if (index !== -1) {
+      this._children.splice(index, 1);
+    }
+    component.unload();
     return component;
   }
 
   public unload(): void {
-    noop();
+    this.onunload();
+
+    for (const child of [...this._children]) {
+      this.removeChild(child);
+    }
+    this._children = [];
+
+    this._events = [];
+
+    for (const cleanup of this._cleanups) {
+      cleanup();
+    }
+    this._cleanups = [];
+
+    for (const id of this._intervals) {
+      clearInterval(id);
+    }
+    this._intervals = [];
+
+    this._loaded = false;
   }
 }

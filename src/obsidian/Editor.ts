@@ -12,8 +12,9 @@ import type { CoordsLeftTop } from 'obsidian-typings';
 import { noop } from '../internal/Noop.ts';
 
 export abstract class Editor {
+  private anchor: EditorPosition = { ch: 0, line: 0 };
   private content = '';
-  private readonly cursorPos: EditorPosition = { ch: 0, line: 0 };
+  private head: EditorPosition = { ch: 0, line: 0 };
 
   public blur(): void {
     noop();
@@ -27,20 +28,31 @@ export abstract class Editor {
     noop();
   }
 
-  public getCursor(_side?: 'anchor' | 'from' | 'head' | 'to'): EditorPosition {
-    return { ...this.cursorPos };
+  public getCursor(side?: 'anchor' | 'from' | 'head' | 'to'): EditorPosition {
+    switch (side) {
+      case 'anchor':
+        return { ...this.anchor };
+      case 'from':
+        return this.minPos(this.anchor, this.head);
+      case 'to':
+        return this.maxPos(this.anchor, this.head);
+      default:
+        return { ...this.head };
+    }
   }
 
   public getDoc(): this {
     return this;
   }
 
-  public getLine(_line: number): string {
-    return '';
+  public getLine(line: number): string {
+    return this.getLines()[line] ?? '';
   }
 
-  public getRange(_from: EditorPosition, _to: EditorPosition): string {
-    return '';
+  public getRange(from: EditorPosition, to: EditorPosition): string {
+    const startOffset = this.posToOffset(from);
+    const endOffset = this.posToOffset(to);
+    return this.content.slice(startOffset, endOffset);
   }
 
   public getScrollInfo(): CoordsLeftTop {
@@ -48,7 +60,12 @@ export abstract class Editor {
   }
 
   public getSelection(): string {
-    return '';
+    if (!this.somethingSelected()) {
+      return '';
+    }
+    const from = this.minPos(this.anchor, this.head);
+    const to = this.maxPos(this.anchor, this.head);
+    return this.getRange(from, to);
   }
 
   public getValue(): string {
@@ -60,31 +77,60 @@ export abstract class Editor {
   }
 
   public lastLine(): number {
-    return 0;
+    return this.lineCount() - 1;
   }
 
   public lineCount(): number {
-    return this.content.split('\n').length;
+    return this.getLines().length;
   }
 
   public listSelections(): EditorSelection[] {
-    return [];
+    return [{ anchor: { ...this.anchor }, head: { ...this.head } }];
   }
 
-  public offsetToPos(_offset: number): EditorPosition {
-    return { ch: 0, line: 0 };
+  public offsetToPos(offset: number): EditorPosition {
+    const clamped = Math.max(0, Math.min(offset, this.content.length));
+    const before = this.content.slice(0, clamped);
+    const lines = before.split('\n');
+    const line = lines.length - 1;
+    const ch = lines[line]?.length ?? 0;
+    return { ch, line };
   }
 
-  public posToOffset(_pos: EditorPosition): number {
-    return 0;
+  public posToOffset(pos: EditorPosition): number {
+    const lines = this.getLines();
+    let offset = 0;
+    for (let i = 0; i < pos.line && i < lines.length; i++) {
+      offset += (lines[i]?.length ?? 0) + 1;
+    }
+    const lineLength = lines[pos.line]?.length ?? 0;
+    offset += Math.min(pos.ch, lineLength);
+    return offset;
   }
 
   public processLines<T>(
-    _read: (line: number, lineText: string) => null | T,
-    _write: (line: number, lineText: string, value: null | T) => EditorChange | undefined,
+    read: (line: number, lineText: string) => null | T,
+    write: (line: number, lineText: string, value: null | T) => EditorChange | undefined,
     _ignoreEmpty?: boolean
   ): void {
-    noop();
+    const lines = this.getLines();
+    const changes: EditorChange[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const lineText = lines[i] ?? '';
+      const value = read(i, lineText);
+      const change = write(i, lineText, value);
+      if (change) {
+        changes.push(change);
+      }
+    }
+
+    for (let i = changes.length - 1; i >= 0; i--) {
+      const change = changes[i];
+      if (change) {
+        this.replaceRange(change.text, change.from, change.to);
+      }
+    }
   }
 
   public redo(): void {
@@ -95,12 +141,20 @@ export abstract class Editor {
     noop();
   }
 
-  public replaceRange(_replacement: string, _from: EditorPosition, _to?: EditorPosition, _origin?: string): void {
-    noop();
+  public replaceRange(replacement: string, from: EditorPosition, to?: EditorPosition, _origin?: string): void {
+    const startOffset = this.posToOffset(from);
+    const endOffset = to ? this.posToOffset(to) : startOffset;
+    this.content = this.content.slice(0, startOffset) + replacement + this.content.slice(endOffset);
+
+    const newCursor = this.offsetToPos(startOffset + replacement.length);
+    this.anchor = { ...newCursor };
+    this.head = { ...newCursor };
   }
 
-  public replaceSelection(_replacement: string, _origin?: string): void {
-    noop();
+  public replaceSelection(replacement: string, _origin?: string): void {
+    const from = this.minPos(this.anchor, this.head);
+    const to = this.maxPos(this.anchor, this.head);
+    this.replaceRange(replacement, from, to);
   }
 
   public scrollIntoView(_range: EditorRange, _center?: boolean): void {
@@ -111,39 +165,107 @@ export abstract class Editor {
     noop();
   }
 
-  public setCursor(_pos: EditorPosition | number, _ch?: number): void {
-    noop();
+  public setCursor(pos: EditorPosition | number, ch?: number): void {
+    const resolved: EditorPosition = typeof pos === 'number'
+      ? { ch: ch ?? 0, line: pos }
+      : { ...pos };
+    this.anchor = { ...resolved };
+    this.head = { ...resolved };
   }
 
-  public setLine(_n: number, _text: string): void {
-    noop();
+  public setLine(n: number, text: string): void {
+    const from: EditorPosition = { ch: 0, line: n };
+    const lineLength = (this.getLines()[n] ?? '').length;
+    const to: EditorPosition = { ch: lineLength, line: n };
+    this.replaceRange(text, from, to);
   }
 
-  public setSelection(_anchor: EditorPosition, _head?: EditorPosition): void {
-    noop();
+  public setSelection(anchor: EditorPosition, head?: EditorPosition): void {
+    this.anchor = { ...anchor };
+    this.head = head ? { ...head } : { ...anchor };
   }
 
-  public setSelections(_ranges: EditorSelectionOrCaret[], _main?: number): void {
-    noop();
+  public setSelections(ranges: EditorSelectionOrCaret[], main?: number): void {
+    const index = main ?? 0;
+    const sel = ranges[index] ?? ranges[0];
+    if (sel) {
+      this.anchor = { ...sel.anchor };
+      this.head = sel.head ? { ...sel.head } : { ...sel.anchor };
+    }
   }
 
   public setValue(content: string): void {
     this.content = content;
+    this.anchor = { ch: 0, line: 0 };
+    this.head = { ch: 0, line: 0 };
   }
 
   public somethingSelected(): boolean {
-    return false;
+    return this.anchor.line !== this.head.line || this.anchor.ch !== this.head.ch;
   }
 
-  public transaction(_tx: EditorTransaction, _origin?: string): void {
-    noop();
+  public transaction(tx: EditorTransaction, _origin?: string): void {
+    if (tx.changes) {
+      for (const change of tx.changes) {
+        this.replaceRange(change.text, change.from, change.to);
+      }
+    }
+
+    if (tx.selection) {
+      this.setSelection(tx.selection.from, tx.selection.to);
+    }
+
+    if (tx.selections) {
+      this.setSelections(tx.selections as unknown as EditorSelectionOrCaret[]);
+    }
   }
 
   public undo(): void {
     noop();
   }
 
-  public wordAt(_pos: EditorPosition): EditorRange | null {
-    return null;
+  public wordAt(pos: EditorPosition): EditorRange | null {
+    const line = this.getLine(pos.line);
+    if (!line || pos.ch > line.length) {
+      return null;
+    }
+
+    const wordChars = /\w/;
+    if (!wordChars.test(line[pos.ch] ?? '')) {
+      return null;
+    }
+
+    let start = pos.ch;
+    while (start > 0 && wordChars.test(line[start - 1] ?? '')) {
+      start--;
+    }
+
+    let end = pos.ch;
+    while (end < line.length && wordChars.test(line[end] ?? '')) {
+      end++;
+    }
+
+    return {
+      from: { ch: start, line: pos.line },
+      to: { ch: end, line: pos.line }
+    };
+  }
+
+  private getLines(): string[] {
+    return this.content.split('\n');
+  }
+
+  private maxPos(a: EditorPosition, b: EditorPosition): EditorPosition {
+    if (a.line > b.line || (a.line === b.line && a.ch > b.ch)) {
+      return { ...a };
+    }
+    return { ...b };
+  }
+
+  private minPos(a: EditorPosition, b: EditorPosition): EditorPosition {
+    if (a.line < b.line || (a.line === b.line && a.ch < b.ch)) {
+      return { ...a };
+    }
+    return { ...b };
   }
 }

@@ -2,40 +2,63 @@ import type {
   HoverPopover,
   IconName,
   OpenViewState,
+  View,
   ViewState
 } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
-import {
-  noop,
-  noopAsync
-} from '../internal/Noop.ts';
+import { noopAsync } from '../internal/Noop.ts';
 import { Events } from './Events.ts';
+
+let nextLeafId = 1;
 
 export class WorkspaceLeaf extends Events {
   public hoverPopover: HoverPopover | null = null;
-
+  public readonly id: string;
   public readonly isDeferred = false;
+  public view: View | null = null;
+
+  private _detached = false;
+  private _ephemeralState: Record<string, unknown> = {};
+  private _file: TFile | null = null;
+  private _group: string | null = null;
+  private _pinned = false;
+  private _viewState: ViewState = { type: '' };
+
+  public constructor() {
+    super();
+    this.id = String(nextLeafId++);
+  }
 
   public detach(): void {
-    noop();
+    this._detached = true;
   }
 
   public getDisplayText(): string {
+    if (this.view) {
+      return this.view.getDisplayText();
+    }
     return '';
   }
 
   public getEphemeralState(): Record<string, unknown> {
-    return {};
+    return { ...this._ephemeralState };
   }
 
   public getIcon(): IconName {
+    if (this.view) {
+      return this.view.getIcon();
+    }
     return '';
   }
 
   public getViewState(): ViewState {
-    return { type: '' };
+    return { ...this._viewState };
+  }
+
+  public isDetached(): boolean {
+    return this._detached;
   }
 
   public async loadIfDeferred(): Promise<void> {
@@ -43,34 +66,54 @@ export class WorkspaceLeaf extends Events {
   }
 
   public onResize(): void {
-    noop();
+    if (this.view) {
+      this.view.onResize();
+    }
   }
 
-  public async openFile(_file: TFile, _openState?: OpenViewState): Promise<void> {
+  public async openFile(file: TFile, _openState?: OpenViewState): Promise<void> {
+    this._file = file;
     await noopAsync();
   }
 
-  public setEphemeralState(_state: unknown): void {
-    noop();
+  public get file(): TFile | null {
+    return this._file;
   }
 
-  public setGroup(_group: string): void {
-    noop();
+  public setEphemeralState(state: Record<string, unknown>): void {
+    this._ephemeralState = { ...state };
   }
 
-  public setGroupMember(_other: WorkspaceLeaf): void {
-    noop();
+  public setGroup(group: string | null): void {
+    this._group = group;
   }
 
-  public setPinned(_pinned: boolean): void {
-    noop();
+  public getGroup(): string | null {
+    return this._group;
   }
 
-  public async setViewState(_viewState: ViewState, _eState?: unknown): Promise<void> {
+  public setGroupMember(other: WorkspaceLeaf): void {
+    this._group = other.getGroup();
+  }
+
+  public setPinned(pinned: boolean): void {
+    this._pinned = pinned;
+  }
+
+  public isPinned(): boolean {
+    return this._pinned;
+  }
+
+  public async setViewState(viewState: ViewState, eState?: Record<string, unknown>): Promise<void> {
+    this._viewState = { ...viewState };
+    if (eState) {
+      this._ephemeralState = { ...eState };
+    }
+    this.trigger('view-state-change');
     await noopAsync();
   }
 
   public togglePinned(): void {
-    noop();
+    this._pinned = !this._pinned;
   }
 }
