@@ -1,3 +1,5 @@
+import { iconRegistry } from './iconRegistry.ts';
+
 export function getIconIds(): string[] {
-  return [];
+  return Array.from(iconRegistry.keys());
 }

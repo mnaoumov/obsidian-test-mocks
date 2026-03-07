@@ -1,2 +1,5 @@
-export function removeIcon(_iconId: string): void {
+import { iconRegistry } from './iconRegistry.ts';
+
+export function removeIcon(iconId: string): void {
+  iconRegistry.delete(iconId);
 }

@@ -2,7 +2,6 @@ import type { DataWriteOptions } from 'obsidian';
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
-import { noopAsync } from '../internal/Noop.ts';
 import { DataAdapter } from './DataAdapter.ts';
 import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
@@ -31,45 +30,63 @@ export class Vault extends Events {
     }
   }
 
-  public async append(_file: TFile, _data: string, _options?: DataWriteOptions): Promise<void> {
-    await noopAsync();
+  public async append(file: TFile, data: string, options?: DataWriteOptions): Promise<void> {
+    await this.adapter.append(file.path, data, options);
+    this.trigger('modify', file);
   }
 
-  public async cachedRead(_file: TFile): Promise<string> {
-    return '';
+  public async cachedRead(file: TFile): Promise<string> {
+    return this.adapter.read(file.path);
   }
 
-  public async copy<T extends TAbstractFile>(file: T, _newPath: string): Promise<T> {
-    return file;
+  public async copy(file: TFile, newPath: string): Promise<TFile> {
+    await this.adapter.copy(file.path, newPath);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated TFile constructor.
+    const newFile = new TFile(this, newPath);
+    setVaultAbstractFile(this, newPath, newFile);
+    this.trigger('create', newFile);
+    return newFile;
   }
 
-  public async create(path: string, _data: string, _options?: DataWriteOptions): Promise<TFile> {
+  public async create(path: string, data: string, options?: DataWriteOptions): Promise<TFile> {
+    await this.adapter.write(path, data, options);
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated TFile constructor.
     const file = new TFile(this, path);
     setVaultAbstractFile(this, path, file);
+    this.trigger('create', file);
     return file;
   }
 
-  public async createBinary(path: string, _data: ArrayBuffer, _options?: DataWriteOptions): Promise<TFile> {
+  public async createBinary(path: string, data: ArrayBuffer, options?: DataWriteOptions): Promise<TFile> {
+    await this.adapter.writeBinary(path, data, options);
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated TFile constructor.
     const file = new TFile(this, path);
     setVaultAbstractFile(this, path, file);
+    this.trigger('create', file);
     return file;
   }
 
   public async createFolder(path: string): Promise<TFolder> {
+    await this.adapter.mkdir(path);
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated TFolder constructor.
     const folder = new TFolder(this, path);
     setVaultAbstractFile(this, path, folder);
+    this.trigger('create', folder);
     return folder;
   }
 
-  public async delete(_file: TAbstractFile, _force?: boolean): Promise<void> {
-    await noopAsync();
+  public async delete(file: TAbstractFile, _force?: boolean): Promise<void> {
+    if (file instanceof TFolder) {
+      await this.adapter.rmdir(file.path, true);
+    } else {
+      await this.adapter.remove(file.path);
+    }
+    deleteVaultAbstractFile(this, file);
+    this.trigger('delete', file);
   }
 
-  public async exists(_path: string): Promise<boolean> {
-    return false;
+  public async exists(path: string): Promise<boolean> {
+    return this.adapter.exists(path);
   }
 
   public getAbstractFileByPath(path: string): null | TAbstractFile {
@@ -94,8 +111,16 @@ export class Vault extends Events {
     return Object.values(this.fileMap);
   }
 
-  public getAvailablePath(base: string, _ext: string): string {
-    return base;
+  public getAvailablePath(base: string, ext: string): string {
+    const candidate = `${base}.${ext}`;
+    if (!this.fileMap[candidate]) {
+      return candidate;
+    }
+    let counter = 1;
+    while (this.fileMap[`${base} ${String(counter)}.${ext}`]) {
+      counter++;
+    }
+    return `${base} ${String(counter)}.${ext}`;
   }
 
   public getFileByPath(path: string): null | TFile {
@@ -135,38 +160,83 @@ export class Vault extends Events {
     return fallback;
   }
 
-  public async modify(_file: TFile, _data: string, _options?: DataWriteOptions): Promise<void> {
-    await noopAsync();
+  public async modify(file: TFile, data: string, options?: DataWriteOptions): Promise<void> {
+    await this.adapter.write(file.path, data, options);
+    this.trigger('modify', file);
   }
 
-  public async modifyBinary(_file: TFile, _data: ArrayBuffer, _options?: DataWriteOptions): Promise<void> {
-    await noopAsync();
+  public async modifyBinary(file: TFile, data: ArrayBuffer, options?: DataWriteOptions): Promise<void> {
+    await this.adapter.writeBinary(file.path, data, options);
+    this.trigger('modify', file);
   }
 
-  public async process(_file: TFile, fn: (data: string) => string, _options?: DataWriteOptions): Promise<string> {
-    return fn('');
+  public async process(file: TFile, fn: (data: string) => string, options?: DataWriteOptions): Promise<string> {
+    const content = await this.adapter.read(file.path);
+    const result = fn(content);
+    await this.adapter.write(file.path, result, options);
+    this.trigger('modify', file);
+    return result;
   }
 
-  public async read(_file: TFile): Promise<string> {
-    return '';
+  public async read(file: TFile): Promise<string> {
+    return this.adapter.read(file.path);
   }
 
-  public async readBinary(_file: TFile): Promise<ArrayBuffer> {
-    return new ArrayBuffer(0);
+  public async readBinary(file: TFile): Promise<ArrayBuffer> {
+    return this.adapter.readBinary(file.path);
   }
 
-  public async rename(_file: TAbstractFile, _newPath: string): Promise<void> {
-    await noopAsync();
+  public async rename(file: TAbstractFile, newPath: string): Promise<void> {
+    const oldPath = file.path;
+    await this.adapter.rename(oldPath, newPath);
+
+    // Remove old entry from fileMap and parent's children
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
+    delete this.fileMap[oldPath];
+    if (file.parent) {
+      const idx = file.parent.children.indexOf(file);
+      if (idx !== -1) {
+        file.parent.children.splice(idx, 1);
+      }
+    }
+
+    // Update the file's properties in place
+    file.path = newPath;
+    const parts = newPath.split('/');
+    file.name = parts[parts.length - 1] ?? '';
+    if (file instanceof TFile) {
+      const dotIndex = file.name.lastIndexOf('.');
+      file.extension = dotIndex >= 0 ? file.name.slice(dotIndex + 1) : '';
+      file.basename = dotIndex >= 0 ? file.name.slice(0, dotIndex) : file.name;
+    }
+
+    // Re-register in fileMap with new path and attach to new parent
+    setVaultAbstractFile(this, newPath, file);
+
+    this.trigger('rename', file, oldPath);
   }
 
-  public async trash(_file: TAbstractFile, _system: boolean): Promise<void> {
-    await noopAsync();
+  public async trash(file: TAbstractFile, _system: boolean): Promise<void> {
+    if (file instanceof TFolder) {
+      await this.adapter.rmdir(file.path, true);
+    } else {
+      await this.adapter.remove(file.path);
+    }
+    deleteVaultAbstractFile(this, file);
+    this.trigger('delete', file);
   }
 }
 
-export function deleteVaultAbstractFile(vault: Vault, path: string): void {
+export function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void {
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-  delete vault.fileMap[path];
+  delete vault.fileMap[file.path];
+  file.deleted = true;
+  if (file.parent) {
+    const idx = file.parent.children.indexOf(file);
+    if (idx !== -1) {
+      file.parent.children.splice(idx, 1);
+    }
+  }
 }
 
 export function setVaultAbstractFile(vault: Vault, path: string, file: TAbstractFile): void {

@@ -1,28 +1,40 @@
 import type { EventRef } from 'obsidian';
 import type { EventsEntry } from 'obsidian-typings';
 
-import { noop } from '../internal/Noop.ts';
-
 export class Events {
   public _: Record<string, EventsEntry[]> = {};
 
-  public off(_name: string, _callback: (...data: unknown[]) => unknown): void {
-    noop();
+  public off(name: string, callback: (...data: unknown[]) => unknown): void {
+    const entries = this._[name];
+    if (!entries) {
+      return;
+    }
+    this._[name] = entries.filter((entry) => entry.fn !== callback);
   }
 
-  public offref(_ref: EventRef): void {
-    noop();
+  public offref(ref: EventRef): void {
+    this.off(ref.name, ref.fn as (...data: unknown[]) => unknown);
   }
 
-  public on(_name: string, _callback: (...data: unknown[]) => unknown, _ctx?: unknown): EventRef {
-    return { e: this, fn: _callback, name: _name };
+  public on(name: string, callback: (...data: unknown[]) => unknown, ctx?: unknown): EventRef {
+    if (!this._[name]) {
+      this._[name] = [];
+    }
+    this._[name].push({ ctx, e: this, fn: callback, name });
+    return { e: this, fn: callback, name };
   }
 
-  public trigger(_name: string, ..._data: unknown[]): void {
-    noop();
+  public trigger(name: string, ...data: unknown[]): void {
+    const entries = this._[name];
+    if (!entries) {
+      return;
+    }
+    for (const entry of entries) {
+      entry.fn.call(entry.ctx, ...data);
+    }
   }
 
-  public tryTrigger(_evt: EventRef, _args: unknown[]): void {
-    noop();
+  public tryTrigger(evt: EventRef, args: unknown[]): void {
+    evt.fn.call(evt.e, ...args);
   }
 }

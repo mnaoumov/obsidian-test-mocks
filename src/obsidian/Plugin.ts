@@ -10,14 +10,20 @@ import type {
 
 import type { App } from './App.ts';
 
-import {
-  noop,
-  noopAsync
-} from '../internal/Noop.ts';
+import { noop } from '../internal/Noop.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
+  public _data: unknown = {};
+  public _extensions: Map<string, string> = new Map();
+  public _markdownCodeBlockProcessors: Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown> = new Map();
+  public _markdownPostProcessors: MarkdownPostProcessor[] = [];
+  public _ribbonActions: HTMLElement[] = [];
+  public _settingTabs: PluginSettingTab[] = [];
+  public _statusBarItems: HTMLElement[] = [];
+  public _views: Map<string, ViewCreator> = new Map();
   public app: App;
+  public commands: Map<string, Command> = new Map();
   public manifest: PluginManifest;
 
   public constructor(app: App, manifest: PluginManifest) {
@@ -27,32 +33,38 @@ export abstract class Plugin extends Component {
   }
 
   public addCommand(command: Command): Command {
+    this.commands.set(command.id, command);
     return command;
   }
 
   public addRibbonIcon(_icon: string, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
-    return createDiv();
+    const el = createDiv();
+    this._ribbonActions.push(el);
+    return el;
   }
 
-  public addSettingTab(_settingTab: PluginSettingTab): void {
-    noop();
+  public addSettingTab(settingTab: PluginSettingTab): void {
+    this._settingTabs.push(settingTab);
   }
 
   public addStatusBarItem(): HTMLElement {
-    return createDiv();
+    const el = createDiv();
+    this._statusBarItems.push(el);
+    return el;
   }
 
   public async loadData(): Promise<unknown> {
-    await noopAsync();
-    return {};
+    return this._data;
   }
 
   public onUserEnable(): void {
     noop();
   }
 
-  public registerExtensions(_extensions: string[], _viewType: string): void {
-    noop();
+  public registerExtensions(extensions: string[], viewType: string): void {
+    for (const ext of extensions) {
+      this._extensions.set(ext, viewType);
+    }
   }
 
   public registerHoverLinkSource(_id: string, _info: HoverLinkSource): void {
@@ -60,26 +72,32 @@ export abstract class Plugin extends Component {
   }
 
   public registerMarkdownCodeBlockProcessor(
-    _language: string,
-    _handler: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown,
+    language: string,
+    handler: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown,
     _sortOrder?: number
   ): MarkdownPostProcessor {
-    return noop;
+    this._markdownCodeBlockProcessors.set(language, handler);
+    const processor: MarkdownPostProcessor = (_el: HTMLElement, _ctx: MarkdownPostProcessorContext): void => {
+      noop();
+    };
+    this._markdownPostProcessors.push(processor);
+    return processor;
   }
 
-  public registerMarkdownPostProcessor(_postProcessor: MarkdownPostProcessor, _sortOrder?: number): MarkdownPostProcessor {
-    return noop;
+  public registerMarkdownPostProcessor(postProcessor: MarkdownPostProcessor, _sortOrder?: number): MarkdownPostProcessor {
+    this._markdownPostProcessors.push(postProcessor);
+    return postProcessor;
   }
 
-  public registerView(_type: string, _viewCreator: ViewCreator): void {
-    noop();
+  public registerView(type: string, viewCreator: ViewCreator): void {
+    this._views.set(type, viewCreator);
   }
 
-  public removeCommand(_commandId: string): void {
-    noop();
+  public removeCommand(commandId: string): void {
+    this.commands.delete(commandId);
   }
 
-  public async saveData(_data: unknown): Promise<void> {
-    await noopAsync();
+  public async saveData(data: unknown): Promise<void> {
+    this._data = data;
   }
 }

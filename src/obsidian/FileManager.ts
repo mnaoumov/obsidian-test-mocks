@@ -5,7 +5,8 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
-import { noopAsync } from '../internal/Noop.ts';
+import { parseYaml } from './parseYaml.ts';
+import { stringifyYaml } from './stringifyYaml.ts';
 
 export class FileManager {
   public app: App;
@@ -14,31 +15,64 @@ export class FileManager {
     this.app = app;
   }
 
-  public generateMarkdownLink(_file: TFile, _sourcePath: string, _subpath?: string, _alias?: string): string {
-    return '';
+  public generateMarkdownLink(file: TFile, _sourcePath: string, subpath?: string, alias?: string): string {
+    let link = file.basename;
+    if (subpath) {
+      link += `#${subpath}`;
+    }
+    if (alias) {
+      return `[[${link}|${alias}]]`;
+    }
+    return `[[${link}]]`;
   }
 
-  public async getAvailablePathForAttachment(_filename: string, _sourcePath?: string): Promise<string> {
-    return '';
+  public async getAvailablePathForAttachment(filename: string, _sourcePath?: string): Promise<string> {
+    return filename;
   }
 
-  public getNewFileParent(_sourcePath: string, _newFilePath?: string): TFolder {
+  public getNewFileParent(sourcePath: string, _newFilePath?: string): TFolder {
+    const lastSlash = sourcePath.lastIndexOf('/');
+    if (lastSlash > 0) {
+      const parentPath = sourcePath.slice(0, lastSlash);
+      const folder = this.app.vault.getFolderByPath(parentPath);
+      if (folder) {
+        return folder;
+      }
+    }
     return this.app.vault.getRoot();
   }
 
-  public async processFrontMatter(_file: TFile, _fn: (frontmatter: unknown) => void, _options?: DataWriteOptions): Promise<void> {
-    await noopAsync();
+  public async processFrontMatter(file: TFile, fn: (frontmatter: Record<string, unknown>) => void, options?: DataWriteOptions): Promise<void> {
+    const content = await this.app.vault.read(file);
+    let frontmatter: Record<string, unknown> = {};
+    let body = content;
+
+    const fmMatch = /^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/.exec(content);
+    if (fmMatch) {
+      const yamlStr = fmMatch[1] ?? '';
+      const parsed = parseYaml(yamlStr);
+      if (parsed && typeof parsed === 'object') {
+        frontmatter = parsed as Record<string, unknown>;
+      }
+      body = content.slice((fmMatch[0]).length);
+    }
+
+    fn(frontmatter);
+
+    const yamlOutput = stringifyYaml(frontmatter);
+    const newContent = `---\n${yamlOutput}---${body ? `\n${body}` : '\n'}`;
+    await this.app.vault.modify(file, newContent, options);
   }
 
-  public async promptForDeletion(_file: TAbstractFile): Promise<void> {
-    await noopAsync();
+  public async promptForDeletion(file: TAbstractFile): Promise<void> {
+    await this.app.vault.trash(file, true);
   }
 
-  public async renameFile(_file: TAbstractFile, _newPath: string): Promise<void> {
-    await noopAsync();
+  public async renameFile(file: TAbstractFile, newPath: string): Promise<void> {
+    await this.app.vault.rename(file, newPath);
   }
 
-  public async trashFile(_file: TAbstractFile): Promise<void> {
-    await noopAsync();
+  public async trashFile(file: TAbstractFile): Promise<void> {
+    await this.app.vault.trash(file, true);
   }
 }

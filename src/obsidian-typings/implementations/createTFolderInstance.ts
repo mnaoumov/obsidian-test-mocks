@@ -3,7 +3,9 @@ import type {
   TFolder
 } from 'obsidian';
 
+import { castTo } from '../../internal/Cast.ts';
 import { TFolder as MockTFolder } from '../../obsidian/TFolder.ts';
+import { Vault as MockVault } from '../../obsidian/Vault.ts';
 import { parentFolderPath } from './parentFolderPath.ts';
 
 export function createTFolderInstance(app: App, path: string): TFolder {
@@ -12,11 +14,11 @@ export function createTFolderInstance(app: App, path: string): TFolder {
     return folder;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated, obsidianmd/no-tfile-tfolder-cast -- Mock implementation requires deprecated constructor and cast.
-  folder = new MockTFolder(app.vault, path) as TFolder;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Mock implementation requires deprecated constructor.
+  const mockFolder = new MockTFolder(castTo<MockVault>(app.vault), path);
   if (path !== '/') {
-    folder.parent = createTFolderInstance(app, parentFolderPath(path));
+    mockFolder.parent = castTo(createTFolderInstance(app, parentFolderPath(path)));
   }
-  folder.deleted = true;
-  return folder;
+  mockFolder.deleted = true;
+  return castTo<TFolder>(mockFolder);
 }

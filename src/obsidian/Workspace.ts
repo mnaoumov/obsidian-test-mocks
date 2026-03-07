@@ -16,10 +16,7 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import {
-  noop,
-  noopAsync
-} from '../internal/Noop.ts';
+import { noopAsync } from '../internal/Noop.ts';
 import { debounce } from './debounce.ts';
 import { Events } from './Events.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -27,6 +24,10 @@ import { WorkspaceRibbon } from './WorkspaceRibbon.ts';
 import { WorkspaceRoot } from './WorkspaceRoot.ts';
 import { WorkspaceSidedock } from './WorkspaceSidedock.ts';
 import { WorkspaceWindow } from './WorkspaceWindow.ts';
+
+function noop(): void {
+  // Does nothing.
+}
 
 export class Workspace extends Events {
   public activeEditor: MarkdownFileInfo | null = null;
@@ -39,6 +40,10 @@ export class Workspace extends Events {
   public rightSplit = new WorkspaceSidedock();
   public rootSplit = new WorkspaceRoot();
 
+  private _containerEl?: HTMLElement;
+  private _layoutReadyCallbacks: Array<() => unknown> = [];
+  private _leaves: WorkspaceLeaf[] = [];
+
   public get containerEl(): HTMLElement {
     this._containerEl ??= createDiv();
     return this._containerEl;
@@ -48,27 +53,35 @@ export class Workspace extends Events {
     this._containerEl = el;
   }
 
-  private _containerEl?: HTMLElement;
-
   public async changeLayout(_workspace: unknown): Promise<void> {
     await noopAsync();
   }
 
   public createLeafBySplit(_leaf: WorkspaceLeaf, _direction?: SplitDirection, _before?: boolean): WorkspaceLeaf {
-    return new WorkspaceLeaf();
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
+    return leaf;
   }
 
   public createLeafInParent(_parent: WorkspaceParent, _index: number): WorkspaceLeaf {
-    return new WorkspaceLeaf();
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
+    return leaf;
   }
 
-  public detachLeavesOfType(_viewType: string): void {
-    noop();
+  public detachLeavesOfType(viewType: string): void {
+    const toDetach = this._leaves.filter((leaf) => leaf.getViewState().type === viewType);
+    for (const leaf of toDetach) {
+      leaf.detach();
+    }
+    this._leaves = this._leaves.filter((leaf) => leaf.getViewState().type !== viewType);
   }
 
   public async duplicateLeaf(_leaf: WorkspaceLeaf, _leafType?: boolean | PaneType, _direction?: SplitDirection): Promise<WorkspaceLeaf> {
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
     await noopAsync();
-    return new WorkspaceLeaf();
+    return leaf;
   }
 
   public async ensureSideLeaf(
@@ -76,11 +89,16 @@ export class Workspace extends Events {
     _side: Side,
     _options?: EnsureSideLeafOptions
   ): Promise<WorkspaceLeaf> {
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
     await noopAsync();
-    return new WorkspaceLeaf();
+    return leaf;
   }
 
   public getActiveFile(): null | TFile {
+    if (this.activeLeaf) {
+      return this.activeLeaf.file;
+    }
     return null;
   }
 
@@ -88,8 +106,8 @@ export class Workspace extends Events {
     return null;
   }
 
-  public getGroupLeaves(_group: string): WorkspaceLeaf[] {
-    return [];
+  public getGroupLeaves(group: string): WorkspaceLeaf[] {
+    return this._leaves.filter((leaf) => leaf.getGroup() === group);
   }
 
   public getLastOpenFiles(): string[] {
@@ -100,48 +118,85 @@ export class Workspace extends Events {
     return {};
   }
 
-  public getLeaf(_newLeaf?: boolean | PaneType): WorkspaceLeaf {
-    return new WorkspaceLeaf();
+  public getLeaf(newLeaf?: boolean | PaneType): WorkspaceLeaf {
+    if (newLeaf === true || newLeaf === 'tab' || newLeaf === 'split' || newLeaf === 'window') {
+      const leaf = new WorkspaceLeaf();
+      this._leaves.push(leaf);
+      return leaf;
+    }
+
+    if (this.activeLeaf) {
+      return this.activeLeaf;
+    }
+
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
+    this.activeLeaf = leaf;
+    return leaf;
   }
 
-  public getLeafById(_id: string): null | WorkspaceLeaf {
-    return null;
+  public getLeafById(id: string): null | WorkspaceLeaf {
+    return this._leaves.find((leaf) => leaf.id === id) ?? null;
   }
 
-  public getLeavesOfType(_viewType: string): WorkspaceLeaf[] {
-    return [];
+  public getLeavesOfType(viewType: string): WorkspaceLeaf[] {
+    return this._leaves.filter((leaf) => leaf.getViewState().type === viewType);
   }
 
   public getLeftLeaf(_split: boolean): null | WorkspaceLeaf {
-    return null;
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
+    return leaf;
   }
 
   public getMostRecentLeaf(_root?: WorkspaceParent): null | WorkspaceLeaf {
-    return null;
+    if (this._leaves.length === 0) {
+      return null;
+    }
+    return this._leaves[this._leaves.length - 1] ?? null;
   }
 
   public getRightLeaf(_split: boolean): null | WorkspaceLeaf {
-    return null;
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
+    return leaf;
   }
 
   public getUnpinnedLeaf(): WorkspaceLeaf {
-    return new WorkspaceLeaf();
+    const unpinned = this._leaves.find((leaf) => !leaf.isPinned());
+    if (unpinned) {
+      return unpinned;
+    }
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
+    return leaf;
   }
 
-  public iterateAllLeaves(_callback: (leaf: WorkspaceLeaf) => unknown): void {
-    noop();
+  public iterateAllLeaves(callback: (leaf: WorkspaceLeaf) => unknown): void {
+    for (const leaf of this._leaves) {
+      callback(leaf);
+    }
   }
 
-  public iterateRootLeaves(_callback: (leaf: WorkspaceLeaf) => unknown): void {
-    noop();
+  public iterateRootLeaves(callback: (leaf: WorkspaceLeaf) => unknown): void {
+    for (const leaf of this._leaves) {
+      callback(leaf);
+    }
   }
 
-  public moveLeafToPopout(_leaf: WorkspaceLeaf, _data?: WorkspaceWindowInitData): WorkspaceWindow {
+  public moveLeafToPopout(leaf: WorkspaceLeaf, _data?: WorkspaceWindowInitData): WorkspaceWindow {
+    if (!this._leaves.includes(leaf)) {
+      this._leaves.push(leaf);
+    }
     return new WorkspaceWindow();
   }
 
-  public onLayoutReady(_callback: () => unknown): void {
-    noop();
+  public onLayoutReady(callback: () => unknown): void {
+    if (this.layoutReady) {
+      callback();
+    } else {
+      this._layoutReadyCallbacks.push(callback);
+    }
   }
 
   public async openLinkText(_linktext: string, _sourcePath: string, _newLeaf?: boolean | PaneType, _openViewState?: OpenViewState): Promise<void> {
@@ -149,19 +204,36 @@ export class Workspace extends Events {
   }
 
   public openPopoutLeaf(_data?: WorkspaceWindowInitData): WorkspaceLeaf {
-    return new WorkspaceLeaf();
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
+    return leaf;
   }
 
-  public async revealLeaf(_leaf: WorkspaceLeaf): Promise<void> {
+  public async revealLeaf(leaf: WorkspaceLeaf): Promise<void> {
+    this.setActiveLeaf(leaf);
     await noopAsync();
   }
 
-  public setActiveLeaf(_leaf: WorkspaceLeaf, _params?: SetActiveLeafParams): void {
-    noop();
+  public setActiveLeaf(leaf: WorkspaceLeaf, _params?: SetActiveLeafParams): void {
+    this.activeLeaf = leaf;
+    if (!this._leaves.includes(leaf)) {
+      this._leaves.push(leaf);
+    }
+    this.trigger('active-leaf-change', leaf);
+  }
+
+  public setLayoutReady(): void {
+    this.layoutReady = true;
+    for (const callback of this._layoutReadyCallbacks) {
+      callback();
+    }
+    this._layoutReadyCallbacks = [];
   }
 
   public splitActiveLeaf(_direction?: SplitDirection): WorkspaceLeaf {
-    return new WorkspaceLeaf();
+    const leaf = new WorkspaceLeaf();
+    this._leaves.push(leaf);
+    return leaf;
   }
 
   public updateOptions(): void {
