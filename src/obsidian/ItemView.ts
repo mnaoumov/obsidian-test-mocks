@@ -8,6 +8,11 @@ export abstract class ItemView extends View {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
+    ItemView.__constructor(this, leaf);
+  }
+
+  public static override __constructor(_instance: ItemView, _leaf: WorkspaceLeaf): void {
+    // Spy hook.
   }
 
   public addAction(_icon: IconName, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {

@@ -1,9 +1,5 @@
 import type { TFile } from './TFile.ts';
 
-import {
-  noop,
-  noopAsync
-} from '../internal/Noop.ts';
 import { EditableFileView } from './EditableFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -12,6 +8,11 @@ export abstract class TextFileView extends EditableFileView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
+    TextFileView.__constructor(this, leaf);
+  }
+
+  public static override __constructor(_instance: TextFileView, _leaf: WorkspaceLeaf): void {
+    // Spy hook.
   }
 
   public abstract clear(): void;
@@ -19,19 +20,19 @@ export abstract class TextFileView extends EditableFileView {
   public abstract getViewData(): string;
 
   public override async onLoadFile(_file: TFile): Promise<void> {
-    await noopAsync();
+    // Lifecycle hook for subclasses to override.
   }
 
   public override async onUnloadFile(_file: TFile): Promise<void> {
-    await noopAsync();
+    // Lifecycle hook for subclasses to override.
   }
 
   public requestSave(): void {
-    noop();
+    // Scheduling hint — not simulated.
   }
 
   public async save(_clear?: boolean): Promise<void> {
-    await noopAsync();
+    // Empty async — save is not simulated.
   }
 
   public abstract setViewData(data: string, clear: boolean): void;

@@ -10,12 +10,12 @@ import type {
 
 import type { App } from './App.ts';
 
-import { noop } from '../internal/Noop.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
   public _data: unknown = {};
   public _extensions: Map<string, string> = new Map();
+  public _hoverLinkSources: Map<string, HoverLinkSource> = new Map();
   public _markdownCodeBlockProcessors: Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown> = new Map();
   public _markdownPostProcessors: MarkdownPostProcessor[] = [];
   public _ribbonActions: HTMLElement[] = [];
@@ -30,6 +30,11 @@ export abstract class Plugin extends Component {
     super();
     this.app = app;
     this.manifest = manifest;
+    Plugin.__constructor(this, app, manifest);
+  }
+
+  public static override __constructor(_instance: Plugin, _app: App, _manifest: PluginManifest): void {
+    // Spy hook.
   }
 
   public addCommand(command: Command): Command {
@@ -58,7 +63,6 @@ export abstract class Plugin extends Component {
   }
 
   public onUserEnable(): void {
-    noop();
   }
 
   public registerExtensions(extensions: string[], viewType: string): void {
@@ -67,8 +71,8 @@ export abstract class Plugin extends Component {
     }
   }
 
-  public registerHoverLinkSource(_id: string, _info: HoverLinkSource): void {
-    noop();
+  public registerHoverLinkSource(id: string, info: HoverLinkSource): void {
+    this._hoverLinkSources.set(id, info);
   }
 
   public registerMarkdownCodeBlockProcessor(
@@ -78,7 +82,6 @@ export abstract class Plugin extends Component {
   ): MarkdownPostProcessor {
     this._markdownCodeBlockProcessors.set(language, handler);
     const processor: MarkdownPostProcessor = (_el: HTMLElement, _ctx: MarkdownPostProcessorContext): void => {
-      noop();
     };
     this._markdownPostProcessors.push(processor);
     return processor;

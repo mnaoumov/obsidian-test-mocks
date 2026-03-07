@@ -26,7 +26,7 @@ export type { CachedMetadata } from 'obsidian';
 export { ColorComponent } from './ColorComponent.ts';
 export type { Command } from 'obsidian';
 export { Component } from './Component.ts';
-export { DataAdapter } from './DataAdapter.ts';
+export type { DataAdapter } from 'obsidian';
 export type { DataWriteOptions } from 'obsidian';
 export { DateValue } from './DateValue.ts';
 export { debounce } from './debounce.ts';

@@ -2,10 +2,6 @@ import type { ViewStateResult } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
-import {
-  noop,
-  noopAsync
-} from '../internal/Noop.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -16,6 +12,11 @@ export abstract class FileView extends ItemView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
+    FileView.__constructor(this, leaf);
+  }
+
+  public static override __constructor(_instance: FileView, _leaf: WorkspaceLeaf): void {
+    // Spy hook.
   }
 
   public canAcceptExtension(_extension: string): boolean {
@@ -23,30 +24,26 @@ export abstract class FileView extends ItemView {
   }
 
   public getDisplayText(): string {
-    return '';
+    return this.file?.basename ?? '';
   }
 
   public override getState(): Record<string, unknown> {
-    return {};
+    return { ...super.getState() as Record<string, unknown> };
   }
 
   public async onLoadFile(_file: TFile): Promise<void> {
-    await noopAsync();
   }
 
   public override onload(): void {
-    noop();
   }
 
   public async onRename(_file: TFile): Promise<void> {
-    await noopAsync();
   }
 
   public async onUnloadFile(_file: TFile): Promise<void> {
-    await noopAsync();
   }
 
-  public override async setState(_state: unknown, _result: ViewStateResult): Promise<void> {
-    await noopAsync();
+  public override async setState(state: unknown, result: ViewStateResult): Promise<void> {
+    await super.setState(state, result);
   }
 }

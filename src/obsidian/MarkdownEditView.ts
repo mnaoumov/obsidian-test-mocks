@@ -1,26 +1,24 @@
 import type { HoverPopover } from 'obsidian';
 
-import { noop } from '../internal/Noop.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
 
 class MockEditor extends Editor {}
 
 export class MarkdownEditView {
-  public app: App = new App();
+  public app: App = App.__create();
   public editor: Editor = new MockEditor();
   public hoverPopover: HoverPopover | null = null;
 
   public applyScroll(_scroll: number): void {
-    noop();
   }
 
   public clear(): void {
-    noop();
+    this.editor.setValue('');
   }
 
   public get(): string {
-    return '';
+    return this.editor.getValue();
   }
 
   public getScroll(): number {
@@ -28,10 +26,10 @@ export class MarkdownEditView {
   }
 
   public getSelection(): string {
-    return '';
+    return this.editor.getSelection();
   }
 
-  public set(_data: string, _clear: boolean): void {
-    noop();
+  public set(data: string, _clear: boolean): void {
+    this.editor.setValue(data);
   }
 }

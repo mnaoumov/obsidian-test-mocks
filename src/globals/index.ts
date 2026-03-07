@@ -12,6 +12,8 @@ import * as ObjectStatic from './Object.ts';
 import * as SVGElementPrototype from './SVGElement.prototype.ts';
 import * as StringStatic from './String.ts';
 import * as StringPrototype from './String.prototype.ts';
+import { castTo } from '../internal/Cast.ts';
+import type { ObsidianGlobal } from '../internal/Types.ts';
 import { assertGenericObject } from '../internal/TypeGuards.ts';
 
 function defineValue(
@@ -222,14 +224,11 @@ export function mockObsidianDeclareGlobal(): void {
 
   // Mirror global helpers onto `window` for browser-like code paths.
   if (hasDom()) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Dynamic access for polyfill.
-    defineValueIfMissing(window, 'sleep', (globalThis as any).sleep);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Dynamic access for polyfill.
-    defineValueIfMissing(window, 'nextFrame', (globalThis as any).nextFrame);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Dynamic access for polyfill.
-    defineValueIfMissing(window, 'activeWindow', (globalThis as any).activeWindow);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Dynamic access for polyfill.
-    defineValueIfMissing(window, 'activeDocument', (globalThis as any).activeDocument);
+    const obsidianGlobal = castTo<ObsidianGlobal>(globalThis);
+    defineValueIfMissing(window, 'sleep', obsidianGlobal.sleep);
+    defineValueIfMissing(window, 'nextFrame', obsidianGlobal.nextFrame);
+    defineValueIfMissing(window, 'activeWindow', obsidianGlobal.activeWindow);
+    defineValueIfMissing(window, 'activeDocument', obsidianGlobal.activeDocument);
   }
 }
 

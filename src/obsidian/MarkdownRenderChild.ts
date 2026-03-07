@@ -6,5 +6,10 @@ export class MarkdownRenderChild extends Component {
   public constructor(containerEl: HTMLElement) {
     super();
     this.containerEl = containerEl;
+    MarkdownRenderChild.__constructor(this, containerEl);
+  }
+
+  public static override __constructor(_instance: MarkdownRenderChild, _containerEl: HTMLElement): void {
+    // Spy hook.
   }
 }

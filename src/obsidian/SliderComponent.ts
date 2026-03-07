@@ -1,4 +1,3 @@
-import { noop } from '../internal/Noop.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class SliderComponent extends ValueComponent<number> {
@@ -8,6 +7,10 @@ export class SliderComponent extends ValueComponent<number> {
     return this.sliderEl;
   }
 
+  private _max = 100;
+  private _min = 0;
+  private _onChange: ((value: number) => unknown) | null = null;
+  private _step: 'any' | number = 1;
   private _value = 0;
 
   public constructor(_containerEl: HTMLElement) {
@@ -15,6 +18,11 @@ export class SliderComponent extends ValueComponent<number> {
     super();
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
+    SliderComponent.__constructor(this, _containerEl);
+  }
+
+  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+    // Spy hook.
   }
 
   public override getValue(): number {
@@ -22,10 +30,11 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public getValuePretty(): string {
-    return '';
+    return String(this._value);
   }
 
-  public onChange(_callback: (value: number) => unknown): this {
+  public onChange(callback: (value: number) => unknown): this {
+    this._onChange = callback;
     return this;
   }
 
@@ -37,16 +46,22 @@ export class SliderComponent extends ValueComponent<number> {
     return this;
   }
 
-  public setLimits(_min: null | number, _max: null | number, _step: 'any' | number): this {
+  public setLimits(min: null | number, max: null | number, step: 'any' | number): this {
+    this._min = min ?? 0;
+    this._max = max ?? 100;
+    this._step = step;
+    this.sliderEl.setAttribute('min', String(this._min));
+    this.sliderEl.setAttribute('max', String(this._max));
+    this.sliderEl.setAttribute('step', String(this._step));
     return this;
   }
 
   public override setValue(value: number): this {
     this._value = value;
+    this._onChange?.(value);
     return this;
   }
 
   public showTooltip(): void {
-    noop();
   }
 }

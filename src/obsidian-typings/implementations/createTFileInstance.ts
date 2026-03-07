@@ -15,8 +15,7 @@ export function createTFileInstance(app: App, path: string): TFile {
     return file;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Mock implementation requires deprecated constructor.
-  const mockFile = new MockTFile(castTo<MockVault>(app.vault), path);
+  const mockFile = MockTFile.__create(castTo<MockVault>(app.vault), path);
   mockFile.parent = castTo(createTFolderInstance(app, parentFolderPath(path)));
   mockFile.deleted = true;
   return castTo<TFile>(mockFile);

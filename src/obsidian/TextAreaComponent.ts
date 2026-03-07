@@ -1,28 +1,14 @@
+import type { ValueComponent } from './ValueComponent.ts';
+
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement> {
-  private changeCallback?: () => void;
-
   public constructor(_containerEl: HTMLElement) {
     super(createEl('textarea'));
+    TextAreaComponent.__constructor(this, _containerEl);
   }
 
-  public override onChange(cb: (value: string) => void): this {
-    this.changeCallback = (): void => {
-      cb(this.getValue());
-    };
-    return this;
-  }
-
-  public override setValue(value: string): this {
-    super.setValue(value);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Accessing mock-only @deprecated inputEl.
-    this.inputEl.value = value;
-    return this;
-  }
-
-  /** @deprecated Mock-only. Triggers the registered change callback. Not part of the Obsidian API. */
-  public simulateChange(): void {
-    this.changeCallback?.();
+  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+    // Spy hook.
   }
 }

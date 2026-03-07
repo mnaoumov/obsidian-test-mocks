@@ -16,7 +16,7 @@ function getParentDir(path: string): string {
   return segments.join('/');
 }
 
-export class DataAdapter {
+export class InMemoryAdapter {
   public basePath = '/mock-vault';
   public insensitive = false;
 
@@ -24,6 +24,10 @@ export class DataAdapter {
   private directories = new Set<string>(['']);
   private fileMeta = new Map<string, FileMeta>();
   private textFiles = new Map<string, string>();
+
+  protected constructor() {
+    // Do nothing.
+  }
 
   public async append(normalizedPath: string, data: string, _options?: DataWriteOptions): Promise<void> {
     const existing = this.textFiles.get(normalizedPath) ?? '';

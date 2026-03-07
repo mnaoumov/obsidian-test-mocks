@@ -9,12 +9,19 @@ export class TFile extends TAbstractFile {
   public extension: string;
   public stat: FileStats = { ctime: 0, mtime: 0, size: 0 };
 
-  /** @deprecated Mock-only constructor. TFile has no public constructor in the Obsidian API. */
-  public constructor(vault: Vault, path: string) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated TAbstractFile constructor.
+  public static __create(vault: Vault, path: string): TFile {
+    return new TFile(vault, path);
+  }
+
+  public static override __constructor(_instance: TFile, _vault: Vault, _path: string): void {
+    // Spy hook.
+  }
+
+  protected constructor(vault: Vault, path: string) {
     super(vault, path);
     const dotIndex = this.name.lastIndexOf('.');
     this.extension = dotIndex >= 0 ? this.name.slice(dotIndex + 1) : '';
     this.basename = dotIndex >= 0 ? this.name.slice(0, dotIndex) : this.name;
+    TFile.__constructor(this, vault, path);
   }
 }

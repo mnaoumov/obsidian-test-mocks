@@ -1,13 +1,13 @@
 import type { MarkdownPostProcessor } from 'obsidian';
 
-import { noop } from '../internal/Noop.ts';
-
 export class MarkdownPreviewRenderer {
-  public static registerPostProcessor(_postProcessor: MarkdownPostProcessor, _sortOrder?: number): void {
-    noop();
+  private static _postProcessors: MarkdownPostProcessor[] = [];
+
+  public static registerPostProcessor(postProcessor: MarkdownPostProcessor, _sortOrder?: number): void {
+    MarkdownPreviewRenderer._postProcessors.push(postProcessor);
   }
 
-  public static unregisterPostProcessor(_postProcessor: MarkdownPostProcessor): void {
-    noop();
+  public static unregisterPostProcessor(postProcessor: MarkdownPostProcessor): void {
+    MarkdownPreviewRenderer._postProcessors = MarkdownPreviewRenderer._postProcessors.filter((p) => p !== postProcessor);
   }
 }

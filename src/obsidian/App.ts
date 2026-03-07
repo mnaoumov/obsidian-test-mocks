@@ -27,18 +27,27 @@ export interface MockFileEntry {
 }
 
 export class App {
-  public fileManager = new FileManager(this);
-  public keymap = new Keymap();
+  public fileManager = FileManager.__create(this);
+  public keymap = Keymap.__create();
   public lastEvent: null | UserEvent = null;
-  public metadataCache = new MetadataCache();
-  public scope = new Scope();
-  public vault = new Vault();
-  public workspace = new Workspace();
+  public metadataCache = MetadataCache.__create();
+  public scope = Scope.__create();
+  public vault = Vault.__create();
+  public workspace = Workspace.__create();
 
   private readonly _localStorage = new Map<string, unknown>();
 
-  public constructor() {
+  public static __create(): App {
+    return new App();
+  }
+
+  public static __constructor(_instance: App): void {
+    // Spy hook.
+  }
+
+  protected constructor() {
     this.metadataCache.app = this;
+    App.__constructor(this);
   }
 
   public isDarkMode(): boolean {
@@ -55,18 +64,16 @@ export class App {
 }
 
 export function createMockApp(params: MockAppParams = {}): ObsidianApp {
-  const app = new App();
+  const app = App.__create();
 
   for (const folderPath of params.folders ?? []) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Creating mock file system entries.
-    const folder = new TFolder(app.vault, folderPath);
+    const folder = TFolder.__create(app.vault, folderPath);
     setVaultAbstractFile(app.vault, folderPath, folder);
     app.vault.adapter.mkdir(folderPath);
   }
 
   for (const fileOpt of params.files ?? []) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Creating mock file system entries.
-    const file = new TFile(app.vault, fileOpt.path);
+    const file = TFile.__create(app.vault, fileOpt.path);
     setVaultAbstractFile(app.vault, fileOpt.path, file);
     const content = fileOpt.content ?? '';
     app.vault.adapter.write(fileOpt.path, content);

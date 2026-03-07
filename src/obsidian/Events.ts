@@ -1,8 +1,20 @@
 import type { EventRef } from 'obsidian';
-import type { EventsEntry } from 'obsidian-typings';
+import type { Events as ObsidianEvents } from 'obsidian';
+
+import type { EventsEntry } from '../internal/Types.ts';
+
+import { castTo } from '../internal/Cast.ts';
 
 export class Events {
-  public _: Record<string, EventsEntry[]> = {};
+  private _: Record<string, EventsEntry[]> = {};
+
+  protected constructor() {
+    Events.__constructor(this);
+  }
+
+  public static __constructor(_instance: Events, ..._args: unknown[]): void {
+    // Spy hook.
+  }
 
   public off(name: string, callback: (...data: unknown[]) => unknown): void {
     const entries = this._[name];
@@ -20,8 +32,9 @@ export class Events {
     if (!this._[name]) {
       this._[name] = [];
     }
-    this._[name].push({ ctx, e: this, fn: callback, name });
-    return { e: this, fn: callback, name };
+    const self = castTo<ObsidianEvents>(this);
+    this._[name].push({ ctx, e: self, fn: callback, name });
+    return { e: self, fn: callback, name };
   }
 
   public trigger(name: string, ...data: unknown[]): void {

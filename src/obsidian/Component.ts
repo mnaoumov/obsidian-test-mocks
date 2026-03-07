@@ -7,6 +7,14 @@ export class Component {
   public _intervals: number[] = [];
   public _loaded = false;
 
+  protected constructor() {
+    Component.__constructor(this);
+  }
+
+  public static __constructor(_instance: Component, ..._args: unknown[]): void {
+    // Spy hook.
+  }
+
   public addChild<T extends Component>(component: T): T {
     this._children.push(component);
     if (this._loaded) {

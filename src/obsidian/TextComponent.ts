@@ -1,3 +1,5 @@
+import type { ValueComponent } from './ValueComponent.ts';
+
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -21,11 +23,15 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     } as HTMLInputElement['addEventListener'];
     TextComponent.instances.push(this);
     /* eslint-enable @typescript-eslint/no-deprecated -- Mock internals. */
+    TextComponent.__constructor(this, _containerEl);
   }
 
-  public override onChange(cb: (value: string) => void): this {
-    cb(this.getValue());
-    return this;
+  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+    // Spy hook.
+  }
+
+  public override onChange(cb: (value: string) => unknown): this {
+    return super.onChange(cb);
   }
 
   /** @deprecated Mock-only. Simulates a DOM event on inputEl by invoking registered listeners. Not part of the Obsidian API. */

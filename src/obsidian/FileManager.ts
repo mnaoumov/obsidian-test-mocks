@@ -11,8 +11,17 @@ import { stringifyYaml } from './stringifyYaml.ts';
 export class FileManager {
   public app: App;
 
-  public constructor(app: App) {
+  public static __create(app: App): FileManager {
+    return new FileManager(app);
+  }
+
+  public static __constructor(_instance: FileManager, _app: App): void {
+    // Spy hook.
+  }
+
+  protected constructor(app: App) {
     this.app = app;
+    FileManager.__constructor(this, app);
   }
 
   public generateMarkdownLink(file: TFile, _sourcePath: string, subpath?: string, alias?: string): string {

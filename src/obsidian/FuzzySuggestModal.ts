@@ -2,12 +2,18 @@ import type { FuzzyMatch } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { noop } from '../internal/Noop.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class FuzzySuggestModal<T> extends Modal {
+  public inputEl: HTMLInputElement = createEl('input');
+
   public constructor(app: App) {
     super(app);
+    FuzzySuggestModal.__constructor(this, app);
+  }
+
+  public static override __constructor(_instance: FuzzySuggestModal<unknown>, _app: App): void {
+    // Spy hook.
   }
 
   public getItems(): T[] {
@@ -19,7 +25,6 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   }
 
   public onChooseItem(_item: T, _evt: KeyboardEvent | MouseEvent): void {
-    noop();
   }
 
   public selectSuggestion(value: FuzzyMatch<T>, evt: KeyboardEvent | MouseEvent): void {
@@ -27,7 +32,7 @@ export abstract class FuzzySuggestModal<T> extends Modal {
     this.close();
   }
 
-  public setPlaceholder(_placeholder: string): void {
-    noop();
+  public setPlaceholder(placeholder: string): void {
+    this.inputEl.placeholder = placeholder;
   }
 }

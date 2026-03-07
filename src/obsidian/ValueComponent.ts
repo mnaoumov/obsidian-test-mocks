@@ -5,9 +5,13 @@ export abstract class ValueComponent<T> extends BaseComponent {
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- Declaring mock-only abstract getter.
   public abstract get inputEl(): HTMLElement;
 
-  /** @deprecated Mock-only constructor. ValueComponent has no public constructor in the Obsidian API. */
-  public constructor() {
+  protected constructor() {
     super();
+    ValueComponent.__constructor(this);
+  }
+
+  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+    // Spy hook.
   }
 
   public abstract getValue(): T;

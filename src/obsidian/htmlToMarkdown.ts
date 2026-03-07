@@ -1,6 +1,6 @@
-export function htmlToMarkdown(_html: string | HTMLElement | Document | DocumentFragment): string {
-  if (typeof _html === 'string') {
-    return _html;
+export function htmlToMarkdown(html: string | HTMLElement | Document | DocumentFragment): string {
+  if (typeof html === 'string') {
+    return html;
   }
-  return _html.textContent ?? '';
+  return html.textContent ?? '';
 }

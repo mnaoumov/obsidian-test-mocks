@@ -2,17 +2,22 @@ import type { Instruction } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { noop } from '../internal/Noop.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class SuggestModal<T> extends Modal {
   public emptyStateText = 'No results found.';
   public inputEl: HTMLInputElement = createEl('input');
+  public instructions: Instruction[] = [];
   public limit = 100;
   public resultContainerEl: HTMLElement = createDiv();
 
   public constructor(app: App) {
     super(app);
+    SuggestModal.__constructor(this, app);
+  }
+
+  public static override __constructor(_instance: SuggestModal<unknown>, _app: App): void {
+    // Spy hook.
   }
 
   public override close(): void {
@@ -24,7 +29,6 @@ export abstract class SuggestModal<T> extends Modal {
   public abstract onChooseSuggestion(item: T, evt: KeyboardEvent | MouseEvent): void;
 
   public onNoSuggestion(): void {
-    noop();
   }
 
   public abstract renderSuggestion(value: T, el: HTMLElement): void;
@@ -34,11 +38,11 @@ export abstract class SuggestModal<T> extends Modal {
     this.close();
   }
 
-  public setInstructions(_instructions: Instruction[]): void {
-    noop();
+  public setInstructions(instructions: Instruction[]): void {
+    this.instructions = instructions;
   }
 
-  public setPlaceholder(_placeholder: string): void {
-    noop();
+  public setPlaceholder(placeholder: string): void {
+    this.inputEl.placeholder = placeholder;
   }
 }

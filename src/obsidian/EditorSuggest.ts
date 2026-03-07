@@ -9,7 +9,6 @@ import type {
 
 import type { App } from './App.ts';
 
-import { noop } from '../internal/Noop.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
@@ -18,6 +17,11 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public constructor(app: App) {
     super(app);
+    EditorSuggest.__constructor(this, app);
+  }
+
+  public static override __constructor(_instance: EditorSuggest<unknown>, _app: App): void {
+    // Spy hook.
   }
 
   public abstract override getSuggestions(context: EditorSuggestContext): T[] | Promise<T[]>;
@@ -30,6 +34,5 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public setInstructions(instructions: Instruction[]): void {
     this.instructions = instructions;
-    noop();
   }
 }

@@ -1,4 +1,4 @@
-import { iconRegistry } from './iconRegistry.ts';
+import { iconRegistry } from '../internal/IconRegistry.ts';
 
 export function getIcon(iconId: string): SVGSVGElement | null {
   const svgContent = iconRegistry.get(iconId);
