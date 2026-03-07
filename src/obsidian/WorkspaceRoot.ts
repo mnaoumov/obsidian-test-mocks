@@ -7,7 +7,7 @@ export class WorkspaceRoot {
   }
 
   public static __create(): WorkspaceRoot {
-    return Reflect.construct(WorkspaceRoot, []) as WorkspaceRoot;
+    return Reflect.construct(WorkspaceRoot as unknown as new () => WorkspaceRoot, []) as WorkspaceRoot;
   }
 
   public static __constructor(_instance: WorkspaceRoot, ..._args: unknown[]): void {

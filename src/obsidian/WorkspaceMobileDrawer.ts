@@ -11,7 +11,7 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
   }
 
   public static __create(): WorkspaceMobileDrawer {
-    return Reflect.construct(WorkspaceMobileDrawer, []) as WorkspaceMobileDrawer;
+    return Reflect.construct(WorkspaceMobileDrawer as unknown as new () => WorkspaceMobileDrawer, []) as WorkspaceMobileDrawer;
   }
 
   public static override __constructor(_instance: WorkspaceMobileDrawer, ..._args: unknown[]): void {

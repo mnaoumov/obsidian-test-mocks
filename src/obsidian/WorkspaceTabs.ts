@@ -9,7 +9,7 @@ export class WorkspaceTabs extends WorkspaceParent {
   }
 
   public static __create(): WorkspaceTabs {
-    return Reflect.construct(WorkspaceTabs, []) as WorkspaceTabs;
+    return Reflect.construct(WorkspaceTabs as unknown as new () => WorkspaceTabs, []) as WorkspaceTabs;
   }
 
   public static override __constructor(_instance: WorkspaceTabs, ..._args: unknown[]): void {
