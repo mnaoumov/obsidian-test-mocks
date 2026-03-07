@@ -153,6 +153,25 @@ app.internalPlugins = { manifests: {} };
 app.internalPlugins = { manifests: {} };
 ```
 
+## Overriding Exported Variables
+
+Some exports like `apiVersion` are plain strings, not functions. Since ES module bindings are read-only for consumers, use `vi.mock()` to override them:
+
+```typescript
+import { vi } from 'vitest';
+
+vi.mock('obsidian', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('obsidian')>()),
+  apiVersion: '1.8.0',
+}));
+
+import { apiVersion } from 'obsidian';
+
+it('uses the overridden apiVersion', () => {
+  expect(apiVersion).toBe('1.8.0');
+});
+```
+
 ## Design Principles
 
 - **Only `obsidian.d.ts`** — mocks expose exactly the public API, nothing extra
