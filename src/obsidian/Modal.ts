@@ -5,17 +5,22 @@ import { Scope } from './Scope.ts';
 
 export class Modal {
   public app: App;
-  public containerEl: HTMLElement = createDiv();
-  public contentEl: HTMLElement = createDiv();
-  public modalEl: HTMLElement = createDiv();
-  public scope = Scope.__create();
+  public containerEl: HTMLElement;
+  public contentEl: HTMLElement;
+  public modalEl: HTMLElement;
+  public scope: Scope;
   public shouldRestoreSelection = true;
-  public titleEl: HTMLElement = createDiv();
+  public titleEl: HTMLElement;
 
   private _closeCallback: (() => unknown) | null = null;
 
   public constructor(app: App) {
     this.app = app;
+    this.containerEl = createDiv();
+    this.contentEl = createDiv();
+    this.modalEl = createDiv();
+    this.scope = Scope.__create();
+    this.titleEl = createDiv();
     Modal.__constructor(this, app);
     return strictMock(this);
   }

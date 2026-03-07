@@ -31,13 +31,18 @@ import { ToggleComponent as MockToggleComponent } from './ToggleComponent.ts';
 
 export class Setting {
   public components: BaseComponent[] = [];
-  public controlEl: HTMLElement = createDiv();
-  public descEl: HTMLElement = createDiv();
-  public infoEl: HTMLElement = createDiv();
-  public nameEl: HTMLElement = createDiv();
-  public settingEl: HTMLElement = createDiv();
+  public controlEl: HTMLElement;
+  public descEl: HTMLElement;
+  public infoEl: HTMLElement;
+  public nameEl: HTMLElement;
+  public settingEl: HTMLElement;
 
   public constructor(containerEl: HTMLElement) {
+    this.controlEl = createDiv();
+    this.descEl = createDiv();
+    this.infoEl = createDiv();
+    this.nameEl = createDiv();
+    this.settingEl = createDiv();
     this.settingEl.appendChild(this.infoEl);
     this.infoEl.appendChild(this.nameEl);
     this.infoEl.appendChild(this.descEl);

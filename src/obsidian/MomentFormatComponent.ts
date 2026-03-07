@@ -5,10 +5,11 @@ import { TextComponent } from './TextComponent.ts';
 
 export class MomentFormatComponent extends TextComponent {
   public defaultFormat = '';
-  public sampleEl: HTMLElement = createDiv();
+  public sampleEl: HTMLElement;
 
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
+    this.sampleEl = createDiv();
     MomentFormatComponent.__constructor(this, containerEl);
     return strictMock(this);
   }

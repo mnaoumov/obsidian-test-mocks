@@ -17,17 +17,25 @@ class MockEditor extends Editor {}
 
 export class MarkdownView {
   public allowNoFile = false;
-  public app = App.__create();
-  public containerEl: HTMLElement = createDiv();
-  public contentEl: HTMLElement = createDiv();
+  public app: App;
+  public containerEl: HTMLElement;
+  public contentEl: HTMLElement;
   public data = '';
-  public editor = new MockEditor();
+  public editor: Editor;
   public file: null | TFile = null;
   public hoverPopover: HoverPopover | null = null;
   public icon: IconName = '';
-  public leaf = WorkspaceLeaf.__create();
+  public leaf: WorkspaceLeaf;
   public navigation = true;
   public scope = null;
+
+  public constructor() {
+    this.app = App.__create();
+    this.containerEl = createDiv();
+    this.contentEl = createDiv();
+    this.editor = new MockEditor();
+    this.leaf = WorkspaceLeaf.__create();
+  }
 
   private _children: Component[] = [];
   private _cleanups: Array<() => unknown> = [];

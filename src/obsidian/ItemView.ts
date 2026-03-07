@@ -5,10 +5,11 @@ import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 export abstract class ItemView extends View {
-  public contentEl: HTMLElement = createDiv();
+  public contentEl: HTMLElement;
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
+    this.contentEl = createDiv();
     ItemView.__constructor(this, leaf);
     return strictMock(this);
   }

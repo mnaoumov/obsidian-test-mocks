@@ -10,7 +10,7 @@ import { MenuItem } from './MenuItem.ts';
 
 export class Menu extends Component {
   public _items: MenuItem[] = [];
-  public dom: HTMLElement = createDiv();
+  public dom: HTMLElement;
 
   public static __create(): Menu {
     return new Menu();
@@ -22,6 +22,7 @@ export class Menu extends Component {
 
   protected constructor() {
     super();
+    this.dom = createDiv();
     Menu.__constructor(this);
     return strictMock(this);
   }

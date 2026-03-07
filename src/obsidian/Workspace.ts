@@ -29,12 +29,12 @@ export class Workspace extends Events {
   public activeEditor: MarkdownFileInfo | null = null;
   public activeLeaf: null | WorkspaceLeaf = null;
   public layoutReady = false;
-  public leftRibbon = WorkspaceRibbon.__create();
-  public leftSplit = WorkspaceSidedock.__create();
+  public leftRibbon: WorkspaceRibbon;
+  public leftSplit: WorkspaceSidedock;
   public requestSaveLayout = debounce(() => {});
-  public rightRibbon = WorkspaceRibbon.__create();
-  public rightSplit = WorkspaceSidedock.__create();
-  public rootSplit = WorkspaceRoot.__create();
+  public rightRibbon: WorkspaceRibbon;
+  public rightSplit: WorkspaceSidedock;
+  public rootSplit: WorkspaceRoot;
 
   public static __create(): Workspace {
     return new Workspace();
@@ -42,6 +42,11 @@ export class Workspace extends Events {
 
   protected constructor() {
     super();
+    this.leftRibbon = WorkspaceRibbon.__create();
+    this.leftSplit = WorkspaceSidedock.__create();
+    this.rightRibbon = WorkspaceRibbon.__create();
+    this.rightSplit = WorkspaceSidedock.__create();
+    this.rootSplit = WorkspaceRoot.__create();
     Workspace.__constructor(this);
     return strictMock(this);
   }

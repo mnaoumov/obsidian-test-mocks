@@ -7,21 +7,22 @@ import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 export class MetadataCache extends Events {
+  public _app: App;
   public _cache: Map<string, CachedMetadata> = new Map();
-  public _app: App | null = null;
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
-  public static __create(): MetadataCache {
-    return new MetadataCache();
+  public static __create(app: App): MetadataCache {
+    return new MetadataCache(app);
   }
 
   public static override __constructor(_instance: MetadataCache): void {
     // Spy hook.
   }
 
-  protected constructor() {
+  protected constructor(app: App) {
     super();
+    this._app = app;
     MetadataCache.__constructor(this);
     return strictMock(this);
   }
@@ -42,9 +43,6 @@ export class MetadataCache extends Events {
   }
 
   public getFirstLinkpathDest(linkpath: string, _sourcePath: string): null | TFile {
-    if (!this._app) {
-      return null;
-    }
     const found = this._app.vault.getFileByPath(linkpath);
     if (found) {
       return found;

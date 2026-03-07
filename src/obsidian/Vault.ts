@@ -12,7 +12,7 @@ import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
 
 export class Vault extends Events {
-  public adapter: DataAdapter = FileSystemAdapter.__create() as unknown as DataAdapter;
+  public adapter: DataAdapter;
   // eslint-disable-next-line obsidianmd/hardcoded-config-path -- Default value for testing.
   public configDir = '.obsidian';
   public _fileMap: Record<string, TAbstractFile> = {};
@@ -27,6 +27,7 @@ export class Vault extends Events {
 
   protected constructor() {
     super();
+    this.adapter = FileSystemAdapter.__create() as unknown as DataAdapter;
     const root = TFolder.__create(this, '/');
     this._fileMap['/'] = root;
     root.deleted = false;

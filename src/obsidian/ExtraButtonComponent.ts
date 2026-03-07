@@ -2,11 +2,12 @@ import { strictMock } from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ExtraButtonComponent extends BaseComponent {
-  public extraSettingsEl: HTMLElement = createDiv();
+  public extraSettingsEl: HTMLElement;
   private clickHandler?: () => unknown;
 
   public constructor(_containerEl: HTMLElement) {
     super();
+    this.extraSettingsEl = createDiv();
     ExtraButtonComponent.__constructor(this, _containerEl);
     return strictMock(this);
   }

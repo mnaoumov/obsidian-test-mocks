@@ -1,13 +1,16 @@
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class Notice {
-  public containerEl: HTMLElement = createDiv();
-  public messageEl: HTMLElement = createDiv();
-  public noticeEl: HTMLElement = createDiv();
+  public containerEl: HTMLElement;
+  public messageEl: HTMLElement;
+  public noticeEl: HTMLElement;
 
   public readonly duration: number = 0;
 
   public constructor(message: DocumentFragment | string, duration?: number) {
+    this.containerEl = createDiv();
+    this.messageEl = createDiv();
+    this.noticeEl = createDiv();
     if (typeof message === 'string') {
       this.messageEl.textContent = message;
     } else if (message instanceof DocumentFragment) {
