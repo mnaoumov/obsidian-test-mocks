@@ -20,10 +20,6 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
     return this.inputEl.value;
   }
 
-  public setLimit(_limit: number): this {
-    return this;
-  }
-
   public setValue(value: string): void {
     this.inputEl.value = value;
   }
