@@ -1,29 +1,3 @@
-import relativeLinksRule from 'markdownlint-rule-relative-links';
+import { config } from './scripts/markdownlint-cli2.config.ts';
 
-export const config = {
-  config: {
-    'MD013': false,
-    'MD024': {
-      siblings_only: true
-    },
-    'MD052': {
-      ignored_labels: [
-        '!note',
-        '!warning'
-      ],
-      shortcut_syntax: true
-    },
-    'relative-links': true
-  },
-  customRules: [
-    relativeLinksRule
-  ],
-  globs: [
-    '**/*.md'
-  ],
-  ignores: [
-    'node_modules/**',
-    '.git/**',
-    'dist/**'
-  ]
-};
+export { config };
