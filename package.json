@@ -87,6 +87,11 @@
     "obsidian": ">=1.0.0",
     "obsidian-typings": "*"
   },
+  "overrides": {
+    "@antfu/utils": "9.2.0",
+    "dompurify": "3.0.1",
+    "esbuild": "$esbuild"
+  },
   "devDependencies": {
     "@commitlint/cli": "latest",
     "@commitlint/config-conventional": "latest",
@@ -94,6 +99,7 @@
     "@eslint-community/eslint-plugin-eslint-comments": "latest",
     "@eslint/js": "latest",
     "@stylistic/eslint-plugin": "latest",
+    "@types/markdown-it": "latest",
     "@tsconfig/strictest": "latest",
     "@vitest/coverage-v8": "latest",
     "commitizen": "latest",
