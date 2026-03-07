@@ -1,6 +1,5 @@
 import type { IconName } from 'obsidian';
 
-import { noop } from '../internal/Noop.ts';
 import { Menu } from './Menu.ts';
 
 export class MenuItem {

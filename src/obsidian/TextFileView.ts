@@ -18,11 +18,11 @@ export abstract class TextFileView extends EditableFileView {
 
   public abstract getViewData(): string;
 
-  public async onLoadFile(_file: TFile): Promise<void> {
+  public override async onLoadFile(_file: TFile): Promise<void> {
     await noopAsync();
   }
 
-  public async onUnloadFile(_file: TFile): Promise<void> {
+  public override async onUnloadFile(_file: TFile): Promise<void> {
     await noopAsync();
   }
 

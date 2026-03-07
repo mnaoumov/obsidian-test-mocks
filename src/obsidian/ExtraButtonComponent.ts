@@ -1,4 +1,3 @@
-import { noop } from '../internal/Noop.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ExtraButtonComponent extends BaseComponent {
