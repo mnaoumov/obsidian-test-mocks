@@ -6,10 +6,11 @@ import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
 export class MarkdownPreviewView extends MarkdownRenderer {
   private _data = '';
-  public override containerEl: HTMLElement = createDiv();
+  public override containerEl: HTMLElement;
 
   public constructor() {
     super(createDiv());
+    this.containerEl = createDiv();
     MarkdownPreviewView.__constructor(this);
     return strictMock(this);
   }

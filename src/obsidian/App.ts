@@ -9,13 +9,13 @@ import { Vault } from './Vault.ts';
 import { Workspace } from './Workspace.ts';
 
 export class App {
-  public fileManager = FileManager.__create(this);
-  public keymap = Keymap.__create();
+  public fileManager: FileManager;
+  public keymap: Keymap;
   public lastEvent: null | UserEvent = null;
-  public metadataCache = MetadataCache.__create();
-  public scope = Scope.__create();
-  public vault = Vault.__create();
-  public workspace = Workspace.__create();
+  public metadataCache: MetadataCache;
+  public scope: Scope;
+  public vault: Vault;
+  public workspace: Workspace;
 
   private readonly _localStorage = new Map<string, unknown>();
 
@@ -28,7 +28,12 @@ export class App {
   }
 
   protected constructor() {
-    this.metadataCache._app = this;
+    this.vault = Vault.__create();
+    this.fileManager = FileManager.__create(this);
+    this.keymap = Keymap.__create();
+    this.metadataCache = MetadataCache.__create(this);
+    this.scope = Scope.__create();
+    this.workspace = Workspace.__create();
     App.__constructor(this);
     return strictMock(this);
   }

@@ -6,11 +6,12 @@ import { BaseComponent } from './BaseComponent.ts';
 export class ButtonComponent extends BaseComponent {
   /** @deprecated Mock-only. Tracks all created instances for test assertions. Not part of the Obsidian API. */
   public static instances: ButtonComponent[] = [];
-  public buttonEl: HTMLButtonElement = createEl('button');
+  public buttonEl: HTMLButtonElement;
   private clickHandler?: (evt: MouseEvent) => unknown;
 
   public constructor(_containerEl: HTMLElement) {
     super();
+    this.buttonEl = createEl('button');
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Initializing mock-only tracking field.
     ButtonComponent.instances.push(this);
     ButtonComponent.__constructor(this, _containerEl);

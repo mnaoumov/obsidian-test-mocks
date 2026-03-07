@@ -6,10 +6,11 @@ import { strictMock } from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class FuzzySuggestModal<T> extends Modal {
-  public inputEl: HTMLInputElement = createEl('input');
+  public inputEl: HTMLInputElement;
 
   public constructor(app: App) {
     super(app);
+    this.inputEl = createEl('input');
     FuzzySuggestModal.__constructor(this, app);
     return strictMock(this);
   }

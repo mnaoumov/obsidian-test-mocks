@@ -7,13 +7,15 @@ import { Modal } from './Modal.ts';
 
 export abstract class SuggestModal<T> extends Modal {
   public emptyStateText = 'No results found.';
-  public inputEl: HTMLInputElement = createEl('input');
+  public inputEl: HTMLInputElement;
   public instructions: Instruction[] = [];
   public limit = 100;
-  public resultContainerEl: HTMLElement = createDiv();
+  public resultContainerEl: HTMLElement;
 
   public constructor(app: App) {
     super(app);
+    this.inputEl = createEl('input');
+    this.resultContainerEl = createDiv();
     SuggestModal.__constructor(this, app);
     return strictMock(this);
   }

@@ -4,10 +4,11 @@ import { strictMock } from '../internal/StrictMock.ts';
 
 export abstract class SettingTab {
   public app: App;
-  public containerEl: HTMLDivElement = createDiv();
+  public containerEl: HTMLDivElement;
 
   public constructor(app: App) {
     this.app = app;
+    this.containerEl = createDiv();
     SettingTab.__constructor(this, app);
     return strictMock(this);
   }

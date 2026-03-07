@@ -11,16 +11,19 @@ import { Component } from './Component.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 export abstract class View extends Component {
-  public app: App = App.__create();
-  public containerEl: HTMLElement = createDiv();
+  public app: App;
+  public containerEl: HTMLElement;
   public icon: IconName = '';
-  public leaf: WorkspaceLeaf = WorkspaceLeaf.__create();
+  public leaf: WorkspaceLeaf;
   public navigation = true;
   public scope: Scope | null = null;
 
-  public constructor(_leaf: WorkspaceLeaf) {
+  public constructor(leaf: WorkspaceLeaf) {
     super();
-    View.__constructor(this, _leaf);
+    this.app = App.__create();
+    this.containerEl = createDiv();
+    this.leaf = leaf;
+    View.__constructor(this, leaf);
     return strictMock(this);
   }
 

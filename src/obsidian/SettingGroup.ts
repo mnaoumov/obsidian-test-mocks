@@ -11,9 +11,10 @@ import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
 
 export class SettingGroup {
-  public listEl: HTMLElement = createDiv();
+  public listEl: HTMLElement;
 
   public constructor(containerEl: HTMLElement) {
+    this.listEl = createDiv();
     containerEl.appendChild(this.listEl);
     SettingGroup.__constructor(this, containerEl);
     return strictMock(this);
