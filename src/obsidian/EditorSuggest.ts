@@ -20,7 +20,7 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
     super(app);
   }
 
-  public abstract getSuggestions(context: EditorSuggestContext): T[] | Promise<T[]>;
+  public abstract override getSuggestions(context: EditorSuggestContext): T[] | Promise<T[]>;
 
   public abstract onTrigger(cursor: EditorPosition, editor: Editor, file: TFile | null): EditorSuggestTriggerInfo | null;
 

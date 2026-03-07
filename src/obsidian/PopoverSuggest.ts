@@ -16,7 +16,7 @@ export abstract class PopoverSuggest<T> {
     noop();
   }
 
-  public abstract getSuggestions(query: string): T[] | Promise<T[]>;
+  protected abstract getSuggestions(query: unknown): T[] | Promise<T[]>;
 
   public open(): void {
     noop();

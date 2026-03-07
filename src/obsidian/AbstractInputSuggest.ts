@@ -5,8 +5,6 @@ import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   private inputEl: HTMLInputElement | HTMLTextAreaElement;
-  private limit: number | undefined;
-
   public constructor(app: App, inputEl: HTMLInputElement | HTMLTextAreaElement) {
     super(app);
     this.inputEl = inputEl;
@@ -17,7 +15,6 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   }
 
   public setLimit(_limit: number): this {
-    this.limit = _limit;
     return this;
   }
 
