@@ -1,0 +1,28 @@
+{
+  "extends": "@tsconfig/strictest/tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "lib": [
+      "DOM",
+      "ES2024"
+    ],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "skipLibCheck": false,
+    "target": "ES2024",
+    "types": [
+      "node",
+      "obsidian-typings"
+    ],
+    "verbatimModuleSyntax": true
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./vitest.config.ts"
+  ]
+}

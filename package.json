@@ -1,0 +1,94 @@
+{
+  "name": "obsidian-test-mocks",
+  "version": "0.1.0",
+  "description": "Comprehensive test mocks for the Obsidian API and obsidian-typings",
+  "keywords": [
+    "obsidian",
+    "testing",
+    "mocks",
+    "vitest",
+    "jest"
+  ],
+  "homepage": "https://github.com/mnaoumov/obsidian-test-mocks#readme",
+  "bugs": {
+    "url": "https://github.com/mnaoumov/obsidian-test-mocks/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mnaoumov/obsidian-test-mocks.git"
+  },
+  "license": "MIT",
+  "author": "Michael Naumov",
+  "type": "module",
+  "exports": {
+    "./obsidian": {
+      "import": {
+        "types": "./dist/lib/esm/obsidian/index.d.mts",
+        "default": "./dist/lib/esm/obsidian/index.mjs"
+      },
+      "require": {
+        "types": "./dist/lib/cjs/obsidian/index.d.cts",
+        "default": "./dist/lib/cjs/obsidian/index.cjs"
+      }
+    },
+    "./obsidian-typings/implementations": {
+      "import": {
+        "types": "./dist/lib/esm/obsidian-typings/implementations/index.d.mts",
+        "default": "./dist/lib/esm/obsidian-typings/implementations/index.mjs"
+      },
+      "require": {
+        "types": "./dist/lib/cjs/obsidian-typings/implementations/index.d.cts",
+        "default": "./dist/lib/cjs/obsidian-typings/implementations/index.cjs"
+      }
+    },
+    "./globals": {
+      "import": {
+        "types": "./dist/lib/esm/globals/index.d.mts",
+        "default": "./dist/lib/esm/globals/index.mjs"
+      },
+      "require": {
+        "types": "./dist/lib/cjs/globals/index.d.cts",
+        "default": "./dist/lib/cjs/globals/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist/",
+    "!dist/*.tgz",
+    "LICENSE",
+    "README.md",
+    "**/package.json"
+  ],
+  "scripts": {
+    "build": "npm-run-all build:clean build:compile:typescript build:types build:lib",
+    "build:clean": "rimraf dist",
+    "build:compile:typescript": "tsc --noEmit",
+    "build:lib": "node scripts/build-lib.mjs",
+    "build:types": "tsc --project tsconfig.build.json",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "moment": ">=2.29.0",
+    "yaml": ">=2.0.0"
+  },
+  "peerDependencies": {
+    "obsidian": ">=1.0.0",
+    "obsidian-typings": "*"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "latest",
+    "@vitest/coverage-v8": "latest",
+    "esbuild": "latest",
+    "jsdom": "latest",
+    "npm-run-all2": "latest",
+    "obsidian": "latest",
+    "obsidian-typings": "obsidian-public-latest",
+    "rimraf": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
