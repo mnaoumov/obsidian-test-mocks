@@ -17,6 +17,7 @@ Peer dependencies: `obsidian`, `obsidian-typings`
 | `obsidian-test-mocks/obsidian` | Mocks for every class/function in `obsidian.d.ts` |
 | `obsidian-test-mocks/obsidian-typings/implementations` | Mocks for `obsidian-typings` implementation helpers |
 | `obsidian-test-mocks/globals` | Prototype extensions (`HTMLElement`, `Document`, `Array`, `String`, etc.) |
+| `obsidian-test-mocks/helpers` | Test helpers (`createMockApp`, etc.) — not part of the Obsidian API |
 
 ## Usage with Vitest
 
@@ -67,7 +68,7 @@ expect(spy).toHaveBeenCalledTimes(2);
 Use `createMockApp()` for a fully wired `App` instance. Parent folders are created automatically from file paths:
 
 ```typescript
-import { createMockApp } from 'obsidian';
+import { createMockApp } from 'obsidian-test-mocks/helpers';
 
 const app = await createMockApp({
   files: [
