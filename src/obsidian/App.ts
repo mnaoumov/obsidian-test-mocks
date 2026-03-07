@@ -1,5 +1,9 @@
-import type { UserEvent } from 'obsidian';
+import type {
+  App as ObsidianApp,
+  UserEvent
+} from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { FileManager } from './FileManager.ts';
 import { Keymap } from './Keymap.ts';
 import { MetadataCache } from './MetadataCache.ts';
@@ -54,7 +58,7 @@ export class App {
   }
 }
 
-export async function createMockApp(params: MockAppParams = {}): Promise<App> {
+export async function createMockApp(params: MockAppParams = {}): Promise<ObsidianApp> {
   const app = App.__create();
 
   for (const folderPath of params.folders ?? []) {
@@ -65,5 +69,5 @@ export async function createMockApp(params: MockAppParams = {}): Promise<App> {
     await app.vault.create(fileOpt.path, fileOpt.content ?? '');
   }
 
-  return app;
+  return castTo<ObsidianApp>(app);
 }
