@@ -57,6 +57,10 @@
 - `verbatimModuleSyntax: true` — use explicit `import type` for type-only imports
 - `allowImportingTsExtensions: true` — always use `.ts` extension in imports
 
+## Commits
+
+- Commit after each logical step. Do not batch unrelated changes into a single commit.
+
 ## Code Conventions
 
 - Files: PascalCase (e.g., `App.ts`, `Vault.ts`, `InMemoryAdapter.ts`)
