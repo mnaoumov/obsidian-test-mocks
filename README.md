@@ -93,14 +93,21 @@ The strict proxy is fully override-friendly. Assign a value and subsequent reads
 // Override a method
 app.vault.read = vi.fn().mockResolvedValue('custom content');
 
-// Add an unimplemented property
-(app as any).internalPlugins = { manifests: {} };
-
 // Spy on an existing method
 vi.spyOn(app.vault, 'read').mockResolvedValue('spied content');
 
 // Batch-extend with Object.assign
 Object.assign(app, { commands: { addCommand: vi.fn() } });
+```
+
+To access properties beyond `obsidian.d.ts` (such as `app.internalPlugins`), use [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings) for full type coverage, or augment the types manually:
+
+```typescript
+declare module 'obsidian' {
+  interface App {
+    internalPlugins: { manifests: Record<string, unknown> };
+  }
+}
 ```
 
 ## Design Principles
