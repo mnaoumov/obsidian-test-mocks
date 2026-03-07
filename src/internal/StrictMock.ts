@@ -15,7 +15,7 @@ const strictMockHandler: ProxyHandler<object> = {
     }
 
     const name = target.constructor.name;
-    throw new Error(`Property "${prop}" is not mocked in ${name}`);
+    throw new Error(`Property "${prop}" is not mocked in ${name}. To override, assign a value first: mock.${prop} = ...`);
   }
 };
 
