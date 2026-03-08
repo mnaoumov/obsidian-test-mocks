@@ -1,7 +1,10 @@
-import * as ArrayStatic from './Array.ts';
+import { castTo } from '../internal/Cast.ts';
+import { assertGenericObject } from '../internal/TypeGuards.ts';
+import type { ObsidianGlobal } from '../internal/Types.ts';
 import * as ArrayPrototype from './Array.prototype.ts';
-import * as DocumentFragmentPrototype from './DocumentFragment.prototype.ts';
+import * as ArrayStatic from './Array.ts';
 import * as DocumentPrototype from './Document.prototype.ts';
+import * as DocumentFragmentPrototype from './DocumentFragment.prototype.ts';
 import * as ElementPrototype from './Element.prototype.ts';
 import * as Globals from './functions.ts';
 import * as HTMLElementPrototype from './HTMLElement.prototype.ts';
@@ -9,12 +12,9 @@ import * as MathStatic from './Math.ts';
 import * as NodePrototype from './Node.prototype.ts';
 import * as NumberStatic from './Number.ts';
 import * as ObjectStatic from './Object.ts';
-import * as SVGElementPrototype from './SVGElement.prototype.ts';
-import * as StringStatic from './String.ts';
 import * as StringPrototype from './String.prototype.ts';
-import { castTo } from '../internal/Cast.ts';
-import type { ObsidianGlobal } from '../internal/Types.ts';
-import { assertGenericObject } from '../internal/TypeGuards.ts';
+import * as StringStatic from './String.ts';
+import * as SVGElementPrototype from './SVGElement.prototype.ts';
 
 function defineValue(
   target: object,
@@ -234,4 +234,3 @@ export function mockObsidianDeclareGlobal(): void {
 
 // Apply mocks on import (Vitest setupFiles entrypoint).
 mockObsidianDeclareGlobal();
-
