@@ -14,7 +14,7 @@ export class FileSystemAdapter extends InMemoryAdapter {
     // Spy hook.
   }
 
-  public static create__(basePath = '/mock-vault'): FileSystemAdapter {
+  public static create__(basePath: string): FileSystemAdapter {
     return new FileSystemAdapter(basePath);
   }
 

@@ -7,7 +7,6 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 
 import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
-import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
 
@@ -32,8 +31,8 @@ export class Vault extends Events {
     // Spy hook.
   }
 
-  public static create__(adapter?: DataAdapter): Vault {
-    return new Vault(adapter ?? FileSystemAdapter.create__() as unknown as DataAdapter);
+  public static create__(adapter: DataAdapter): Vault {
+    return new Vault(adapter);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {

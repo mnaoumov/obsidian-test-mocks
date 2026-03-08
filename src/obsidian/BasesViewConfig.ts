@@ -16,18 +16,18 @@ export class BasesViewConfig {
   private order: BasesPropertyId[] = [];
   private sort: BasesSortConfig[] = [];
 
-  protected constructor(_query?: string, _type?: string, name = '') {
+  protected constructor(_query: string, _type: string, name: string) {
     this.name = name;
     const mock = strictMock(this);
     BasesViewConfig.constructor__(mock, _query, _type, name);
     return mock;
   }
 
-  public static constructor__(_instance: BasesViewConfig, _query?: string, _type?: string, _name?: string): void {
+  public static constructor__(_instance: BasesViewConfig, _query: string, _type: string, _name: string): void {
     // Spy hook.
   }
 
-  public static create__(_query?: string, _type?: string, name = ''): BasesViewConfig {
+  public static create__(_query: string, _type: string, name: string): BasesViewConfig {
     return new BasesViewConfig(_query, _type, name);
   }
 

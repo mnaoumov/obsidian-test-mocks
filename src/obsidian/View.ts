@@ -1,4 +1,5 @@
 import type {
+  DataAdapter,
   IconName,
   Menu,
   Scope,
@@ -8,6 +9,7 @@ import type {
 import { strictMock } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
+import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 export abstract class View extends Component {
@@ -16,11 +18,15 @@ export abstract class View extends Component {
   public icon: IconName = '';
   public leaf: WorkspaceLeaf;
   public navigation = true;
-  public scope: Scope | null = null;
+  public scope: null | Scope = null;
+
+  private _ephemeralState: unknown = {};
+
+  private _state: unknown = {};
 
   public constructor(leaf: WorkspaceLeaf) {
     super();
-    this.app = App.create__();
+    this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapter, '');
     this.containerEl = createDiv();
     this.leaf = leaf;
     const mock = strictMock(this);
@@ -48,12 +54,6 @@ export abstract class View extends Component {
 
   public abstract getViewType(): string;
 
-  protected async onClose(): Promise<void> {
-  }
-
-  protected async onOpen(): Promise<void> {
-  }
-
   public onPaneMenu(_menu: Menu, _source: string): void {
   }
 
@@ -68,6 +68,9 @@ export abstract class View extends Component {
     this._state = state;
   }
 
-  private _ephemeralState: unknown = {};
-  private _state: unknown = {};
+  protected async onClose(): Promise<void> {
+  }
+
+  protected async onOpen(): Promise<void> {
+  }
 }

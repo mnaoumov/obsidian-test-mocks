@@ -12,13 +12,7 @@ export class Menu extends Component {
   public _items: MenuItem[] = [];
   public dom: HTMLElement;
 
-  public static create__(): Menu {
-    return new Menu();
-  }
-
-  public static override constructor__(_instance: Menu): void {
-    // Spy hook.
-  }
+  private _onHideCallback: (() => unknown) | null = null;
 
   protected constructor() {
     super();
@@ -28,8 +22,20 @@ export class Menu extends Component {
     return mock;
   }
 
+  public static override constructor__(_instance: Menu): void {
+    // Spy hook.
+  }
+
+  public static create__(): Menu {
+    return new Menu();
+  }
+
+  public static forEvent(_evt: MouseEvent | PointerEvent): Menu {
+    return Menu.create__();
+  }
+
   public addItem(cb: (item: ObsidianMenuItem) => unknown): this {
-    const item = MenuItem.create__();
+    const item = MenuItem.create__(this);
     this._items.push(item);
     cb(castTo<ObsidianMenuItem>(item));
     return this;
@@ -51,8 +57,6 @@ export class Menu extends Component {
     this._onHideCallback = callback;
   }
 
-  private _onHideCallback: (() => unknown) | null = null;
-
   public setNoIcon(): this {
     return this;
   }
@@ -67,9 +71,5 @@ export class Menu extends Component {
 
   public showAtPosition(_position: MenuPositionDef, _doc?: Document): this {
     return this;
-  }
-
-  public static forEvent(_evt: MouseEvent | PointerEvent): Menu {
-    return Menu.create__();
   }
 }

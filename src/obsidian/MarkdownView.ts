@@ -1,4 +1,5 @@
 import type {
+  DataAdapter,
   EventRef,
   HoverPopover,
   IconName,
@@ -11,6 +12,7 @@ import type { TFile } from './TFile.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { Editor } from './Editor.ts';
+import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 class MockEditor extends Editor {}
@@ -20,34 +22,8 @@ export class MarkdownView {
   public app: App;
   public containerEl: HTMLElement;
   public contentEl: HTMLElement;
-  public data = '';
   public editor: Editor;
-  public file: null | TFile = null;
-  public hoverPopover: HoverPopover | null = null;
-  public icon: IconName = '';
-  public leaf: WorkspaceLeaf;
-  public navigation = true;
-  public scope = null;
-
-  public constructor() {
-    this.app = App.create__();
-    this.containerEl = createDiv();
-    this.contentEl = createDiv();
-    this.editor = new MockEditor();
-    this.leaf = WorkspaceLeaf.create__();
-  }
-
-  private _children: Component[] = [];
-  private _cleanups: Array<() => unknown> = [];
   private _currentModeScroll = 0;
-  private _ephemeralState: unknown = {};
-  private _events: EventRef[] = [];
-  private _intervals: number[] = [];
-  private _loaded = false;
-  private _mode: 'preview' | 'source' = 'source';
-  private _previewModeScroll = 0;
-  private _state: unknown = {};
-
   public currentMode = {
     applyScroll: (scroll: number): void => {
       this._currentModeScroll = scroll;
@@ -69,6 +45,15 @@ export class MarkdownView {
     }
   };
 
+  public data = '';
+  public file: null | TFile = null;
+  public hoverPopover: HoverPopover | null = null;
+  public icon: IconName = '';
+  public leaf: WorkspaceLeaf;
+
+  public navigation = true;
+
+  private _previewModeScroll = 0;
   public previewMode = {
     applyScroll: (scroll: number): void => {
       this._previewModeScroll = scroll;
@@ -90,6 +75,25 @@ export class MarkdownView {
       this.data = data;
     }
   };
+
+  public scope = null;
+  private _children: Component[] = [];
+  private _cleanups: (() => unknown)[] = [];
+  private _ephemeralState: unknown = {};
+  private _events: EventRef[] = [];
+  private _intervals: number[] = [];
+  private _loaded = false;
+  private readonly _mode: 'preview' | 'source' = 'source';
+
+  private _state: unknown = {};
+
+  public constructor() {
+    this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapter, '');
+    this.containerEl = createDiv();
+    this.contentEl = createDiv();
+    this.editor = new MockEditor();
+    this.leaf = WorkspaceLeaf.create__(this.app);
+  }
 
   public addAction(icon: IconName, title: string, callback: (evt: MouseEvent) => unknown): HTMLElement {
     const el = createDiv();

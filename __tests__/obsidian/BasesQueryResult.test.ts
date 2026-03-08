@@ -30,7 +30,7 @@ describe('BasesQueryResult', () => {
   });
 
   it('should return groupedData via getter', () => {
-    const group = BasesEntryGroup.create__([]);
+    const group = BasesEntryGroup.create__([], undefined);
     const result = BasesQueryResult.create__();
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
     result.setGroupedData__([group]);
