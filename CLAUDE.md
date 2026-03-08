@@ -60,8 +60,6 @@
 
 - Extends `@tsconfig/strictest`
 - Target: ES2024, Module: NodeNext
-- `verbatimModuleSyntax: true` — use explicit `import type` for type-only imports
-- `allowImportingTsExtensions: true` — always use `.ts` extension in imports
 
 ## Testing
 
@@ -70,15 +68,6 @@
 - Vitest with explicit imports (globals: false) — always import `describe`, `it`, `expect`, etc. from `'vitest'`
 - Coverage provider: v8
 
-## Commits
-
-- Commit after each logical step. Do not batch unrelated changes into a single commit.
-
 ## Code Conventions
 
-- Files: PascalCase (e.g., `App.ts`, `Vault.ts`, `InMemoryAdapter.ts`)
-- Functions: camelCase
-- Classes: PascalCase
-- Type imports separated from value imports (`import type` on its own line)
-- Imports sorted alphabetically
-- Always include `.ts` extension in relative imports
+- Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`, `__tests__/`) follow the global kebab-case convention.
