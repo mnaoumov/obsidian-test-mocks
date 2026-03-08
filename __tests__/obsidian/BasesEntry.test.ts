@@ -1,14 +1,15 @@
-import type {
-  BasesPropertyId,
-  TFile
-} from 'obsidian';
-
-import { describe, expect, it } from 'vitest';
+import type { BasesPropertyId } from 'obsidian';
 
 import {
-  BasesEntry,
-  StringValue
-} from 'obsidian';
+  describe,
+  expect,
+  it
+} from 'vitest';
+
+import type { TFile } from '../../src/obsidian/TFile.ts';
+
+import { BasesEntry } from '../../src/obsidian/BasesEntry.ts';
+import { StringValue } from '../../src/obsidian/StringValue.ts';
 
 describe('BasesEntry', () => {
   const mockFile = { path: 'test.md' } as TFile;
@@ -31,12 +32,14 @@ describe('BasesEntry', () => {
   it('should return value set via setValue__', () => {
     const entry = BasesEntry.create__(mockFile);
     const value = new StringValue('test');
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
     entry.setValue__('prop.name' as BasesPropertyId, value);
     expect(entry.getValue('prop.name' as BasesPropertyId)).toBe(value);
   });
 
   it('should allow setting null values', () => {
     const entry = BasesEntry.create__(mockFile);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
     entry.setValue__('prop.name' as BasesPropertyId, null);
     expect(entry.getValue('prop.name' as BasesPropertyId)).toBeNull();
   });

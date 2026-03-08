@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { TagValue } from 'obsidian';
+import { TagValue } from '../../src/obsidian/TagValue.ts';
 
 describe('TagValue', () => {
   it('should store the tag value', () => {
@@ -10,7 +14,7 @@ describe('TagValue', () => {
 
   it('should return the tag for toString', () => {
     const val = new TagValue('#example');
-    expect(val.toString()).toBe('#example');
+    expect(String(val)).toBe('#example');
   });
 
   it('should be truthy for non-empty tags', () => {

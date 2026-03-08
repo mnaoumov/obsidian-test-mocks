@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { BooleanValue } from 'obsidian';
+import { BooleanValue } from '../../src/obsidian/BooleanValue.ts';
 
 describe('BooleanValue', () => {
   it('should default to false', () => {
@@ -25,11 +29,11 @@ describe('BooleanValue', () => {
 
   it('should return "false" for toString when false', () => {
     const val = new BooleanValue(false);
-    expect(val.toString()).toBe('false');
+    expect(String(val)).toBe('false');
   });
 
   it('should return "true" for toString when true', () => {
     const val = new BooleanValue(true);
-    expect(val.toString()).toBe('true');
+    expect(String(val)).toBe('true');
   });
 });

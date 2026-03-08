@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { DurationValue } from 'obsidian';
+import { DurationValue } from '../../src/obsidian/DurationValue.ts';
 
 describe('DurationValue', () => {
   it('should always be truthy', () => {
@@ -10,6 +14,6 @@ describe('DurationValue', () => {
 
   it('should return empty string for toString', () => {
     const val = new DurationValue();
-    expect(val.toString()).toBe('');
+    expect(String(val)).toBe('');
   });
 });

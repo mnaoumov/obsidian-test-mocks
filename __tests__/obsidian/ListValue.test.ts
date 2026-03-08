@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
-
 import {
-  ListValue,
-  StringValue
-} from 'obsidian';
+  describe,
+  expect,
+  it
+} from 'vitest';
+
+import { ListValue } from '../../src/obsidian/ListValue.ts';
+import { StringValue } from '../../src/obsidian/StringValue.ts';
 
 describe('ListValue', () => {
   it('should default to empty values', () => {
@@ -25,11 +27,11 @@ describe('ListValue', () => {
   it('should join values with comma-space for toString', () => {
     const val = new ListValue();
     val.values.push(new StringValue('a'), new StringValue('b'), new StringValue('c'));
-    expect(val.toString()).toBe('a, b, c');
+    expect(String(val)).toBe('a, b, c');
   });
 
   it('should return empty string for toString when empty', () => {
     const val = new ListValue();
-    expect(val.toString()).toBe('');
+    expect(String(val)).toBe('');
   });
 });

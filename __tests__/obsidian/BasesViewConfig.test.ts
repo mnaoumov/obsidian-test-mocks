@@ -1,15 +1,18 @@
 import type {
   BasesPropertyId,
-  BasesSortConfig,
-  BasesView
+  BasesSortConfig
 } from 'obsidian';
-
-import { describe, expect, it } from 'vitest';
 
 import {
-  BasesViewConfig,
-  NullValue
-} from 'obsidian';
+  describe,
+  expect,
+  it
+} from 'vitest';
+
+import type { BasesView } from '../../src/obsidian/BasesView.ts';
+
+import { BasesViewConfig } from '../../src/obsidian/BasesViewConfig.ts';
+import { NullValue } from '../../src/obsidian/NullValue.ts';
 
 describe('BasesViewConfig', () => {
   it('should create an instance via create__', () => {
@@ -44,7 +47,8 @@ describe('BasesViewConfig', () => {
 
     it('should return null for non-string values', () => {
       const config = BasesViewConfig.create__('test');
-      config.set('count', 42);
+      const nonStringValue = { key: 'value' };
+      config.set('count', nonStringValue);
       expect(config.getAsPropertyId('count')).toBeNull();
     });
 
@@ -58,6 +62,7 @@ describe('BasesViewConfig', () => {
     it('should return custom display name when set', () => {
       const config = BasesViewConfig.create__('test');
       const propId = 'prop.status' as BasesPropertyId;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
       config.setDisplayName__(propId, 'Status');
       expect(config.getDisplayName(propId)).toBe('Status');
     });
@@ -69,7 +74,7 @@ describe('BasesViewConfig', () => {
 
     it('should return full id when no dot', () => {
       const config = BasesViewConfig.create__('test');
-      expect(config.getDisplayName('nodot' as BasesPropertyId)).toBe('nodot');
+      expect(config.getDisplayName('name' as BasesPropertyId)).toBe('name');
     });
   });
 
@@ -90,6 +95,7 @@ describe('BasesViewConfig', () => {
     it('should return the set order', () => {
       const config = BasesViewConfig.create__('test');
       const order = ['prop.a' as BasesPropertyId, 'prop.b' as BasesPropertyId];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
       config.setOrder__(order);
       expect(config.getOrder()).toEqual(order);
     });
@@ -103,7 +109,8 @@ describe('BasesViewConfig', () => {
 
     it('should return the set sort config', () => {
       const config = BasesViewConfig.create__('test');
-      const sort = [{ property: 'prop.a', order: 'asc' }] as BasesSortConfig[];
+      const sort: BasesSortConfig[] = [{ direction: 'ASC', property: 'prop.a' as BasesPropertyId }];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
       config.setSort__(sort);
       expect(config.getSort()).toEqual(sort);
     });

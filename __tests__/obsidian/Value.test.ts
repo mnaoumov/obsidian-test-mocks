@@ -1,11 +1,13 @@
-import { describe, expect, it } from 'vitest';
-
 import {
-  NullValue,
-  NumberValue,
-  StringValue,
-  Value
-} from 'obsidian';
+  describe,
+  expect,
+  it
+} from 'vitest';
+
+import { NullValue } from '../../src/obsidian/NullValue.ts';
+import { NumberValue } from '../../src/obsidian/NumberValue.ts';
+import { StringValue } from '../../src/obsidian/StringValue.ts';
+import { Value } from '../../src/obsidian/Value.ts';
 
 describe('Value', () => {
   describe('static equals', () => {
@@ -70,8 +72,9 @@ describe('Value', () => {
 
   describe('looseEquals', () => {
     it('should return true when toString outputs match across types', () => {
-      const str = new StringValue('42');
-      const num = new NumberValue(42);
+      const testNumber = 5;
+      const str = new StringValue(String(testNumber));
+      const num = new NumberValue(testNumber);
       expect(str.looseEquals(num)).toBe(true);
     });
 
@@ -92,7 +95,7 @@ describe('Value', () => {
   describe('toString', () => {
     it('should delegate to toString__', () => {
       const val = new StringValue('hello');
-      expect(val.toString()).toBe('hello');
+      expect(String(val)).toBe('hello');
     });
   });
 

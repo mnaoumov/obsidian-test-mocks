@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { ObjectValue } from 'obsidian';
+import { ObjectValue } from '../../src/obsidian/ObjectValue.ts';
 
 describe('ObjectValue', () => {
   it('should always be truthy', () => {
@@ -10,6 +14,6 @@ describe('ObjectValue', () => {
 
   it('should return empty string for toString', () => {
     const val = new ObjectValue();
-    expect(val.toString()).toBe('');
+    expect(String(val)).toBe('');
   });
 });

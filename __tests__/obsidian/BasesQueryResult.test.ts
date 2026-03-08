@@ -1,16 +1,17 @@
-import type {
-  BasesPropertyId,
-  QueryController,
-  TFile
-} from 'obsidian';
-
-import { describe, expect, it } from 'vitest';
+import type { BasesPropertyId } from 'obsidian';
 
 import {
-  BasesEntry,
-  BasesEntryGroup,
-  BasesQueryResult
-} from 'obsidian';
+  describe,
+  expect,
+  it
+} from 'vitest';
+
+import type { QueryController } from '../../src/obsidian/QueryController.ts';
+import type { TFile } from '../../src/obsidian/TFile.ts';
+
+import { BasesEntry } from '../../src/obsidian/BasesEntry.ts';
+import { BasesEntryGroup } from '../../src/obsidian/BasesEntryGroup.ts';
+import { BasesQueryResult } from '../../src/obsidian/BasesQueryResult.ts';
 
 describe('BasesQueryResult', () => {
   const mockFile = { path: 'test.md' } as TFile;

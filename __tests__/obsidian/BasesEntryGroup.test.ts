@@ -1,12 +1,14 @@
-import type { TFile } from 'obsidian';
-
-import { describe, expect, it } from 'vitest';
-
 import {
-  BasesEntry,
-  BasesEntryGroup,
-  StringValue
-} from 'obsidian';
+  describe,
+  expect,
+  it
+} from 'vitest';
+
+import type { TFile } from '../../src/obsidian/TFile.ts';
+
+import { BasesEntry } from '../../src/obsidian/BasesEntry.ts';
+import { BasesEntryGroup } from '../../src/obsidian/BasesEntryGroup.ts';
+import { StringValue } from '../../src/obsidian/StringValue.ts';
 
 describe('BasesEntryGroup', () => {
   const mockFile = { path: 'test.md' } as TFile;

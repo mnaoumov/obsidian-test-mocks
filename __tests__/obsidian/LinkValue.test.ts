@@ -1,8 +1,12 @@
-import type { App } from 'obsidian';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { describe, expect, it } from 'vitest';
+import type { App } from '../../src/obsidian/App.ts';
 
-import { LinkValue } from 'obsidian';
+import { LinkValue } from '../../src/obsidian/LinkValue.ts';
 
 describe('LinkValue', () => {
   const mockApp = {} as App;
@@ -29,7 +33,7 @@ describe('LinkValue', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle empty wiki link content', () => {
+    it('should return null for empty wiki link content', () => {
       const result = LinkValue.parseFromString(mockApp, '[[]]', '');
       expect(result).toBeNull();
     });
