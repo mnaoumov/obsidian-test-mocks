@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { DateValue } from 'obsidian';
+import { DateValue } from '../../src/obsidian/DateValue.ts';
 
 describe('DateValue', () => {
   it('should have a moment value', () => {
@@ -15,7 +19,8 @@ describe('DateValue', () => {
 
   it('should return formatted date string', () => {
     const val = new DateValue();
-    expect(typeof val.toString()).toBe('string');
-    expect(val.toString().length).toBeGreaterThan(0);
+    const str = String(val);
+    expect(typeof str).toBe('string');
+    expect(str.length).toBeGreaterThan(0);
   });
 });

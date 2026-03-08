@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { Tasks } from 'obsidian';
+import { Tasks } from '../../src/obsidian/Tasks.ts';
 
 describe('Tasks', () => {
   it('should start empty', () => {
@@ -32,14 +36,17 @@ describe('Tasks', () => {
 
   it('should resolve all promises on promise()', async () => {
     const tasks = new Tasks();
-    const results: number[] = [];
-    tasks.add(async () => {
-      results.push(1);
+    const results: string[] = [];
+    tasks.add(() => {
+      results.push('a');
+      return Promise.resolve();
     });
-    tasks.addPromise(Promise.resolve().then(() => {
-      results.push(2);
-    }));
+    tasks.addPromise(
+      Promise.resolve().then(() => {
+        results.push('b');
+      })
+    );
     await tasks.promise();
-    expect(results).toEqual([1, 2]);
+    expect(results).toEqual(['a', 'b']);
   });
 });

@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { RegExpValue } from 'obsidian';
+import { RegExpValue } from '../../src/obsidian/RegExpValue.ts';
 
 describe('RegExpValue', () => {
   it('should always be truthy', () => {
@@ -10,6 +14,6 @@ describe('RegExpValue', () => {
 
   it('should return empty string for toString', () => {
     const val = new RegExpValue();
-    expect(val.toString()).toBe('');
+    expect(String(val)).toBe('');
   });
 });

@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { NullValue } from 'obsidian';
+import { NullValue } from '../../src/obsidian/NullValue.ts';
 
 describe('NullValue', () => {
   it('should return false for isTruthy', () => {
@@ -10,6 +14,6 @@ describe('NullValue', () => {
 
   it('should return empty string for toString', () => {
     const val = new NullValue();
-    expect(val.toString()).toBe('');
+    expect(String(val)).toBe('');
   });
 });

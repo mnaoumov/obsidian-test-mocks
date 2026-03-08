@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
 
-import { WorkspaceTabs } from 'obsidian';
+import { WorkspaceTabs } from '../../src/obsidian/WorkspaceTabs.ts';
 
 describe('WorkspaceTabs', () => {
   it('should create an instance via create__', () => {
