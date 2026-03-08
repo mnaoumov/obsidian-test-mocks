@@ -10,7 +10,9 @@ export class BasesEntryGroup {
 
   protected constructor(entries: BasesEntry[], key?: Value) {
     this.entries = entries;
-    this.key = key;
+    if (key !== undefined) {
+      this.key = key;
+    }
     const mock = strictMock(this);
     BasesEntryGroup.__constructor(mock, entries, key);
     return mock;
