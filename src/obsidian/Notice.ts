@@ -18,11 +18,11 @@ export class Notice {
     }
     (this as { duration: number }).duration = duration ?? 0;
     const mock = strictMock(this);
-    Notice.__constructor(mock, message, duration);
+    Notice.constructor__(mock, message, duration);
     return mock;
   }
 
-  public static __constructor(_instance: Notice, _message: DocumentFragment | string, _duration?: number): void {
+  public static constructor__(_instance: Notice, _message: DocumentFragment | string, _duration?: number): void {
     // Spy hook.
   }
 

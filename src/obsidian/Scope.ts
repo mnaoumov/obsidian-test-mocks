@@ -16,17 +16,17 @@ interface MockKeyScope {
 export class Scope {
   private _keys: MockKeyScope[] = [];
 
-  public static __create(parent?: Scope): Scope {
+  public static create__(parent?: Scope): Scope {
     return new Scope(parent);
   }
 
-  public static __constructor(_instance: Scope, _parent?: Scope): void {
+  public static constructor__(_instance: Scope, _parent?: Scope): void {
     // Spy hook.
   }
 
   protected constructor(parent?: Scope) {
     const mock = strictMock(this);
-    Scope.__constructor(mock, parent);
+    Scope.constructor__(mock, parent);
     return mock;
   }
 

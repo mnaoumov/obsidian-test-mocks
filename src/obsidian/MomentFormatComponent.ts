@@ -11,11 +11,11 @@ export class MomentFormatComponent extends TextComponent {
     super(containerEl);
     this.sampleEl = createDiv();
     const mock = strictMock(this);
-    MomentFormatComponent.__constructor(mock, containerEl);
+    MomentFormatComponent.constructor__(mock, containerEl);
     return mock;
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

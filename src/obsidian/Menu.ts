@@ -12,11 +12,11 @@ export class Menu extends Component {
   public _items: MenuItem[] = [];
   public dom: HTMLElement;
 
-  public static __create(): Menu {
+  public static create__(): Menu {
     return new Menu();
   }
 
-  public static override __constructor(_instance: Menu): void {
+  public static override constructor__(_instance: Menu): void {
     // Spy hook.
   }
 
@@ -24,12 +24,12 @@ export class Menu extends Component {
     super();
     this.dom = createDiv();
     const mock = strictMock(this);
-    Menu.__constructor(mock);
+    Menu.constructor__(mock);
     return mock;
   }
 
   public addItem(cb: (item: ObsidianMenuItem) => unknown): this {
-    const item = MenuItem.__create();
+    const item = MenuItem.create__();
     this._items.push(item);
     cb(castTo<ObsidianMenuItem>(item));
     return this;
@@ -70,6 +70,6 @@ export class Menu extends Component {
   }
 
   public static forEvent(_evt: MouseEvent | PointerEvent): Menu {
-    return Menu.__create();
+    return Menu.create__();
   }
 }

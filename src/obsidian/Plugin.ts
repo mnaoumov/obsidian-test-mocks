@@ -32,11 +32,11 @@ export abstract class Plugin extends Component {
     this.app = app;
     this.manifest = manifest;
     const mock = strictMock(this);
-    Plugin.__constructor(mock, app, manifest);
+    Plugin.constructor__(mock, app, manifest);
     return mock;
   }
 
-  public static override __constructor(_instance: Plugin, _app: App, _manifest: PluginManifest): void {
+  public static override constructor__(_instance: Plugin, _app: App, _manifest: PluginManifest): void {
     // Spy hook.
   }
 

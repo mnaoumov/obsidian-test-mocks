@@ -11,11 +11,11 @@ export class Events {
 
   protected constructor() {
     const mock = strictMock(this);
-    Events.__constructor(mock);
+    Events.constructor__(mock);
     return mock;
   }
 
-  public static __constructor(_instance: Events, ..._args: unknown[]): void {
+  public static constructor__(_instance: Events, ..._args: unknown[]): void {
     // Spy hook.
   }
 

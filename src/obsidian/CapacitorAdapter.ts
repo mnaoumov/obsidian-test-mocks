@@ -2,18 +2,18 @@ import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class CapacitorAdapter extends InMemoryAdapter {
-  public static __create(): CapacitorAdapter {
+  public static create__(): CapacitorAdapter {
     return new CapacitorAdapter();
   }
 
-  public static __constructor(_instance: CapacitorAdapter): void {
+  public static constructor__(_instance: CapacitorAdapter): void {
     // Spy hook.
   }
 
   protected constructor() {
     super();
     const mock = strictMock(this);
-    CapacitorAdapter.__constructor(mock);
+    CapacitorAdapter.constructor__(mock);
     return mock;
   }
 

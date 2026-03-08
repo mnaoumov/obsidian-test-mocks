@@ -15,11 +15,11 @@ export class DropdownComponent extends ValueComponent<string> {
     super();
     this.selectEl = createEl('select');
     const mock = strictMock(this);
-    DropdownComponent.__constructor(mock, _containerEl);
+    DropdownComponent.constructor__(mock, _containerEl);
     return mock;
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

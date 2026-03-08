@@ -28,11 +28,11 @@ export class BasesQueryResult {
     this._groupedData = groupedData;
     this._properties = properties;
     const mock = strictMock(this);
-    BasesQueryResult.__constructor(mock, data, groupedData, properties);
+    BasesQueryResult.constructor__(mock, data, groupedData, properties);
     return mock;
   }
 
-  public static __constructor(
+  public static constructor__(
     _instance: BasesQueryResult,
     _data: BasesEntry[],
     _groupedData: BasesEntryGroup[],
@@ -41,7 +41,7 @@ export class BasesQueryResult {
     // Spy hook.
   }
 
-  public static __create(data: BasesEntry[], groupedData: BasesEntryGroup[], properties: BasesPropertyId[]): BasesQueryResult {
+  public static create__(data: BasesEntry[], groupedData: BasesEntryGroup[], properties: BasesPropertyId[]): BasesQueryResult {
     return new BasesQueryResult(data, groupedData, properties);
   }
 

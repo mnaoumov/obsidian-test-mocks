@@ -19,30 +19,30 @@ export class BasesViewConfig {
   protected constructor(name: string) {
     this.name = name;
     const mock = strictMock(this);
-    BasesViewConfig.__constructor(mock, name);
+    BasesViewConfig.constructor__(mock, name);
     return mock;
   }
 
-  public static __constructor(_instance: BasesViewConfig, _name: string): void {
+  public static constructor__(_instance: BasesViewConfig, _name: string): void {
     // Spy hook.
   }
 
-  public static __create(name: string): BasesViewConfig {
+  public static create__(name: string): BasesViewConfig {
     return new BasesViewConfig(name);
   }
 
   /** @deprecated Mock-only. Sets the display name for a property. Not part of the Obsidian API. */
-  public __setDisplayName(propertyId: BasesPropertyId, displayName: string): void {
+  public setDisplayName__(propertyId: BasesPropertyId, displayName: string): void {
     this.displayNames.set(propertyId, displayName);
   }
 
   /** @deprecated Mock-only. Sets the property order. Not part of the Obsidian API. */
-  public __setOrder(order: BasesPropertyId[]): void {
+  public setOrder__(order: BasesPropertyId[]): void {
     this.order = order;
   }
 
   /** @deprecated Mock-only. Sets the sort config. Not part of the Obsidian API. */
-  public __setSort(sort: BasesSortConfig[]): void {
+  public setSort__(sort: BasesSortConfig[]): void {
     this.sort = sort;
   }
 

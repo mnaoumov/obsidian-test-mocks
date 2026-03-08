@@ -15,7 +15,7 @@ export function createTFileInstance(app: App, path: string): TFile {
     return file;
   }
 
-  const mockFile = MockTFile.__create(castTo<MockVault>(app.vault), path);
+  const mockFile = MockTFile.create__(castTo<MockVault>(app.vault), path);
   mockFile.parent = castTo(createTFolderInstance(app, parentFolderPath(path)));
   mockFile.deleted = true;
   return castTo<TFile>(mockFile);

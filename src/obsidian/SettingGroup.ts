@@ -17,11 +17,11 @@ export class SettingGroup {
     this.listEl = createDiv();
     containerEl.appendChild(this.listEl);
     const mock = strictMock(this);
-    SettingGroup.__constructor(mock, containerEl);
+    SettingGroup.constructor__(mock, containerEl);
     return mock;
   }
 
-  public static __constructor(_instance: SettingGroup, _containerEl: HTMLElement): void {
+  public static constructor__(_instance: SettingGroup, _containerEl: HTMLElement): void {
     // Spy hook.
   }
 

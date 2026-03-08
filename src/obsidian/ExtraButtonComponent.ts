@@ -9,11 +9,11 @@ export class ExtraButtonComponent extends BaseComponent {
     super();
     this.extraSettingsEl = createDiv();
     const mock = strictMock(this);
-    ExtraButtonComponent.__constructor(mock, _containerEl);
+    ExtraButtonComponent.constructor__(mock, _containerEl);
     return mock;
   }
 
-  public static override __constructor(_instance: BaseComponent, ..._args: unknown[]): void {
+  public static override constructor__(_instance: BaseComponent, ..._args: unknown[]): void {
     // Spy hook.
   }
 

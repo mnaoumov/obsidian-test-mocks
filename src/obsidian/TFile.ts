@@ -10,11 +10,11 @@ export class TFile extends TAbstractFile {
   public extension: string;
   public stat: FileStats = { ctime: 0, mtime: 0, size: 0 };
 
-  public static __create(vault: Vault, path: string): TFile {
+  public static create__(vault: Vault, path: string): TFile {
     return new TFile(vault, path);
   }
 
-  public static override __constructor(_instance: TFile, _vault: Vault, _path: string): void {
+  public static override constructor__(_instance: TFile, _vault: Vault, _path: string): void {
     // Spy hook.
   }
 
@@ -24,7 +24,7 @@ export class TFile extends TAbstractFile {
     this.extension = dotIndex >= 0 ? this.name.slice(dotIndex + 1) : '';
     this.basename = dotIndex >= 0 ? this.name.slice(0, dotIndex) : this.name;
     const mock = strictMock(this);
-    TFile.__constructor(mock, vault, path);
+    TFile.constructor__(mock, vault, path);
     return mock;
   }
 }

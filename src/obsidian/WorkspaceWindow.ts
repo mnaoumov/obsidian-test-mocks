@@ -3,15 +3,15 @@ import { strictMock } from '../internal/StrictMock.ts';
 export class WorkspaceWindow {
   protected constructor() {
     const mock = strictMock(this);
-    WorkspaceWindow.__constructor(mock);
+    WorkspaceWindow.constructor__(mock);
     return mock;
   }
 
-  public static __create(): WorkspaceWindow {
+  public static create__(): WorkspaceWindow {
     return new WorkspaceWindow();
   }
 
-  public static __constructor(_instance: WorkspaceWindow, ..._args: unknown[]): void {
+  public static constructor__(_instance: WorkspaceWindow, ..._args: unknown[]): void {
     // Spy hook.
   }
 

@@ -5,11 +5,11 @@ export abstract class WorkspaceParent extends WorkspaceItem {
   protected constructor() {
     super();
     const mock = strictMock(this);
-    WorkspaceParent.__constructor(mock);
+    WorkspaceParent.constructor__(mock);
     return mock;
   }
 
-  public static override __constructor(_instance: WorkspaceParent, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceParent, ..._args: unknown[]): void {
     // Spy hook.
   }
 }

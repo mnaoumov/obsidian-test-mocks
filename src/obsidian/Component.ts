@@ -11,11 +11,11 @@ export class Component {
 
   protected constructor() {
     const mock = strictMock(this);
-    Component.__constructor(mock);
+    Component.constructor__(mock);
     return mock;
   }
 
-  public static __constructor(_instance: Component, ..._args: unknown[]): void {
+  public static constructor__(_instance: Component, ..._args: unknown[]): void {
     // Spy hook.
   }
 

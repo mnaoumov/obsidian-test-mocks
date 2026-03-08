@@ -12,18 +12,18 @@ import { stringifyYaml } from './stringifyYaml.ts';
 export class FileManager {
   public app: App;
 
-  public static __create(app: App): FileManager {
+  public static create__(app: App): FileManager {
     return new FileManager(app);
   }
 
-  public static __constructor(_instance: FileManager, _app: App): void {
+  public static constructor__(_instance: FileManager, _app: App): void {
     // Spy hook.
   }
 
   protected constructor(app: App) {
     this.app = app;
     const mock = strictMock(this);
-    FileManager.__constructor(mock, app);
+    FileManager.constructor__(mock, app);
     return mock;
   }
 

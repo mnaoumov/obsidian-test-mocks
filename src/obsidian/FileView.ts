@@ -14,11 +14,11 @@ export abstract class FileView extends ItemView {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     const mock = strictMock(this);
-    FileView.__constructor(mock, leaf);
+    FileView.constructor__(mock, leaf);
     return mock;
   }
 
-  public static override __constructor(_instance: FileView, _leaf: WorkspaceLeaf): void {
+  public static override constructor__(_instance: FileView, _leaf: WorkspaceLeaf): void {
     // Spy hook.
   }
 

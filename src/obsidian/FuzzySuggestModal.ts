@@ -12,11 +12,11 @@ export abstract class FuzzySuggestModal<T> extends Modal {
     super(app);
     this.inputEl = createEl('input');
     const mock = strictMock(this);
-    FuzzySuggestModal.__constructor(mock, app);
+    FuzzySuggestModal.constructor__(mock, app);
     return mock;
   }
 
-  public static override __constructor(_instance: FuzzySuggestModal<unknown>, _app: App): void {
+  public static override constructor__(_instance: FuzzySuggestModal<unknown>, _app: App): void {
     // Spy hook.
   }
 

@@ -18,11 +18,11 @@ export class ToggleComponent extends ValueComponent<boolean> {
     super();
     this.toggleEl = createDiv();
     const mock = strictMock(this);
-    ToggleComponent.__constructor(mock, _containerEl);
+    ToggleComponent.constructor__(mock, _containerEl);
     return mock;
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

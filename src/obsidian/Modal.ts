@@ -19,14 +19,14 @@ export class Modal {
     this.containerEl = createDiv();
     this.contentEl = createDiv();
     this.modalEl = createDiv();
-    this.scope = Scope.__create();
+    this.scope = Scope.create__();
     this.titleEl = createDiv();
     const mock = strictMock(this);
-    Modal.__constructor(mock, app);
+    Modal.constructor__(mock, app);
     return mock;
   }
 
-  public static __constructor(_instance: Modal, _app: App): void {
+  public static constructor__(_instance: Modal, _app: App): void {
     // Spy hook.
   }
 

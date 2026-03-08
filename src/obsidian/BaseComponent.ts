@@ -5,11 +5,11 @@ export abstract class BaseComponent {
 
   protected constructor() {
     const mock = strictMock(this);
-    BaseComponent.__constructor(mock);
+    BaseComponent.constructor__(mock);
     return mock;
   }
 
-  public static __constructor(_instance: BaseComponent, ..._args: unknown[]): void {
+  public static constructor__(_instance: BaseComponent, ..._args: unknown[]): void {
     // Spy hook.
   }
 

@@ -7,15 +7,15 @@ export class WorkspaceSplit extends WorkspaceParent {
   protected constructor() {
     super();
     const mock = strictMock(this);
-    WorkspaceSplit.__constructor(mock);
+    WorkspaceSplit.constructor__(mock);
     return mock;
   }
 
-  public static override __constructor(_instance: WorkspaceSplit, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceSplit, ..._args: unknown[]): void {
     // Spy hook.
   }
 
-  public static __create(): WorkspaceSplit {
+  public static create__(): WorkspaceSplit {
     return new WorkspaceSplit();
   }
 }

@@ -11,11 +11,11 @@ import { strictMock } from '../internal/StrictMock.ts';
 export class Keymap {
   private _scopeStack: Scope[] = [];
 
-  public static __create(): Keymap {
+  public static create__(): Keymap {
     return new Keymap();
   }
 
-  public static __constructor(_instance: Keymap): void {
+  public static constructor__(_instance: Keymap): void {
     // Spy hook.
   }
 
@@ -25,7 +25,7 @@ export class Keymap {
 
   protected constructor() {
     const mock = strictMock(this);
-    Keymap.__constructor(mock);
+    Keymap.constructor__(mock);
     return mock;
   }
 

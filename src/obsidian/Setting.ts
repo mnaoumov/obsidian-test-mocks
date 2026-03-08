@@ -49,11 +49,11 @@ export class Setting {
     this.settingEl.appendChild(this.controlEl);
     containerEl.appendChild(this.settingEl);
     const mock = strictMock(this);
-    Setting.__constructor(mock, containerEl);
+    Setting.constructor__(mock, containerEl);
     return mock;
   }
 
-  public static __constructor(_instance: Setting, _containerEl: HTMLElement): void {
+  public static constructor__(_instance: Setting, _containerEl: HTMLElement): void {
     // Spy hook.
   }
 

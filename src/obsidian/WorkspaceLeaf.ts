@@ -25,7 +25,7 @@ export class WorkspaceLeaf extends Events {
   private _pinned = false;
   private _viewState: ViewState = { type: '' };
 
-  public static __create(): WorkspaceLeaf {
+  public static create__(): WorkspaceLeaf {
     return new WorkspaceLeaf();
   }
 
@@ -33,11 +33,11 @@ export class WorkspaceLeaf extends Events {
     super();
     this._id = String(nextLeafId++);
     const mock = strictMock(this);
-    WorkspaceLeaf.__constructor(mock);
+    WorkspaceLeaf.constructor__(mock);
     return mock;
   }
 
-  public static override __constructor(_instance: WorkspaceLeaf, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceLeaf, ..._args: unknown[]): void {
     // Spy hook.
   }
 

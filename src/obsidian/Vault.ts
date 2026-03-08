@@ -17,22 +17,22 @@ export class Vault extends Events {
   public configDir = '.obsidian';
   public _fileMap: Record<string, TAbstractFile> = {};
 
-  public static __create(): Vault {
+  public static create__(): Vault {
     return new Vault();
   }
 
-  public static override __constructor(_instance: Vault): void {
+  public static override constructor__(_instance: Vault): void {
     // Spy hook.
   }
 
   protected constructor() {
     super();
-    this.adapter = FileSystemAdapter.__create() as unknown as DataAdapter;
-    const root = TFolder.__create(this, '/');
+    this.adapter = FileSystemAdapter.create__() as unknown as DataAdapter;
+    const root = TFolder.create__(this, '/');
     this._fileMap['/'] = root;
     root.deleted = false;
     const mock = strictMock(this);
-    Vault.__constructor(mock);
+    Vault.constructor__(mock);
     return mock;
   }
 
@@ -56,7 +56,7 @@ export class Vault extends Events {
 
   public async copy(file: TFile, newPath: string): Promise<TFile> {
     await this.adapter.copy(file.path, newPath);
-    const newFile = TFile.__create(this, newPath);
+    const newFile = TFile.create__(this, newPath);
     setVaultAbstractFile(this, newPath, newFile);
     this.trigger('create', newFile);
     return newFile;
@@ -64,7 +64,7 @@ export class Vault extends Events {
 
   public async create(path: string, data: string, options?: DataWriteOptions): Promise<TFile> {
     await this.adapter.write(path, data, options);
-    const file = TFile.__create(this, path);
+    const file = TFile.create__(this, path);
     setVaultAbstractFile(this, path, file);
     this.trigger('create', file);
     return file;
@@ -72,7 +72,7 @@ export class Vault extends Events {
 
   public async createBinary(path: string, data: ArrayBuffer, options?: DataWriteOptions): Promise<TFile> {
     await this.adapter.writeBinary(path, data, options);
-    const file = TFile.__create(this, path);
+    const file = TFile.create__(this, path);
     setVaultAbstractFile(this, path, file);
     this.trigger('create', file);
     return file;
@@ -80,7 +80,7 @@ export class Vault extends Events {
 
   public async createFolder(path: string): Promise<TFolder> {
     await this.adapter.mkdir(path);
-    const folder = TFolder.__create(this, path);
+    const folder = TFolder.create__(this, path);
     setVaultAbstractFile(this, path, folder);
     this.trigger('create', folder);
     return folder;
@@ -139,7 +139,7 @@ export class Vault extends Events {
     if (root instanceof TFolder) {
       return root;
     }
-    const fallback = TFolder.__create(this, '/');
+    const fallback = TFolder.create__(this, '/');
     this._fileMap['/'] = fallback;
     return fallback;
   }

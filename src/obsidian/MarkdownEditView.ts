@@ -13,7 +13,7 @@ export class MarkdownEditView {
   private _scroll = 0;
 
   public constructor() {
-    this.app = App.__create();
+    this.app = App.create__();
     this.editor = new MockEditor();
   }
 

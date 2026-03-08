@@ -10,13 +10,13 @@ export abstract class PopoverSuggest<T> {
 
   public constructor(app: App, scope?: Scope) {
     this.app = app;
-    this.scope = scope ?? Scope.__create();
+    this.scope = scope ?? Scope.create__();
     const mock = strictMock(this);
-    PopoverSuggest.__constructor(mock, app, scope);
+    PopoverSuggest.constructor__(mock, app, scope);
     return mock;
   }
 
-  public static __constructor(_instance: PopoverSuggest<unknown>, ..._args: unknown[]): void {
+  public static constructor__(_instance: PopoverSuggest<unknown>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

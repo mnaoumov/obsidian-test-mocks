@@ -9,11 +9,11 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
     super(app);
     this.inputEl = inputEl;
     const mock = strictMock(this);
-    AbstractInputSuggest.__constructor(mock, app, inputEl);
+    AbstractInputSuggest.constructor__(mock, app, inputEl);
     return mock;
   }
 
-  public static override __constructor(_instance: AbstractInputSuggest<unknown>, _app: App, _inputEl: HTMLInputElement | HTMLTextAreaElement): void {
+  public static override constructor__(_instance: AbstractInputSuggest<unknown>, _app: App, _inputEl: HTMLInputElement | HTMLTextAreaElement): void {
     // Spy hook.
   }
 

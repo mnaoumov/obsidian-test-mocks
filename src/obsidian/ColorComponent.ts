@@ -22,11 +22,11 @@ export class ColorComponent extends ValueComponent<string> {
     this.colorPickerEl = createEl('input');
     this.colorPickerEl.type = 'color';
     const mock = strictMock(this);
-    ColorComponent.__constructor(mock, _containerEl);
+    ColorComponent.constructor__(mock, _containerEl);
     return mock;
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 
