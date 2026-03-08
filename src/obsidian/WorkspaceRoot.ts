@@ -1,3 +1,5 @@
+import type { Workspace } from './Workspace.ts';
+
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class WorkspaceRoot {
@@ -9,17 +11,17 @@ export class WorkspaceRoot {
     return window;
   }
 
-  protected constructor(_workspace: unknown, _direction: string, _id?: string) {
+  protected constructor(_workspace: Workspace, _direction: string, _id?: string) {
     const mock = strictMock(this);
     WorkspaceRoot.constructor__(mock, _workspace, _direction, _id);
     return mock;
   }
 
-  public static constructor__(_instance: WorkspaceRoot, _workspace: unknown, _direction: string, _id?: string): void {
+  public static constructor__(_instance: WorkspaceRoot, _workspace: Workspace, _direction: string, _id?: string): void {
     // Spy hook.
   }
 
-  public static create__(_workspace: unknown, _direction: string, _id?: string): WorkspaceRoot {
+  public static create__(_workspace: Workspace, _direction: string, _id?: string): WorkspaceRoot {
     return new WorkspaceRoot(_workspace, _direction, _id);
   }
 }
