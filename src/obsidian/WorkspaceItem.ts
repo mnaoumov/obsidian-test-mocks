@@ -1,12 +1,10 @@
 import type {
   WorkspaceContainer,
-  WorkspaceItem as RealWorkspaceItem
+  WorkspaceItem as WorkspaceItemOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {
@@ -21,15 +19,15 @@ export abstract class WorkspaceItem extends Events {
     // Spy hook.
   }
 
+  public override asOriginalType__(): WorkspaceItemOriginal {
+    return castTo<WorkspaceItemOriginal>(this);
+  }
+
   public getContainer(): WorkspaceContainer {
     return castTo<WorkspaceContainer>(this);
   }
 
-  public getRoot(): WorkspaceItem {
+  public getRoot(): this {
     return this;
-  }
-
-  public override asReal__(): RealWorkspaceItem {
-    return castTo<RealWorkspaceItem>(this);
   }
 }

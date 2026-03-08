@@ -1,19 +1,17 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   HoverPopover,
   IconName,
   OpenViewState,
   View,
   ViewState,
-  WorkspaceLeaf as RealWorkspaceLeaf
+  WorkspaceLeaf as WorkspaceLeafOriginal
 } from 'obsidian';
 
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 let nextLeafId = 1;
@@ -51,16 +49,16 @@ export class WorkspaceLeaf extends Events {
     return new WorkspaceLeaf(_app, id);
   }
 
-  public override asReal__(): RealWorkspaceLeaf {
-    return castTo<RealWorkspaceLeaf>(this);
-  }
-
   public _getGroup(): null | string {
     return this._group;
   }
 
   public _isPinned(): boolean {
     return this._pinned;
+  }
+
+  public override asOriginalType__(): WorkspaceLeafOriginal {
+    return castTo<WorkspaceLeafOriginal>(this);
   }
 
   public detach(): void {

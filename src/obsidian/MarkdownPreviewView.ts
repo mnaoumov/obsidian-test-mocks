@@ -1,17 +1,19 @@
 import type {
-  MarkdownPreviewView as RealMarkdownPreviewView,
+  MarkdownPreviewView as MarkdownPreviewViewOriginal,
   TFile
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
 export class MarkdownPreviewView extends MarkdownRenderer {
-  private _data = '';
   public override containerEl: HTMLElement;
+  public get file(): TFile {
+    return castTo<TFile>(null);
+  }
+
+  private _data = '';
 
   public constructor() {
     super(createDiv());
@@ -28,12 +30,12 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   public applyScroll(_scroll: number): void {
   }
 
-  public clear(): void {
-    this._data = '';
+  public override asOriginalType__(): MarkdownPreviewViewOriginal {
+    return castTo<MarkdownPreviewViewOriginal>(this);
   }
 
-  public get file(): TFile {
-    return castTo<TFile>(null);
+  public clear(): void {
+    this._data = '';
   }
 
   public get(): string {
@@ -49,9 +51,5 @@ export class MarkdownPreviewView extends MarkdownRenderer {
 
   public set(data: string, _clear: boolean): void {
     this._data = data;
-  }
-
-  public override asReal__(): RealMarkdownPreviewView {
-    return castTo<RealMarkdownPreviewView>(this);
   }
 }

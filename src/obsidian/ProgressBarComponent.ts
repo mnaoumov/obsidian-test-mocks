@@ -1,9 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
-import type { ProgressBarComponent as RealProgressBarComponent } from 'obsidian';
+import type { ProgressBarComponent as ProgressBarComponentOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ProgressBarComponent extends ValueComponent<number> {
@@ -16,7 +14,6 @@ export class ProgressBarComponent extends ValueComponent<number> {
   private _value = 0;
 
   public constructor(_containerEl: HTMLElement) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated ValueComponent constructor.
     super();
     this.progressBar = createDiv();
     const mock = strictMock(this);
@@ -28,6 +25,10 @@ export class ProgressBarComponent extends ValueComponent<number> {
     // Spy hook.
   }
 
+  public override asOriginalType__(): ProgressBarComponentOriginal {
+    return castTo<ProgressBarComponentOriginal>(this);
+  }
+
   public override getValue(): number {
     return this._value;
   }
@@ -37,9 +38,5 @@ export class ProgressBarComponent extends ValueComponent<number> {
     this.progressBar.style.width = `${String(value)}%`;
     this.progressBar.dataset['value'] = String(value);
     return this;
-  }
-
-  public override asReal__(): RealProgressBarComponent {
-    return castTo<RealProgressBarComponent>(this);
   }
 }

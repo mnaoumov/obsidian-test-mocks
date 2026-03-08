@@ -1,6 +1,5 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
-  Keymap as RealKeymap,
+  Keymap as KeymapOriginal,
   Modifier,
   PaneType,
   UserEvent
@@ -8,28 +7,11 @@ import type {
 
 import type { Scope } from './Scope.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class Keymap {
-  private _scopeStack: Scope[] = [];
-
-  public static create__(): Keymap {
-    return new Keymap();
-  }
-
-  public static constructor__(_instance: Keymap): void {
-    // Spy hook.
-  }
-
-  public asReal__(): RealKeymap {
-    return castTo<RealKeymap>(this);
-  }
-
-  public static isModEvent(_evt?: null | UserEvent): boolean | PaneType {
-    return false;
-  }
+  private readonly _scopeStack: Scope[] = [];
 
   protected constructor() {
     const mock = strictMock(this);
@@ -37,8 +19,24 @@ export class Keymap {
     return mock;
   }
 
+  public static constructor__(_instance: Keymap): void {
+    // Spy hook.
+  }
+
+  public static create__(): Keymap {
+    return new Keymap();
+  }
+
+  public static isModEvent(_evt?: null | UserEvent): boolean | PaneType {
+    return false;
+  }
+
   public static isModifier(_evt: KeyboardEvent | MouseEvent | TouchEvent, _modifier: Modifier): boolean {
     return false;
+  }
+
+  public asOriginalType__(): KeymapOriginal {
+    return castTo<KeymapOriginal>(this);
   }
 
   public popScope(scope: Scope): void {

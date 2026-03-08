@@ -1,15 +1,13 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   DataAdapter,
   DataWriteOptions,
-  Vault as RealVault
+  Vault as VaultOriginal
 } from 'obsidian';
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
@@ -39,10 +37,6 @@ export class Vault extends Events {
     return new Vault(adapter);
   }
 
-  public override asReal__(): RealVault {
-    return castTo<RealVault>(this);
-  }
-
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {
     for (const child of folder.children) {
       cb(child);
@@ -55,6 +49,10 @@ export class Vault extends Events {
   public async append(file: TFile, data: string, options?: DataWriteOptions): Promise<void> {
     await this.adapter.append(file.path, data, options);
     this.trigger('modify', file);
+  }
+
+  public override asOriginalType__(): VaultOriginal {
+    return castTo<VaultOriginal>(this);
   }
 
   public async cachedRead(file: TFile): Promise<string> {

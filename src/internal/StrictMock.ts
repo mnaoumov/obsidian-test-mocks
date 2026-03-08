@@ -1,11 +1,11 @@
 const STRICT_MOCK_MARKER = Symbol('strictMock');
 
 const PASSTHROUGH_PROPS = new Set<string | symbol>([
-  'then',
-  'toJSON',
+  Symbol.iterator,
   Symbol.toPrimitive,
   Symbol.toStringTag,
-  Symbol.iterator
+  'then',
+  'toJSON'
 ]);
 
 const strictMockHandler: ProxyHandler<object> = {

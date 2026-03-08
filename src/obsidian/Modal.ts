@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { Modal as RealModal } from 'obsidian';
+import type { Modal as ModalOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Scope } from './Scope.ts';
 
 export class Modal {
@@ -33,6 +31,10 @@ export class Modal {
 
   public static constructor__(_instance: Modal, _app: App): void {
     // Spy hook.
+  }
+
+  public asOriginalType__(): ModalOriginal {
+    return castTo<ModalOriginal>(this);
   }
 
   public close(): void {
@@ -72,9 +74,5 @@ export class Modal {
   public setTitle(title: string): this {
     this.titleEl.textContent = title;
     return this;
-  }
-
-  public asReal__(): RealModal {
-    return castTo<RealModal>(this);
   }
 }

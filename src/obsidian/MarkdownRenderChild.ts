@@ -1,9 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
-import type { MarkdownRenderChild as RealMarkdownRenderChild } from 'obsidian';
+import type { MarkdownRenderChild as MarkdownRenderChildOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
 
 export class MarkdownRenderChild extends Component {
@@ -21,7 +19,7 @@ export class MarkdownRenderChild extends Component {
     // Spy hook.
   }
 
-  public override asReal__(): RealMarkdownRenderChild {
-    return castTo<RealMarkdownRenderChild>(this);
+  public override asOriginalType__(): MarkdownRenderChildOriginal {
+    return castTo<MarkdownRenderChildOriginal>(this);
   }
 }

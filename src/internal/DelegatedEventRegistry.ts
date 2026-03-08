@@ -1,14 +1,5 @@
 const listenerMap = new WeakMap<EventTarget, Map<string, Map<unknown, EventListener>>>();
 
-function getMap(target: EventTarget): Map<string, Map<unknown, EventListener>> {
-  let map = listenerMap.get(target);
-  if (!map) {
-    map = new Map();
-    listenerMap.set(target, map);
-  }
-  return map;
-}
-
 export function delegatedOff(
   target: EventTarget,
   type: string,
@@ -41,4 +32,13 @@ export function delegatedOn<T extends EventTarget>(
   }
   byType.set(listener, cb);
   target.addEventListener(type, cb, options);
+}
+
+function getMap(target: EventTarget): Map<string, Map<unknown, EventListener>> {
+  let map = listenerMap.get(target);
+  if (!map) {
+    map = new Map();
+    listenerMap.set(target, map);
+  }
+  return map;
 }

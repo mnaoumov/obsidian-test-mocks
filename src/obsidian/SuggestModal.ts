@@ -1,14 +1,12 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   Instruction,
-  SuggestModal as RealSuggestModal
+  SuggestModal as SuggestModalOriginal
 } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class SuggestModal<T> extends Modal {
@@ -31,11 +29,15 @@ export abstract class SuggestModal<T> extends Modal {
     // Spy hook.
   }
 
+  public override asOriginalType__(): SuggestModalOriginal<T> {
+    return castTo<SuggestModalOriginal<T>>(this);
+  }
+
   public override close(): void {
     super.close();
   }
 
-  public abstract getSuggestions(query: string): T[] | Promise<T[]>;
+  public abstract getSuggestions(query: string): Promise<T[]> | T[];
 
   public abstract onChooseSuggestion(item: T, evt: KeyboardEvent | MouseEvent): void;
 
@@ -55,9 +57,5 @@ export abstract class SuggestModal<T> extends Modal {
 
   public setPlaceholder(placeholder: string): void {
     this.inputEl.placeholder = placeholder;
-  }
-
-  public override asReal__(): RealSuggestModal<T> {
-    return castTo<RealSuggestModal<T>>(this);
   }
 }

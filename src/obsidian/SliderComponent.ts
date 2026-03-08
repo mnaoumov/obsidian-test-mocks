@@ -1,9 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
-import type { SliderComponent as RealSliderComponent } from 'obsidian';
+import type { SliderComponent as SliderComponentOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class SliderComponent extends ValueComponent<number> {
@@ -20,7 +18,6 @@ export class SliderComponent extends ValueComponent<number> {
   private _value = 0;
 
   public constructor(_containerEl: HTMLElement) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated ValueComponent constructor.
     super();
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
@@ -31,6 +28,10 @@ export class SliderComponent extends ValueComponent<number> {
 
   public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
+  }
+
+  public override asOriginalType__(): SliderComponentOriginal {
+    return castTo<SliderComponentOriginal>(this);
   }
 
   public override getValue(): number {
@@ -71,9 +72,5 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public showTooltip(): void {
-  }
-
-  public override asReal__(): RealSliderComponent {
-    return castTo<RealSliderComponent>(this);
   }
 }

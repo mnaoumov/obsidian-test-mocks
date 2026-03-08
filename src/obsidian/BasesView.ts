@@ -1,10 +1,10 @@
-import { castTo } from '../internal/Cast.ts';
-import type { BasesView as RealBasesView } from 'obsidian';
+import type { BasesView as BasesViewOriginal } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { Component } from './Component.ts';
 
 export abstract class BasesView extends Component {
-  public override asReal__(): RealBasesView {
-    return castTo<RealBasesView>(this);
+  public override asOriginalType__(): BasesViewOriginal {
+    return castTo<BasesViewOriginal>(this);
   }
 }

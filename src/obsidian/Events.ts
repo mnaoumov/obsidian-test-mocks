@@ -1,15 +1,13 @@
 import type {
   EventRef,
-  Events as RealEvents
+  Events as EventsOriginal,
+  Events as ObsidianEvents
 } from 'obsidian';
-import type { Events as ObsidianEvents } from 'obsidian';
 
 import type { EventsEntry } from '../internal/Types.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
@@ -22,6 +20,10 @@ export class Events {
 
   public static constructor__(_instance: Events, ..._args: unknown[]): void {
     // Spy hook.
+  }
+
+  public asOriginalType__(): EventsOriginal {
+    return castTo<EventsOriginal>(this);
   }
 
   public off(name: string, callback: (...data: unknown[]) => unknown): void {
@@ -57,9 +59,5 @@ export class Events {
 
   public tryTrigger(evt: EventRef, args: unknown[]): void {
     evt.fn.call(evt.e, ...args);
-  }
-
-  public asReal__(): RealEvents {
-    return castTo<RealEvents>(this);
   }
 }

@@ -1,6 +1,6 @@
-import { castTo } from '../internal/Cast.ts';
-import type { BooleanValue as RealBooleanValue } from 'obsidian';
+import type { BooleanValue as BooleanValueOriginal } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class BooleanValue extends PrimitiveValue<boolean> {
@@ -8,7 +8,7 @@ export class BooleanValue extends PrimitiveValue<boolean> {
     super(value);
   }
 
-  public override asReal__(): RealBooleanValue {
-    return castTo<RealBooleanValue>(this);
+  public override asOriginalType__(): BooleanValueOriginal {
+    return castTo<BooleanValueOriginal>(this);
   }
 }

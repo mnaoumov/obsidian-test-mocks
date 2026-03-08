@@ -1,9 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
-import type { WorkspaceFloating as RealWorkspaceFloating } from 'obsidian';
+import type { WorkspaceFloating as WorkspaceFloatingOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceFloating extends WorkspaceParent {
@@ -24,7 +22,7 @@ export class WorkspaceFloating extends WorkspaceParent {
     return new WorkspaceFloating();
   }
 
-  public override asReal__(): RealWorkspaceFloating {
-    return castTo<RealWorkspaceFloating>(this);
+  public override asOriginalType__(): WorkspaceFloatingOriginal {
+    return castTo<WorkspaceFloatingOriginal>(this);
   }
 }

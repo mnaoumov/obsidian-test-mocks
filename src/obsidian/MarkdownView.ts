@@ -1,16 +1,16 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   DataAdapter,
   EventRef,
   HoverPopover,
   IconName,
-  MarkdownView as RealMarkdownView,
+  MarkdownView as MarkdownViewOriginal,
   Menu,
   ViewStateResult
 } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
+import { castTo } from '../internal/Cast.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { Editor } from './Editor.ts';
@@ -112,6 +112,10 @@ export class MarkdownView {
       component.load();
     }
     return component;
+  }
+
+  public asOriginalType__(): MarkdownViewOriginal {
+    return castTo<MarkdownViewOriginal>(this);
   }
 
   public canAcceptExtension(extension: string): boolean {
@@ -252,9 +256,5 @@ export class MarkdownView {
     this._intervals = [];
 
     this._loaded = false;
-  }
-
-  public asReal__(): RealMarkdownView {
-    return castTo<RealMarkdownView>(this);
   }
 }

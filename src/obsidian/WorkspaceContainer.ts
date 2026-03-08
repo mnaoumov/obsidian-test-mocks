@@ -1,8 +1,8 @@
-import { castTo } from '../internal/Cast.ts';
-import type { WorkspaceContainer as RealWorkspaceContainer } from 'obsidian';
+import type { WorkspaceContainer as WorkspaceContainerOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
+import { castTo } from '../internal/Cast.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 export abstract class WorkspaceContainer extends WorkspaceSplit {
@@ -18,7 +18,7 @@ export abstract class WorkspaceContainer extends WorkspaceSplit {
     // Spy hook.
   }
 
-  public override asReal__(): RealWorkspaceContainer {
-    return castTo<RealWorkspaceContainer>(this);
+  public override asOriginalType__(): WorkspaceContainerOriginal {
+    return castTo<WorkspaceContainerOriginal>(this);
   }
 }

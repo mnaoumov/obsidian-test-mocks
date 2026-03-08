@@ -1,9 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
-import type { DropdownComponent as RealDropdownComponent } from 'obsidian';
+import type { DropdownComponent as DropdownComponentOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class DropdownComponent extends ValueComponent<string> {
@@ -16,7 +14,6 @@ export class DropdownComponent extends ValueComponent<string> {
   private changeCallback?: () => void;
 
   public constructor(_containerEl: HTMLElement) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated ValueComponent constructor.
     super();
     this.selectEl = createEl('select');
     const mock = strictMock(this);
@@ -43,6 +40,10 @@ export class DropdownComponent extends ValueComponent<string> {
     return this;
   }
 
+  public override asOriginalType__(): DropdownComponentOriginal {
+    return castTo<DropdownComponentOriginal>(this);
+  }
+
   public override getValue(): string {
     return this.selectEl.value;
   }
@@ -63,9 +64,5 @@ export class DropdownComponent extends ValueComponent<string> {
   /** Test helper to trigger change callback. */
   public simulateChange(): void {
     this.changeCallback?.();
-  }
-
-  public override asReal__(): RealDropdownComponent {
-    return castTo<RealDropdownComponent>(this);
   }
 }

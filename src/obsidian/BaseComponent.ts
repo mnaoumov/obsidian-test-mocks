@@ -1,9 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
-import type { BaseComponent as RealBaseComponent } from 'obsidian';
+import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export abstract class BaseComponent {
   public disabled = false;
@@ -18,6 +16,10 @@ export abstract class BaseComponent {
     // Spy hook.
   }
 
+  public asOriginalType__(): BaseComponentOriginal {
+    return castTo<BaseComponentOriginal>(this);
+  }
+
   public setDisabled(disabled: boolean): this {
     this.disabled = disabled;
     return this;
@@ -26,9 +28,5 @@ export abstract class BaseComponent {
   public then(cb: (component: this) => unknown): this {
     cb(this);
     return this;
-  }
-
-  public asReal__(): RealBaseComponent {
-    return castTo<RealBaseComponent>(this);
   }
 }

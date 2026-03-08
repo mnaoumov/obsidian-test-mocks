@@ -4,7 +4,6 @@ import {
   statSync
 } from 'node:fs';
 import { join } from 'node:path';
-
 import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
 
 function getEntryPoints(dir: string): string[] {
@@ -24,24 +23,24 @@ await wrapCliTask(async () => {
   const entryPoints = getEntryPoints('src');
 
   const commonOptions = {
-    entryPoints,
     bundle: false,
+    entryPoints,
     platform: 'node' as const,
-    target: 'es2024',
-    sourcemap: 'inline' as const
+    sourcemap: 'inline' as const,
+    target: 'es2024'
   };
 
   await Promise.all([
     build({
       ...commonOptions,
-      outdir: 'dist/lib/esm',
       format: 'esm',
+      outdir: 'dist/lib/esm',
       outExtension: { '.js': '.mjs' }
     }),
     build({
       ...commonOptions,
-      outdir: 'dist/lib/cjs',
       format: 'cjs',
+      outdir: 'dist/lib/cjs',
       outExtension: { '.js': '.cjs' }
     })
   ]);

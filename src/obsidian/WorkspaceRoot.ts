@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { WorkspaceRoot as RealWorkspaceRoot } from 'obsidian';
+import type { WorkspaceRoot as WorkspaceRootOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class WorkspaceRoot {
   public get doc(): Document {
@@ -30,7 +28,7 @@ export class WorkspaceRoot {
     return new WorkspaceRoot(_workspace, _direction, _id);
   }
 
-  public asReal__(): RealWorkspaceRoot {
-    return castTo<RealWorkspaceRoot>(this);
+  public asOriginalType__(): WorkspaceRootOriginal {
+    return castTo<WorkspaceRootOriginal>(this);
   }
 }

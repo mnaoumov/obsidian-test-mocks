@@ -1,5 +1,6 @@
+import type { Tasks as TasksOriginal } from 'obsidian';
+
 import { castTo } from '../internal/Cast.ts';
-import type { Tasks as RealTasks } from 'obsidian';
 
 export class Tasks {
   private readonly promises: Promise<unknown>[] = [];
@@ -12,15 +13,15 @@ export class Tasks {
     this.promises.push(promise);
   }
 
+  public asOriginalType__(): TasksOriginal {
+    return castTo<TasksOriginal>(this);
+  }
+
   public isEmpty(): boolean {
     return this.promises.length === 0;
   }
 
   public async promise(): Promise<unknown> {
     return Promise.all(this.promises);
-  }
-
-  public asReal__(): RealTasks {
-    return castTo<RealTasks>(this);
   }
 }

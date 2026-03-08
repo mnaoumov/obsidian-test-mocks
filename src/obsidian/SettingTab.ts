@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { SettingTab as RealSettingTab } from 'obsidian';
+import type { SettingTab as SettingTabOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export abstract class SettingTab {
   public app: App;
@@ -23,13 +21,13 @@ export abstract class SettingTab {
     // Spy hook.
   }
 
+  public asOriginalType__(): SettingTabOriginal {
+    return castTo<SettingTabOriginal>(this);
+  }
+
   public abstract display(): void;
 
   public hide(): void {
     this.containerEl.innerHTML = '';
-  }
-
-  public asReal__(): RealSettingTab {
-    return castTo<RealSettingTab>(this);
   }
 }

@@ -1,32 +1,18 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   FileStats,
-  TFile as RealTFile
+  TFile as TFileOriginal
 } from 'obsidian';
 
 import type { Vault } from './Vault.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
 export class TFile extends TAbstractFile {
   public basename: string;
   public extension: string;
   public stat: FileStats = { ctime: 0, mtime: 0, size: 0 };
-
-  public static create__(vault: Vault, path: string): TFile {
-    return new TFile(vault, path);
-  }
-
-  public static override constructor__(_instance: TFile, _vault: Vault, _path: string): void {
-    // Spy hook.
-  }
-
-  public override asReal__(): RealTFile {
-    return castTo<RealTFile>(this);
-  }
 
   protected constructor(vault: Vault, path: string) {
     super(vault, path);
@@ -36,5 +22,17 @@ export class TFile extends TAbstractFile {
     const mock = strictMock(this);
     TFile.constructor__(mock, vault, path);
     return mock;
+  }
+
+  public static override constructor__(_instance: TFile, _vault: Vault, _path: string): void {
+    // Spy hook.
+  }
+
+  public static create__(vault: Vault, path: string): TFile {
+    return new TFile(vault, path);
+  }
+
+  public override asOriginalType__(): TFileOriginal {
+    return castTo<TFileOriginal>(this);
   }
 }

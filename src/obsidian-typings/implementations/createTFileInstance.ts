@@ -10,7 +10,7 @@ import { createTFolderInstance } from './createTFolderInstance.ts';
 import { parentFolderPath } from './parentFolderPath.ts';
 
 export function createTFileInstance(app: App, path: string): TFile {
-  let file = app.vault.getFileByPath(path);
+  const file = app.vault.getFileByPath(path);
   if (file) {
     return file;
   }

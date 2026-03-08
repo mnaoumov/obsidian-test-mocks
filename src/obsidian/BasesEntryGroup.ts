@@ -1,14 +1,12 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
-  BasesEntryGroup as RealBasesEntryGroup,
+  BasesEntryGroup as BasesEntryGroupOriginal,
   Value
 } from 'obsidian';
 
 import type { BasesEntry } from './BasesEntry.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class BasesEntryGroup {
   public entries: BasesEntry[];
@@ -32,8 +30,8 @@ export class BasesEntryGroup {
     return new BasesEntryGroup(entries, key);
   }
 
-  public asReal__(): RealBasesEntryGroup {
-    return castTo<RealBasesEntryGroup>(this);
+  public asOriginalType__(): BasesEntryGroupOriginal {
+    return castTo<BasesEntryGroupOriginal>(this);
   }
 
   public hasKey(): boolean {

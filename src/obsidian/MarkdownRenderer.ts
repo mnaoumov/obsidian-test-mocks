@@ -1,12 +1,12 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   App,
   Component,
   HoverPopover,
-  MarkdownRenderer as RealMarkdownRenderer,
+  MarkdownRenderer as MarkdownRendererOriginal,
   TFile
 } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { MarkdownRenderChild } from './MarkdownRenderChild.ts';
 
 export abstract class MarkdownRenderer extends MarkdownRenderChild {
@@ -21,7 +21,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   public static async renderMarkdown(_markdown: string, _el: HTMLElement, _sourcePath: string, _component: Component): Promise<void> {
   }
 
-  public override asReal__(): RealMarkdownRenderer {
-    return castTo<RealMarkdownRenderer>(this);
+  public override asOriginalType__(): MarkdownRendererOriginal {
+    return castTo<MarkdownRendererOriginal>(this);
   }
 }

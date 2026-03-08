@@ -1,10 +1,10 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   DataAdapter,
   HoverPopover,
-  MarkdownEditView as RealMarkdownEditView
+  MarkdownEditView as MarkdownEditViewOriginal
 } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -27,6 +27,10 @@ export class MarkdownEditView {
     this._scroll = scroll;
   }
 
+  public asOriginalType__(): MarkdownEditViewOriginal {
+    return castTo<MarkdownEditViewOriginal>(this);
+  }
+
   public clear(): void {
     this.editor.setValue('');
   }
@@ -45,9 +49,5 @@ export class MarkdownEditView {
 
   public set(data: string, _clear: boolean): void {
     this.editor.setValue(data);
-  }
-
-  public asReal__(): RealMarkdownEditView {
-    return castTo<RealMarkdownEditView>(this);
   }
 }

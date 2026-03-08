@@ -1,10 +1,15 @@
+import type { SecretStorage as SecretStorageOriginal } from 'obsidian';
+
 import { castTo } from '../internal/Cast.ts';
-import type { SecretStorage as RealSecretStorage } from 'obsidian';
 
 export class SecretStorage {
-  private store = new Map<string, string>();
+  private readonly store = new Map<string, string>();
 
-  public getSecret(id: string): string | null {
+  public asOriginalType__(): SecretStorageOriginal {
+    return castTo<SecretStorageOriginal>(this);
+  }
+
+  public getSecret(id: string): null | string {
     return this.store.get(id) ?? null;
   }
 
@@ -14,9 +19,5 @@ export class SecretStorage {
 
   public setSecret(id: string, secret: string): void {
     this.store.set(id, secret);
-  }
-
-  public asReal__(): RealSecretStorage {
-    return castTo<RealSecretStorage>(this);
   }
 }

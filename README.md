@@ -158,6 +158,41 @@ app.internalPlugins = { manifests: {} };
 app.internalPlugins = { manifests: {} };
 ```
 
+## Type Bridging with `asOriginalType__()`
+
+When `obsidian-typings` is installed, its `declare module 'obsidian'` augmentations add dozens of extra properties to obsidian types. This makes the augmented types structurally incompatible with the mock types — you cannot assign a mock `App` to a parameter typed as `import('obsidian').App`.
+
+Every mock class provides an `asOriginalType__()` method that returns the instance typed as its original obsidian counterpart:
+
+```typescript
+import type { App as AppOriginal } from 'obsidian';
+import { createMockApp } from 'obsidian-test-mocks/helpers';
+
+const app = await createMockApp();
+
+// Pass to code that expects the original obsidian type
+function pluginInit(app: AppOriginal): void { /* ... */ }
+pluginInit(app.asOriginalType__());
+```
+
+This is a zero-cost type cast at runtime — no wrapping, no cloning. The `__` suffix signals it is not part of the real Obsidian API.
+
+Because every mock is a [strict mock](#strict-mocks), passing the result to code that accesses internal members (not part of `obsidian.d.ts`) will throw a descriptive error unless you assign those members first:
+
+```typescript
+const app = await createMockApp();
+const original = app.asOriginalType__();
+
+// If pluginInit() accesses app.internalPlugins internally, this throws:
+//   Property "internalPlugins" is not mocked in App.
+//   To override, assign a value first: mock.internalPlugins = ...
+pluginInit(original);
+
+// Fix: assign the missing member before calling
+original.internalPlugins = { manifests: {} };
+pluginInit(original); // works
+```
+
 ## Overriding Exported Variables
 
 Some exports like `apiVersion` are plain strings, not functions. Since ES module bindings are read-only for consumers, use `vi.mock()` to override them:

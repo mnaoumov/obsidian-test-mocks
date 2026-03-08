@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { TextAreaComponent as RealTextAreaComponent } from 'obsidian';
+import type { TextAreaComponent as TextAreaComponentOriginal } from 'obsidian';
 
 import type { ValueComponent } from './ValueComponent.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement> {
@@ -20,7 +18,7 @@ export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement
     // Spy hook.
   }
 
-  public override asReal__(): RealTextAreaComponent {
-    return castTo<RealTextAreaComponent>(this);
+  public override asOriginalType__(): TextAreaComponentOriginal {
+    return castTo<TextAreaComponentOriginal>(this);
   }
 }

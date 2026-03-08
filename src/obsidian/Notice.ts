@@ -1,16 +1,14 @@
-import { castTo } from '../internal/Cast.ts';
-import type { Notice as RealNotice } from 'obsidian';
+import type { Notice as NoticeOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class Notice {
   public containerEl: HTMLElement;
-  public messageEl: HTMLElement;
-  public noticeEl: HTMLElement;
-
   public readonly duration: number = 0;
+  public messageEl: HTMLElement;
+
+  public noticeEl: HTMLElement;
 
   public constructor(message: DocumentFragment | string, duration?: number) {
     this.containerEl = createDiv();
@@ -31,6 +29,10 @@ export class Notice {
     // Spy hook.
   }
 
+  public asOriginalType__(): NoticeOriginal {
+    return castTo<NoticeOriginal>(this);
+  }
+
   public hide(): void {
   }
 
@@ -42,9 +44,5 @@ export class Notice {
       this.messageEl.appendChild(message.cloneNode(true));
     }
     return this;
-  }
-
-  public asReal__(): RealNotice {
-    return castTo<RealNotice>(this);
   }
 }

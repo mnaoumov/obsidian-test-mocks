@@ -1,6 +1,6 @@
-import { castTo } from '../internal/Cast.ts';
-import type { TagValue as RealTagValue } from 'obsidian';
+import type { TagValue as TagValueOriginal } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { StringValue } from './StringValue.ts';
 
 export class TagValue extends StringValue {
@@ -8,7 +8,7 @@ export class TagValue extends StringValue {
     super(value);
   }
 
-  public override asReal__(): RealTagValue {
-    return castTo<RealTagValue>(this);
+  public override asOriginalType__(): TagValueOriginal {
+    return castTo<TagValueOriginal>(this);
   }
 }

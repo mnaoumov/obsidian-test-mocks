@@ -2,13 +2,11 @@ import type {
   ExtraButtonComponent,
   SearchComponent,
   Setting as ObsidianSetting,
-  SettingGroup as RealSettingGroup
+  SettingGroup as SettingGroupOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { ExtraButtonComponent as MockExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
@@ -51,6 +49,10 @@ export class SettingGroup {
     return this;
   }
 
+  public asOriginalType__(): SettingGroupOriginal {
+    return castTo<SettingGroupOriginal>(this);
+  }
+
   public setHeading(text: DocumentFragment | string): this {
     if (typeof text === 'string') {
       const heading = createEl('h3');
@@ -58,9 +60,5 @@ export class SettingGroup {
       this.listEl.prepend(heading);
     }
     return this;
-  }
-
-  public asReal__(): RealSettingGroup {
-    return castTo<RealSettingGroup>(this);
   }
 }

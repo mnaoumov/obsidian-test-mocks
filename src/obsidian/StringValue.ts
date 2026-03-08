@@ -1,6 +1,6 @@
-import { castTo } from '../internal/Cast.ts';
-import type { StringValue as RealStringValue } from 'obsidian';
+import type { StringValue as StringValueOriginal } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class StringValue extends PrimitiveValue<string> {
@@ -8,7 +8,7 @@ export class StringValue extends PrimitiveValue<string> {
     super(value);
   }
 
-  public override asReal__(): RealStringValue {
-    return castTo<RealStringValue>(this);
+  public override asOriginalType__(): StringValueOriginal {
+    return castTo<StringValueOriginal>(this);
   }
 }

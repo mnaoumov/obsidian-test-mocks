@@ -1,6 +1,5 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
-  BasesEntry as RealBasesEntry,
+  BasesEntry as BasesEntryOriginal,
   BasesPropertyId,
   FormulaContext,
   Value
@@ -8,9 +7,8 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class BasesEntry implements FormulaContext {
   public file: TFile;
@@ -31,8 +29,8 @@ export class BasesEntry implements FormulaContext {
     return new BasesEntry(_ctx, file);
   }
 
-  public asReal__(): RealBasesEntry {
-    return castTo<RealBasesEntry>(this);
+  public asOriginalType__(): BasesEntryOriginal {
+    return castTo<BasesEntryOriginal>(this);
   }
 
   public getValue(propertyId: BasesPropertyId): null | Value {

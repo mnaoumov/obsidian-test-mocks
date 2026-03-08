@@ -1,9 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
-import type { AbstractTextComponent as RealAbstractTextComponent } from 'obsidian';
+import type { AbstractTextComponent as AbstractTextComponentOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTextAreaElement> extends ValueComponent<string> {
@@ -13,7 +11,6 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   private _value = '';
 
   public constructor(inputEl: T) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated ValueComponent constructor.
     super();
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Assigning mock-only @deprecated inputEl.
     this.inputEl = inputEl;
@@ -24,6 +21,10 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
 
   public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
+  }
+
+  public override asOriginalType__(): AbstractTextComponentOriginal<T> {
+    return castTo<AbstractTextComponentOriginal<T>>(this);
   }
 
   public override getValue(): string {
@@ -51,9 +52,5 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
     this.inputEl.value = value;
     this._onChange?.(value);
     return this;
-  }
-
-  public override asReal__(): RealAbstractTextComponent<T> {
-    return castTo<RealAbstractTextComponent<T>>(this);
   }
 }

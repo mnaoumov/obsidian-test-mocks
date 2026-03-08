@@ -1,8 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   Editor,
   EditorPosition,
-  EditorSuggest as RealEditorSuggest,
+  EditorSuggest as EditorSuggestOriginal,
   EditorSuggestContext,
   EditorSuggestTriggerInfo,
   Instruction,
@@ -11,9 +10,8 @@ import type {
 
 import type { App } from './App.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
@@ -31,9 +29,13 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
     // Spy hook.
   }
 
-  public abstract override getSuggestions(context: EditorSuggestContext): T[] | Promise<T[]>;
+  public override asOriginalType__(): EditorSuggestOriginal<T> {
+    return castTo<EditorSuggestOriginal<T>>(this);
+  }
 
-  public abstract onTrigger(cursor: EditorPosition, editor: Editor, file: TFile | null): EditorSuggestTriggerInfo | null;
+  public abstract override getSuggestions(context: EditorSuggestContext): Promise<T[]> | T[];
+
+  public abstract onTrigger(cursor: EditorPosition, editor: Editor, file: null | TFile): EditorSuggestTriggerInfo | null;
 
   public abstract override renderSuggestion(value: T, el: HTMLElement): void;
 
@@ -41,9 +43,5 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public setInstructions(instructions: Instruction[]): void {
     this.instructions = instructions;
-  }
-
-  public override asReal__(): RealEditorSuggest<T> {
-    return castTo<RealEditorSuggest<T>>(this);
   }
 }
