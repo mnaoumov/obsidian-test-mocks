@@ -1,8 +1,12 @@
+import { strictMock } from '../internal/StrictMock.ts';
+
 export abstract class BaseComponent {
   public disabled = false;
 
   protected constructor() {
-    BaseComponent.__constructor(this);
+    const mock = strictMock(this);
+    BaseComponent.__constructor(mock);
+    return mock;
   }
 
   public static __constructor(_instance: BaseComponent, ..._args: unknown[]): void {
