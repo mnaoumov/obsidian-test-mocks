@@ -2,6 +2,7 @@ import type { CachedMetadata } from 'obsidian';
 
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
+import type { Vault } from './Vault.ts';
 
 import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
@@ -12,7 +13,7 @@ export class MetadataCache extends Events {
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
-  protected constructor(app: App, _vault: unknown) {
+  protected constructor(app: App, _vault: Vault) {
     super();
     this._app = app;
     const mock = strictMock(this);
@@ -20,11 +21,11 @@ export class MetadataCache extends Events {
     return mock;
   }
 
-  public static override constructor__(_instance: MetadataCache, _app: App, _vault: unknown): void {
+  public static override constructor__(_instance: MetadataCache, _app: App, _vault: Vault): void {
     // Spy hook.
   }
 
-  public static create__(app: App, _vault: unknown): MetadataCache {
+  public static create__(app: App, _vault: Vault): MetadataCache {
     return new MetadataCache(app, _vault);
   }
 

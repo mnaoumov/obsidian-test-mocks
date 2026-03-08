@@ -14,6 +14,7 @@ import type {
   EnsureSideLeafOptions,
   SetActiveLeafParams
 } from '../internal/Types.ts';
+import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { strictMock } from '../internal/StrictMock.ts';
@@ -45,30 +46,30 @@ export class Workspace extends Events {
     this._containerEl = el;
   }
 
-  private readonly _app: unknown;
+  private readonly _app: App;
   private _containerEl?: HTMLElement;
 
   private _layoutReadyCallbacks: (() => unknown)[] = [];
   private _leaves: WorkspaceLeaf[] = [];
-  protected constructor(_app: unknown, containerEl: HTMLElement) {
+  protected constructor(_app: App, containerEl: HTMLElement) {
     super();
     this._app = _app;
     this._containerEl = containerEl;
-    this.leftRibbon = WorkspaceRibbon.create__(_app, 'left');
-    this.leftSplit = WorkspaceSidedock.create__(_app, 'vertical', 'left');
-    this.rightRibbon = WorkspaceRibbon.create__(_app, 'right');
-    this.rightSplit = WorkspaceSidedock.create__(_app, 'vertical', 'right');
-    this.rootSplit = WorkspaceRoot.create__(_app, 'vertical');
+    this.leftRibbon = WorkspaceRibbon.create__(this, 'left');
+    this.leftSplit = WorkspaceSidedock.create__(this, 'vertical', 'left');
+    this.rightRibbon = WorkspaceRibbon.create__(this, 'right');
+    this.rightSplit = WorkspaceSidedock.create__(this, 'vertical', 'right');
+    this.rootSplit = WorkspaceRoot.create__(this, 'vertical');
     const mock = strictMock(this);
     Workspace.constructor__(mock, _app, containerEl);
     return mock;
   }
 
-  public static override constructor__(_instance: Workspace, _app: unknown, _containerEl: HTMLElement): void {
+  public static override constructor__(_instance: Workspace, _app: App, _containerEl: HTMLElement): void {
     // Spy hook.
   }
 
-  public static create__(_app: unknown, containerEl: HTMLElement): Workspace {
+  public static create__(_app: App, containerEl: HTMLElement): Workspace {
     return new Workspace(_app, containerEl);
   }
 
@@ -213,7 +214,7 @@ export class Workspace extends Events {
     if (!this._leaves.includes(leaf)) {
       this._leaves.push(leaf);
     }
-    return WorkspaceWindow.create__(this._app);
+    return WorkspaceWindow.create__(this);
   }
 
   public onLayoutReady(callback: () => unknown): void {
