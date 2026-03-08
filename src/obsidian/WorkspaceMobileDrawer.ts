@@ -1,7 +1,7 @@
+import { castTo } from '../internal/Cast.ts';
 import type { WorkspaceMobileDrawer as RealWorkspaceMobileDrawer } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
@@ -25,7 +25,7 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
   }
 
   public override asReal__(): RealWorkspaceMobileDrawer {
-    return strictCastTo<RealWorkspaceMobileDrawer>(this);
+    return castTo<RealWorkspaceMobileDrawer>(this);
   }
 
   public collapse(): void {

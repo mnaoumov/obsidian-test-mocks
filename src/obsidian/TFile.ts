@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   FileStats,
   TFile as RealTFile
@@ -6,7 +7,6 @@ import type {
 import type { Vault } from './Vault.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
@@ -25,7 +25,7 @@ export class TFile extends TAbstractFile {
   }
 
   public override asReal__(): RealTFile {
-    return strictCastTo<RealTFile>(this);
+    return castTo<RealTFile>(this);
   }
 
   protected constructor(vault: Vault, path: string) {

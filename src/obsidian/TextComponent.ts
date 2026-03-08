@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { TextComponent as RealTextComponent } from 'obsidian';
 
 import type { ValueComponent } from './ValueComponent.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
@@ -51,6 +51,6 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public override asReal__(): RealTextComponent {
-    return strictCastTo<RealTextComponent>(this);
+    return castTo<RealTextComponent>(this);
   }
 }

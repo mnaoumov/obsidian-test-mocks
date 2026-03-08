@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   CachedMetadata,
   MetadataCache as RealMetadataCache
@@ -8,7 +9,6 @@ import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
@@ -36,7 +36,7 @@ export class MetadataCache extends Events {
   }
 
   public override asReal__(): RealMetadataCache {
-    return strictCastTo<RealMetadataCache>(this);
+    return castTo<RealMetadataCache>(this);
   }
 
   public _setCache(path: string, cache: CachedMetadata): void {

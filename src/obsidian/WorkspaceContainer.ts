@@ -1,8 +1,8 @@
+import { castTo } from '../internal/Cast.ts';
 import type { WorkspaceContainer as RealWorkspaceContainer } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 export abstract class WorkspaceContainer extends WorkspaceSplit {
@@ -19,6 +19,6 @@ export abstract class WorkspaceContainer extends WorkspaceSplit {
   }
 
   public override asReal__(): RealWorkspaceContainer {
-    return strictCastTo<RealWorkspaceContainer>(this);
+    return castTo<RealWorkspaceContainer>(this);
   }
 }

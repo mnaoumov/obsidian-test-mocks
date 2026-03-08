@@ -5,7 +5,6 @@ import type {
 
 import { castTo } from '../internal/Cast.ts';
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
@@ -53,6 +52,6 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public override asReal__(): RealMarkdownPreviewView {
-    return strictCastTo<RealMarkdownPreviewView>(this);
+    return castTo<RealMarkdownPreviewView>(this);
   }
 }

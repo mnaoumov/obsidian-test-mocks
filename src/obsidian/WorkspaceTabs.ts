@@ -1,10 +1,10 @@
+import { castTo } from '../internal/Cast.ts';
 import type { WorkspaceTabs as RealWorkspaceTabs } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 import type { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
@@ -28,6 +28,6 @@ export class WorkspaceTabs extends WorkspaceParent {
   }
 
   public override asReal__(): RealWorkspaceTabs {
-    return strictCastTo<RealWorkspaceTabs>(this);
+    return castTo<RealWorkspaceTabs>(this);
   }
 }

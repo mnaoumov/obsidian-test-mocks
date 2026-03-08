@@ -1,8 +1,8 @@
+import { castTo } from '../internal/Cast.ts';
 import type { FileSystemAdapter as RealFileSystemAdapter } from 'obsidian';
 
 import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -24,7 +24,7 @@ export class FileSystemAdapter extends InMemoryAdapter {
   }
 
   public asReal__(): RealFileSystemAdapter {
-    return strictCastTo<RealFileSystemAdapter>(this);
+    return castTo<RealFileSystemAdapter>(this);
   }
 
   public getBasePath(): string {

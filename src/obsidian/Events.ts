@@ -8,7 +8,6 @@ import type { EventsEntry } from '../internal/Types.ts';
 
 import { castTo } from '../internal/Cast.ts';
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -61,6 +60,6 @@ export class Events {
   }
 
   public asReal__(): RealEvents {
-    return strictCastTo<RealEvents>(this);
+    return castTo<RealEvents>(this);
   }
 }

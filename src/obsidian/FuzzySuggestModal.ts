@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   FuzzyMatch,
   FuzzySuggestModal as RealFuzzySuggestModal
@@ -6,7 +7,6 @@ import type {
 import type { App } from './App.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
@@ -47,6 +47,6 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   }
 
   public override asReal__(): RealFuzzySuggestModal<T> {
-    return strictCastTo<RealFuzzySuggestModal<T>>(this);
+    return castTo<RealFuzzySuggestModal<T>>(this);
   }
 }

@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   ColorComponent as RealColorComponent,
   HSL,
@@ -5,7 +6,6 @@ import type {
 } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -93,7 +93,7 @@ export class ColorComponent extends ValueComponent<string> {
   }
 
   public override asReal__(): RealColorComponent {
-    return strictCastTo<RealColorComponent>(this);
+    return castTo<RealColorComponent>(this);
   }
 }
 

@@ -1,10 +1,10 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   Component as RealComponent,
   EventRef
 } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -125,6 +125,6 @@ export class Component {
   }
 
   public asReal__(): RealComponent {
-    return strictCastTo<RealComponent>(this);
+    return castTo<RealComponent>(this);
   }
 }

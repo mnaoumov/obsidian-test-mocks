@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { TFolder as RealTFolder } from 'obsidian';
 
 import type { Vault } from './Vault.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
@@ -20,7 +20,7 @@ export class TFolder extends TAbstractFile {
   }
 
   public override asReal__(): RealTFolder {
-    return strictCastTo<RealTFolder>(this);
+    return castTo<RealTFolder>(this);
   }
 
   protected constructor(vault: Vault, path: string) {

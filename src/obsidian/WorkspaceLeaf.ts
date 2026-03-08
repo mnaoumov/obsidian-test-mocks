@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   HoverPopover,
   IconName,
@@ -11,7 +12,6 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
@@ -52,7 +52,7 @@ export class WorkspaceLeaf extends Events {
   }
 
   public override asReal__(): RealWorkspaceLeaf {
-    return strictCastTo<RealWorkspaceLeaf>(this);
+    return castTo<RealWorkspaceLeaf>(this);
   }
 
   public _getGroup(): null | string {

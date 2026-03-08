@@ -1,7 +1,7 @@
+import { castTo } from '../internal/Cast.ts';
 import type { ExtraButtonComponent as RealExtraButtonComponent } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
@@ -48,6 +48,6 @@ export class ExtraButtonComponent extends BaseComponent {
   }
 
   public override asReal__(): RealExtraButtonComponent {
-    return strictCastTo<RealExtraButtonComponent>(this);
+    return castTo<RealExtraButtonComponent>(this);
   }
 }

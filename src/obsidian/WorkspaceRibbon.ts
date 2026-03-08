@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { WorkspaceRibbon as RealWorkspaceRibbon } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -24,6 +24,6 @@ export class WorkspaceRibbon {
   }
 
   public asReal__(): RealWorkspaceRibbon {
-    return strictCastTo<RealWorkspaceRibbon>(this);
+    return castTo<RealWorkspaceRibbon>(this);
   }
 }

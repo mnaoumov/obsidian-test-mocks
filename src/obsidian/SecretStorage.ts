@@ -1,5 +1,5 @@
+import { castTo } from '../internal/Cast.ts';
 import type { SecretStorage as RealSecretStorage } from 'obsidian';
-import { strictCastTo } from '../internal/StrictMock.ts';
 
 export class SecretStorage {
   private store = new Map<string, string>();
@@ -17,6 +17,6 @@ export class SecretStorage {
   }
 
   public asReal__(): RealSecretStorage {
-    return strictCastTo<RealSecretStorage>(this);
+    return castTo<RealSecretStorage>(this);
   }
 }

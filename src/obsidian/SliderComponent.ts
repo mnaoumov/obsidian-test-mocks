@@ -1,7 +1,7 @@
+import { castTo } from '../internal/Cast.ts';
 import type { SliderComponent as RealSliderComponent } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -74,6 +74,6 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public override asReal__(): RealSliderComponent {
-    return strictCastTo<RealSliderComponent>(this);
+    return castTo<RealSliderComponent>(this);
   }
 }

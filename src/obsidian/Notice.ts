@@ -1,7 +1,7 @@
+import { castTo } from '../internal/Cast.ts';
 import type { Notice as RealNotice } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -45,6 +45,6 @@ export class Notice {
   }
 
   public asReal__(): RealNotice {
-    return strictCastTo<RealNotice>(this);
+    return castTo<RealNotice>(this);
   }
 }

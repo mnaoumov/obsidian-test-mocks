@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   DataAdapter,
   DataWriteOptions,
@@ -7,7 +8,6 @@ import type {
 import type { TAbstractFile } from './TAbstractFile.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
@@ -40,7 +40,7 @@ export class Vault extends Events {
   }
 
   public override asReal__(): RealVault {
-    return strictCastTo<RealVault>(this);
+    return castTo<RealVault>(this);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {

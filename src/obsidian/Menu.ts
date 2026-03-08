@@ -6,7 +6,6 @@ import type {
 
 import { castTo } from '../internal/Cast.ts';
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
@@ -35,7 +34,7 @@ export class Menu extends Component {
   }
 
   public override asReal__(): RealMenu {
-    return strictCastTo<RealMenu>(this);
+    return castTo<RealMenu>(this);
   }
 
   public static forEvent(_evt: MouseEvent | PointerEvent): Menu {

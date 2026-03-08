@@ -1,6 +1,6 @@
+import { castTo } from '../internal/Cast.ts';
 import type { RegExpValue as RealRegExpValue } from 'obsidian';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class RegExpValue extends NotNullValue {
@@ -13,6 +13,6 @@ export class RegExpValue extends NotNullValue {
   }
 
   public override asReal__(): RealRegExpValue {
-    return strictCastTo<RealRegExpValue>(this);
+    return castTo<RealRegExpValue>(this);
   }
 }

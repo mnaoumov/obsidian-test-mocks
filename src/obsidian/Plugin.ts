@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   Command,
   HoverLinkSource,
@@ -12,7 +13,6 @@ import type {
 import type { App } from './App.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
@@ -112,6 +112,6 @@ export abstract class Plugin extends Component {
   }
 
   public override asReal__(): RealPlugin {
-    return strictCastTo<RealPlugin>(this);
+    return castTo<RealPlugin>(this);
   }
 }

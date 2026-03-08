@@ -1,7 +1,7 @@
+import { castTo } from '../internal/Cast.ts';
 import type { WorkspaceParent as RealWorkspaceParent } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
@@ -19,6 +19,6 @@ export abstract class WorkspaceParent extends WorkspaceItem {
   }
 
   public override asReal__(): RealWorkspaceParent {
-    return strictCastTo<RealWorkspaceParent>(this);
+    return castTo<RealWorkspaceParent>(this);
   }
 }

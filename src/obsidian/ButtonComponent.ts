@@ -1,10 +1,10 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   ButtonComponent as RealButtonComponent,
   TooltipOptions
 } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
@@ -75,6 +75,6 @@ export class ButtonComponent extends BaseComponent {
   }
 
   public override asReal__(): RealButtonComponent {
-    return strictCastTo<RealButtonComponent>(this);
+    return castTo<RealButtonComponent>(this);
   }
 }

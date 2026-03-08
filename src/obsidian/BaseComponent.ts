@@ -1,7 +1,7 @@
+import { castTo } from '../internal/Cast.ts';
 import type { BaseComponent as RealBaseComponent } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -29,6 +29,6 @@ export abstract class BaseComponent {
   }
 
   public asReal__(): RealBaseComponent {
-    return strictCastTo<RealBaseComponent>(this);
+    return castTo<RealBaseComponent>(this);
   }
 }

@@ -1,10 +1,10 @@
+import { castTo } from '../internal/Cast.ts';
 import type { TAbstractFile as RealTAbstractFile } from 'obsidian';
 
 import type { TFolder } from './TFolder.ts';
 import type { Vault } from './Vault.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -30,6 +30,6 @@ export abstract class TAbstractFile {
   }
 
   public asReal__(): RealTAbstractFile {
-    return strictCastTo<RealTAbstractFile>(this);
+    return castTo<RealTAbstractFile>(this);
   }
 }

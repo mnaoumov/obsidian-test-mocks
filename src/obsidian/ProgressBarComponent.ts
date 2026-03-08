@@ -1,7 +1,7 @@
+import { castTo } from '../internal/Cast.ts';
 import type { ProgressBarComponent as RealProgressBarComponent } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -40,6 +40,6 @@ export class ProgressBarComponent extends ValueComponent<number> {
   }
 
   public override asReal__(): RealProgressBarComponent {
-    return strictCastTo<RealProgressBarComponent>(this);
+    return castTo<RealProgressBarComponent>(this);
   }
 }

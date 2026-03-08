@@ -1,8 +1,8 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   MarkdownPostProcessor,
   MarkdownPreviewRenderer as RealMarkdownPreviewRenderer
 } from 'obsidian';
-import { strictCastTo } from '../internal/StrictMock.ts';
 
 export class MarkdownPreviewRenderer {
   private static _postProcessors: MarkdownPostProcessor[] = [];
@@ -16,6 +16,6 @@ export class MarkdownPreviewRenderer {
   }
 
   public asReal__(): RealMarkdownPreviewRenderer {
-    return strictCastTo<RealMarkdownPreviewRenderer>(this);
+    return castTo<RealMarkdownPreviewRenderer>(this);
   }
 }

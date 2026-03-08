@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   HoverParent,
   HoverPopover as RealHoverPopover,
@@ -6,7 +7,6 @@ import type {
 } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
@@ -38,6 +38,6 @@ export class HoverPopover extends Component {
   }
 
   public override asReal__(): RealHoverPopover {
-    return strictCastTo<RealHoverPopover>(this);
+    return castTo<RealHoverPopover>(this);
   }
 }

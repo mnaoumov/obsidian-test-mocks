@@ -1,10 +1,10 @@
+import { castTo } from '../internal/Cast.ts';
 import type { DateValue as RealDateValue } from 'obsidian';
 
 import type moment from 'moment';
 
 import momentFn from 'moment';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DateValue extends NotNullValue {
@@ -24,6 +24,6 @@ export class DateValue extends NotNullValue {
   }
 
   public override asReal__(): RealDateValue {
-    return strictCastTo<RealDateValue>(this);
+    return castTo<RealDateValue>(this);
   }
 }

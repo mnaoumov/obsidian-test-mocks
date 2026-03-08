@@ -1,7 +1,7 @@
+import { castTo } from '../internal/Cast.ts';
 import type { MarkdownRenderChild as RealMarkdownRenderChild } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
@@ -22,6 +22,6 @@ export class MarkdownRenderChild extends Component {
   }
 
   public override asReal__(): RealMarkdownRenderChild {
-    return strictCastTo<RealMarkdownRenderChild>(this);
+    return castTo<RealMarkdownRenderChild>(this);
   }
 }

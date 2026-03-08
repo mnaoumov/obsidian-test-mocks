@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   Editor,
   EditorPosition,
@@ -11,7 +12,6 @@ import type {
 import type { App } from './App.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
@@ -44,6 +44,6 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
   }
 
   public override asReal__(): RealEditorSuggest<T> {
-    return strictCastTo<RealEditorSuggest<T>>(this);
+    return castTo<RealEditorSuggest<T>>(this);
   }
 }

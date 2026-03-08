@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   App,
   Component,
@@ -6,7 +7,6 @@ import type {
   TFile
 } from 'obsidian';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { MarkdownRenderChild } from './MarkdownRenderChild.ts';
 
 export abstract class MarkdownRenderer extends MarkdownRenderChild {
@@ -22,6 +22,6 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   }
 
   public override asReal__(): RealMarkdownRenderer {
-    return strictCastTo<RealMarkdownRenderer>(this);
+    return castTo<RealMarkdownRenderer>(this);
   }
 }

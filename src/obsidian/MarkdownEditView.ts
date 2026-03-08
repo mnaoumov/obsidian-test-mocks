@@ -1,10 +1,10 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   DataAdapter,
   HoverPopover,
   MarkdownEditView as RealMarkdownEditView
 } from 'obsidian';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -48,6 +48,6 @@ export class MarkdownEditView {
   }
 
   public asReal__(): RealMarkdownEditView {
-    return strictCastTo<RealMarkdownEditView>(this);
+    return castTo<RealMarkdownEditView>(this);
   }
 }

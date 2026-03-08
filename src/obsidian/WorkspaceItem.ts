@@ -5,7 +5,6 @@ import type {
 
 import { castTo } from '../internal/Cast.ts';
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
@@ -31,6 +30,6 @@ export abstract class WorkspaceItem extends Events {
   }
 
   public override asReal__(): RealWorkspaceItem {
-    return strictCastTo<RealWorkspaceItem>(this);
+    return castTo<RealWorkspaceItem>(this);
   }
 }

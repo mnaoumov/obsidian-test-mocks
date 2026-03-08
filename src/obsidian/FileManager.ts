@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   DataWriteOptions,
   FileManager as RealFileManager
@@ -9,7 +10,6 @@ import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { parseYaml } from './parseYaml.ts';
@@ -27,7 +27,7 @@ export class FileManager {
   }
 
   public asReal__(): RealFileManager {
-    return strictCastTo<RealFileManager>(this);
+    return castTo<RealFileManager>(this);
   }
 
   protected constructor(app: App) {

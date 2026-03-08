@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   KeymapEventHandler,
   KeymapEventListener,
@@ -6,7 +7,6 @@ import type {
 } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -29,7 +29,7 @@ export class Scope {
   }
 
   public asReal__(): RealScope {
-    return strictCastTo<RealScope>(this);
+    return castTo<RealScope>(this);
   }
 
   protected constructor(parent?: Scope) {

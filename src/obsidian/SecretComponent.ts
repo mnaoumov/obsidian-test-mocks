@@ -1,8 +1,8 @@
+import { castTo } from '../internal/Cast.ts';
 import type { SecretComponent as RealSecretComponent } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class SecretComponent extends BaseComponent {
@@ -24,6 +24,6 @@ export class SecretComponent extends BaseComponent {
   }
 
   public override asReal__(): RealSecretComponent {
-    return strictCastTo<RealSecretComponent>(this);
+    return castTo<RealSecretComponent>(this);
   }
 }

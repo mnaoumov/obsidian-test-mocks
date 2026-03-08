@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   Keymap as RealKeymap,
   Modifier,
@@ -8,7 +9,6 @@ import type {
 import type { Scope } from './Scope.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -24,7 +24,7 @@ export class Keymap {
   }
 
   public asReal__(): RealKeymap {
-    return strictCastTo<RealKeymap>(this);
+    return castTo<RealKeymap>(this);
   }
 
   public static isModEvent(_evt?: null | UserEvent): boolean | PaneType {

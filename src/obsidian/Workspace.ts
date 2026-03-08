@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   Constructor,
   MarkdownFileInfo,
@@ -19,7 +20,6 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { debounce } from './debounce.ts';
@@ -78,7 +78,7 @@ export class Workspace extends Events {
   }
 
   public override asReal__(): RealWorkspace {
-    return strictCastTo<RealWorkspace>(this);
+    return castTo<RealWorkspace>(this);
   }
 
   public _setLayoutReady(): void {

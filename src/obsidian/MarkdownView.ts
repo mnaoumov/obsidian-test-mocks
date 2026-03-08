@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   DataAdapter,
   EventRef,
@@ -10,7 +11,6 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { Editor } from './Editor.ts';
@@ -255,6 +255,6 @@ export class MarkdownView {
   }
 
   public asReal__(): RealMarkdownView {
-    return strictCastTo<RealMarkdownView>(this);
+    return castTo<RealMarkdownView>(this);
   }
 }
