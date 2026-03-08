@@ -2,6 +2,8 @@ import { strictMock } from '../internal/StrictMock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceSplit extends WorkspaceParent {
+  public declare parent: WorkspaceParent;
+
   protected constructor() {
     super();
     const mock = strictMock(this);
@@ -9,11 +11,11 @@ export class WorkspaceSplit extends WorkspaceParent {
     return mock;
   }
 
-  public static __create(): WorkspaceSplit {
-    return new WorkspaceSplit();
-  }
-
   public static override __constructor(_instance: WorkspaceSplit, ..._args: unknown[]): void {
     // Spy hook.
+  }
+
+  public static __create(): WorkspaceSplit {
+    return new WorkspaceSplit();
   }
 }
