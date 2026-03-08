@@ -12,20 +12,20 @@ export class MetadataCache extends Events {
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
-  protected constructor(app: App) {
+  protected constructor(app: App, _vault?: unknown) {
     super();
     this._app = app;
     const mock = strictMock(this);
-    MetadataCache.constructor__(mock);
+    MetadataCache.constructor__(mock, app, _vault);
     return mock;
   }
 
-  public static override constructor__(_instance: MetadataCache): void {
+  public static override constructor__(_instance: MetadataCache, _app?: App, _vault?: unknown): void {
     // Spy hook.
   }
 
   public static create__(app: App, _vault?: unknown): MetadataCache {
-    return new MetadataCache(app);
+    return new MetadataCache(app, _vault);
   }
 
   public _setCache(path: string, cache: CachedMetadata): void {

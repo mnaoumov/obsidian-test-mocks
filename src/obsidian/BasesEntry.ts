@@ -12,19 +12,19 @@ export class BasesEntry implements FormulaContext {
   public file: TFile;
   private readonly values = new Map<BasesPropertyId, null | Value>();
 
-  protected constructor(file: TFile) {
+  protected constructor(_ctx: unknown, file: TFile) {
     this.file = file;
     const mock = strictMock(this);
-    BasesEntry.constructor__(mock, file);
+    BasesEntry.constructor__(mock, _ctx, file);
     return mock;
   }
 
-  public static constructor__(_instance: BasesEntry, _file: TFile): void {
+  public static constructor__(_instance: BasesEntry, _ctx: unknown, _file: TFile): void {
     // Spy hook.
   }
 
   public static create__(_ctx: unknown, file: TFile): BasesEntry {
-    return new BasesEntry(file);
+    return new BasesEntry(_ctx, file);
   }
 
   public getValue(propertyId: BasesPropertyId): null | Value {

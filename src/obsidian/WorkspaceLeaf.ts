@@ -30,20 +30,20 @@ export class WorkspaceLeaf extends Events {
 
   private _viewState: ViewState = { type: '' };
 
-  protected constructor(id?: string) {
+  protected constructor(_app?: unknown, id?: string) {
     super();
     this._id = id ?? String(nextLeafId++);
     const mock = strictMock(this);
-    WorkspaceLeaf.constructor__(mock);
+    WorkspaceLeaf.constructor__(mock, _app, id);
     return mock;
   }
 
-  public static override constructor__(_instance: WorkspaceLeaf): void {
+  public static override constructor__(_instance: WorkspaceLeaf, _app?: unknown, _id?: string): void {
     // Spy hook.
   }
 
   public static create__(_app?: unknown, id?: string): WorkspaceLeaf {
-    return new WorkspaceLeaf(id);
+    return new WorkspaceLeaf(_app, id);
   }
 
   public _getGroup(): null | string {

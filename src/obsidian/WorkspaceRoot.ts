@@ -9,17 +9,17 @@ export class WorkspaceRoot {
     return window;
   }
 
-  protected constructor() {
+  protected constructor(_workspace?: unknown, _direction?: string, _id?: string) {
     const mock = strictMock(this);
-    WorkspaceRoot.constructor__(mock);
+    WorkspaceRoot.constructor__(mock, _workspace, _direction, _id);
     return mock;
   }
 
-  public static constructor__(_instance: WorkspaceRoot): void {
+  public static constructor__(_instance: WorkspaceRoot, _workspace?: unknown, _direction?: string, _id?: string): void {
     // Spy hook.
   }
 
   public static create__(_workspace?: unknown, _direction?: string, _id?: string): WorkspaceRoot {
-    return new WorkspaceRoot();
+    return new WorkspaceRoot(_workspace, _direction, _id);
   }
 }
