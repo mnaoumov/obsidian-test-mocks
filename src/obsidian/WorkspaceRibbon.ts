@@ -9,7 +9,7 @@ export class WorkspaceRibbon {
   }
 
   public static __create(): WorkspaceRibbon {
-    return Reflect.construct(WorkspaceRibbon as unknown as new () => WorkspaceRibbon, []) as WorkspaceRibbon;
+    return new WorkspaceRibbon();
   }
 
   public static __constructor(_instance: WorkspaceRibbon, ..._args: unknown[]): void {

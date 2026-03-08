@@ -10,7 +10,7 @@ export class WorkspaceSplit extends WorkspaceParent {
   }
 
   public static __create(): WorkspaceSplit {
-    return Reflect.construct(WorkspaceSplit as unknown as new () => WorkspaceSplit, []) as WorkspaceSplit;
+    return new WorkspaceSplit();
   }
 
   public static override __constructor(_instance: WorkspaceSplit, ..._args: unknown[]): void {
