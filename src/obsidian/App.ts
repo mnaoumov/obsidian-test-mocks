@@ -22,7 +22,7 @@ export class App {
 
   private readonly _localStorage = new Map<string, unknown>();
 
-  protected constructor(adapter?: DataAdapter) {
+  protected constructor(adapter?: DataAdapter, _appId?: string) {
     this.vault = Vault.create__(adapter);
     this.fileManager = FileManager.create__(this);
     this.keymap = Keymap.create__();
@@ -30,16 +30,16 @@ export class App {
     this.scope = Scope.create__();
     this.workspace = Workspace.create__();
     const mock = strictMock(this);
-    App.constructor__(mock);
+    App.constructor__(mock, adapter, _appId);
     return mock;
   }
 
-  public static constructor__(_instance: App): void {
+  public static constructor__(_instance: App, _adapter?: DataAdapter, _appId?: string): void {
     // Spy hook.
   }
 
   public static create__(adapter?: DataAdapter, _appId?: string): App {
-    return new App(adapter);
+    return new App(adapter, _appId);
   }
 
   public isDarkMode(): boolean {

@@ -49,7 +49,7 @@ export class Workspace extends Events {
 
   private _layoutReadyCallbacks: (() => unknown)[] = [];
   private _leaves: WorkspaceLeaf[] = [];
-  protected constructor(containerEl?: HTMLElement) {
+  protected constructor(_app?: unknown, containerEl?: HTMLElement) {
     super();
     if (containerEl) {
       this._containerEl = containerEl;
@@ -60,16 +60,16 @@ export class Workspace extends Events {
     this.rightSplit = WorkspaceSidedock.create__();
     this.rootSplit = WorkspaceRoot.create__();
     const mock = strictMock(this);
-    Workspace.constructor__(mock);
+    Workspace.constructor__(mock, _app, containerEl);
     return mock;
   }
 
-  public static override constructor__(_instance: Workspace): void {
+  public static override constructor__(_instance: Workspace, _app?: unknown, _containerEl?: HTMLElement): void {
     // Spy hook.
   }
 
   public static create__(_app?: unknown, containerEl?: HTMLElement): Workspace {
-    return new Workspace(containerEl);
+    return new Workspace(_app, containerEl);
   }
 
   public _setLayoutReady(): void {
