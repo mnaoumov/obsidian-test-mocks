@@ -8,7 +8,7 @@ export class BasesEntryGroup {
   public entries: BasesEntry[];
   public key?: Value;
 
-  protected constructor(entries: BasesEntry[], key?: unknown) {
+  protected constructor(entries: BasesEntry[], key: unknown) {
     this.entries = entries;
     if (key !== undefined) {
       this.key = key as Value;
@@ -18,11 +18,11 @@ export class BasesEntryGroup {
     return mock;
   }
 
-  public static constructor__(_instance: BasesEntryGroup, _entries: BasesEntry[], _key?: unknown): void {
+  public static constructor__(_instance: BasesEntryGroup, _entries: BasesEntry[], _key: unknown): void {
     // Spy hook.
   }
 
-  public static create__(entries: BasesEntry[], key?: unknown): BasesEntryGroup {
+  public static create__(entries: BasesEntry[], key: unknown): BasesEntryGroup {
     return new BasesEntryGroup(entries, key);
   }
 

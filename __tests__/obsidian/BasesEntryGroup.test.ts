@@ -14,18 +14,18 @@ describe('BasesEntryGroup', () => {
   const mockFile = { path: 'test.md' } as TFile;
 
   it('should create an instance via create__', () => {
-    const group = BasesEntryGroup.create__([]);
+    const group = BasesEntryGroup.create__([], undefined);
     expect(group).toBeInstanceOf(BasesEntryGroup);
   });
 
   it('should store entries', () => {
     const entry = BasesEntry.create__(undefined, mockFile);
-    const group = BasesEntryGroup.create__([entry]);
+    const group = BasesEntryGroup.create__([entry], undefined);
     expect(group.entries).toEqual([entry]);
   });
 
   it('should not have key when created without one', () => {
-    const group = BasesEntryGroup.create__([]);
+    const group = BasesEntryGroup.create__([], undefined);
     expect(group.hasKey()).toBe(false);
   });
 
@@ -37,7 +37,7 @@ describe('BasesEntryGroup', () => {
   });
 
   it('should leave key as undefined when not provided', () => {
-    const group = BasesEntryGroup.create__([]);
+    const group = BasesEntryGroup.create__([], undefined);
     expect(group.key).toBeUndefined();
   });
 });

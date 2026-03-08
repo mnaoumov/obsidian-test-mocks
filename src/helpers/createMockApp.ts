@@ -1,9 +1,15 @@
-import type { App as ObsidianApp } from 'obsidian';
+import type {
+  App as ObsidianApp,
+  DataAdapter
+} from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
 import { App } from '../obsidian/App.ts';
+import { FileSystemAdapter } from '../obsidian/FileSystemAdapter.ts';
 
 export interface MockAppParams {
+  adapter?: DataAdapter;
+  appId?: string;
   files?: MockFileEntry[];
   folders?: string[];
 }
@@ -14,7 +20,8 @@ export interface MockFileEntry {
 }
 
 export async function createMockApp(params: MockAppParams = {}): Promise<ObsidianApp> {
-  const app = App.create__();
+  const adapter = params.adapter ?? FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapter;
+  const app = App.create__(adapter, params.appId ?? '');
 
   const neededFolders = new Set<string>();
 
