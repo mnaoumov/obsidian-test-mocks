@@ -1,8 +1,14 @@
-import type { ViewStateResult } from 'obsidian';
+import type {
+  FileView as RealFileView,
+  ViewStateResult
+} from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -48,5 +54,9 @@ export abstract class FileView extends ItemView {
 
   public override async setState(state: unknown, result: ViewStateResult): Promise<void> {
     await super.setState(state, result);
+  }
+
+  public override asReal__(): RealFileView {
+    return strictCastTo<RealFileView>(this);
   }
 }

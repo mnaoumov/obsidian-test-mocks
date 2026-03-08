@@ -1,10 +1,16 @@
-import type { CachedMetadata } from 'obsidian';
+import type {
+  CachedMetadata,
+  MetadataCache as RealMetadataCache
+} from 'obsidian';
 
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 export class MetadataCache extends Events {
@@ -27,6 +33,10 @@ export class MetadataCache extends Events {
 
   public static create__(app: App, _vault: Vault): MetadataCache {
     return new MetadataCache(app, _vault);
+  }
+
+  public override asReal__(): RealMetadataCache {
+    return strictCastTo<RealMetadataCache>(this);
   }
 
   public _setCache(path: string, cache: CachedMetadata): void {

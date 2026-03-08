@@ -1,4 +1,9 @@
-import { strictMock } from '../internal/StrictMock.ts';
+import type { AbstractTextComponent as RealAbstractTextComponent } from 'obsidian';
+
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTextAreaElement> extends ValueComponent<string> {
@@ -46,5 +51,9 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
     this.inputEl.value = value;
     this._onChange?.(value);
     return this;
+  }
+
+  public override asReal__(): RealAbstractTextComponent<T> {
+    return strictCastTo<RealAbstractTextComponent<T>>(this);
   }
 }

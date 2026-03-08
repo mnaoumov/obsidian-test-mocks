@@ -1,7 +1,13 @@
-import type { TFile } from 'obsidian';
+import type {
+  MarkdownPreviewView as RealMarkdownPreviewView,
+  TFile
+} from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
 export class MarkdownPreviewView extends MarkdownRenderer {
@@ -44,5 +50,9 @@ export class MarkdownPreviewView extends MarkdownRenderer {
 
   public set(data: string, _clear: boolean): void {
     this._data = data;
+  }
+
+  public override asReal__(): RealMarkdownPreviewView {
+    return strictCastTo<RealMarkdownPreviewView>(this);
   }
 }

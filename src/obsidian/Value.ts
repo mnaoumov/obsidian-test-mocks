@@ -1,3 +1,6 @@
+import type { Value as RealValue } from 'obsidian';
+
+import { strictCastTo } from '../internal/StrictMock.ts';
 import type { RenderContext } from './RenderContext.ts';
 
 export abstract class Value {
@@ -40,4 +43,8 @@ export abstract class Value {
   }
 
   public abstract toString__(): string;
+
+  public asReal__(): RealValue {
+    return strictCastTo<RealValue>(this);
+  }
 }

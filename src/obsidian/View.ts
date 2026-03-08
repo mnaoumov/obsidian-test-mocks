@@ -3,10 +3,14 @@ import type {
   IconName,
   Menu,
   Scope,
+  View as RealView,
   ViewStateResult
 } from 'obsidian';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -72,5 +76,9 @@ export abstract class View extends Component {
   }
 
   protected async onOpen(): Promise<void> {
+  }
+
+  public override asReal__(): RealView {
+    return strictCastTo<RealView>(this);
   }
 }

@@ -1,4 +1,9 @@
-import { strictMock } from '../internal/StrictMock.ts';
+import type { DropdownComponent as RealDropdownComponent } from 'obsidian';
+
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class DropdownComponent extends ValueComponent<string> {
@@ -58,5 +63,9 @@ export class DropdownComponent extends ValueComponent<string> {
   /** Test helper to trigger change callback. */
   public simulateChange(): void {
     this.changeCallback?.();
+  }
+
+  public override asReal__(): RealDropdownComponent {
+    return strictCastTo<RealDropdownComponent>(this);
   }
 }

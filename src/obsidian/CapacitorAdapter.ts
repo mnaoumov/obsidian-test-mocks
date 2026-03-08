@@ -1,5 +1,10 @@
+import type { CapacitorAdapter as RealCapacitorAdapter } from 'obsidian';
+
 import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export class CapacitorAdapter extends InMemoryAdapter {
   protected constructor(basePath: string, _fs: unknown) {
@@ -16,6 +21,10 @@ export class CapacitorAdapter extends InMemoryAdapter {
 
   public static create__(basePath: string, _fs: unknown): CapacitorAdapter {
     return new CapacitorAdapter(basePath, _fs);
+  }
+
+  public asReal__(): RealCapacitorAdapter {
+    return strictCastTo<RealCapacitorAdapter>(this);
   }
 
   public getFullPath(normalizedPath: string): string {

@@ -1,4 +1,9 @@
-import { strictMock } from '../internal/StrictMock.ts';
+import type { WorkspaceMobileDrawer as RealWorkspaceMobileDrawer } from 'obsidian';
+
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceMobileDrawer extends WorkspaceParent {
@@ -17,6 +22,10 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
 
   public static override constructor__(_instance: WorkspaceMobileDrawer, ..._args: unknown[]): void {
     // Spy hook.
+  }
+
+  public override asReal__(): RealWorkspaceMobileDrawer {
+    return strictCastTo<RealWorkspaceMobileDrawer>(this);
   }
 
   public collapse(): void {

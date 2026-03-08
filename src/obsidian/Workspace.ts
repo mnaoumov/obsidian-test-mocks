@@ -6,6 +6,7 @@ import type {
   Side,
   SplitDirection,
   View,
+  Workspace as RealWorkspace,
   WorkspaceParent,
   WorkspaceWindowInitData
 } from 'obsidian';
@@ -17,7 +18,10 @@ import type {
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { debounce } from './debounce.ts';
 import { Events } from './Events.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -71,6 +75,10 @@ export class Workspace extends Events {
 
   public static create__(_app: App, containerEl: HTMLElement): Workspace {
     return new Workspace(_app, containerEl);
+  }
+
+  public override asReal__(): RealWorkspace {
+    return strictCastTo<RealWorkspace>(this);
   }
 
   public _setLayoutReady(): void {

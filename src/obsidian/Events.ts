@@ -1,10 +1,16 @@
-import type { EventRef } from 'obsidian';
+import type {
+  EventRef,
+  Events as RealEvents
+} from 'obsidian';
 import type { Events as ObsidianEvents } from 'obsidian';
 
 import type { EventsEntry } from '../internal/Types.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
@@ -52,5 +58,9 @@ export class Events {
 
   public tryTrigger(evt: EventRef, args: unknown[]): void {
     evt.fn.call(evt.e, ...args);
+  }
+
+  public asReal__(): RealEvents {
+    return strictCastTo<RealEvents>(this);
   }
 }

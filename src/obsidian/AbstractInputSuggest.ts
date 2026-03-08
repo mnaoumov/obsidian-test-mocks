@@ -1,6 +1,11 @@
+import type { AbstractInputSuggest as RealAbstractInputSuggest } from 'obsidian';
+
 import type { App } from './App.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
@@ -23,5 +28,9 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
 
   public setValue(value: string): void {
     this.inputEl.value = value;
+  }
+
+  public override asReal__(): RealAbstractInputSuggest<T> {
+    return strictCastTo<RealAbstractInputSuggest<T>>(this);
   }
 }

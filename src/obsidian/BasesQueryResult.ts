@@ -1,5 +1,6 @@
 import type {
   BasesPropertyId,
+  BasesQueryResult as RealBasesQueryResult,
   Value
 } from 'obsidian';
 
@@ -7,7 +8,10 @@ import type { BasesEntry } from './BasesEntry.ts';
 import type { BasesEntryGroup } from './BasesEntryGroup.ts';
 import type { QueryController } from './QueryController.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export class BasesQueryResult {
   public data: BasesEntry[] = [];
@@ -35,6 +39,10 @@ export class BasesQueryResult {
 
   public static create__(): BasesQueryResult {
     return new BasesQueryResult();
+  }
+
+  public asReal__(): RealBasesQueryResult {
+    return strictCastTo<RealBasesQueryResult>(this);
   }
 
   public getSummaryValue(_queryController: QueryController, _entries: BasesEntry[], _prop: BasesPropertyId, _summaryKey: string): Value {

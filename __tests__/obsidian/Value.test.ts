@@ -6,6 +6,7 @@ import {
 
 import { NullValue } from '../../src/obsidian/NullValue.ts';
 import { NumberValue } from '../../src/obsidian/NumberValue.ts';
+import { RenderContext } from '../../src/obsidian/RenderContext.ts';
 import { StringValue } from '../../src/obsidian/StringValue.ts';
 import { Value } from '../../src/obsidian/Value.ts';
 
@@ -103,7 +104,7 @@ describe('Value', () => {
     it('should not throw', () => {
       const val = new StringValue('test');
       expect(() => {
-        val.renderTo({} as HTMLElement, { hoverPopover: null });
+        val.renderTo({} as HTMLElement, new RenderContext());
       }).not.toThrow();
     });
   });

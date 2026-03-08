@@ -1,6 +1,12 @@
-import type { IconName } from 'obsidian';
+import type {
+  IconName,
+  ItemView as RealItemView
+} from 'obsidian';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -21,5 +27,9 @@ export abstract class ItemView extends View {
 
   public addAction(_icon: IconName, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
     return createDiv();
+  }
+
+  public override asReal__(): RealItemView {
+    return strictCastTo<RealItemView>(this);
   }
 }

@@ -1,11 +1,17 @@
-import type { DataWriteOptions } from 'obsidian';
+import type {
+  DataWriteOptions,
+  FileManager as RealFileManager
+} from 'obsidian';
 
 import type { App } from './App.ts';
 import type { TAbstractFile } from './TAbstractFile.ts';
 import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { parseYaml } from './parseYaml.ts';
 import { stringifyYaml } from './stringifyYaml.ts';
 
@@ -18,6 +24,10 @@ export class FileManager {
 
   public static constructor__(_instance: FileManager, _app: App): void {
     // Spy hook.
+  }
+
+  public asReal__(): RealFileManager {
+    return strictCastTo<RealFileManager>(this);
   }
 
   protected constructor(app: App) {

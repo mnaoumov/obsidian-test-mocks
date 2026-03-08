@@ -1,6 +1,11 @@
+import type { WorkspaceRibbon as RealWorkspaceRibbon } from 'obsidian';
+
 import type { Workspace } from './Workspace.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export class WorkspaceRibbon {
   // Intentionally has no additional members, obsidian.d.ts doesn't have any members to mock.
@@ -16,5 +21,9 @@ export class WorkspaceRibbon {
 
   public static create__(_workspace: Workspace, _side: string): WorkspaceRibbon {
     return new WorkspaceRibbon(_workspace, _side);
+  }
+
+  public asReal__(): RealWorkspaceRibbon {
+    return strictCastTo<RealWorkspaceRibbon>(this);
   }
 }
