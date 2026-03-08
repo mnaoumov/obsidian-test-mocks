@@ -9,11 +9,11 @@ import type {
   WorkspaceParent,
   WorkspaceWindowInitData
 } from 'obsidian';
+
 import type {
   EnsureSideLeafOptions,
   SetActiveLeafParams
 } from '../internal/Types.ts';
-
 import type { TFile } from './TFile.ts';
 
 import { strictMock } from '../internal/StrictMock.ts';
@@ -36,12 +36,24 @@ export class Workspace extends Events {
   public rightSplit: WorkspaceSidedock;
   public rootSplit: WorkspaceRoot;
 
-  public static create__(): Workspace {
-    return new Workspace();
+  public get containerEl(): HTMLElement {
+    this._containerEl ??= createDiv();
+    return this._containerEl;
   }
 
-  protected constructor() {
+  public set containerEl(el: HTMLElement) {
+    this._containerEl = el;
+  }
+
+  private _containerEl?: HTMLElement;
+
+  private _layoutReadyCallbacks: (() => unknown)[] = [];
+  private _leaves: WorkspaceLeaf[] = [];
+  protected constructor(containerEl?: HTMLElement) {
     super();
+    if (containerEl) {
+      this._containerEl = containerEl;
+    }
     this.leftRibbon = WorkspaceRibbon.create__();
     this.leftSplit = WorkspaceSidedock.create__();
     this.rightRibbon = WorkspaceRibbon.create__();
@@ -52,21 +64,20 @@ export class Workspace extends Events {
     return mock;
   }
 
-  public static override constructor__(_instance: Workspace, ..._args: unknown[]): void {
+  public static override constructor__(_instance: Workspace): void {
     // Spy hook.
   }
 
-  private _containerEl?: HTMLElement;
-  private _layoutReadyCallbacks: Array<() => unknown> = [];
-  private _leaves: WorkspaceLeaf[] = [];
-
-  public get containerEl(): HTMLElement {
-    this._containerEl ??= createDiv();
-    return this._containerEl;
+  public static create__(_app?: unknown, containerEl?: HTMLElement): Workspace {
+    return new Workspace(containerEl);
   }
 
-  public set containerEl(el: HTMLElement) {
-    this._containerEl = el;
+  public _setLayoutReady(): void {
+    this.layoutReady = true;
+    for (const callback of this._layoutReadyCallbacks) {
+      callback();
+    }
+    this._layoutReadyCallbacks = [];
   }
 
   public async changeLayout(_workspace: unknown): Promise<void> {
@@ -233,14 +244,6 @@ export class Workspace extends Events {
       this._leaves.push(leaf);
     }
     this.trigger('active-leaf-change', leaf);
-  }
-
-  public _setLayoutReady(): void {
-    this.layoutReady = true;
-    for (const callback of this._layoutReadyCallbacks) {
-      callback();
-    }
-    this._layoutReadyCallbacks = [];
   }
 
   public splitActiveLeaf(_direction?: SplitDirection): WorkspaceLeaf {

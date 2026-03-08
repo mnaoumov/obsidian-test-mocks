@@ -19,7 +19,7 @@ describe('BasesEntryGroup', () => {
   });
 
   it('should store entries', () => {
-    const entry = BasesEntry.create__(mockFile);
+    const entry = BasesEntry.create__(undefined, mockFile);
     const group = BasesEntryGroup.create__([entry]);
     expect(group.entries).toEqual([entry]);
   });

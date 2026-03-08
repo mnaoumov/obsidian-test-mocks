@@ -13,11 +13,11 @@ export class WorkspaceTabs extends WorkspaceParent {
     return mock;
   }
 
-  public static override constructor__(_instance: WorkspaceTabs, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceTabs): void {
     // Spy hook.
   }
 
-  public static create__(): WorkspaceTabs {
+  public static create__(_workspace?: unknown, _id?: string): WorkspaceTabs {
     return new WorkspaceTabs();
   }
 }

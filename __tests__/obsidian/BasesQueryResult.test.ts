@@ -17,30 +17,36 @@ describe('BasesQueryResult', () => {
   const mockFile = { path: 'test.md' } as TFile;
 
   it('should create an instance via create__', () => {
-    const result = BasesQueryResult.create__([], [], []);
+    const result = BasesQueryResult.create__();
     expect(result).toBeInstanceOf(BasesQueryResult);
   });
 
-  it('should store data', () => {
-    const entry = BasesEntry.create__(mockFile);
-    const result = BasesQueryResult.create__([entry], [], []);
+  it('should store data via setData__', () => {
+    const entry = BasesEntry.create__(undefined, mockFile);
+    const result = BasesQueryResult.create__();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+    result.setData__([entry]);
     expect(result.data).toEqual([entry]);
   });
 
   it('should return groupedData via getter', () => {
     const group = BasesEntryGroup.create__([]);
-    const result = BasesQueryResult.create__([], [group], []);
+    const result = BasesQueryResult.create__();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+    result.setGroupedData__([group]);
     expect(result.groupedData).toEqual([group]);
   });
 
   it('should return properties via getter', () => {
     const props = ['prop.a' as BasesPropertyId, 'prop.b' as BasesPropertyId];
-    const result = BasesQueryResult.create__([], [], props);
+    const result = BasesQueryResult.create__();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+    result.setProperties__(props);
     expect(result.properties).toEqual(props);
   });
 
   it('should throw on getSummaryValue', () => {
-    const result = BasesQueryResult.create__([], [], []);
+    const result = BasesQueryResult.create__();
     expect(() => {
       result.getSummaryValue(
         {} as QueryController,

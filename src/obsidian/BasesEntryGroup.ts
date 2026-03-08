@@ -22,8 +22,8 @@ export class BasesEntryGroup {
     // Spy hook.
   }
 
-  public static create__(entries: BasesEntry[], key?: Value): BasesEntryGroup {
-    return new BasesEntryGroup(entries, key);
+  public static create__(entries: BasesEntry[], key?: unknown): BasesEntryGroup {
+    return new BasesEntryGroup(entries, key as undefined | Value);
   }
 
   public hasKey(): boolean {

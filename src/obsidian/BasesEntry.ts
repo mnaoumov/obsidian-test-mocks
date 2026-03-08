@@ -23,7 +23,7 @@ export class BasesEntry implements FormulaContext {
     // Spy hook.
   }
 
-  public static create__(file: TFile): BasesEntry {
+  public static create__(_ctx: unknown, file: TFile): BasesEntry {
     return new BasesEntry(file);
   }
 

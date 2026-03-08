@@ -8,17 +8,9 @@ import { Events } from './Events.ts';
 
 export class MetadataCache extends Events {
   public _app: App;
-  public _cache: Map<string, CachedMetadata> = new Map();
+  public _cache = new Map<string, CachedMetadata>();
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
-
-  public static create__(app: App): MetadataCache {
-    return new MetadataCache(app);
-  }
-
-  public static override constructor__(_instance: MetadataCache): void {
-    // Spy hook.
-  }
 
   protected constructor(app: App) {
     super();
@@ -26,6 +18,19 @@ export class MetadataCache extends Events {
     const mock = strictMock(this);
     MetadataCache.constructor__(mock);
     return mock;
+  }
+
+  public static override constructor__(_instance: MetadataCache): void {
+    // Spy hook.
+  }
+
+  public static create__(app: App, _vault?: unknown): MetadataCache {
+    return new MetadataCache(app);
+  }
+
+  public _setCache(path: string, cache: CachedMetadata): void {
+    this._cache.set(path, cache);
+    this.trigger('changed');
   }
 
   public fileToLinktext(file: TFile, _sourcePath: string, omitMdExtension?: boolean): string {
@@ -58,10 +63,5 @@ export class MetadataCache extends Events {
       }
     }
     return null;
-  }
-
-  public _setCache(path: string, cache: CachedMetadata): void {
-    this._cache.set(path, cache);
-    this.trigger('changed');
   }
 }

@@ -27,7 +27,7 @@ export class BasesViewConfig {
     // Spy hook.
   }
 
-  public static create__(name: string): BasesViewConfig {
+  public static create__(_query?: string, _type?: string, name = ''): BasesViewConfig {
     return new BasesViewConfig(name);
   }
 

@@ -14,31 +14,44 @@ import { Events } from './Events.ts';
 let nextLeafId = 1;
 
 export class WorkspaceLeaf extends Events {
-  public hoverPopover: HoverPopover | null = null;
   public _id: string;
+  public hoverPopover: HoverPopover | null = null;
   public readonly isDeferred = false;
-  public view: View | null = null;
+  public view: null | View = null;
 
-  private _ephemeralState: Record<string, unknown> = {};
-  private __file: TFile | null = null;
-  private _group: string | null = null;
-  private _pinned = false;
-  private _viewState: ViewState = { type: '' };
-
-  public static create__(): WorkspaceLeaf {
-    return new WorkspaceLeaf();
+  public get _file(): null | TFile {
+    return this.__file;
   }
 
-  protected constructor() {
+  private __file: null | TFile = null;
+  private _ephemeralState: Record<string, unknown> = {};
+  private _group: null | string = null;
+  private _pinned = false;
+
+  private _viewState: ViewState = { type: '' };
+
+  protected constructor(id?: string) {
     super();
-    this._id = String(nextLeafId++);
+    this._id = id ?? String(nextLeafId++);
     const mock = strictMock(this);
     WorkspaceLeaf.constructor__(mock);
     return mock;
   }
 
-  public static override constructor__(_instance: WorkspaceLeaf, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceLeaf): void {
     // Spy hook.
+  }
+
+  public static create__(_app?: unknown, id?: string): WorkspaceLeaf {
+    return new WorkspaceLeaf(id);
+  }
+
+  public _getGroup(): null | string {
+    return this._group;
+  }
+
+  public _isPinned(): boolean {
+    return this._pinned;
   }
 
   public detach(): void {
@@ -68,7 +81,7 @@ export class WorkspaceLeaf extends Events {
   }
 
   public async loadIfDeferred(): Promise<void> {
-    // isDeferred is always false; nothing to load.
+    // IsDeferred is always false; nothing to load.
   }
 
   public onResize(): void {
@@ -81,20 +94,12 @@ export class WorkspaceLeaf extends Events {
     this.__file = file;
   }
 
-  public get _file(): TFile | null {
-    return this.__file;
-  }
-
   public setEphemeralState(state: Record<string, unknown>): void {
     this._ephemeralState = { ...state };
   }
 
-  public setGroup(group: string | null): void {
+  public setGroup(group: null | string): void {
     this._group = group;
-  }
-
-  public _getGroup(): string | null {
-    return this._group;
   }
 
   public setGroupMember(other: WorkspaceLeaf): void {
@@ -103,10 +108,6 @@ export class WorkspaceLeaf extends Events {
 
   public setPinned(pinned: boolean): void {
     this._pinned = pinned;
-  }
-
-  public _isPinned(): boolean {
-    return this._pinned;
   }
 
   public async setViewState(viewState: ViewState, eState?: Record<string, unknown>): Promise<void> {
