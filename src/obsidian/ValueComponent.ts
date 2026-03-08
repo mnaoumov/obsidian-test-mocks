@@ -1,6 +1,6 @@
+import { castTo } from '../internal/Cast.ts';
 import type { ValueComponent as RealValueComponent } from 'obsidian';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export abstract class ValueComponent<T> extends BaseComponent {
@@ -26,6 +26,6 @@ export abstract class ValueComponent<T> extends BaseComponent {
   public abstract setValue(value: T): this;
 
   public override asReal__(): RealValueComponent<T> {
-    return strictCastTo<RealValueComponent<T>>(this);
+    return castTo<RealValueComponent<T>>(this);
   }
 }

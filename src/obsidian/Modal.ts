@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { Modal as RealModal } from 'obsidian';
 
 import type { App } from './App.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Scope } from './Scope.ts';
@@ -75,6 +75,6 @@ export class Modal {
   }
 
   public asReal__(): RealModal {
-    return strictCastTo<RealModal>(this);
+    return castTo<RealModal>(this);
   }
 }

@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   DataAdapter,
   IconName,
@@ -8,7 +9,6 @@ import type {
 } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
@@ -79,6 +79,6 @@ export abstract class View extends Component {
   }
 
   public override asReal__(): RealView {
-    return strictCastTo<RealView>(this);
+    return castTo<RealView>(this);
   }
 }

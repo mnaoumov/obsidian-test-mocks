@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { WorkspaceRoot as RealWorkspaceRoot } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -31,6 +31,6 @@ export class WorkspaceRoot {
   }
 
   public asReal__(): RealWorkspaceRoot {
-    return strictCastTo<RealWorkspaceRoot>(this);
+    return castTo<RealWorkspaceRoot>(this);
   }
 }

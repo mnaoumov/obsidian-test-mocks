@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   BasesPropertyId,
   BasesSortConfig,
@@ -8,7 +9,6 @@ import type {
 import type { BasesView } from './BasesView.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { NullValue } from './NullValue.ts';
@@ -36,7 +36,7 @@ export class BasesViewConfig {
   }
 
   public asReal__(): RealBasesViewConfig {
-    return strictCastTo<RealBasesViewConfig>(this);
+    return castTo<RealBasesViewConfig>(this);
   }
 
   public get(key: string): unknown {

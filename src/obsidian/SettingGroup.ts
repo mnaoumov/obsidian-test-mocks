@@ -7,7 +7,6 @@ import type {
 
 import { castTo } from '../internal/Cast.ts';
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { ExtraButtonComponent as MockExtraButtonComponent } from './ExtraButtonComponent.ts';
@@ -62,6 +61,6 @@ export class SettingGroup {
   }
 
   public asReal__(): RealSettingGroup {
-    return strictCastTo<RealSettingGroup>(this);
+    return castTo<RealSettingGroup>(this);
   }
 }

@@ -1,6 +1,6 @@
+import { castTo } from '../internal/Cast.ts';
 import type { ObjectValue as RealObjectValue } from 'obsidian';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ObjectValue extends NotNullValue {
@@ -13,6 +13,6 @@ export class ObjectValue extends NotNullValue {
   }
 
   public override asReal__(): RealObjectValue {
-    return strictCastTo<RealObjectValue>(this);
+    return castTo<RealObjectValue>(this);
   }
 }

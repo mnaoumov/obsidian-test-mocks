@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { TextFileView as RealTextFileView } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { EditableFileView } from './EditableFileView.ts';
@@ -46,6 +46,6 @@ export abstract class TextFileView extends EditableFileView {
   public abstract setViewData(data: string, clear: boolean): void;
 
   public override asReal__(): RealTextFileView {
-    return strictCastTo<RealTextFileView>(this);
+    return castTo<RealTextFileView>(this);
   }
 }

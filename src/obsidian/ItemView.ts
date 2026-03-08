@@ -1,10 +1,10 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   IconName,
   ItemView as RealItemView
 } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { View } from './View.ts';
@@ -30,6 +30,6 @@ export abstract class ItemView extends View {
   }
 
   public override asReal__(): RealItemView {
-    return strictCastTo<RealItemView>(this);
+    return castTo<RealItemView>(this);
   }
 }

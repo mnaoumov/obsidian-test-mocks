@@ -1,6 +1,6 @@
+import { castTo } from '../internal/Cast.ts';
 import type { NumberValue as RealNumberValue } from 'obsidian';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class NumberValue extends PrimitiveValue<number> {
@@ -9,6 +9,6 @@ export class NumberValue extends PrimitiveValue<number> {
   }
 
   public override asReal__(): RealNumberValue {
-    return strictCastTo<RealNumberValue>(this);
+    return castTo<RealNumberValue>(this);
   }
 }

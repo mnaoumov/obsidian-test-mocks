@@ -1,10 +1,10 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   IconName,
   MenuItem as RealMenuItem
 } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Menu } from './Menu.ts';
@@ -34,7 +34,7 @@ export class MenuItem {
   }
 
   public asReal__(): RealMenuItem {
-    return strictCastTo<RealMenuItem>(this);
+    return castTo<RealMenuItem>(this);
   }
 
   public onClick(callback: (evt: KeyboardEvent | MouseEvent) => unknown): this {

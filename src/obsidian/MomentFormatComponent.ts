@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { MomentFormatComponent as RealMomentFormatComponent } from 'obsidian';
 
 import type { ValueComponent } from './ValueComponent.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { TextComponent } from './TextComponent.ts';
@@ -39,6 +39,6 @@ export class MomentFormatComponent extends TextComponent {
   }
 
   public override asReal__(): RealMomentFormatComponent {
-    return strictCastTo<RealMomentFormatComponent>(this);
+    return castTo<RealMomentFormatComponent>(this);
   }
 }

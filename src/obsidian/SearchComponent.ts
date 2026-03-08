@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { SearchComponent as RealSearchComponent } from 'obsidian';
 
 import type { ValueComponent } from './ValueComponent.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
@@ -29,6 +29,6 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public override asReal__(): RealSearchComponent {
-    return strictCastTo<RealSearchComponent>(this);
+    return castTo<RealSearchComponent>(this);
   }
 }

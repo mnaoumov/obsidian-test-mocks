@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   BasesPropertyId,
   BasesQueryResult as RealBasesQueryResult,
@@ -9,7 +10,6 @@ import type { BasesEntryGroup } from './BasesEntryGroup.ts';
 import type { QueryController } from './QueryController.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -42,7 +42,7 @@ export class BasesQueryResult {
   }
 
   public asReal__(): RealBasesQueryResult {
-    return strictCastTo<RealBasesQueryResult>(this);
+    return castTo<RealBasesQueryResult>(this);
   }
 
   public getSummaryValue(_queryController: QueryController, _entries: BasesEntry[], _prop: BasesPropertyId, _summaryKey: string): Value {

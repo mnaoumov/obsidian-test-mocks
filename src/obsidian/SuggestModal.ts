@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   Instruction,
   SuggestModal as RealSuggestModal
@@ -6,7 +7,6 @@ import type {
 import type { App } from './App.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
@@ -58,6 +58,6 @@ export abstract class SuggestModal<T> extends Modal {
   }
 
   public override asReal__(): RealSuggestModal<T> {
-    return strictCastTo<RealSuggestModal<T>>(this);
+    return castTo<RealSuggestModal<T>>(this);
   }
 }

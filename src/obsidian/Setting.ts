@@ -18,7 +18,6 @@ import type { BaseComponent } from './BaseComponent.ts';
 
 import { castTo } from '../internal/Cast.ts';
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { ButtonComponent as MockButtonComponent } from './ButtonComponent.ts';
@@ -193,6 +192,6 @@ export class Setting {
   }
 
   public asReal__(): RealSetting {
-    return strictCastTo<RealSetting>(this);
+    return castTo<RealSetting>(this);
   }
 }

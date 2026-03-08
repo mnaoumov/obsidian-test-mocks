@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   FileView as RealFileView,
   ViewStateResult
@@ -6,7 +7,6 @@ import type {
 import type { TFile } from './TFile.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { ItemView } from './ItemView.ts';
@@ -57,6 +57,6 @@ export abstract class FileView extends ItemView {
   }
 
   public override asReal__(): RealFileView {
-    return strictCastTo<RealFileView>(this);
+    return castTo<RealFileView>(this);
   }
 }

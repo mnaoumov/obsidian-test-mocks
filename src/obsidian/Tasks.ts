@@ -1,5 +1,5 @@
+import { castTo } from '../internal/Cast.ts';
 import type { Tasks as RealTasks } from 'obsidian';
-import { strictCastTo } from '../internal/StrictMock.ts';
 
 export class Tasks {
   private readonly promises: Promise<unknown>[] = [];
@@ -21,6 +21,6 @@ export class Tasks {
   }
 
   public asReal__(): RealTasks {
-    return strictCastTo<RealTasks>(this);
+    return castTo<RealTasks>(this);
   }
 }

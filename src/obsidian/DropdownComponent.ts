@@ -1,7 +1,7 @@
+import { castTo } from '../internal/Cast.ts';
 import type { DropdownComponent as RealDropdownComponent } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -66,6 +66,6 @@ export class DropdownComponent extends ValueComponent<string> {
   }
 
   public override asReal__(): RealDropdownComponent {
-    return strictCastTo<RealDropdownComponent>(this);
+    return castTo<RealDropdownComponent>(this);
   }
 }

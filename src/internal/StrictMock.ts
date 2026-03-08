@@ -26,8 +26,3 @@ export function strictMock<T extends object>(instance: T): T {
   Object.defineProperty(instance, STRICT_MOCK_MARKER, { value: true });
   return new Proxy(instance, strictMockHandler) as T;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-export function strictCastTo<T>(instance: object): T {
-  return strictMock(instance) as unknown as T;
-}

@@ -1,8 +1,8 @@
+import { castTo } from '../internal/Cast.ts';
 import type { CapacitorAdapter as RealCapacitorAdapter } from 'obsidian';
 
 import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -24,7 +24,7 @@ export class CapacitorAdapter extends InMemoryAdapter {
   }
 
   public asReal__(): RealCapacitorAdapter {
-    return strictCastTo<RealCapacitorAdapter>(this);
+    return castTo<RealCapacitorAdapter>(this);
   }
 
   public getFullPath(normalizedPath: string): string {

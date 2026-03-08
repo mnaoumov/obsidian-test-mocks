@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   BasesEntryGroup as RealBasesEntryGroup,
   Value
@@ -6,7 +7,6 @@ import type {
 import type { BasesEntry } from './BasesEntry.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -33,7 +33,7 @@ export class BasesEntryGroup {
   }
 
   public asReal__(): RealBasesEntryGroup {
-    return strictCastTo<RealBasesEntryGroup>(this);
+    return castTo<RealBasesEntryGroup>(this);
   }
 
   public hasKey(): boolean {

@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   Editor as RealEditor,
   EditorChange,
@@ -8,7 +9,6 @@ import type {
   EditorSelectionOrCaret,
   EditorTransaction
 } from 'obsidian';
-import { strictCastTo } from '../internal/StrictMock.ts';
 import type { CoordsLeftTop } from '../internal/Types.ts';
 
 export abstract class Editor {
@@ -293,6 +293,6 @@ export abstract class Editor {
   }
 
   public asReal__(): RealEditor {
-    return strictCastTo<RealEditor>(this);
+    return castTo<RealEditor>(this);
   }
 }

@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { SettingTab as RealSettingTab } from 'obsidian';
 
 import type { App } from './App.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -30,6 +30,6 @@ export abstract class SettingTab {
   }
 
   public asReal__(): RealSettingTab {
-    return strictCastTo<RealSettingTab>(this);
+    return castTo<RealSettingTab>(this);
   }
 }

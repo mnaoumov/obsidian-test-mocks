@@ -1,3 +1,4 @@
+import { castTo } from '../internal/Cast.ts';
 import type {
   App as RealApp,
   DataAdapter,
@@ -5,7 +6,6 @@ import type {
 } from 'obsidian';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { FileManager } from './FileManager.ts';
@@ -47,7 +47,7 @@ export class App {
   }
 
   public asReal__(): RealApp {
-    return strictCastTo<RealApp>(this);
+    return castTo<RealApp>(this);
   }
 
   public isDarkMode(): boolean {

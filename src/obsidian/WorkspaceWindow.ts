@@ -1,9 +1,9 @@
+import { castTo } from '../internal/Cast.ts';
 import type { WorkspaceWindow as RealWorkspaceWindow } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 
@@ -31,6 +31,6 @@ export class WorkspaceWindow {
   }
 
   public asReal__(): RealWorkspaceWindow {
-    return strictCastTo<RealWorkspaceWindow>(this);
+    return castTo<RealWorkspaceWindow>(this);
   }
 }

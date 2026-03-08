@@ -1,8 +1,8 @@
+import { castTo } from '../internal/Cast.ts';
 import type { ListValue as RealListValue } from 'obsidian';
 
 import type { Value } from './Value.ts';
 
-import { strictCastTo } from '../internal/StrictMock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ListValue extends NotNullValue {
@@ -17,6 +17,6 @@ export class ListValue extends NotNullValue {
   }
 
   public override asReal__(): RealListValue {
-    return strictCastTo<RealListValue>(this);
+    return castTo<RealListValue>(this);
   }
 }

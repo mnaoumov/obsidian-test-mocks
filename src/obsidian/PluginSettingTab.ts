@@ -1,10 +1,10 @@
+import { castTo } from '../internal/Cast.ts';
 import type { PluginSettingTab as RealPluginSettingTab } from 'obsidian';
 
 import type { App } from './App.ts';
 import type { Plugin } from './Plugin.ts';
 
 import {
-  strictCastTo,
   strictMock
 } from '../internal/StrictMock.ts';
 import { SettingTab } from './SettingTab.ts';
@@ -25,6 +25,6 @@ export abstract class PluginSettingTab extends SettingTab {
   }
 
   public override asReal__(): RealPluginSettingTab {
-    return strictCastTo<RealPluginSettingTab>(this);
+    return castTo<RealPluginSettingTab>(this);
   }
 }
