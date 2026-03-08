@@ -1,6 +1,7 @@
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class WorkspaceRibbon {
+  // Intentionally has no additional members, obsidian.d.ts doesn't have any members to mock.
   protected constructor() {
     const mock = strictMock(this);
     WorkspaceRibbon.__constructor(mock);
