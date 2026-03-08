@@ -12,11 +12,11 @@ export class DateValue extends NotNullValue {
     this.value = momentFn();
   }
 
-  public isTruthy(): boolean {
+  public isTruthy__(): boolean {
     return true;
   }
 
-  public toString(): string {
+  public toString__(): string {
     return this.value.format();
   }
 }

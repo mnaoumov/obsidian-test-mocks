@@ -1,11 +1,11 @@
 import { Value } from './Value.ts';
 
 export class NullValue extends Value {
-  public isTruthy(): boolean {
+  public isTruthy__(): boolean {
     return false;
   }
 
-  public toString(): string {
+  public toString__(): string {
     return '';
   }
 }

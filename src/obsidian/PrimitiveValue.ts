@@ -1,5 +1,18 @@
 import { NotNullValue } from './NotNullValue.ts';
 
 export abstract class PrimitiveValue<T> extends NotNullValue {
-  public abstract value: T;
+  public value: T;
+
+  public constructor(value: T) {
+    super();
+    this.value = value;
+  }
+
+  public isTruthy__(): boolean {
+    return !!this.value;
+  }
+
+  public toString__(): string {
+    return String(this.value);
+  }
 }
