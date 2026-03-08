@@ -1,6 +1,11 @@
+import type { Modal as RealModal } from 'obsidian';
+
 import type { App } from './App.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { Scope } from './Scope.ts';
 
 export class Modal {
@@ -67,5 +72,9 @@ export class Modal {
   public setTitle(title: string): this {
     this.titleEl.textContent = title;
     return this;
+  }
+
+  public asReal__(): RealModal {
+    return strictCastTo<RealModal>(this);
   }
 }

@@ -1,9 +1,13 @@
 import type {
+  App as RealApp,
   DataAdapter,
   UserEvent
 } from 'obsidian';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { FileManager } from './FileManager.ts';
 import { Keymap } from './Keymap.ts';
 import { MetadataCache } from './MetadataCache.ts';
@@ -40,6 +44,10 @@ export class App {
 
   public static create__(adapter: DataAdapter, _appId: string): App {
     return new App(adapter, _appId);
+  }
+
+  public asReal__(): RealApp {
+    return strictCastTo<RealApp>(this);
   }
 
   public isDarkMode(): boolean {

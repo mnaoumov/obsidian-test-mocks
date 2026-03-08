@@ -1,4 +1,9 @@
-import { strictMock } from '../internal/StrictMock.ts';
+import type { SliderComponent as RealSliderComponent } from 'obsidian';
+
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class SliderComponent extends ValueComponent<number> {
@@ -66,5 +71,9 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public showTooltip(): void {
+  }
+
+  public override asReal__(): RealSliderComponent {
+    return strictCastTo<RealSliderComponent>(this);
   }
 }

@@ -1,6 +1,12 @@
-import type { EventRef } from 'obsidian';
+import type {
+  Component as RealComponent,
+  EventRef
+} from 'obsidian';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export class Component {
   public _children: Component[] = [];
@@ -116,5 +122,9 @@ export class Component {
     this._intervals = [];
 
     this._loaded = false;
+  }
+
+  public asReal__(): RealComponent {
+    return strictCastTo<RealComponent>(this);
   }
 }

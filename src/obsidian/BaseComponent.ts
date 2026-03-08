@@ -1,4 +1,9 @@
-import { strictMock } from '../internal/StrictMock.ts';
+import type { BaseComponent as RealBaseComponent } from 'obsidian';
+
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export abstract class BaseComponent {
   public disabled = false;
@@ -21,5 +26,9 @@ export abstract class BaseComponent {
   public then(cb: (component: this) => unknown): this {
     cb(this);
     return this;
+  }
+
+  public asReal__(): RealBaseComponent {
+    return strictCastTo<RealBaseComponent>(this);
   }
 }

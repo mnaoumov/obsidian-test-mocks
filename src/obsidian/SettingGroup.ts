@@ -1,11 +1,15 @@
 import type {
   ExtraButtonComponent,
   SearchComponent,
-  Setting as ObsidianSetting
+  Setting as ObsidianSetting,
+  SettingGroup as RealSettingGroup
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { ExtraButtonComponent as MockExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
@@ -55,5 +59,9 @@ export class SettingGroup {
       this.listEl.prepend(heading);
     }
     return this;
+  }
+
+  public asReal__(): RealSettingGroup {
+    return strictCastTo<RealSettingGroup>(this);
   }
 }

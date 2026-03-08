@@ -3,13 +3,17 @@ import type {
   IconName,
   OpenViewState,
   View,
-  ViewState
+  ViewState,
+  WorkspaceLeaf as RealWorkspaceLeaf
 } from 'obsidian';
 
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 let nextLeafId = 1;
@@ -45,6 +49,10 @@ export class WorkspaceLeaf extends Events {
 
   public static create__(_app: App, id?: string): WorkspaceLeaf {
     return new WorkspaceLeaf(_app, id);
+  }
+
+  public override asReal__(): RealWorkspaceLeaf {
+    return strictCastTo<RealWorkspaceLeaf>(this);
   }
 
   public _getGroup(): null | string {

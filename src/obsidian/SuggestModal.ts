@@ -1,8 +1,14 @@
-import type { Instruction } from 'obsidian';
+import type {
+  Instruction,
+  SuggestModal as RealSuggestModal
+} from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class SuggestModal<T> extends Modal {
@@ -49,5 +55,9 @@ export abstract class SuggestModal<T> extends Modal {
 
   public setPlaceholder(placeholder: string): void {
     this.inputEl.placeholder = placeholder;
+  }
+
+  public override asReal__(): RealSuggestModal<T> {
+    return strictCastTo<RealSuggestModal<T>>(this);
   }
 }

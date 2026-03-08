@@ -1,6 +1,11 @@
+import type { WorkspaceSidedock as RealWorkspaceSidedock } from 'obsidian';
+
 import type { Workspace } from './Workspace.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export class WorkspaceSidedock {
   public collapsed = false;
@@ -17,6 +22,10 @@ export class WorkspaceSidedock {
 
   public static create__(_workspace: Workspace, _direction: string, _side: string, _id?: string): WorkspaceSidedock {
     return new WorkspaceSidedock(_workspace, _direction, _side, _id);
+  }
+
+  public asReal__(): RealWorkspaceSidedock {
+    return strictCastTo<RealWorkspaceSidedock>(this);
   }
 
   public collapse(): void {

@@ -1,6 +1,12 @@
-import type { TooltipOptions } from 'obsidian';
+import type {
+  ButtonComponent as RealButtonComponent,
+  TooltipOptions
+} from 'obsidian';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
@@ -66,5 +72,9 @@ export class ButtonComponent extends BaseComponent {
   /** @deprecated Mock-only. Simulates a button click by invoking the registered click handler. Not part of the Obsidian API. */
   public simulateClick(): void {
     this.clickHandler?.(new Event('click') as MouseEvent);
+  }
+
+  public override asReal__(): RealButtonComponent {
+    return strictCastTo<RealButtonComponent>(this);
   }
 }

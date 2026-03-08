@@ -1,8 +1,14 @@
-import type { FuzzyMatch } from 'obsidian';
+import type {
+  FuzzyMatch,
+  FuzzySuggestModal as RealFuzzySuggestModal
+} from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class FuzzySuggestModal<T> extends Modal {
@@ -38,5 +44,9 @@ export abstract class FuzzySuggestModal<T> extends Modal {
 
   public setPlaceholder(placeholder: string): void {
     this.inputEl.placeholder = placeholder;
+  }
+
+  public override asReal__(): RealFuzzySuggestModal<T> {
+    return strictCastTo<RealFuzzySuggestModal<T>>(this);
   }
 }

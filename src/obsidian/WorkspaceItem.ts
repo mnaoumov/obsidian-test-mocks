@@ -1,7 +1,13 @@
-import type { WorkspaceContainer } from 'obsidian';
+import type {
+  WorkspaceContainer,
+  WorkspaceItem as RealWorkspaceItem
+} from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {
@@ -22,5 +28,9 @@ export abstract class WorkspaceItem extends Events {
 
   public getRoot(): WorkspaceItem {
     return this;
+  }
+
+  public override asReal__(): RealWorkspaceItem {
+    return strictCastTo<RealWorkspaceItem>(this);
   }
 }

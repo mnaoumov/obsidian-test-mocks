@@ -3,12 +3,14 @@ import type {
   EventRef,
   HoverPopover,
   IconName,
+  MarkdownView as RealMarkdownView,
   Menu,
   ViewStateResult
 } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
+import { strictCastTo } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { Editor } from './Editor.ts';
@@ -250,5 +252,9 @@ export class MarkdownView {
     this._intervals = [];
 
     this._loaded = false;
+  }
+
+  public asReal__(): RealMarkdownView {
+    return strictCastTo<RealMarkdownView>(this);
   }
 }

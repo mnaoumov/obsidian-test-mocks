@@ -3,6 +3,7 @@ import type {
   HoverLinkSource,
   MarkdownPostProcessor,
   MarkdownPostProcessorContext,
+  Plugin as RealPlugin,
   PluginManifest,
   PluginSettingTab,
   ViewCreator
@@ -10,7 +11,10 @@ import type {
 
 import type { App } from './App.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
@@ -105,5 +109,9 @@ export abstract class Plugin extends Component {
 
   public async saveData(data: unknown): Promise<void> {
     this._data = data;
+  }
+
+  public override asReal__(): RealPlugin {
+    return strictCastTo<RealPlugin>(this);
   }
 }

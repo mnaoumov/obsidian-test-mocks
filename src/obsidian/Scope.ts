@@ -1,10 +1,14 @@
 import type {
   KeymapEventHandler,
   KeymapEventListener,
-  Modifier
+  Modifier,
+  Scope as RealScope
 } from 'obsidian';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 interface MockKeyScope {
   func(): void;
@@ -22,6 +26,10 @@ export class Scope {
 
   public static constructor__(_instance: Scope, _parent?: Scope): void {
     // Spy hook.
+  }
+
+  public asReal__(): RealScope {
+    return strictCastTo<RealScope>(this);
   }
 
   protected constructor(parent?: Scope) {

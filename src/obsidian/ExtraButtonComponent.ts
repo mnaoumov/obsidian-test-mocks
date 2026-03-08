@@ -1,4 +1,9 @@
-import { strictMock } from '../internal/StrictMock.ts';
+import type { ExtraButtonComponent as RealExtraButtonComponent } from 'obsidian';
+
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ExtraButtonComponent extends BaseComponent {
@@ -40,5 +45,9 @@ export class ExtraButtonComponent extends BaseComponent {
   /** @deprecated Mock-only. Simulates a click by invoking the registered click handler. Not part of the Obsidian API. */
   public simulateClick(): void {
     this.clickHandler?.();
+  }
+
+  public override asReal__(): RealExtraButtonComponent {
+    return strictCastTo<RealExtraButtonComponent>(this);
   }
 }

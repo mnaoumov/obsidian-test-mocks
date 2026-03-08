@@ -1,6 +1,11 @@
+import type { TextComponent as RealTextComponent } from 'obsidian';
+
 import type { ValueComponent } from './ValueComponent.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -43,5 +48,9 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     for (const handler of this.eventListeners[event] ?? []) {
       handler(...args);
     }
+  }
+
+  public override asReal__(): RealTextComponent {
+    return strictCastTo<RealTextComponent>(this);
   }
 }

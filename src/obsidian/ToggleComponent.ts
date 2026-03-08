@@ -1,6 +1,12 @@
-import type { TooltipOptions } from 'obsidian';
+import type {
+  ToggleComponent as RealToggleComponent,
+  TooltipOptions
+} from 'obsidian';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ToggleComponent extends ValueComponent<boolean> {
@@ -49,5 +55,9 @@ export class ToggleComponent extends ValueComponent<boolean> {
     this._value = value;
     this._onChange?.(value);
     return this;
+  }
+
+  public override asReal__(): RealToggleComponent {
+    return strictCastTo<RealToggleComponent>(this);
   }
 }

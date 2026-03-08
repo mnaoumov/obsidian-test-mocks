@@ -1,6 +1,11 @@
+import type { PopoverSuggest as RealPopoverSuggest } from 'obsidian';
+
 import type { App } from './App.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { Scope } from './Scope.ts';
 
 export abstract class PopoverSuggest<T> {
@@ -37,4 +42,8 @@ export abstract class PopoverSuggest<T> {
   public abstract renderSuggestion(value: T, el: HTMLElement): void;
 
   public abstract selectSuggestion(value: T, evt: KeyboardEvent | MouseEvent): void;
+
+  public asReal__(): RealPopoverSuggest<T> {
+    return strictCastTo<RealPopoverSuggest<T>>(this);
+  }
 }

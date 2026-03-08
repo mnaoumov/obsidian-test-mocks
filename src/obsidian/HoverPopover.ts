@@ -1,10 +1,14 @@
 import type {
   HoverParent,
+  HoverPopover as RealHoverPopover,
   PopoverState,
   WorkspaceLeaf
 } from 'obsidian';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
 
 export class HoverPopover extends Component {
@@ -31,5 +35,9 @@ export class HoverPopover extends Component {
 
   public static forLeaf(_leaf: WorkspaceLeaf): HoverPopover | null {
     return null;
+  }
+
+  public override asReal__(): RealHoverPopover {
+    return strictCastTo<RealHoverPopover>(this);
   }
 }

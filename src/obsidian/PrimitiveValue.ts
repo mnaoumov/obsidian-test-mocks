@@ -1,3 +1,6 @@
+import type { PrimitiveValue as RealPrimitiveValue } from 'obsidian';
+
+import { strictCastTo } from '../internal/StrictMock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export abstract class PrimitiveValue<T> extends NotNullValue {
@@ -14,5 +17,9 @@ export abstract class PrimitiveValue<T> extends NotNullValue {
 
   public toString__(): string {
     return String(this.value);
+  }
+
+  public override asReal__(): RealPrimitiveValue<T> {
+    return strictCastTo<RealPrimitiveValue<T>>(this);
   }
 }

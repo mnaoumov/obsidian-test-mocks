@@ -1,9 +1,13 @@
 import type {
+  ColorComponent as RealColorComponent,
   HSL,
   RGB
 } from 'obsidian';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ColorComponent extends ValueComponent<string> {
@@ -86,6 +90,10 @@ export class ColorComponent extends ValueComponent<string> {
   public setValueRgb(rgb: RGB): this {
     const hex = '#' + [rgb.r, rgb.g, rgb.b].map((c) => Math.round(c).toString(16).padStart(2, '0')).join('');
     return this.setValue(hex);
+  }
+
+  public override asReal__(): RealColorComponent {
+    return strictCastTo<RealColorComponent>(this);
   }
 }
 

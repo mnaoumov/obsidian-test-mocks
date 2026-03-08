@@ -1,5 +1,8 @@
+import type { LinkValue as RealLinkValue } from 'obsidian';
+
 import type { App } from './App.ts';
 
+import { strictCastTo } from '../internal/StrictMock.ts';
 import { StringValue } from './StringValue.ts';
 
 export class LinkValue extends StringValue {
@@ -12,5 +15,9 @@ export class LinkValue extends StringValue {
     const pipeIndex = inner.indexOf('|');
     const linkValue = new LinkValue(pipeIndex >= 0 ? inner.slice(0, pipeIndex) : inner);
     return linkValue;
+  }
+
+  public override asReal__(): RealLinkValue {
+    return strictCastTo<RealLinkValue>(this);
   }
 }

@@ -1,4 +1,9 @@
-import { strictMock } from '../internal/StrictMock.ts';
+import type { Notice as RealNotice } from 'obsidian';
+
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export class Notice {
   public containerEl: HTMLElement;
@@ -37,5 +42,9 @@ export class Notice {
       this.messageEl.appendChild(message.cloneNode(true));
     }
     return this;
+  }
+
+  public asReal__(): RealNotice {
+    return strictCastTo<RealNotice>(this);
   }
 }

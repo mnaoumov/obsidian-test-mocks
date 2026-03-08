@@ -1,5 +1,8 @@
+import type { SecretComponent as RealSecretComponent } from 'obsidian';
+
 import type { App } from './App.ts';
 
+import { strictCastTo } from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class SecretComponent extends BaseComponent {
@@ -18,5 +21,9 @@ export class SecretComponent extends BaseComponent {
   public setValue(value: string): this {
     this._onChange?.(value);
     return this;
+  }
+
+  public override asReal__(): RealSecretComponent {
+    return strictCastTo<RealSecretComponent>(this);
   }
 }

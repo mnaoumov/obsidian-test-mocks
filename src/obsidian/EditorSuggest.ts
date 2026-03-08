@@ -1,6 +1,7 @@
 import type {
   Editor,
   EditorPosition,
+  EditorSuggest as RealEditorSuggest,
   EditorSuggestContext,
   EditorSuggestTriggerInfo,
   Instruction,
@@ -9,7 +10,10 @@ import type {
 
 import type { App } from './App.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
@@ -37,5 +41,9 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public setInstructions(instructions: Instruction[]): void {
     this.instructions = instructions;
+  }
+
+  public override asReal__(): RealEditorSuggest<T> {
+    return strictCastTo<RealEditorSuggest<T>>(this);
   }
 }

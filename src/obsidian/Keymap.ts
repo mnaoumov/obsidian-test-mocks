@@ -1,4 +1,5 @@
 import type {
+  Keymap as RealKeymap,
   Modifier,
   PaneType,
   UserEvent
@@ -6,7 +7,10 @@ import type {
 
 import type { Scope } from './Scope.ts';
 
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export class Keymap {
   private _scopeStack: Scope[] = [];
@@ -17,6 +21,10 @@ export class Keymap {
 
   public static constructor__(_instance: Keymap): void {
     // Spy hook.
+  }
+
+  public asReal__(): RealKeymap {
+    return strictCastTo<RealKeymap>(this);
   }
 
   public static isModEvent(_evt?: null | UserEvent): boolean | PaneType {

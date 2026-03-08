@@ -1,5 +1,10 @@
+import type { FileSystemAdapter as RealFileSystemAdapter } from 'obsidian';
+
 import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import {
+  strictCastTo,
+  strictMock
+} from '../internal/StrictMock.ts';
 
 export class FileSystemAdapter extends InMemoryAdapter {
   protected constructor(basePath: string) {
@@ -16,6 +21,10 @@ export class FileSystemAdapter extends InMemoryAdapter {
 
   public static create__(basePath: string): FileSystemAdapter {
     return new FileSystemAdapter(basePath);
+  }
+
+  public asReal__(): RealFileSystemAdapter {
+    return strictCastTo<RealFileSystemAdapter>(this);
   }
 
   public getBasePath(): string {
