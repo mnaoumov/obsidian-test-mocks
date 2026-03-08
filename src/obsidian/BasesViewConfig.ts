@@ -31,21 +31,6 @@ export class BasesViewConfig {
     return new BasesViewConfig(name);
   }
 
-  /** @deprecated Mock-only. Sets the display name for a property. Not part of the Obsidian API. */
-  public setDisplayName__(propertyId: BasesPropertyId, displayName: string): void {
-    this.displayNames.set(propertyId, displayName);
-  }
-
-  /** @deprecated Mock-only. Sets the property order. Not part of the Obsidian API. */
-  public setOrder__(order: BasesPropertyId[]): void {
-    this.order = order;
-  }
-
-  /** @deprecated Mock-only. Sets the sort config. Not part of the Obsidian API. */
-  public setSort__(sort: BasesSortConfig[]): void {
-    this.sort = sort;
-  }
-
   public get(key: string): unknown {
     return this.config.get(key);
   }
@@ -76,5 +61,20 @@ export class BasesViewConfig {
 
   public set(key: string, value: unknown): void {
     this.config.set(key, value);
+  }
+
+  /** @deprecated Mock-only. Sets the display name for a property. Not part of the Obsidian API. */
+  public setDisplayName__(propertyId: BasesPropertyId, displayName: string): void {
+    this.displayNames.set(propertyId, displayName);
+  }
+
+  /** @deprecated Mock-only. Sets the property order. Not part of the Obsidian API. */
+  public setOrder__(order: BasesPropertyId[]): void {
+    this.order = order;
+  }
+
+  /** @deprecated Mock-only. Sets the sort config. Not part of the Obsidian API. */
+  public setSort__(sort: BasesSortConfig[]): void {
+    this.sort = sort;
   }
 }
