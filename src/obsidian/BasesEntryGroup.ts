@@ -14,15 +14,15 @@ export class BasesEntryGroup {
       this.key = key;
     }
     const mock = strictMock(this);
-    BasesEntryGroup.__constructor(mock, entries, key);
+    BasesEntryGroup.constructor__(mock, entries, key);
     return mock;
   }
 
-  public static __constructor(_instance: BasesEntryGroup, _entries: BasesEntry[], _key?: Value): void {
+  public static constructor__(_instance: BasesEntryGroup, _entries: BasesEntry[], _key?: Value): void {
     // Spy hook.
   }
 
-  public static __create(entries: BasesEntry[], key?: Value): BasesEntryGroup {
+  public static create__(entries: BasesEntry[], key?: Value): BasesEntryGroup {
     return new BasesEntryGroup(entries, key);
   }
 

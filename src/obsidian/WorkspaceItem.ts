@@ -8,11 +8,11 @@ export abstract class WorkspaceItem extends Events {
   protected constructor() {
     super();
     const mock = strictMock(this);
-    WorkspaceItem.__constructor(mock);
+    WorkspaceItem.constructor__(mock);
     return mock;
   }
 
-  public static override __constructor(_instance: WorkspaceItem, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceItem, ..._args: unknown[]): void {
     // Spy hook.
   }
 

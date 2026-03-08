@@ -15,15 +15,15 @@ export class MenuItem {
 
   private constructor() {
     const mock = strictMock(this);
-    MenuItem.__constructor(mock);
+    MenuItem.constructor__(mock);
     return mock;
   }
 
-  public static __create(): MenuItem {
+  public static create__(): MenuItem {
     return new MenuItem();
   }
 
-  public static __constructor(_instance: MenuItem): void {
+  public static constructor__(_instance: MenuItem): void {
     // Spy hook.
   }
 
@@ -58,7 +58,7 @@ export class MenuItem {
   }
 
   public setSubmenu(): Menu {
-    return Menu.__create();
+    return Menu.create__();
   }
 
   public setTitle(title: DocumentFragment | string): this {

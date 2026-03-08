@@ -13,11 +13,11 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Assigning mock-only @deprecated inputEl.
     this.inputEl = inputEl;
     const mock = strictMock(this);
-    AbstractTextComponent.__constructor(mock, inputEl);
+    AbstractTextComponent.constructor__(mock, inputEl);
     return mock;
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

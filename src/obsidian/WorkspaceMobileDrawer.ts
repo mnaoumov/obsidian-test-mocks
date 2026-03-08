@@ -7,15 +7,15 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
   protected constructor() {
     super();
     const mock = strictMock(this);
-    WorkspaceMobileDrawer.__constructor(mock);
+    WorkspaceMobileDrawer.constructor__(mock);
     return mock;
   }
 
-  public static __create(): WorkspaceMobileDrawer {
+  public static create__(): WorkspaceMobileDrawer {
     return new WorkspaceMobileDrawer();
   }
 
-  public static override __constructor(_instance: WorkspaceMobileDrawer, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceMobileDrawer, ..._args: unknown[]): void {
     // Spy hook.
   }
 

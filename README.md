@@ -42,25 +42,25 @@ export default defineConfig({
 
 ## Creating Mock Instances
 
-Classes whose constructors are not public in `obsidian.d.ts` expose a static `__create()` factory method:
+Classes whose constructors are not public in `obsidian.d.ts` expose a static `create__()` factory method:
 
 ```typescript
 import { App } from 'obsidian';
 
-const app = App.__create();
+const app = App.create__();
 ```
 
-The `__` prefix signals this method is not part of the real Obsidian API — it exists only in the mocks.
+The `__` suffix signals this method is not part of the real Obsidian API — it exists only in the mocks.
 
 ### Spying on Instance Creation
 
-The `__create()` pattern makes all instance creation spyable:
+The `create__()` pattern makes all instance creation spyable:
 
 ```typescript
 import { vi } from 'vitest';
 import { WorkspaceLeaf } from 'obsidian';
 
-const spy = vi.spyOn(WorkspaceLeaf, '__create');
+const spy = vi.spyOn(WorkspaceLeaf, 'create__');
 
 // ... code that creates leaves ...
 
@@ -181,7 +181,7 @@ it('uses the overridden apiVersion', () => {
 
 - **Only `obsidian.d.ts`** — mocks expose exactly the public API, nothing extra
 - **Meaningful implementations** — real in-memory behavior (state tracking, callbacks, data storage), not empty stubs
-- **Spyable** — all instance creation routes through `__create()` so `vi.spyOn()` works everywhere
+- **Spyable** — all instance creation routes through `create__()` so `vi.spyOn()` works everywhere
 - **No `obsidian-typings` augmentation in core mocks** — type shapes are inlined to avoid global module augmentation side effects
 
 ## Support

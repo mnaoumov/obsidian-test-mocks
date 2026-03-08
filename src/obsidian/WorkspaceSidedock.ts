@@ -5,15 +5,15 @@ export class WorkspaceSidedock {
 
   protected constructor() {
     const mock = strictMock(this);
-    WorkspaceSidedock.__constructor(mock);
+    WorkspaceSidedock.constructor__(mock);
     return mock;
   }
 
-  public static __create(): WorkspaceSidedock {
+  public static create__(): WorkspaceSidedock {
     return new WorkspaceSidedock();
   }
 
-  public static __constructor(_instance: WorkspaceSidedock, ..._args: unknown[]): void {
+  public static constructor__(_instance: WorkspaceSidedock, ..._args: unknown[]): void {
     // Spy hook.
   }
 

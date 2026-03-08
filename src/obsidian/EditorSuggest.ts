@@ -19,11 +19,11 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
   public constructor(app: App) {
     super(app);
     const mock = strictMock(this);
-    EditorSuggest.__constructor(mock, app);
+    EditorSuggest.constructor__(mock, app);
     return mock;
   }
 
-  public static override __constructor(_instance: EditorSuggest<unknown>, _app: App): void {
+  public static override constructor__(_instance: EditorSuggest<unknown>, _app: App): void {
     // Spy hook.
   }
 

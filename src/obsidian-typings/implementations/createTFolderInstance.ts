@@ -14,7 +14,7 @@ export function createTFolderInstance(app: App, path: string): TFolder {
     return folder;
   }
 
-  const mockFolder = MockTFolder.__create(castTo<MockVault>(app.vault), path);
+  const mockFolder = MockTFolder.create__(castTo<MockVault>(app.vault), path);
   if (path !== '/') {
     mockFolder.parent = castTo(createTFolderInstance(app, parentFolderPath(path)));
   }

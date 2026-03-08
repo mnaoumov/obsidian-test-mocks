@@ -15,20 +15,20 @@ export class BasesEntry implements FormulaContext {
   protected constructor(file: TFile) {
     this.file = file;
     const mock = strictMock(this);
-    BasesEntry.__constructor(mock, file);
+    BasesEntry.constructor__(mock, file);
     return mock;
   }
 
-  public static __constructor(_instance: BasesEntry, _file: TFile): void {
+  public static constructor__(_instance: BasesEntry, _file: TFile): void {
     // Spy hook.
   }
 
-  public static __create(file: TFile): BasesEntry {
+  public static create__(file: TFile): BasesEntry {
     return new BasesEntry(file);
   }
 
   /** @deprecated Mock-only. Sets a value for a property. Not part of the Obsidian API. */
-  public __setValue(propertyId: BasesPropertyId, value: null | Value): void {
+  public setValue__(propertyId: BasesPropertyId, value: null | Value): void {
     this.values.set(propertyId, value);
   }
 

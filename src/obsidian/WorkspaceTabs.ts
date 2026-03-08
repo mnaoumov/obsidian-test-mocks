@@ -9,15 +9,15 @@ export class WorkspaceTabs extends WorkspaceParent {
   protected constructor() {
     super();
     const mock = strictMock(this);
-    WorkspaceTabs.__constructor(mock);
+    WorkspaceTabs.constructor__(mock);
     return mock;
   }
 
-  public static override __constructor(_instance: WorkspaceTabs, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceTabs, ..._args: unknown[]): void {
     // Spy hook.
   }
 
-  public static __create(): WorkspaceTabs {
+  public static create__(): WorkspaceTabs {
     return new WorkspaceTabs();
   }
 }

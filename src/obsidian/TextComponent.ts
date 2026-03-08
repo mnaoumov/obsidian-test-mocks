@@ -25,11 +25,11 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     TextComponent.instances.push(this);
     /* eslint-enable @typescript-eslint/no-deprecated -- Mock internals. */
     const mock = strictMock(this);
-    TextComponent.__constructor(mock, _containerEl);
+    TextComponent.constructor__(mock, _containerEl);
     return mock;
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

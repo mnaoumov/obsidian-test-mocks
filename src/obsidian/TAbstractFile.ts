@@ -16,11 +16,11 @@ export abstract class TAbstractFile {
     const parts = path.split('/');
     this.name = parts[parts.length - 1] ?? '';
     const mock = strictMock(this);
-    TAbstractFile.__constructor(mock, vault, path);
+    TAbstractFile.constructor__(mock, vault, path);
     return mock;
   }
 
-  public static __constructor(_instance: TAbstractFile, _vault: Vault, _path: string): void {
+  public static constructor__(_instance: TAbstractFile, _vault: Vault, _path: string): void {
     // Spy hook.
   }
 }

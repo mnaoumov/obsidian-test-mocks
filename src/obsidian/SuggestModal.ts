@@ -17,11 +17,11 @@ export abstract class SuggestModal<T> extends Modal {
     this.inputEl = createEl('input');
     this.resultContainerEl = createDiv();
     const mock = strictMock(this);
-    SuggestModal.__constructor(mock, app);
+    SuggestModal.constructor__(mock, app);
     return mock;
   }
 
-  public static override __constructor(_instance: SuggestModal<unknown>, _app: App): void {
+  public static override constructor__(_instance: SuggestModal<unknown>, _app: App): void {
     // Spy hook.
   }
 

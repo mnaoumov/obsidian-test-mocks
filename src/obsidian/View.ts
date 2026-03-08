@@ -20,15 +20,15 @@ export abstract class View extends Component {
 
   public constructor(leaf: WorkspaceLeaf) {
     super();
-    this.app = App.__create();
+    this.app = App.create__();
     this.containerEl = createDiv();
     this.leaf = leaf;
     const mock = strictMock(this);
-    View.__constructor(mock, leaf);
+    View.constructor__(mock, leaf);
     return mock;
   }
 
-  public static override __constructor(_instance: View, _leaf: WorkspaceLeaf): void {
+  public static override constructor__(_instance: View, _leaf: WorkspaceLeaf): void {
     // Spy hook.
   }
 

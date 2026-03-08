@@ -7,15 +7,15 @@ export class WorkspaceFloating extends WorkspaceParent {
   protected constructor() {
     super();
     const mock = strictMock(this);
-    WorkspaceFloating.__constructor(mock);
+    WorkspaceFloating.constructor__(mock);
     return mock;
   }
 
-  public static override __constructor(_instance: WorkspaceFloating, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceFloating, ..._args: unknown[]): void {
     // Spy hook.
   }
 
-  public static __create(): WorkspaceFloating {
+  public static create__(): WorkspaceFloating {
     return new WorkspaceFloating();
   }
 }

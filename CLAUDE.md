@@ -37,7 +37,7 @@
 
 3. **No `obsidian-typings` imports in `src/obsidian/`.** The `obsidian-typings` package uses `declare module 'obsidian'` augmentation which activates globally on import. To avoid side effects, all needed type shapes are inlined in `src/internal/Types.ts`. The `src/obsidian-typings/` subpath may still use `obsidian-typings` as a peer dependency.
 
-4. **`__create()` factory pattern.** Classes whose constructors are not public in `obsidian.d.ts` use a static `__create()` factory method. The `__` prefix signals this is not part of the real obsidian API. The actual constructor is `protected`. This ensures all instance creation is spyable via `vi.spyOn(ClassName, '__create')`. Internal code must always use `__create()` instead of `new` (except inside `__create()` itself). `super()` calls in subclass constructors are the only acceptable direct constructor invocations.
+4. **`create__()` factory pattern.** Classes whose constructors are not public in `obsidian.d.ts` use a static `create__()` factory method. The `__` suffix signals this is not part of the real obsidian API. The actual constructor is `protected`. This ensures all instance creation is spyable via `vi.spyOn(ClassName, 'create__')`. Internal code must always use `create__()` instead of `new` (except inside `create__()` itself). `super()` calls in subclass constructors are the only acceptable direct constructor invocations.
 
 5. **`castTo<T>()` for type bridging.** When mock types need to satisfy obsidian's type system (e.g., `EventRef.e` expects `obsidian.Events`), use `castTo<ObsidianType>(this)` from `src/internal/Cast.ts`.
 

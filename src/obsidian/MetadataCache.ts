@@ -12,11 +12,11 @@ export class MetadataCache extends Events {
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
-  public static __create(app: App): MetadataCache {
+  public static create__(app: App): MetadataCache {
     return new MetadataCache(app);
   }
 
-  public static override __constructor(_instance: MetadataCache): void {
+  public static override constructor__(_instance: MetadataCache): void {
     // Spy hook.
   }
 
@@ -24,7 +24,7 @@ export class MetadataCache extends Events {
     super();
     this._app = app;
     const mock = strictMock(this);
-    MetadataCache.__constructor(mock);
+    MetadataCache.constructor__(mock);
     return mock;
   }
 

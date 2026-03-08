@@ -10,11 +10,11 @@ export abstract class SettingTab {
     this.app = app;
     this.containerEl = createDiv();
     const mock = strictMock(this);
-    SettingTab.__constructor(mock, app);
+    SettingTab.constructor__(mock, app);
     return mock;
   }
 
-  public static __constructor(_instance: SettingTab, _app: App, ..._args: unknown[]): void {
+  public static constructor__(_instance: SettingTab, _app: App, ..._args: unknown[]): void {
     // Spy hook.
   }
 

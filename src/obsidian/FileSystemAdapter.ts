@@ -2,18 +2,18 @@ import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class FileSystemAdapter extends InMemoryAdapter {
-  public static __create(): FileSystemAdapter {
+  public static create__(): FileSystemAdapter {
     return new FileSystemAdapter();
   }
 
-  public static __constructor(_instance: FileSystemAdapter): void {
+  public static constructor__(_instance: FileSystemAdapter): void {
     // Spy hook.
   }
 
   protected constructor() {
     super();
     const mock = strictMock(this);
-    FileSystemAdapter.__constructor(mock);
+    FileSystemAdapter.constructor__(mock);
     return mock;
   }
 

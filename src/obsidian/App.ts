@@ -19,23 +19,23 @@ export class App {
 
   private readonly _localStorage = new Map<string, unknown>();
 
-  public static __create(): App {
+  public static create__(): App {
     return new App();
   }
 
-  public static __constructor(_instance: App): void {
+  public static constructor__(_instance: App): void {
     // Spy hook.
   }
 
   protected constructor() {
-    this.vault = Vault.__create();
-    this.fileManager = FileManager.__create(this);
-    this.keymap = Keymap.__create();
-    this.metadataCache = MetadataCache.__create(this);
-    this.scope = Scope.__create();
-    this.workspace = Workspace.__create();
+    this.vault = Vault.create__();
+    this.fileManager = FileManager.create__(this);
+    this.keymap = Keymap.create__();
+    this.metadataCache = MetadataCache.create__(this);
+    this.scope = Scope.create__();
+    this.workspace = Workspace.create__();
     const mock = strictMock(this);
-    App.__constructor(mock);
+    App.constructor__(mock);
     return mock;
   }
 

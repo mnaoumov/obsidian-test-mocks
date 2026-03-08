@@ -30,11 +30,11 @@ export class MarkdownView {
   public scope = null;
 
   public constructor() {
-    this.app = App.__create();
+    this.app = App.create__();
     this.containerEl = createDiv();
     this.contentEl = createDiv();
     this.editor = new MockEditor();
-    this.leaf = WorkspaceLeaf.__create();
+    this.leaf = WorkspaceLeaf.create__();
   }
 
   private _children: Component[] = [];

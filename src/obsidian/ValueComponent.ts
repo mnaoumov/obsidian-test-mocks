@@ -7,10 +7,10 @@ export abstract class ValueComponent<T> extends BaseComponent {
 
   protected constructor() {
     super();
-    ValueComponent.__constructor(this);
+    ValueComponent.constructor__(this);
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

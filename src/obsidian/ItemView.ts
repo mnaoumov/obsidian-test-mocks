@@ -11,11 +11,11 @@ export abstract class ItemView extends View {
     super(leaf);
     this.contentEl = createDiv();
     const mock = strictMock(this);
-    ItemView.__constructor(mock, leaf);
+    ItemView.constructor__(mock, leaf);
     return mock;
   }
 
-  public static override __constructor(_instance: ItemView, _leaf: WorkspaceLeaf): void {
+  public static override constructor__(_instance: ItemView, _leaf: WorkspaceLeaf): void {
     // Spy hook.
   }
 

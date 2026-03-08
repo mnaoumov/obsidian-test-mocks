@@ -20,11 +20,11 @@ export class SliderComponent extends ValueComponent<number> {
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
     const mock = strictMock(this);
-    SliderComponent.__constructor(mock, _containerEl);
+    SliderComponent.constructor__(mock, _containerEl);
     return mock;
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

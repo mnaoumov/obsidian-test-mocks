@@ -15,11 +15,11 @@ export class ProgressBarComponent extends ValueComponent<number> {
     super();
     this.progressBar = createDiv();
     const mock = strictMock(this);
-    ProgressBarComponent.__constructor(mock, _containerEl);
+    ProgressBarComponent.constructor__(mock, _containerEl);
     return mock;
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

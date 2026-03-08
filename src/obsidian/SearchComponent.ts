@@ -12,11 +12,11 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     this.inputEl.type = 'search';
     this.clearButtonEl = createDiv();
     const mock = strictMock(this);
-    SearchComponent.__constructor(mock, _containerEl);
+    SearchComponent.constructor__(mock, _containerEl);
     return mock;
   }
 
-  public static override __constructor<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
+  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
   }
 

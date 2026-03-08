@@ -14,7 +14,7 @@ export interface MockFileEntry {
 }
 
 export async function createMockApp(params: MockAppParams = {}): Promise<ObsidianApp> {
-  const app = App.__create();
+  const app = App.create__();
 
   const neededFolders = new Set<string>();
 

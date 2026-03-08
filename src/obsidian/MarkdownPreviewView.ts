@@ -12,11 +12,11 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     super(createDiv());
     this.containerEl = createDiv();
     const mock = strictMock(this);
-    MarkdownPreviewView.__constructor(mock);
+    MarkdownPreviewView.constructor__(mock);
     return mock;
   }
 
-  public static override __constructor(_instance: MarkdownPreviewView): void {
+  public static override constructor__(_instance: MarkdownPreviewView): void {
     // Spy hook.
   }
 
