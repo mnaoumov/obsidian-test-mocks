@@ -8,7 +8,7 @@ export class WorkspaceWindow {
   }
 
   public static __create(): WorkspaceWindow {
-    return Reflect.construct(WorkspaceWindow as unknown as new () => WorkspaceWindow, []) as WorkspaceWindow;
+    return new WorkspaceWindow();
   }
 
   public static __constructor(_instance: WorkspaceWindow, ..._args: unknown[]): void {

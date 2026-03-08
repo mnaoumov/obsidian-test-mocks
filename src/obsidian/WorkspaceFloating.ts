@@ -10,7 +10,7 @@ export class WorkspaceFloating extends WorkspaceParent {
   }
 
   public static __create(): WorkspaceFloating {
-    return Reflect.construct(WorkspaceFloating as unknown as new () => WorkspaceFloating, []) as WorkspaceFloating;
+    return new WorkspaceFloating();
   }
 
   public static override __constructor(_instance: WorkspaceFloating, ..._args: unknown[]): void {

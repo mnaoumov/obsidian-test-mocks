@@ -10,7 +10,7 @@ export class WorkspaceSidedock {
   }
 
   public static __create(): WorkspaceSidedock {
-    return Reflect.construct(WorkspaceSidedock as unknown as new () => WorkspaceSidedock, []) as WorkspaceSidedock;
+    return new WorkspaceSidedock();
   }
 
   public static __constructor(_instance: WorkspaceSidedock, ..._args: unknown[]): void {
