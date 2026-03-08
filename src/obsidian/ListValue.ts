@@ -5,11 +5,11 @@ import { NotNullValue } from './NotNullValue.ts';
 export class ListValue extends NotNullValue {
   public values: Value[] = [];
 
-  public isTruthy(): boolean {
+  public isTruthy__(): boolean {
     return this.values.length > 0;
   }
 
-  public toString(): string {
+  public toString__(): string {
     return this.values.map((v) => v.toString()).join(', ');
   }
 }

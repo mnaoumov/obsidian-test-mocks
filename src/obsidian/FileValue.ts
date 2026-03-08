@@ -1,11 +1,11 @@
 import { NotNullValue } from './NotNullValue.ts';
 
 export class FileValue extends NotNullValue {
-  public isTruthy(): boolean {
+  public isTruthy__(): boolean {
     return true;
   }
 
-  public toString(): string {
+  public toString__(): string {
     return '';
   }
 }
