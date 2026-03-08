@@ -66,7 +66,7 @@ export class FileManager {
       if (parsed && typeof parsed === 'object') {
         frontmatter = parsed as Record<string, unknown>;
       }
-      body = content.slice((fmMatch[0]).length);
+      body = content.slice(fmMatch[0].length);
     }
 
     fn(frontmatter);

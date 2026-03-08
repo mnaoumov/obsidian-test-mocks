@@ -2,7 +2,7 @@ import { strictMock } from '../internal/StrictMock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceSplit extends WorkspaceParent {
-  public declare parent: WorkspaceParent;
+  declare public parent: WorkspaceParent;
 
   protected constructor() {
     super();

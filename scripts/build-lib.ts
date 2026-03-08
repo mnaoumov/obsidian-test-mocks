@@ -1,5 +1,8 @@
 import { build } from 'esbuild';
-import { readdirSync, statSync } from 'node:fs';
+import {
+  readdirSync,
+  statSync
+} from 'node:fs';
 import { join } from 'node:path';
 
 import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
@@ -25,7 +28,7 @@ await wrapCliTask(async () => {
     bundle: false,
     platform: 'node' as const,
     target: 'es2024',
-    sourcemap: 'inline' as const,
+    sourcemap: 'inline' as const
   };
 
   await Promise.all([
@@ -33,13 +36,13 @@ await wrapCliTask(async () => {
       ...commonOptions,
       outdir: 'dist/lib/esm',
       format: 'esm',
-      outExtension: { '.js': '.mjs' },
+      outExtension: { '.js': '.mjs' }
     }),
     build({
       ...commonOptions,
       outdir: 'dist/lib/cjs',
       format: 'cjs',
-      outExtension: { '.js': '.cjs' },
-    }),
+      outExtension: { '.js': '.cjs' }
+    })
   ]);
 });

@@ -170,7 +170,12 @@ export class MarkdownView {
     this._cleanups.push(cb);
   }
 
-  public registerDomEvent(el: Document | HTMLElement | Window, type: string, callback: EventListenerOrEventListenerObject, options?: AddEventListenerOptions | boolean): void {
+  public registerDomEvent(
+    el: Document | HTMLElement | Window,
+    type: string,
+    callback: EventListenerOrEventListenerObject,
+    options?: AddEventListenerOptions | boolean
+  ): void {
     el.addEventListener(type, callback, options);
     this.register(() => {
       el.removeEventListener(type, callback, options);

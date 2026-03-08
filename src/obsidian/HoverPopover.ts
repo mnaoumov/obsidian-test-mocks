@@ -19,7 +19,13 @@ export class HoverPopover extends Component {
     return mock;
   }
 
-  public static override constructor__(_instance: HoverPopover, _parent: HoverParent, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null): void {
+  public static override constructor__(
+    _instance: HoverPopover,
+    _parent: HoverParent,
+    _targetEl: HTMLElement | null,
+    _waitTime?: number,
+    _staticPos?: null
+  ): void {
     // Spy hook.
   }
 

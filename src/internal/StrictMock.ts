@@ -5,7 +5,7 @@ const PASSTHROUGH_PROPS = new Set<string | symbol>([
   'toJSON',
   Symbol.toPrimitive,
   Symbol.toStringTag,
-  Symbol.iterator,
+  Symbol.iterator
 ]);
 
 const strictMockHandler: ProxyHandler<object> = {
