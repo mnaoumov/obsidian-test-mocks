@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { TextFileView as RealTextFileView } from 'obsidian';
+import type { TextFileView as TextFileViewOriginal } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { EditableFileView } from './EditableFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -21,6 +19,10 @@ export abstract class TextFileView extends EditableFileView {
 
   public static override constructor__(_instance: TextFileView, _leaf: WorkspaceLeaf): void {
     // Spy hook.
+  }
+
+  public override asOriginalType__(): TextFileViewOriginal {
+    return castTo<TextFileViewOriginal>(this);
   }
 
   public abstract clear(): void;
@@ -44,8 +46,4 @@ export abstract class TextFileView extends EditableFileView {
   }
 
   public abstract setViewData(data: string, clear: boolean): void;
-
-  public override asReal__(): RealTextFileView {
-    return castTo<RealTextFileView>(this);
-  }
 }

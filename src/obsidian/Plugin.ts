@@ -1,10 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   Command,
   HoverLinkSource,
   MarkdownPostProcessor,
   MarkdownPostProcessorContext,
-  Plugin as RealPlugin,
+  Plugin as PluginOriginal,
   PluginManifest,
   PluginSettingTab,
   ViewCreator
@@ -12,23 +11,22 @@ import type {
 
 import type { App } from './App.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
   public _data: unknown = {};
-  public _extensions: Map<string, string> = new Map();
-  public _hoverLinkSources: Map<string, HoverLinkSource> = new Map();
-  public _markdownCodeBlockProcessors: Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown> = new Map();
+  public _extensions = new Map<string, string>();
+  public _hoverLinkSources = new Map<string, HoverLinkSource>();
+  public _markdownCodeBlockProcessors = new Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown>();
   public _markdownPostProcessors: MarkdownPostProcessor[] = [];
   public _ribbonActions: HTMLElement[] = [];
   public _settingTabs: PluginSettingTab[] = [];
   public _statusBarItems: HTMLElement[] = [];
-  public _views: Map<string, ViewCreator> = new Map();
+  public _views = new Map<string, ViewCreator>();
   public app: App;
-  public commands: Map<string, Command> = new Map();
+  public commands = new Map<string, Command>();
   public manifest: PluginManifest;
 
   public constructor(app: App, manifest: PluginManifest) {
@@ -63,6 +61,10 @@ export abstract class Plugin extends Component {
     const el = createDiv();
     this._statusBarItems.push(el);
     return el;
+  }
+
+  public override asOriginalType__(): PluginOriginal {
+    return castTo<PluginOriginal>(this);
   }
 
   public async loadData(): Promise<unknown> {
@@ -109,9 +111,5 @@ export abstract class Plugin extends Component {
 
   public async saveData(data: unknown): Promise<void> {
     this._data = data;
-  }
-
-  public override asReal__(): RealPlugin {
-    return castTo<RealPlugin>(this);
   }
 }

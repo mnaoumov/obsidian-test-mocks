@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { WorkspaceSplit as RealWorkspaceSplit } from 'obsidian';
+import type { WorkspaceSplit as WorkspaceSplitOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceSplit extends WorkspaceParent {
@@ -26,7 +24,7 @@ export class WorkspaceSplit extends WorkspaceParent {
     return new WorkspaceSplit(_workspace, _direction, _id);
   }
 
-  public override asReal__(): RealWorkspaceSplit {
-    return castTo<RealWorkspaceSplit>(this);
+  public override asOriginalType__(): WorkspaceSplitOriginal {
+    return castTo<WorkspaceSplitOriginal>(this);
   }
 }

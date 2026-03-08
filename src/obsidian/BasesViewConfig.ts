@@ -1,16 +1,14 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   BasesPropertyId,
   BasesSortConfig,
-  BasesViewConfig as RealBasesViewConfig,
+  BasesViewConfig as BasesViewConfigOriginal,
   Value
 } from 'obsidian';
 
 import type { BasesView } from './BasesView.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { NullValue } from './NullValue.ts';
 
 export class BasesViewConfig {
@@ -35,8 +33,8 @@ export class BasesViewConfig {
     return new BasesViewConfig(_query, _type, name);
   }
 
-  public asReal__(): RealBasesViewConfig {
-    return castTo<RealBasesViewConfig>(this);
+  public asOriginalType__(): BasesViewConfigOriginal {
+    return castTo<BasesViewConfigOriginal>(this);
   }
 
   public get(key: string): unknown {

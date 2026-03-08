@@ -39,7 +39,7 @@
 
 4. **`create__()` factory pattern.** Classes whose constructors are not public in `obsidian.d.ts` use a static `create__()` factory method. The `__` suffix signals this is not part of the real obsidian API. The actual constructor is `protected`. This ensures all instance creation is spyable via `vi.spyOn(ClassName, 'create__')`. Internal code must always use `create__()` instead of `new` (except inside `create__()` itself). `super()` calls in subclass constructors are the only acceptable direct constructor invocations.
 
-5. **`castTo<T>()` for type bridging.** When mock types need to satisfy obsidian's type system (e.g., `EventRef.e` expects `obsidian.Events`), use `castTo<ObsidianType>(this)` from `src/internal/Cast.ts`.
+5. **`castTo<T>()` for type bridging.** When mock types need to satisfy obsidian's type system (e.g., `EventRef.e` expects `obsidian.Events`), use `castTo<ObsidianType>(this)` from `src/internal/Cast.ts`. Every mock class exposes `asOriginalType__()` which returns the instance typed as its original obsidian counterpart (e.g., `App` → `import('obsidian').App`). The import alias convention is `XxxOriginal` (e.g., `import type { App as AppOriginal } from 'obsidian'`).
 
 6. **`DataAdapter` is an interface.** In `obsidian.d.ts`, `DataAdapter` is an interface, not a class. `FileSystemAdapter` and `CapacitorAdapter` implement it. The shared in-memory filesystem lives in `src/internal/InMemoryAdapter.ts`.
 

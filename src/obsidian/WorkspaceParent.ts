@@ -1,9 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
-import type { WorkspaceParent as RealWorkspaceParent } from 'obsidian';
+import type { WorkspaceParent as WorkspaceParentOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 export abstract class WorkspaceParent extends WorkspaceItem {
@@ -18,7 +16,7 @@ export abstract class WorkspaceParent extends WorkspaceItem {
     // Spy hook.
   }
 
-  public override asReal__(): RealWorkspaceParent {
-    return castTo<RealWorkspaceParent>(this);
+  public override asOriginalType__(): WorkspaceParentOriginal {
+    return castTo<WorkspaceParentOriginal>(this);
   }
 }

@@ -10,20 +10,14 @@ interface FileMeta {
   size: number;
 }
 
-function getParentDir(path: string): string {
-  const segments = path.split('/');
-  segments.pop();
-  return segments.join('/');
-}
-
 export class InMemoryAdapter {
   public basePath = '/mock-vault';
   public insensitive = false;
 
-  private binaryFiles = new Map<string, ArrayBuffer>();
-  private directories = new Set<string>(['']);
-  private fileMeta = new Map<string, FileMeta>();
-  private textFiles = new Map<string, string>();
+  private readonly binaryFiles = new Map<string, ArrayBuffer>();
+  private readonly directories = new Set<string>(['']);
+  private readonly fileMeta = new Map<string, FileMeta>();
+  private readonly textFiles = new Map<string, string>();
 
   protected constructor() {
     // Do nothing.
@@ -93,7 +87,7 @@ export class InMemoryAdapter {
   public async list(normalizedPath: string): Promise<ListedFiles> {
     const files: string[] = [];
     const folders: string[] = [];
-    const prefix = normalizedPath === '' ? '' : normalizedPath + '/';
+    const prefix = normalizedPath === '' ? '' : `${normalizedPath}/`;
 
     for (const filePath of this.textFiles.keys()) {
       if (this.isDirectChild(filePath, prefix, normalizedPath)) {
@@ -151,10 +145,10 @@ export class InMemoryAdapter {
 
   public async rename(normalizedPath: string, normalizedNewPath: string): Promise<void> {
     if (this.directories.has(normalizedPath)) {
-      const oldPrefix = normalizedPath === '' ? '' : normalizedPath + '/';
-      const newPrefix = normalizedNewPath === '' ? '' : normalizedNewPath + '/';
+      const oldPrefix = normalizedPath === '' ? '' : `${normalizedPath}/`;
+      const newPrefix = normalizedNewPath === '' ? '' : `${normalizedNewPath}/`;
 
-      const entriesToMove: Array<[string, string]> = [];
+      const entriesToMove: [string, string][] = [];
 
       for (const key of this.textFiles.keys()) {
         if (key === normalizedPath || key.startsWith(oldPrefix)) {
@@ -167,7 +161,7 @@ export class InMemoryAdapter {
         }
       }
 
-      const dirsToMove: Array<[string, string]> = [];
+      const dirsToMove: [string, string][] = [];
       for (const dir of this.directories) {
         if (dir === normalizedPath || dir.startsWith(oldPrefix)) {
           dirsToMove.push([dir, dir === normalizedPath ? normalizedNewPath : newPrefix + dir.slice(oldPrefix.length)]);
@@ -218,7 +212,7 @@ export class InMemoryAdapter {
 
   public async rmdir(normalizedPath: string, recursive: boolean): Promise<void> {
     if (recursive) {
-      const prefix = normalizedPath === '' ? '' : normalizedPath + '/';
+      const prefix = normalizedPath === '' ? '' : `${normalizedPath}/`;
 
       for (const key of [...this.textFiles.keys()]) {
         if (key.startsWith(prefix)) {
@@ -326,4 +320,10 @@ export class InMemoryAdapter {
     this.directories.add(normalizedPath);
     this.ensureParentDirs(normalizedPath);
   }
+}
+
+function getParentDir(path: string): string {
+  const segments = path.split('/');
+  segments.pop();
+  return segments.join('/');
 }

@@ -1,4 +1,3 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   Constructor,
   MarkdownFileInfo,
@@ -7,7 +6,7 @@ import type {
   Side,
   SplitDirection,
   View,
-  Workspace as RealWorkspace,
+  Workspace as WorkspaceOriginal,
   WorkspaceParent,
   WorkspaceWindowInitData
 } from 'obsidian';
@@ -19,9 +18,8 @@ import type {
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { debounce } from './debounce.ts';
 import { Events } from './Events.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -77,16 +75,16 @@ export class Workspace extends Events {
     return new Workspace(_app, containerEl);
   }
 
-  public override asReal__(): RealWorkspace {
-    return castTo<RealWorkspace>(this);
-  }
-
   public _setLayoutReady(): void {
     this.layoutReady = true;
     for (const callback of this._layoutReadyCallbacks) {
       callback();
     }
     this._layoutReadyCallbacks = [];
+  }
+
+  public override asOriginalType__(): WorkspaceOriginal {
+    return castTo<WorkspaceOriginal>(this);
   }
 
   public async changeLayout(_workspace: unknown): Promise<void> {

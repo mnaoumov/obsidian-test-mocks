@@ -1,6 +1,6 @@
 import { parseFrontMatterEntry } from './parseFrontMatterEntry.ts';
 
-export function parseFrontMatterStringArray(frontmatter: Record<string, unknown> | null, key: string | RegExp): string[] | null {
+export function parseFrontMatterStringArray(frontmatter: null | Record<string, unknown>, key: RegExp | string): null | string[] {
   const entry = parseFrontMatterEntry(frontmatter, key);
   if (typeof entry === 'string') {
     return [entry];

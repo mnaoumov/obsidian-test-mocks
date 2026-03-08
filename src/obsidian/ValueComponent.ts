@@ -1,6 +1,6 @@
-import { castTo } from '../internal/Cast.ts';
-import type { ValueComponent as RealValueComponent } from 'obsidian';
+import type { ValueComponent as ValueComponentOriginal } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export abstract class ValueComponent<T> extends BaseComponent {
@@ -17,6 +17,10 @@ export abstract class ValueComponent<T> extends BaseComponent {
     // Spy hook.
   }
 
+  public override asOriginalType__(): ValueComponentOriginal<T> {
+    return castTo<ValueComponentOriginal<T>>(this);
+  }
+
   public abstract getValue(): T;
 
   public registerOptionListener(_listeners: Record<string, (value?: T) => T>, _key: string): this {
@@ -24,8 +28,4 @@ export abstract class ValueComponent<T> extends BaseComponent {
   }
 
   public abstract setValue(value: T): this;
-
-  public override asReal__(): RealValueComponent<T> {
-    return castTo<RealValueComponent<T>>(this);
-  }
 }

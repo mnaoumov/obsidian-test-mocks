@@ -1,13 +1,14 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   HoverPopover,
-  RenderContext as RealRenderContext
+  RenderContext as RenderContextOriginal
 } from 'obsidian';
+
+import { castTo } from '../internal/Cast.ts';
 
 export class RenderContext {
   public hoverPopover: HoverPopover | null = null;
 
-  public asReal__(): RealRenderContext {
-    return castTo<RealRenderContext>(this);
+  public asOriginalType__(): RenderContextOriginal {
+    return castTo<RenderContextOriginal>(this);
   }
 }

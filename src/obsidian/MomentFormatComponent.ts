@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { MomentFormatComponent as RealMomentFormatComponent } from 'obsidian';
+import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obsidian';
 
 import type { ValueComponent } from './ValueComponent.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { TextComponent } from './TextComponent.ts';
 
 export class MomentFormatComponent extends TextComponent {
@@ -24,6 +22,10 @@ export class MomentFormatComponent extends TextComponent {
     // Spy hook.
   }
 
+  public override asOriginalType__(): MomentFormatComponentOriginal {
+    return castTo<MomentFormatComponentOriginal>(this);
+  }
+
   public setDefaultFormat(defaultFormat: string): this {
     this.defaultFormat = defaultFormat;
     return this;
@@ -36,9 +38,5 @@ export class MomentFormatComponent extends TextComponent {
 
   public override setValue(value: string): this {
     return super.setValue(value);
-  }
-
-  public override asReal__(): RealMomentFormatComponent {
-    return castTo<RealMomentFormatComponent>(this);
   }
 }

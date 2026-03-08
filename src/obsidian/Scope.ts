@@ -1,14 +1,12 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   KeymapEventHandler,
   KeymapEventListener,
   Modifier,
-  Scope as RealScope
+  Scope as ScopeOriginal
 } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 interface MockKeyScope {
   func(): void;
@@ -18,19 +16,7 @@ interface MockKeyScope {
 }
 
 export class Scope {
-  private _keys: MockKeyScope[] = [];
-
-  public static create__(parent?: Scope): Scope {
-    return new Scope(parent);
-  }
-
-  public static constructor__(_instance: Scope, _parent?: Scope): void {
-    // Spy hook.
-  }
-
-  public asReal__(): RealScope {
-    return castTo<RealScope>(this);
-  }
+  private readonly _keys: MockKeyScope[] = [];
 
   protected constructor(parent?: Scope) {
     const mock = strictMock(this);
@@ -38,8 +24,20 @@ export class Scope {
     return mock;
   }
 
+  public static constructor__(_instance: Scope, _parent?: Scope): void {
+    // Spy hook.
+  }
+
+  public static create__(parent?: Scope): Scope {
+    return new Scope(parent);
+  }
+
+  public asOriginalType__(): ScopeOriginal {
+    return castTo<ScopeOriginal>(this);
+  }
+
   public register(modifiers: Modifier[] | null, key: null | string, _func: KeymapEventListener): KeymapEventHandler {
-    const handler = { key: key, modifiers: modifiers?.join(',') ?? null, scope: this } as unknown as KeymapEventHandler;
+    const handler = { key, modifiers: modifiers?.join(',') ?? null, scope: this } as unknown as KeymapEventHandler;
     this._keys.push(handler as unknown as MockKeyScope);
     return handler;
   }

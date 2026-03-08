@@ -1,7 +1,8 @@
-import { castTo } from '../internal/Cast.ts';
-import type { Value as RealValue } from 'obsidian';
+import type { Value as ValueOriginal } from 'obsidian';
 
 import type { RenderContext } from './RenderContext.ts';
+
+import { castTo } from '../internal/Cast.ts';
 
 export abstract class Value {
   public static type: string;
@@ -18,6 +19,10 @@ export abstract class Value {
       return a === b;
     }
     return a.looseEquals(b);
+  }
+
+  public asOriginalType__(): ValueOriginal {
+    return castTo<ValueOriginal>(this);
   }
 
   public equals(other: this): boolean {
@@ -43,8 +48,4 @@ export abstract class Value {
   }
 
   public abstract toString__(): string;
-
-  public asReal__(): RealValue {
-    return castTo<RealValue>(this);
-  }
 }

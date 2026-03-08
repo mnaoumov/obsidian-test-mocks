@@ -1,7 +1,6 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   DataWriteOptions,
-  FileManager as RealFileManager
+  FileManager as FileManagerOriginal
 } from 'obsidian';
 
 import type { App } from './App.ts';
@@ -9,32 +8,31 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { parseYaml } from './parseYaml.ts';
 import { stringifyYaml } from './stringifyYaml.ts';
 
 export class FileManager {
   public app: App;
 
-  public static create__(app: App): FileManager {
-    return new FileManager(app);
+  protected constructor(app: App) {
+    this.app = app;
+    const mock = strictMock(this);
+    FileManager.constructor__(mock, app);
+    return mock;
   }
 
   public static constructor__(_instance: FileManager, _app: App): void {
     // Spy hook.
   }
 
-  public asReal__(): RealFileManager {
-    return castTo<RealFileManager>(this);
+  public static create__(app: App): FileManager {
+    return new FileManager(app);
   }
 
-  protected constructor(app: App) {
-    this.app = app;
-    const mock = strictMock(this);
-    FileManager.constructor__(mock, app);
-    return mock;
+  public asOriginalType__(): FileManagerOriginal {
+    return castTo<FileManagerOriginal>(this);
   }
 
   public generateMarkdownLink(file: TFile, _sourcePath: string, subpath?: string, alias?: string): string {

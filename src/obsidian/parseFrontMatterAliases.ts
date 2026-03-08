@@ -1,4 +1,4 @@
-export function parseFrontMatterAliases(frontmatter: Record<string, unknown> | null): string[] | null {
+export function parseFrontMatterAliases(frontmatter: null | Record<string, unknown>): null | string[] {
   if (!frontmatter) {
     return null;
   }

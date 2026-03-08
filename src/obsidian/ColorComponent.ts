@@ -1,13 +1,11 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
-  ColorComponent as RealColorComponent,
+  ColorComponent as ColorComponentOriginal,
   HSL,
   RGB
 } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ColorComponent extends ValueComponent<string> {
@@ -21,7 +19,6 @@ export class ColorComponent extends ValueComponent<string> {
   private _value = '';
 
   public constructor(_containerEl: HTMLElement) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Calling mock-only @deprecated ValueComponent constructor.
     super();
     this.colorPickerEl = createEl('input');
     this.colorPickerEl.type = 'color';
@@ -32,6 +29,10 @@ export class ColorComponent extends ValueComponent<string> {
 
   public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
     // Spy hook.
+  }
+
+  public override asOriginalType__(): ColorComponentOriginal {
+    return castTo<ColorComponentOriginal>(this);
   }
 
   public override getValue(): string {
@@ -88,12 +89,8 @@ export class ColorComponent extends ValueComponent<string> {
   }
 
   public setValueRgb(rgb: RGB): this {
-    const hex = '#' + [rgb.r, rgb.g, rgb.b].map((c) => Math.round(c).toString(16).padStart(2, '0')).join('');
+    const hex = `#${[rgb.r, rgb.g, rgb.b].map((c) => Math.round(c).toString(16).padStart(2, '0')).join('')}`;
     return this.setValue(hex);
-  }
-
-  public override asReal__(): RealColorComponent {
-    return castTo<RealColorComponent>(this);
   }
 }
 

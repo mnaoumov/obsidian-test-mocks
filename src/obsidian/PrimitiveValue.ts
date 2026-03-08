@@ -1,6 +1,6 @@
-import { castTo } from '../internal/Cast.ts';
-import type { PrimitiveValue as RealPrimitiveValue } from 'obsidian';
+import type { PrimitiveValue as PrimitiveValueOriginal } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export abstract class PrimitiveValue<T> extends NotNullValue {
@@ -11,15 +11,15 @@ export abstract class PrimitiveValue<T> extends NotNullValue {
     this.value = value;
   }
 
+  public override asOriginalType__(): PrimitiveValueOriginal<T> {
+    return castTo<PrimitiveValueOriginal<T>>(this);
+  }
+
   public isTruthy__(): boolean {
     return !!this.value;
   }
 
   public toString__(): string {
     return String(this.value);
-  }
-
-  public override asReal__(): RealPrimitiveValue<T> {
-    return castTo<RealPrimitiveValue<T>>(this);
   }
 }

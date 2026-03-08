@@ -1,4 +1,4 @@
-export function parseFrontMatterEntry(frontmatter: Record<string, unknown> | null, key: string | RegExp): unknown {
+export function parseFrontMatterEntry(frontmatter: null | Record<string, unknown>, key: RegExp | string): unknown {
   if (!frontmatter) {
     return null;
   }

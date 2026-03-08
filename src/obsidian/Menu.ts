@@ -1,13 +1,11 @@
 import type {
-  Menu as RealMenu,
+  Menu as MenuOriginal,
   MenuItem as ObsidianMenuItem,
   MenuPositionDef
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
 import { MenuItem } from './MenuItem.ts';
 
@@ -33,10 +31,6 @@ export class Menu extends Component {
     return new Menu();
   }
 
-  public override asReal__(): RealMenu {
-    return castTo<RealMenu>(this);
-  }
-
   public static forEvent(_evt: MouseEvent | PointerEvent): Menu {
     return Menu.create__();
   }
@@ -50,6 +44,10 @@ export class Menu extends Component {
 
   public addSeparator(): this {
     return this;
+  }
+
+  public override asOriginalType__(): MenuOriginal {
+    return castTo<MenuOriginal>(this);
   }
 
   public close(): void {

@@ -1,12 +1,10 @@
-import { castTo } from '../internal/Cast.ts';
-import type { TAbstractFile as RealTAbstractFile } from 'obsidian';
+import type { TAbstractFile as TAbstractFileOriginal } from 'obsidian';
 
 import type { TFolder } from './TFolder.ts';
 import type { Vault } from './Vault.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export abstract class TAbstractFile {
   public deleted = false;
@@ -29,7 +27,7 @@ export abstract class TAbstractFile {
     // Spy hook.
   }
 
-  public asReal__(): RealTAbstractFile {
-    return castTo<RealTAbstractFile>(this);
+  public asOriginalType__(): TAbstractFileOriginal {
+    return castTo<TAbstractFileOriginal>(this);
   }
 }

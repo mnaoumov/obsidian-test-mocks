@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { PopoverSuggest as RealPopoverSuggest } from 'obsidian';
+import type { PopoverSuggest as PopoverSuggestOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Scope } from './Scope.ts';
 
 export abstract class PopoverSuggest<T> {
@@ -25,11 +23,13 @@ export abstract class PopoverSuggest<T> {
     // Spy hook.
   }
 
+  public asOriginalType__(): PopoverSuggestOriginal<T> {
+    return castTo<PopoverSuggestOriginal<T>>(this);
+  }
+
   public close(): void {
     this._isOpen = false;
   }
-
-  protected abstract getSuggestions(query: unknown): T[] | Promise<T[]>;
 
   public isOpen(): boolean {
     return this._isOpen;
@@ -43,7 +43,5 @@ export abstract class PopoverSuggest<T> {
 
   public abstract selectSuggestion(value: T, evt: KeyboardEvent | MouseEvent): void;
 
-  public asReal__(): RealPopoverSuggest<T> {
-    return castTo<RealPopoverSuggest<T>>(this);
-  }
+  protected abstract getSuggestions(query: unknown): Promise<T[]> | T[];
 }

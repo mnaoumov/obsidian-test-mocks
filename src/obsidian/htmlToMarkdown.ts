@@ -2,7 +2,7 @@ import TurndownService from 'turndown';
 
 const turndownService = new TurndownService();
 
-export function htmlToMarkdown(html: string | HTMLElement | Document | DocumentFragment): string {
+export function htmlToMarkdown(html: Document | DocumentFragment | HTMLElement | string): string {
   if (typeof html === 'string') {
     return turndownService.turndown(html);
   }

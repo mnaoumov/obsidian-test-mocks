@@ -1,8 +1,8 @@
-import { castTo } from '../internal/Cast.ts';
-import type { LinkValue as RealLinkValue } from 'obsidian';
+import type { LinkValue as LinkValueOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
+import { castTo } from '../internal/Cast.ts';
 import { StringValue } from './StringValue.ts';
 
 export class LinkValue extends StringValue {
@@ -17,7 +17,7 @@ export class LinkValue extends StringValue {
     return linkValue;
   }
 
-  public override asReal__(): RealLinkValue {
-    return castTo<RealLinkValue>(this);
+  public override asOriginalType__(): LinkValueOriginal {
+    return castTo<LinkValueOriginal>(this);
   }
 }

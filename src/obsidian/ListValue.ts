@@ -1,12 +1,16 @@
-import { castTo } from '../internal/Cast.ts';
-import type { ListValue as RealListValue } from 'obsidian';
+import type { ListValue as ListValueOriginal } from 'obsidian';
 
 import type { Value } from './Value.ts';
 
+import { castTo } from '../internal/Cast.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ListValue extends NotNullValue {
   public values: Value[] = [];
+
+  public override asOriginalType__(): ListValueOriginal {
+    return castTo<ListValueOriginal>(this);
+  }
 
   public isTruthy__(): boolean {
     return this.values.length > 0;
@@ -14,9 +18,5 @@ export class ListValue extends NotNullValue {
 
   public toString__(): string {
     return this.values.map((v) => v.toString()).join(', ');
-  }
-
-  public override asReal__(): RealListValue {
-    return castTo<RealListValue>(this);
   }
 }

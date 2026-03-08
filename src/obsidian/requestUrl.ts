@@ -1,8 +1,8 @@
 interface RequestUrlResponse {
-  status: number;
-  headers: Record<string, string>;
   arrayBuffer: ArrayBuffer;
+  headers: Record<string, string>;
   json: unknown;
+  status: number;
   text: string;
 }
 
@@ -10,10 +10,10 @@ type RequestUrlResponsePromise = Promise<RequestUrlResponse> & RequestUrlRespons
 
 export function requestUrl(_request: unknown): RequestUrlResponsePromise {
   const response: RequestUrlResponse = {
-    status: 200,
-    headers: {},
     arrayBuffer: new ArrayBuffer(0),
+    headers: {},
     json: null,
+    status: 200,
     text: ''
   };
   const promise = Promise.resolve(response) as RequestUrlResponsePromise;

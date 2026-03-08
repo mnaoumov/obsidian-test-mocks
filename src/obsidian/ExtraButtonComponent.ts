@@ -1,9 +1,7 @@
-import { castTo } from '../internal/Cast.ts';
-import type { ExtraButtonComponent as RealExtraButtonComponent } from 'obsidian';
+import type { ExtraButtonComponent as ExtraButtonComponentOriginal } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ExtraButtonComponent extends BaseComponent {
@@ -20,6 +18,10 @@ export class ExtraButtonComponent extends BaseComponent {
 
   public static override constructor__(_instance: BaseComponent, ..._args: unknown[]): void {
     // Spy hook.
+  }
+
+  public override asOriginalType__(): ExtraButtonComponentOriginal {
+    return castTo<ExtraButtonComponentOriginal>(this);
   }
 
   public onClick(callback: () => unknown): this {
@@ -45,9 +47,5 @@ export class ExtraButtonComponent extends BaseComponent {
   /** @deprecated Mock-only. Simulates a click by invoking the registered click handler. Not part of the Obsidian API. */
   public simulateClick(): void {
     this.clickHandler?.();
-  }
-
-  public override asReal__(): RealExtraButtonComponent {
-    return castTo<RealExtraButtonComponent>(this);
   }
 }

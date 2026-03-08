@@ -9,7 +9,7 @@ import { Vault as MockVault } from '../../obsidian/Vault.ts';
 import { parentFolderPath } from './parentFolderPath.ts';
 
 export function createTFolderInstance(app: App, path: string): TFolder {
-  let folder = app.vault.getFolderByPath(path);
+  const folder = app.vault.getFolderByPath(path);
   if (folder) {
     return folder;
   }

@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { SearchComponent as RealSearchComponent } from 'obsidian';
+import type { SearchComponent as SearchComponentOriginal } from 'obsidian';
 
 import type { ValueComponent } from './ValueComponent.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -25,10 +23,10 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     // Spy hook.
   }
 
-  public override onChanged(): void {
+  public override asOriginalType__(): SearchComponentOriginal {
+    return castTo<SearchComponentOriginal>(this);
   }
 
-  public override asReal__(): RealSearchComponent {
-    return castTo<RealSearchComponent>(this);
+  public override onChanged(): void {
   }
 }

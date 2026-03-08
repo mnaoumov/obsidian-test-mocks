@@ -1,6 +1,6 @@
-import { castTo } from '../internal/Cast.ts';
-import type { NumberValue as RealNumberValue } from 'obsidian';
+import type { NumberValue as NumberValueOriginal } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class NumberValue extends PrimitiveValue<number> {
@@ -8,7 +8,7 @@ export class NumberValue extends PrimitiveValue<number> {
     super(value);
   }
 
-  public override asReal__(): RealNumberValue {
-    return castTo<RealNumberValue>(this);
+  public override asOriginalType__(): NumberValueOriginal {
+    return castTo<NumberValueOriginal>(this);
   }
 }

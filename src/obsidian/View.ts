@@ -1,16 +1,14 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   DataAdapter,
   IconName,
   Menu,
   Scope,
-  View as RealView,
+  View as ViewOriginal,
   ViewStateResult
 } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -40,6 +38,10 @@ export abstract class View extends Component {
 
   public static override constructor__(_instance: View, _leaf: WorkspaceLeaf): void {
     // Spy hook.
+  }
+
+  public override asOriginalType__(): ViewOriginal {
+    return castTo<ViewOriginal>(this);
   }
 
   public abstract getDisplayText(): string;
@@ -76,9 +78,5 @@ export abstract class View extends Component {
   }
 
   protected async onOpen(): Promise<void> {
-  }
-
-  public override asReal__(): RealView {
-    return castTo<RealView>(this);
   }
 }

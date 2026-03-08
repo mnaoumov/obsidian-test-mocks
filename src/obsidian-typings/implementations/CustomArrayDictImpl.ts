@@ -1,7 +1,7 @@
 import type { CustomArrayDict } from 'obsidian-typings';
 
 export class CustomArrayDictImpl<T> implements CustomArrayDict<T> {
-  public data: Map<string, T[]> = new Map();
+  public data = new Map<string, T[]>();
 
   public add(key: string, value: T): void {
     let values = this.get(key);
@@ -13,26 +13,6 @@ export class CustomArrayDictImpl<T> implements CustomArrayDict<T> {
     if (!values.includes(value)) {
       values.push(value);
     }
-  }
-
-  public remove(key: string, value: T): void {
-    const values = this.get(key);
-    if (!values) {
-      return;
-    }
-    values.remove(value);
-
-    if (values.length === 0) {
-      this.clear(key);
-    }
-  }
-
-  public get(key: string): T[] | null {
-    return this.data.get(key) || null;
-  }
-
-  public keys(): string[] {
-    return Array.from(this.data.keys());
   }
 
   public clear(key: string): void {
@@ -54,5 +34,25 @@ export class CustomArrayDictImpl<T> implements CustomArrayDict<T> {
     }
 
     return ans;
+  }
+
+  public get(key: string): null | T[] {
+    return this.data.get(key) || null;
+  }
+
+  public keys(): string[] {
+    return Array.from(this.data.keys());
+  }
+
+  public remove(key: string, value: T): void {
+    const values = this.get(key);
+    if (!values) {
+      return;
+    }
+    values.remove(value);
+
+    if (values.length === 0) {
+      this.clear(key);
+    }
   }
 }

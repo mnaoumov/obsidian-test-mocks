@@ -1,5 +1,4 @@
 import { fileURLToPath } from 'node:url';
-
 import { defineConfig } from 'vitest/config';
 
 export const vitestConfig = defineConfig({
@@ -10,16 +9,16 @@ export const vitestConfig = defineConfig({
     }
   },
   test: {
-    include: ['__tests__/**/*.test.ts'],
-    exclude: ['node_modules', 'dist'],
-    environment: 'jsdom',
-    globals: false,
-    setupFiles: ['./src/globals/index.ts'],
     coverage: {
-      provider: 'v8',
       include: ['src/**/*.ts'],
+      provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
       reportsDirectory: './coverage'
-    }
+    },
+    environment: 'jsdom',
+    exclude: ['node_modules', 'dist'],
+    globals: false,
+    include: ['__tests__/**/*.test.ts'],
+    setupFiles: ['./src/globals/index.ts']
   }
 });

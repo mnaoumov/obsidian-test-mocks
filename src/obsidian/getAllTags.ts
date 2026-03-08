@@ -1,6 +1,6 @@
 import { parseFrontMatterTags } from './parseFrontMatterTags.ts';
 
-export function getAllTags(cache: { tags?: { tag: string }[]; frontmatter?: Record<string, unknown> }): string[] | null {
+export function getAllTags(cache: { frontmatter?: Record<string, unknown>; tags?: { tag: string }[] }): null | string[] {
   const tags: string[] = [];
   if (cache.tags) {
     for (const t of cache.tags) {

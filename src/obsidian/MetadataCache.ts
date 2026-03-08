@@ -1,16 +1,14 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   CachedMetadata,
-  MetadataCache as RealMetadataCache
+  MetadataCache as MetadataCacheOriginal
 } from 'obsidian';
 
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
 
 export class MetadataCache extends Events {
@@ -35,13 +33,13 @@ export class MetadataCache extends Events {
     return new MetadataCache(app, _vault);
   }
 
-  public override asReal__(): RealMetadataCache {
-    return castTo<RealMetadataCache>(this);
-  }
-
   public _setCache(path: string, cache: CachedMetadata): void {
     this._cache.set(path, cache);
     this.trigger('changed');
+  }
+
+  public override asOriginalType__(): MetadataCacheOriginal {
+    return castTo<MetadataCacheOriginal>(this);
   }
 
   public fileToLinktext(file: TFile, _sourcePath: string, omitMdExtension?: boolean): string {

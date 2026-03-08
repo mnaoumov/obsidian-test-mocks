@@ -1,12 +1,10 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
-  Component as RealComponent,
+  Component as ComponentOriginal,
   EventRef
 } from 'obsidian';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class Component {
   public _children: Component[] = [];
@@ -33,17 +31,21 @@ export class Component {
     return component;
   }
 
+  public asOriginalType__(): ComponentOriginal {
+    return castTo<ComponentOriginal>(this);
+  }
+
   public load(): void {
     this._loaded = true;
     this.onload();
   }
 
   public onload(): void {
-    // override point
+    // Override point
   }
 
   public onunload(): void {
-    // override point
+    // Override point
   }
 
   public register(cb: () => unknown): void {
@@ -122,9 +124,5 @@ export class Component {
     this._intervals = [];
 
     this._loaded = false;
-  }
-
-  public asReal__(): RealComponent {
-    return castTo<RealComponent>(this);
   }
 }

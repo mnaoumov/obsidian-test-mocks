@@ -1,11 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
-import type { TextComponent as RealTextComponent } from 'obsidian';
+import type { TextComponent as TextComponentOriginal } from 'obsidian';
 
 import type { ValueComponent } from './ValueComponent.ts';
 
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -38,6 +36,10 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     // Spy hook.
   }
 
+  public override asOriginalType__(): TextComponentOriginal {
+    return castTo<TextComponentOriginal>(this);
+  }
+
   public override onChange(cb: (value: string) => unknown): this {
     return super.onChange(cb);
   }
@@ -48,9 +50,5 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     for (const handler of this.eventListeners[event] ?? []) {
       handler(...args);
     }
-  }
-
-  public override asReal__(): RealTextComponent {
-    return castTo<RealTextComponent>(this);
   }
 }

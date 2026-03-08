@@ -1,6 +1,5 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
-  Editor as RealEditor,
+  Editor as EditorOriginal,
   EditorChange,
   EditorCommandName,
   EditorPosition,
@@ -9,17 +8,24 @@ import type {
   EditorSelectionOrCaret,
   EditorTransaction
 } from 'obsidian';
+
 import type { CoordsLeftTop } from '../internal/Types.ts';
+
+import { castTo } from '../internal/Cast.ts';
 
 export abstract class Editor {
   private _focused = false;
   private _redoStack: string[] = [];
   private _scrollLeft = 0;
   private _scrollTop = 0;
-  private _undoStack: string[] = [];
+  private readonly _undoStack: string[] = [];
   private anchor: EditorPosition = { ch: 0, line: 0 };
   private content = '';
   private head: EditorPosition = { ch: 0, line: 0 };
+
+  public asOriginalType__(): EditorOriginal {
+    return castTo<EditorOriginal>(this);
+  }
 
   public blur(): void {
     this._focused = false;
@@ -290,9 +296,5 @@ export abstract class Editor {
       return { ...a };
     }
     return { ...b };
-  }
-
-  public asReal__(): RealEditor {
-    return castTo<RealEditor>(this);
   }
 }

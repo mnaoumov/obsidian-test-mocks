@@ -1,8 +1,9 @@
-import { castTo } from '../internal/Cast.ts';
 import type {
   MarkdownPostProcessor,
-  MarkdownPreviewRenderer as RealMarkdownPreviewRenderer
+  MarkdownPreviewRenderer as MarkdownPreviewRendererOriginal
 } from 'obsidian';
+
+import { castTo } from '../internal/Cast.ts';
 
 export class MarkdownPreviewRenderer {
   private static _postProcessors: MarkdownPostProcessor[] = [];
@@ -15,7 +16,7 @@ export class MarkdownPreviewRenderer {
     MarkdownPreviewRenderer._postProcessors = MarkdownPreviewRenderer._postProcessors.filter((p) => p !== postProcessor);
   }
 
-  public asReal__(): RealMarkdownPreviewRenderer {
-    return castTo<RealMarkdownPreviewRenderer>(this);
+  public asOriginalType__(): MarkdownPreviewRendererOriginal {
+    return castTo<MarkdownPreviewRendererOriginal>(this);
   }
 }

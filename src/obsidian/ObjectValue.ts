@@ -1,18 +1,18 @@
-import { castTo } from '../internal/Cast.ts';
-import type { ObjectValue as RealObjectValue } from 'obsidian';
+import type { ObjectValue as ObjectValueOriginal } from 'obsidian';
 
+import { castTo } from '../internal/Cast.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ObjectValue extends NotNullValue {
+  public override asOriginalType__(): ObjectValueOriginal {
+    return castTo<ObjectValueOriginal>(this);
+  }
+
   public isTruthy__(): boolean {
     return true;
   }
 
   public toString__(): string {
     return '';
-  }
-
-  public override asReal__(): RealObjectValue {
-    return castTo<RealObjectValue>(this);
   }
 }

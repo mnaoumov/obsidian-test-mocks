@@ -6,7 +6,7 @@ import type {
   MomentFormatComponent,
   ProgressBarComponent,
   SearchComponent,
-  Setting as RealSetting,
+  Setting as SettingOriginal,
   SliderComponent,
   TextAreaComponent,
   TextComponent,
@@ -17,9 +17,7 @@ import type {
 import type { BaseComponent } from './BaseComponent.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import {
-  strictMock
-} from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { ButtonComponent as MockButtonComponent } from './ButtonComponent.ts';
 import { ColorComponent as MockColorComponent } from './ColorComponent.ts';
 import { DropdownComponent as MockDropdownComponent } from './DropdownComponent.ts';
@@ -143,6 +141,10 @@ export class Setting {
     return this;
   }
 
+  public asOriginalType__(): SettingOriginal {
+    return castTo<SettingOriginal>(this);
+  }
+
   public clear(): this {
     this.components = [];
     return this;
@@ -189,9 +191,5 @@ export class Setting {
   public then(cb: (setting: this) => unknown): this {
     cb(this);
     return this;
-  }
-
-  public asReal__(): RealSetting {
-    return castTo<RealSetting>(this);
   }
 }

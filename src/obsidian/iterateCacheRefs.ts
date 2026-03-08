@@ -1,7 +1,7 @@
 import { iterateRefs } from './iterateRefs.ts';
 
 export function iterateCacheRefs(
-  cache: { links?: unknown[]; embeds?: unknown[]; frontmatterLinks?: unknown[] },
+  cache: { embeds?: unknown[]; frontmatterLinks?: unknown[]; links?: unknown[] },
   cb: (ref: unknown) => boolean | void
 ): boolean {
   if (cache.links && iterateRefs(cache.links, cb)) {
