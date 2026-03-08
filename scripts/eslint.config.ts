@@ -15,8 +15,12 @@ import {
   globalIgnores
 } from 'eslint/config';
 import globals from 'globals';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 // eslint-disable-next-line import-x/no-rename-default -- The default export name `_default` is too generic.
 import tseslint from 'typescript-eslint';
+
+const tsconfigRootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const typeScriptFiles = [
   'src/**/*.ts',
@@ -27,25 +31,23 @@ const typeScriptFiles = [
   'vitest.config.ts'
 ];
 
-export function createEslintConfig(tsconfigRootDir: string): Linter.Config[] {
-  return defineConfig(
-    globalIgnores([
-      '**/*.cjs',
-      '**/*.js',
-      '**/*.mjs',
-      'dist/**',
-      'templates/**'
-    ]),
-    ...getEslintConfigs(),
-    ...getTseslintConfigs(tsconfigRootDir),
-    ...getStylisticConfigs(),
-    ...getImportXConfigs(),
-    ...getPerfectionistConfigs(),
-    ...getModulesNewlinesConfigs(),
-    ...getEslintImportResolverTypescriptConfigs(),
-    ...getEslintCommentsConfigs()
-  );
-}
+export const eslintConfig: Linter.Config[] = defineConfig(
+  globalIgnores([
+    '**/*.cjs',
+    '**/*.js',
+    '**/*.mjs',
+    'dist/**',
+    'templates/**'
+  ]),
+  ...getEslintConfigs(),
+  ...getTseslintConfigs(),
+  ...getStylisticConfigs(),
+  ...getImportXConfigs(),
+  ...getPerfectionistConfigs(),
+  ...getModulesNewlinesConfigs(),
+  ...getEslintImportResolverTypescriptConfigs(),
+  ...getEslintCommentsConfigs()
+);
 
 function getEslintCommentsConfigs(): Linter.Config[] {
   return defineConfig([
@@ -104,7 +106,6 @@ function getEslintConfigs(): Linter.Config[] {
             ]
           }
         ],
-        'no-constructor-return': 'error',
         'no-div-regex': 'error',
         'no-else-return': [
           'error',
@@ -370,7 +371,7 @@ function getStylisticConfigs(): Linter.Config[] {
   ]);
 }
 
-function getTseslintConfigs(tsconfigRootDir: string): Linter.Config[] {
+function getTseslintConfigs(): Linter.Config[] {
   return defineConfig([
     {
       extends: [
