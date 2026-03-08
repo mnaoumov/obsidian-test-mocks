@@ -8,11 +8,11 @@ export class WorkspaceRibbon {
     return mock;
   }
 
-  public static create__(): WorkspaceRibbon {
-    return new WorkspaceRibbon();
+  public static constructor__(_instance: WorkspaceRibbon): void {
+    // Spy hook.
   }
 
-  public static constructor__(_instance: WorkspaceRibbon, ..._args: unknown[]): void {
-    // Spy hook.
+  public static create__(_workspace?: unknown, _side?: string): WorkspaceRibbon {
+    return new WorkspaceRibbon();
   }
 }

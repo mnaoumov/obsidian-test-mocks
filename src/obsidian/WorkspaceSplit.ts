@@ -11,11 +11,11 @@ export class WorkspaceSplit extends WorkspaceParent {
     return mock;
   }
 
-  public static override constructor__(_instance: WorkspaceSplit, ..._args: unknown[]): void {
+  public static override constructor__(_instance: WorkspaceSplit): void {
     // Spy hook.
   }
 
-  public static create__(): WorkspaceSplit {
+  public static create__(_workspace?: unknown, _direction?: string, _id?: string): WorkspaceSplit {
     return new WorkspaceSplit();
   }
 }

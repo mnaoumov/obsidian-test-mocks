@@ -19,12 +19,12 @@ export class MenuItem {
     return mock;
   }
 
-  public static create__(): MenuItem {
-    return new MenuItem();
-  }
-
   public static constructor__(_instance: MenuItem): void {
     // Spy hook.
+  }
+
+  public static create__(_menu?: unknown): MenuItem {
+    return new MenuItem();
   }
 
   public onClick(callback: (evt: KeyboardEvent | MouseEvent) => unknown): this {

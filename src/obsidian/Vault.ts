@@ -12,28 +12,28 @@ import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
 
 export class Vault extends Events {
+  public _fileMap: Record<string, TAbstractFile> = {};
   public adapter: DataAdapter;
   // eslint-disable-next-line obsidianmd/hardcoded-config-path -- Default value for testing.
   public configDir = '.obsidian';
-  public _fileMap: Record<string, TAbstractFile> = {};
 
-  public static create__(): Vault {
-    return new Vault();
-  }
-
-  public static override constructor__(_instance: Vault): void {
-    // Spy hook.
-  }
-
-  protected constructor() {
+  protected constructor(adapter: DataAdapter) {
     super();
-    this.adapter = FileSystemAdapter.create__() as unknown as DataAdapter;
+    this.adapter = adapter;
     const root = TFolder.create__(this, '/');
     this._fileMap['/'] = root;
     root.deleted = false;
     const mock = strictMock(this);
-    Vault.constructor__(mock);
+    Vault.constructor__(mock, adapter);
     return mock;
+  }
+
+  public static override constructor__(_instance: Vault, _adapter: DataAdapter): void {
+    // Spy hook.
+  }
+
+  public static create__(adapter?: DataAdapter): Vault {
+    return new Vault(adapter ?? FileSystemAdapter.create__() as unknown as DataAdapter);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {

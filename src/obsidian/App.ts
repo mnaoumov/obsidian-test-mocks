@@ -1,4 +1,7 @@
-import type { UserEvent } from 'obsidian';
+import type {
+  DataAdapter,
+  UserEvent
+} from 'obsidian';
 
 import { strictMock } from '../internal/StrictMock.ts';
 import { FileManager } from './FileManager.ts';
@@ -19,16 +22,8 @@ export class App {
 
   private readonly _localStorage = new Map<string, unknown>();
 
-  public static create__(): App {
-    return new App();
-  }
-
-  public static constructor__(_instance: App): void {
-    // Spy hook.
-  }
-
-  protected constructor() {
-    this.vault = Vault.create__();
+  protected constructor(adapter?: DataAdapter) {
+    this.vault = Vault.create__(adapter);
     this.fileManager = FileManager.create__(this);
     this.keymap = Keymap.create__();
     this.metadataCache = MetadataCache.create__(this);
@@ -37,6 +32,14 @@ export class App {
     const mock = strictMock(this);
     App.constructor__(mock);
     return mock;
+  }
+
+  public static constructor__(_instance: App): void {
+    // Spy hook.
+  }
+
+  public static create__(adapter?: DataAdapter, _appId?: string): App {
+    return new App(adapter);
   }
 
   public isDarkMode(): boolean {

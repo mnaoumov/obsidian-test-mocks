@@ -9,12 +9,12 @@ export class WorkspaceSidedock {
     return mock;
   }
 
-  public static create__(): WorkspaceSidedock {
-    return new WorkspaceSidedock();
+  public static constructor__(_instance: WorkspaceSidedock): void {
+    // Spy hook.
   }
 
-  public static constructor__(_instance: WorkspaceSidedock, ..._args: unknown[]): void {
-    // Spy hook.
+  public static create__(_workspace?: unknown, _direction?: string, _side?: string, _id?: string): WorkspaceSidedock {
+    return new WorkspaceSidedock();
   }
 
   public collapse(): void {
