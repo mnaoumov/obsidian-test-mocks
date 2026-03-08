@@ -12,7 +12,7 @@ export const vitestConfig = defineConfig({
   test: {
     include: ['__tests__/**/*.test.ts'],
     exclude: ['node_modules', 'dist'],
-    environment: 'node',
+    environment: 'jsdom',
     globals: false,
     setupFiles: ['./src/globals/index.ts'],
     coverage: {
