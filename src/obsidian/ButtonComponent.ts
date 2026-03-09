@@ -9,15 +9,15 @@ import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
   /** @deprecated Mock-only. Tracks all created instances for test assertions. Not part of the Obsidian API. */
-  public static instances: ButtonComponent[] = [];
+  public static instances__: ButtonComponent[] = [];
   public buttonEl: HTMLButtonElement;
-  private clickHandler?: (_evt: MouseEvent) => unknown;
+  private clickHandler?: (evt: MouseEvent) => unknown;
 
-  public constructor(_containerEl: HTMLElement) {
+  public constructor(containerEl: HTMLElement) {
     super();
-    this.buttonEl = createEl('button');
+    this.buttonEl = containerEl.createEl('button');
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Initializing mock-only tracking field.
-    ButtonComponent.instances.push(this);
+    ButtonComponent.instances__.push(this);
     return strictMock(this);
   }
 
@@ -66,7 +66,7 @@ export class ButtonComponent extends BaseComponent {
   }
 
   /** @deprecated Mock-only. Simulates a button click by invoking the registered click handler. Not part of the Obsidian API. */
-  public simulateClick(): void {
+  public simulateClick__(): void {
     this.clickHandler?.(new Event('click') as MouseEvent);
   }
 }

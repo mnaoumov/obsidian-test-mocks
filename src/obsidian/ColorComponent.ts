@@ -15,12 +15,12 @@ export class ColorComponent extends ValueComponent<string> {
     return this.colorPickerEl;
   }
 
-  private _onChange?: (_value: string) => unknown;
+  private _onChange?: (value: string) => unknown;
   private _value = '';
 
-  public constructor(_containerEl: HTMLElement) {
+  public constructor(containerEl: HTMLElement) {
     super();
-    this.colorPickerEl = createEl('input');
+    this.colorPickerEl = containerEl.createEl('input');
     this.colorPickerEl.type = 'color';
     return strictMock(this);
   }
