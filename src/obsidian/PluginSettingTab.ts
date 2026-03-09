@@ -3,8 +3,8 @@ import type { PluginSettingTab as PluginSettingTabOriginal } from 'obsidian';
 import type { App } from './App.ts';
 import type { Plugin } from './Plugin.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { SettingTab } from './SettingTab.ts';
 
 export abstract class PluginSettingTab extends SettingTab {

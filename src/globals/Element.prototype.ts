@@ -1,4 +1,4 @@
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { empty } from './Node.prototype.ts';
 
 export function addClass(this: Element, ...classes: string[]): void {

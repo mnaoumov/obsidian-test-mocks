@@ -1,7 +1,7 @@
 import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { TextComponent } from './TextComponent.ts';
 
 export class MomentFormatComponent extends TextComponent {

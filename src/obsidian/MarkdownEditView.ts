@@ -4,7 +4,7 @@ import type {
   MarkdownEditView as MarkdownEditViewOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';

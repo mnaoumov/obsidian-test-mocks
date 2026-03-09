@@ -5,8 +5,8 @@ import type {
 
 import type { Vault } from './Vault.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
 export class TFile extends TAbstractFile {

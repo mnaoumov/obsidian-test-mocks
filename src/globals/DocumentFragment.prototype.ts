@@ -1,4 +1,4 @@
-import { ensureNonNullable } from '../internal/TypeGuards.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 
 export function find(this: DocumentFragment, selector: string): HTMLElement {
   return ensureNonNullable(this.querySelector(selector));

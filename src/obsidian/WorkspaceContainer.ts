@@ -2,7 +2,7 @@ import type { WorkspaceContainer as WorkspaceContainerOriginal } from 'obsidian'
 
 import type { Workspace } from './Workspace.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 export abstract class WorkspaceContainer extends WorkspaceSplit {

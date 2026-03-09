@@ -2,7 +2,7 @@ import type { LinkValue as LinkValueOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { StringValue } from './StringValue.ts';
 
 export class LinkValue extends StringValue {

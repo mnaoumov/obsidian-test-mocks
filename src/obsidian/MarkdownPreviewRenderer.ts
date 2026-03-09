@@ -3,7 +3,7 @@ import type {
   MarkdownPreviewRenderer as MarkdownPreviewRendererOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 
 export class MarkdownPreviewRenderer {
   private static _postProcessors: MarkdownPostProcessor[] = [];

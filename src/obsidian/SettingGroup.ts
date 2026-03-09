@@ -7,8 +7,8 @@ import type {
   SettingGroup as SettingGroupOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { ExtraButtonComponent as MockExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';

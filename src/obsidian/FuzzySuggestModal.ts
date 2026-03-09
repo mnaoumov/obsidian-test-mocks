@@ -5,9 +5,9 @@ import type {
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class FuzzySuggestModal<T> extends Modal {

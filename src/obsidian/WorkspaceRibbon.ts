@@ -2,9 +2,9 @@ import type { WorkspaceRibbon as WorkspaceRibbonOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class WorkspaceRibbon {
   // Intentionally has no additional members, obsidian.d.ts doesn't have any members to mock.

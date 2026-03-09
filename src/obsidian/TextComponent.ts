@@ -1,7 +1,7 @@
 import type { TextComponent as TextComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {

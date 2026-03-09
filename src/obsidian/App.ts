@@ -4,8 +4,8 @@ import type {
   UserEvent
 } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { FileManager } from './FileManager.ts';
 import { Keymap } from './Keymap.ts';
 import { MetadataCache } from './MetadataCache.ts';

@@ -3,7 +3,7 @@ import type {
   SvgElementInfoLike
 } from './functions.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import {
   createEl as createElGlobal,
   createSvg as createSvgGlobal

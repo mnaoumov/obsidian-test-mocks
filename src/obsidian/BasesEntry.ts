@@ -7,8 +7,8 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class BasesEntry implements FormulaContext {
   public file: TFile;

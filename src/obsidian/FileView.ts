@@ -5,12 +5,12 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 

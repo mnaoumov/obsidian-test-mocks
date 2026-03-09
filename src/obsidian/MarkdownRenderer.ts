@@ -6,7 +6,7 @@ import type {
   TFile
 } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noopAsync } from '../internal/noop.ts';
 import { MarkdownRenderChild } from './MarkdownRenderChild.ts';
 

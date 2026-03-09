@@ -8,9 +8,9 @@ import type { BasesEntry } from './BasesEntry.ts';
 import type { BasesEntryGroup } from './BasesEntryGroup.ts';
 import type { QueryController } from './QueryController.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class BasesQueryResult {
   public data: BasesEntry[] = [];

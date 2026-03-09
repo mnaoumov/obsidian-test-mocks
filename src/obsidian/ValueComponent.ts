@@ -1,6 +1,6 @@
 import type { ValueComponent as ValueComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export abstract class ValueComponent<T> extends BaseComponent {

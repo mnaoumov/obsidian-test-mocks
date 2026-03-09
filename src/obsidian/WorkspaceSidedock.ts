@@ -2,8 +2,8 @@ import type { WorkspaceSidedock as WorkspaceSidedockOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 export class WorkspaceSidedock extends WorkspaceSplit {

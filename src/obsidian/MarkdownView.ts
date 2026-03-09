@@ -3,8 +3,8 @@ import type {
   MarkdownView as MarkdownViewOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { Editor } from './Editor.ts';
 import { TextFileView } from './TextFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';

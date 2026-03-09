@@ -1,9 +1,9 @@
 import {
   delegatedOff,
   delegatedOn
-} from '../internal/DelegatedEventRegistry.ts';
+} from '../internal/delegated-event-registry.ts';
 import { noop } from '../internal/noop.ts';
-import { ensureNonNullable } from '../internal/TypeGuards.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 
 export function find(this: HTMLElement, selector: string): HTMLElement {
   return ensureNonNullable(this.querySelector(selector));

@@ -3,9 +3,9 @@ import type {
   TFile
 } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
 export class MarkdownPreviewView extends MarkdownRenderer {

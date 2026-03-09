@@ -7,9 +7,9 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { parseMarkdownContent } from '../internal/markdown-parser.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { Events } from './Events.ts';
 import { TFile as TFileClass } from './TFile.ts';
 

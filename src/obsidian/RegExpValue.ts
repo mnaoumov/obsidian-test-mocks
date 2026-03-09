@@ -1,6 +1,6 @@
 import type { RegExpValue as RegExpValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class RegExpValue extends NotNullValue {

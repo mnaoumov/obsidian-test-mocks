@@ -2,7 +2,7 @@ import type { ListValue as ListValueOriginal } from 'obsidian';
 
 import type { Value } from './Value.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ListValue extends NotNullValue {

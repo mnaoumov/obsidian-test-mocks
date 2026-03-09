@@ -1,4 +1,4 @@
-import type { MaybeReturn } from '../internal/Types.ts';
+import type { MaybeReturn } from '../internal/types.ts';
 
 export function each(
   object: Record<string, unknown>,

@@ -3,7 +3,7 @@ import type { DateValue as DateValueOriginal } from 'obsidian';
 
 import momentFn from 'moment';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DateValue extends NotNullValue {

@@ -2,7 +2,7 @@ import type { Value as ValueOriginal } from 'obsidian';
 
 import type { RenderContext } from './RenderContext.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 
 export abstract class Value {
   public static type: string;

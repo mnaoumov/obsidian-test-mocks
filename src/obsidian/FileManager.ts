@@ -8,8 +8,8 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { parseYaml } from './parseYaml.ts';
 import { stringifyYaml } from './stringifyYaml.ts';
 

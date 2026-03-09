@@ -1,6 +1,6 @@
 import type { EditableFileView as EditableFileViewOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { FileView } from './FileView.ts';
 
 export abstract class EditableFileView extends FileView {

@@ -3,7 +3,7 @@ import type { TAbstractFile as TAbstractFileOriginal } from 'obsidian';
 import type { TFolder } from './TFolder.ts';
 import type { Vault } from './Vault.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 
 export abstract class TAbstractFile {
   public deleted = false;

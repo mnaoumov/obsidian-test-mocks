@@ -1,7 +1,7 @@
 import {
   delegatedOff,
   delegatedOn
-} from '../internal/DelegatedEventRegistry.ts';
+} from '../internal/delegated-event-registry.ts';
 
 export function off(
   this: Document,

@@ -1,6 +1,6 @@
 import type { NullValue as NullValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { Value } from './Value.ts';
 
 export class NullValue extends Value {

@@ -10,8 +10,8 @@ import type {
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 let nextLeafId = 1;

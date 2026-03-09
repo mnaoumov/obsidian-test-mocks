@@ -3,8 +3,8 @@ import type {
   TooltipOptions
 } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
