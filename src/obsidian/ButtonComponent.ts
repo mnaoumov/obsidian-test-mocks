@@ -11,7 +11,7 @@ export class ButtonComponent extends BaseComponent {
   /** @deprecated Mock-only. Tracks all created instances for test assertions. Not part of the Obsidian API. */
   public static instances: ButtonComponent[] = [];
   public buttonEl: HTMLButtonElement;
-  private clickHandler?: (evt: MouseEvent) => unknown;
+  private clickHandler?: (_evt: MouseEvent) => unknown;
 
   public constructor(_containerEl: HTMLElement) {
     super();

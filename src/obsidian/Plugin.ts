@@ -3,8 +3,8 @@ import type {
   HoverLinkSource,
   MarkdownPostProcessor,
   MarkdownPostProcessorContext,
-  PluginManifest,
   Plugin as PluginOriginal,
+  PluginManifest,
   PluginSettingTab,
   ViewCreator
 } from 'obsidian';

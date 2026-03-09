@@ -10,8 +10,8 @@ export class CapacitorAdapter extends InMemoryAdapter {
     this.basePath = basePath;
   }
 
-  public static create__(basePath: string, _fs: unknown): CapacitorAdapter {
-    return strictMock(new CapacitorAdapter(basePath, _fs));
+  public static create__(basePath: string, fs: unknown): CapacitorAdapter {
+    return strictMock(new CapacitorAdapter(basePath, fs));
   }
 
   public asOriginalType__(): CapacitorAdapterOriginal {

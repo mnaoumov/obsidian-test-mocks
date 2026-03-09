@@ -31,14 +31,14 @@ export abstract class SuggestModal<T> extends Modal {
     super.close();
   }
 
-  public abstract getSuggestions(query: string): Promise<T[]> | T[];
+  public abstract getSuggestions(_query: string): Promise<T[]> | T[];
 
   public abstract onChooseSuggestion(item: T, evt: KeyboardEvent | MouseEvent): void;
 
   public onNoSuggestion(): void {
   }
 
-  public abstract renderSuggestion(value: T, el: HTMLElement): void;
+  public abstract renderSuggestion(value: T, _el: HTMLElement): void;
 
   public selectSuggestion(value: T, evt: KeyboardEvent | MouseEvent): void {
     this.onChooseSuggestion(value, evt);

@@ -100,8 +100,8 @@ import {
   isEmpty
 } from './Object.ts';
 import {
-  format,
-  contains as StringPrototype_contains
+  contains as StringPrototype_contains,
+  format
 } from './String.prototype.ts';
 import { isString } from './String.ts';
 import {

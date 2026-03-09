@@ -14,8 +14,8 @@ export class RenderContext {
   protected constructor(_app: App) {
   }
 
-  public static create__(_app: App): RenderContext {
-    return strictMock(new RenderContext(_app));
+  public static create__(app: App): RenderContext {
+    return strictMock(new RenderContext(app));
   }
 
   public asOriginalType__(): RenderContextOriginal {

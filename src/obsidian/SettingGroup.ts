@@ -1,7 +1,7 @@
 import type {
   ExtraButtonComponent,
-  Setting as ObsidianSetting,
   SearchComponent,
+  Setting as ObsidianSetting,
   SettingGroup as SettingGroupOriginal
 } from 'obsidian';
 

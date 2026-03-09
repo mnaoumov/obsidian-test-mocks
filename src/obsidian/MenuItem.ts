@@ -22,8 +22,8 @@ export class MenuItem {
     return mock;
   }
 
-  public static create__(_menu: unknown): MenuItem {
-    return new MenuItem(_menu);
+  public static create__(menu: unknown): MenuItem {
+    return new MenuItem(menu);
   }
 
   public asOriginalType__(): MenuItemOriginal {

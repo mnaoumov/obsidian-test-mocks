@@ -9,8 +9,8 @@ export class MenuSeparator {
   protected constructor(_menu: Menu) {
   }
 
-  public static create__(_menu: Menu): MenuSeparator {
-    return strictMock(new MenuSeparator(_menu));
+  public static create__(menu: Menu): MenuSeparator {
+    return strictMock(new MenuSeparator(menu));
   }
 
   public asOriginalType__(): MenuSeparatorOriginal {

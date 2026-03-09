@@ -15,12 +15,12 @@ export class WorkspaceWindow extends WorkspaceContainer {
     return window;
   }
 
-  protected constructor(_workspace: Workspace, _id?: string, _size?: Record<string, number>) {
-    super(_workspace, '', _id);
+  protected constructor(workspace: Workspace, id?: string, _size?: Record<string, number>) {
+    super(workspace, '', id);
   }
 
-  public static create2__(_workspace: Workspace, _id?: string, _size?: Record<string, number>): WorkspaceWindow {
-    return strictMock(new WorkspaceWindow(_workspace, _id, _size));
+  public static create2__(workspace: Workspace, id?: string, size?: Record<string, number>): WorkspaceWindow {
+    return strictMock(new WorkspaceWindow(workspace, id, size));
   }
 
   public override asOriginalType__(): WorkspaceWindowOriginal {

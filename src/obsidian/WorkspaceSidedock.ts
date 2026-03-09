@@ -9,12 +9,12 @@ import { WorkspaceSplit } from './WorkspaceSplit.ts';
 export class WorkspaceSidedock extends WorkspaceSplit {
   public collapsed = false;
 
-  protected constructor(_workspace: Workspace, _direction: string, _side: string, _id?: string) {
-    super(_workspace, _direction, _id);
+  protected constructor(workspace: Workspace, direction: string, _side: string, id?: string) {
+    super(workspace, direction, id);
   }
 
-  public static override create__(_workspace: Workspace, _direction: string, _side: string, _id?: string): WorkspaceSidedock {
-    return strictMock(new WorkspaceSidedock(_workspace, _direction, _side, _id));
+  public static override create__(workspace: Workspace, direction: string, side: string, id?: string): WorkspaceSidedock {
+    return strictMock(new WorkspaceSidedock(workspace, direction, side, id));
   }
 
   public override asOriginalType__(): WorkspaceSidedockOriginal {

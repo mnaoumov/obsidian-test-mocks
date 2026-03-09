@@ -9,8 +9,8 @@ export abstract class WorkspaceContainer extends WorkspaceSplit {
   public abstract doc: Document;
   public abstract win: Window;
 
-  protected constructor(_workspace: Workspace, _direction: string, _id?: string) {
-    super(_workspace, _direction, _id);
+  protected constructor(workspace: Workspace, direction: string, id?: string) {
+    super(workspace, direction, id);
   }
 
   public override asOriginalType__(): WorkspaceContainerOriginal {
