@@ -16,10 +16,13 @@ export class MarkdownPreviewView extends MarkdownRenderer {
 
   private _data = '';
 
-  public constructor() {
+  protected constructor() {
     super(createDiv());
     this.containerEl = createDiv();
-    return strictMock(this);
+  }
+
+  public static override create__(): MarkdownPreviewView {
+    return strictMock(new MarkdownPreviewView());
   }
 
   public applyScroll(_scroll: number): void {

@@ -10,7 +10,10 @@ export class MarkdownRenderChild extends Component {
   public constructor(containerEl: HTMLElement) {
     super();
     this.containerEl = containerEl;
-    return strictMock(this);
+  }
+
+  public static create2__(containerEl: HTMLElement): MarkdownRenderChild {
+    return strictMock(new MarkdownRenderChild(containerEl));
   }
 
   public override asOriginalType__(): MarkdownRenderChildOriginal {

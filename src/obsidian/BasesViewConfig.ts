@@ -47,7 +47,7 @@ export class BasesViewConfig {
   }
 
   public getEvaluatedFormula(_view: BasesView, _key: string): Value {
-    return strictMock(new NullValue());
+    return NullValue.create__();
   }
 
   public getOrder(): BasesPropertyId[] {

@@ -25,20 +25,19 @@ const HEX_SLICE_B_END = 6;
 /* eslint-enable no-magic-numbers -- Re-enable after constants. */
 
 export class ColorComponent extends ValueComponent<string> {
-  public colorPickerEl: HTMLInputElement;
-
-  public override get inputEl(): HTMLInputElement {
-    return this.colorPickerEl;
-  }
+  public colorPickerEl__: HTMLInputElement;
 
   private _onChange?: (value: string) => unknown;
   private _value = '';
 
   public constructor(containerEl: HTMLElement) {
     super();
-    this.colorPickerEl = containerEl.createEl('input');
-    this.colorPickerEl.type = 'color';
-    return strictMock(this);
+    this.colorPickerEl__ = containerEl.createEl('input');
+    this.colorPickerEl__.type = 'color';
+  }
+
+  public static create__(containerEl: HTMLElement): ColorComponent {
+    return strictMock(new ColorComponent(containerEl));
   }
 
   public override asOriginalType__(): ColorComponentOriginal {
@@ -88,7 +87,7 @@ export class ColorComponent extends ValueComponent<string> {
 
   public override setValue(value: string): this {
     this._value = value;
-    this.colorPickerEl.value = value;
+    this.colorPickerEl__.value = value;
     this._onChange?.(value);
     return this;
   }

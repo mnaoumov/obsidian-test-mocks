@@ -88,14 +88,14 @@ describe('Value', () => {
   });
 
   describe('isTruthy', () => {
-    it('should delegate to isTruthy__', () => {
+    it('should delegate to subclass implementation', () => {
       const val = new NullValue();
       expect(val.isTruthy()).toBe(false);
     });
   });
 
   describe('toString', () => {
-    it('should delegate to toString__', () => {
+    it('should delegate to subclass implementation', () => {
       const val = new StringValue('hello');
       expect(String(val)).toBe('hello');
     });

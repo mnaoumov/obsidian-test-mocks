@@ -30,7 +30,7 @@ export class MetadataCache extends Events {
     });
   }
 
-  public static create__(app: App, vault: Vault): MetadataCache {
+  public static create2__(app: App, vault: Vault): MetadataCache {
     return strictMock(new MetadataCache(app, vault));
   }
 

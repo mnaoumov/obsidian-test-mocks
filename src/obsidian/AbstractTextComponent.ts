@@ -5,7 +5,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTextAreaElement> extends ValueComponent<string> {
-  public override inputEl: T;
+  public inputEl: T;
 
   private _onChange?: (value: string) => unknown;
   private _value = '';

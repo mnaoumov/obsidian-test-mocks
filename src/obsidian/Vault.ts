@@ -22,10 +22,10 @@ export class Vault extends Events {
     this.adapter = adapter;
     const root = TFolder.create__(this, '/');
     this.fileMap__['/'] = root;
-    root.deleted = false;
+    root.deleted__ = false;
   }
 
-  public static create__(adapter: DataAdapter): Vault {
+  public static create2__(adapter: DataAdapter): Vault {
     return strictMock(new Vault(adapter));
   }
 
@@ -211,7 +211,7 @@ export class Vault extends Events {
 function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void {
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
   delete vault.fileMap__[file.path];
-  file.deleted = true;
+  file.deleted__ = true;
   if (file.parent) {
     const idx = file.parent.children.indexOf(file);
     if (idx !== -1) {
@@ -222,7 +222,7 @@ function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void {
 
 function setVaultAbstractFile(vault: Vault, path: string, file: TAbstractFile): void {
   vault.fileMap__[path] = file;
-  file.deleted = false;
+  file.deleted__ = false;
   if (path !== '/' && path !== '') {
     const lastSlash = path.lastIndexOf('/');
     const parentKey = lastSlash > 0 ? path.slice(0, lastSlash) : '/';

@@ -23,7 +23,10 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
     TextComponent.instances__.push(this);
-    return strictMock(this);
+  }
+
+  public static create__(containerEl: HTMLElement): TextComponent {
+    return strictMock(new TextComponent(containerEl));
   }
 
   public override asOriginalType__(): TextComponentOriginal {

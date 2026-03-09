@@ -4,8 +4,6 @@ import { castTo } from '../internal/cast.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export abstract class ValueComponent<T> extends BaseComponent {
-  public abstract get inputEl(): HTMLElement;
-
   protected constructor() {
     super();
   }

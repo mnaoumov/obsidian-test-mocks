@@ -9,7 +9,7 @@ import { DateValue } from '../../src/obsidian/DateValue.ts';
 describe('DateValue', () => {
   it('should have a moment value', () => {
     const val = new DateValue();
-    expect(val.value).toBeDefined();
+    expect(val.value__).toBeDefined();
   });
 
   it('should always be truthy', () => {

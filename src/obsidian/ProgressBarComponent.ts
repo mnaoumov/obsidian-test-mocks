@@ -5,18 +5,17 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ProgressBarComponent extends ValueComponent<number> {
-  public progressBar: HTMLElement;
-
-  public override get inputEl(): HTMLElement {
-    return this.progressBar;
-  }
+  public progressBar__: HTMLElement;
 
   private _value = 0;
 
   public constructor(_containerEl: HTMLElement) {
     super();
-    this.progressBar = createDiv();
-    return strictMock(this);
+    this.progressBar__ = createDiv();
+  }
+
+  public static create__(containerEl: HTMLElement): ProgressBarComponent {
+    return strictMock(new ProgressBarComponent(containerEl));
   }
 
   public override asOriginalType__(): ProgressBarComponentOriginal {
@@ -29,8 +28,8 @@ export class ProgressBarComponent extends ValueComponent<number> {
 
   public override setValue(value: number): this {
     this._value = value;
-    this.progressBar.style.width = `${String(value)}%`;
-    this.progressBar.dataset['value'] = String(value);
+    this.progressBar__.style.width = `${String(value)}%`;
+    this.progressBar__.dataset['value'] = String(value);
     return this;
   }
 }

@@ -15,7 +15,7 @@ const DEFAULT_LIMIT = 100;
 export abstract class SuggestModal<T> extends Modal {
   public emptyStateText = 'No results found.';
   public inputEl: HTMLInputElement;
-  public instructions: Instruction[] = [];
+  public instructions__: Instruction[] = [];
   public limit = DEFAULT_LIMIT;
   public resultContainerEl: HTMLElement;
 
@@ -50,7 +50,7 @@ export abstract class SuggestModal<T> extends Modal {
   }
 
   public setInstructions(instructions: Instruction[]): void {
-    this.instructions = instructions;
+    this.instructions__ = instructions;
   }
 
   public setPlaceholder(placeholder: string): void {

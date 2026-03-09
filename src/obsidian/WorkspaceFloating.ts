@@ -11,7 +11,7 @@ export class WorkspaceFloating extends WorkspaceParent {
     super();
   }
 
-  public static create__(): WorkspaceFloating {
+  public static create2__(): WorkspaceFloating {
     return strictMock(new WorkspaceFloating());
   }
 

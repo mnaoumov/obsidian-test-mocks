@@ -6,7 +6,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 
 export class Notice {
   public containerEl: HTMLElement;
-  public readonly duration: number = 0;
+  public readonly duration__: number = 0;
   public messageEl: HTMLElement;
 
   public noticeEl: HTMLElement;
@@ -20,8 +20,11 @@ export class Notice {
     } else if (message instanceof DocumentFragment) {
       this.messageEl.appendChild(message.cloneNode(true));
     }
-    (this as { duration: number }).duration = duration ?? 0;
-    return strictMock(this);
+    (this as { duration__: number }).duration__ = duration ?? 0;
+  }
+
+  public static create__(message: DocumentFragment | string, duration?: number): Notice {
+    return strictMock(new Notice(message, duration));
   }
 
   public asOriginalType__(): NoticeOriginal {

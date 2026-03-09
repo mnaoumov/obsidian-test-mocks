@@ -10,17 +10,16 @@ import { ValueComponent } from './ValueComponent.ts';
 export class ToggleComponent extends ValueComponent<boolean> {
   public toggleEl: HTMLElement;
 
-  public override get inputEl(): HTMLElement {
-    return this.toggleEl;
-  }
-
   private _onChange: ((value: boolean) => unknown) | null = null;
   private _value = false;
 
   public constructor(_containerEl: HTMLElement) {
     super();
     this.toggleEl = createDiv();
-    return strictMock(this);
+  }
+
+  public static create__(containerEl: HTMLElement): ToggleComponent {
+    return strictMock(new ToggleComponent(containerEl));
   }
 
   public override asOriginalType__(): ToggleComponentOriginal {

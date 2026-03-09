@@ -9,7 +9,7 @@ import { TagValue } from '../../src/obsidian/TagValue.ts';
 describe('TagValue', () => {
   it('should store the tag value', () => {
     const val = new TagValue('#test');
-    expect(val.value).toBe('#test');
+    expect(val.value__).toBe('#test');
   });
 
   it('should return the tag for toString', () => {

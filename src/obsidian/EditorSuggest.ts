@@ -19,7 +19,7 @@ import { PopoverSuggest } from './PopoverSuggest.ts';
 const DEFAULT_LIMIT = 100;
 
 export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
-  public instructions: Instruction[] = [];
+  public instructions__: Instruction[] = [];
   public limit = DEFAULT_LIMIT;
 
   public constructor(app: App) {
@@ -40,6 +40,6 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
   public abstract override selectSuggestion(value: T, evt: KeyboardEvent | MouseEvent): void;
 
   public setInstructions(instructions: Instruction[]): void {
-    this.instructions = instructions;
+    this.instructions__ = instructions;
   }
 }

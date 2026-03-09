@@ -8,12 +8,17 @@ import type { EventsEntry } from '../internal/types.ts';
 
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
-  protected constructor() {
+  public constructor() {
     noop();
+  }
+
+  public static create__(): Events {
+    return strictMock(new Events());
   }
 
   public asOriginalType__(): EventsOriginal {

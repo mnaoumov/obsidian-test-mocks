@@ -25,7 +25,7 @@ export abstract class PopoverSuggest<T> {
     this._isOpen = false;
   }
 
-  public isOpen(): boolean {
+  public isOpen__(): boolean {
     return this._isOpen;
   }
 

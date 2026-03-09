@@ -9,12 +9,12 @@ import { StringValue } from '../../src/obsidian/StringValue.ts';
 describe('StringValue', () => {
   it('should default to empty string', () => {
     const val = new StringValue();
-    expect(val.value).toBe('');
+    expect(val.value__).toBe('');
   });
 
   it('should accept a value', () => {
     const val = new StringValue('hello');
-    expect(val.value).toBe('hello');
+    expect(val.value__).toBe('hello');
   });
 
   it('should return false for isTruthy when empty', () => {

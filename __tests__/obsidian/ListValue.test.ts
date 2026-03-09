@@ -10,7 +10,7 @@ import { StringValue } from '../../src/obsidian/StringValue.ts';
 describe('ListValue', () => {
   it('should default to empty values', () => {
     const val = new ListValue();
-    expect(val.values).toEqual([]);
+    expect(val.values__).toEqual([]);
   });
 
   it('should be falsy when empty', () => {
@@ -20,13 +20,13 @@ describe('ListValue', () => {
 
   it('should be truthy when non-empty', () => {
     const val = new ListValue();
-    val.values.push(new StringValue('item'));
+    val.values__.push(new StringValue('item'));
     expect(val.isTruthy()).toBe(true);
   });
 
   it('should join values with comma-space for toString', () => {
     const val = new ListValue();
-    val.values.push(new StringValue('a'), new StringValue('b'), new StringValue('c'));
+    val.values__.push(new StringValue('a'), new StringValue('b'), new StringValue('c'));
     expect(String(val)).toBe('a, b, c');
   });
 

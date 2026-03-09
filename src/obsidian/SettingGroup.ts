@@ -14,33 +14,36 @@ import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
 
 export class SettingGroup {
-  public listEl: HTMLElement;
+  public listEl__: HTMLElement;
 
   public constructor(containerEl: HTMLElement) {
-    this.listEl = createDiv();
-    containerEl.appendChild(this.listEl);
-    return strictMock(this);
+    this.listEl__ = createDiv();
+    containerEl.appendChild(this.listEl__);
+  }
+
+  public static create__(containerEl: HTMLElement): SettingGroup {
+    return strictMock(new SettingGroup(containerEl));
   }
 
   public addClass(cls: string): this {
-    this.listEl.classList.add(cls);
+    this.listEl__.classList.add(cls);
     return this;
   }
 
   public addExtraButton(cb: (component: ExtraButtonComponent) => unknown): this {
-    const comp = new MockExtraButtonComponent(this.listEl);
+    const comp = MockExtraButtonComponent.create__(this.listEl__);
     cb(castTo<ExtraButtonComponent>(comp));
     return this;
   }
 
   public addSearch(cb: (component: SearchComponent) => unknown): this {
-    const comp = new MockSearchComponent(this.listEl);
+    const comp = MockSearchComponent.create__(this.listEl__);
     cb(castTo<SearchComponent>(comp));
     return this;
   }
 
   public addSetting(cb: (setting: ObsidianSetting) => void): this {
-    const setting = new Setting(this.listEl);
+    const setting = Setting.create__(this.listEl__);
     cb(castTo<ObsidianSetting>(setting));
     return this;
   }
@@ -53,7 +56,7 @@ export class SettingGroup {
     if (typeof text === 'string') {
       const heading = createEl('h3');
       heading.textContent = text;
-      this.listEl.prepend(heading);
+      this.listEl__.prepend(heading);
     }
     return this;
   }

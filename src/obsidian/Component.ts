@@ -5,6 +5,7 @@ import type {
 
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class Component {
   public children__: Component[] = [];
@@ -13,8 +14,12 @@ export class Component {
   public intervals__: number[] = [];
   public loaded__ = false;
 
-  protected constructor() {
+  public constructor() {
     noop();
+  }
+
+  public static create__(): Component {
+    return strictMock(new Component());
   }
 
   public addChild<T extends Component>(component: T): T {

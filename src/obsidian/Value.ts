@@ -29,11 +29,7 @@ export abstract class Value {
     return this.toString() === other.toString();
   }
 
-  public isTruthy(): boolean {
-    return this.isTruthy__();
-  }
-
-  public abstract isTruthy__(): boolean;
+  public abstract isTruthy(): boolean;
 
   public looseEquals(other: Value): boolean {
     return this.toString() === other.toString();
@@ -43,9 +39,5 @@ export abstract class Value {
     // Pure UI operation.
   }
 
-  public toString(): string {
-    return this.toString__();
-  }
-
-  public abstract toString__(): string;
+  public abstract toString(): string;
 }

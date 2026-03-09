@@ -1,10 +1,13 @@
 import type { RelativeDateValue as RelativeDateValueOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { DateValue } from './DateValue.ts';
 
 export class RelativeDateValue extends DateValue {
-  // Intentionally empty, obsidian.d.ts doesn't have any members to mock.
+  public static override create__(): RelativeDateValue {
+    return strictMock(new RelativeDateValue());
+  }
 
   public override asOriginalType__(): RelativeDateValueOriginal {
     return castTo<RelativeDateValueOriginal>(this);
