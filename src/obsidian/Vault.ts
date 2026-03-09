@@ -13,15 +13,15 @@ import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
 
 export class Vault extends Events {
-  public _fileMap: Record<string, TAbstractFile> = {};
   public adapter: DataAdapter;
   public configDir = '.obsidian';
+  public fileMap__: Record<string, TAbstractFile> = {};
 
   protected constructor(adapter: DataAdapter) {
     super();
     this.adapter = adapter;
     const root = TFolder.create__(this, '/');
-    this._fileMap['/'] = root;
+    this.fileMap__['/'] = root;
     root.deleted = false;
   }
 
@@ -94,33 +94,33 @@ export class Vault extends Events {
   }
 
   public getAbstractFileByPath(path: string): null | TAbstractFile {
-    return this._fileMap[path] ?? null;
+    return this.fileMap__[path] ?? null;
   }
 
   public getAllFolders(_includeRoot?: boolean): TFolder[] {
-    return Object.values(this._fileMap).filter((f): f is TFolder => f instanceof TFolder);
+    return Object.values(this.fileMap__).filter((f): f is TFolder => f instanceof TFolder);
   }
 
   public getAllLoadedFiles(): TAbstractFile[] {
-    return Object.values(this._fileMap);
+    return Object.values(this.fileMap__);
   }
 
   public getFileByPath(path: string): null | TFile {
-    const f = this._fileMap[path];
+    const f = this.fileMap__[path];
     return f instanceof TFile ? f : null;
   }
 
   public getFiles(): TFile[] {
-    return Object.values(this._fileMap).filter((f): f is TFile => f instanceof TFile);
+    return Object.values(this.fileMap__).filter((f): f is TFile => f instanceof TFile);
   }
 
   public getFolderByPath(path: string): null | TFolder {
-    const f = this._fileMap[path];
+    const f = this.fileMap__[path];
     return f instanceof TFolder ? f : null;
   }
 
   public getMarkdownFiles(): TFile[] {
-    return Object.values(this._fileMap).filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
+    return Object.values(this.fileMap__).filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
   }
 
   public getName(): string {
@@ -132,12 +132,12 @@ export class Vault extends Events {
   }
 
   public getRoot(): TFolder {
-    const root = this._fileMap['/'];
+    const root = this.fileMap__['/'];
     if (root instanceof TFolder) {
       return root;
     }
     const fallback = TFolder.create__(this, '/');
-    this._fileMap['/'] = fallback;
+    this.fileMap__['/'] = fallback;
     return fallback;
   }
 
@@ -171,9 +171,9 @@ export class Vault extends Events {
     const oldPath = file.path;
     await this.adapter.rename(oldPath, newPath);
 
-    // Remove old entry from _fileMap and parent's children
+    // Remove old entry from fileMap__ and parent's children
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-    delete this._fileMap[oldPath];
+    delete this.fileMap__[oldPath];
     if (file.parent) {
       const idx = file.parent.children.indexOf(file);
       if (idx !== -1) {
@@ -191,7 +191,7 @@ export class Vault extends Events {
       file.basename = dotIndex >= 0 ? file.name.slice(0, dotIndex) : file.name;
     }
 
-    // Re-register in _fileMap with new path and attach to new parent
+    // Re-register in fileMap__ with new path and attach to new parent
     setVaultAbstractFile(this, newPath, file);
 
     this.trigger('rename', file, oldPath);
@@ -210,7 +210,7 @@ export class Vault extends Events {
 
 function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void {
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-  delete vault._fileMap[file.path];
+  delete vault.fileMap__[file.path];
   file.deleted = true;
   if (file.parent) {
     const idx = file.parent.children.indexOf(file);
@@ -221,12 +221,12 @@ function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void {
 }
 
 function setVaultAbstractFile(vault: Vault, path: string, file: TAbstractFile): void {
-  vault._fileMap[path] = file;
+  vault.fileMap__[path] = file;
   file.deleted = false;
   if (path !== '/' && path !== '') {
     const lastSlash = path.lastIndexOf('/');
     const parentKey = lastSlash > 0 ? path.slice(0, lastSlash) : '/';
-    const parentFile = vault._fileMap[parentKey];
+    const parentFile = vault.fileMap__[parentKey];
     if (parentFile instanceof TFolder) {
       file.parent = parentFile;
       if (!parentFile.children.includes(file)) {

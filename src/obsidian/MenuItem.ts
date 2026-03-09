@@ -9,14 +9,14 @@ import { castTo } from '../internal/cast.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export class MenuItem {
-  public _checked: boolean | null = null;
-  public _disabled = false;
-  public _icon: IconName | null = null;
-  public _isLabel = false;
-  public _onClick: ((evt: KeyboardEvent | MouseEvent) => unknown) | null = null;
-  public _section = '';
-  public _title: DocumentFragment | string = '';
-  public _warning = false;
+  public checked__: boolean | null = null;
+  public disabled__ = false;
+  public icon__: IconName | null = null;
+  public isLabel__ = false;
+  public onClick__: ((evt: KeyboardEvent | MouseEvent) => unknown) | null = null;
+  public section__ = '';
+  public title__: DocumentFragment | string = '';
+  public warning__ = false;
 
   private constructor(_menu: unknown) {
     const mock = strictMock(this);
@@ -32,32 +32,32 @@ export class MenuItem {
   }
 
   public onClick(callback: (evt: KeyboardEvent | MouseEvent) => unknown): this {
-    this._onClick = callback;
+    this.onClick__ = callback;
     return this;
   }
 
   public setChecked(checked: boolean | null): this {
-    this._checked = checked;
+    this.checked__ = checked;
     return this;
   }
 
   public setDisabled(disabled: boolean): this {
-    this._disabled = disabled;
+    this.disabled__ = disabled;
     return this;
   }
 
   public setIcon(icon: IconName | null): this {
-    this._icon = icon;
+    this.icon__ = icon;
     return this;
   }
 
   public setIsLabel(isLabel: boolean): this {
-    this._isLabel = isLabel;
+    this.isLabel__ = isLabel;
     return this;
   }
 
   public setSection(section: string): this {
-    this._section = section;
+    this.section__ = section;
     return this;
   }
 
@@ -69,12 +69,12 @@ export class MenuItem {
   }
 
   public setTitle(title: DocumentFragment | string): this {
-    this._title = title;
+    this.title__ = title;
     return this;
   }
 
   public setWarning(isWarning: boolean): this {
-    this._warning = isWarning;
+    this.warning__ = isWarning;
     return this;
   }
 }

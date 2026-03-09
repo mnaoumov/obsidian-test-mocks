@@ -14,14 +14,14 @@ import { Events } from './Events.ts';
 import { TFile as TFileClass } from './TFile.ts';
 
 export class MetadataCache extends Events {
-  public _app: App;
-  public _cache = new Map<string, CachedMetadata>();
+  public app__: App;
+  public cache__ = new Map<string, CachedMetadata>();
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
   protected constructor(app: App, vault: Vault) {
     super();
-    this._app = app;
+    this.app__ = app;
     vault.on('create', (...data: unknown[]) => {
       this._parseFileMetadata(data[0]);
     });
@@ -32,11 +32,6 @@ export class MetadataCache extends Events {
 
   public static create__(app: App, vault: Vault): MetadataCache {
     return strictMock(new MetadataCache(app, vault));
-  }
-
-  public _setCache(path: string, cache: CachedMetadata): void {
-    this._cache.set(path, cache);
-    this.trigger('changed');
   }
 
   public override asOriginalType__(): MetadataCacheOriginal {
@@ -51,23 +46,23 @@ export class MetadataCache extends Events {
   }
 
   public getCache(path: string): CachedMetadata | null {
-    return this._cache.get(path) ?? null;
+    return this.cache__.get(path) ?? null;
   }
 
   public getFileCache(file: TFile): CachedMetadata | null {
-    return this._cache.get(file.path) ?? null;
+    return this.cache__.get(file.path) ?? null;
   }
 
   public getFirstLinkpathDest(linkpath: string, _sourcePath: string): null | TFile {
-    const found = this._app.vault.getFileByPath(linkpath);
+    const found = this.app__.vault.getFileByPath(linkpath);
     if (found) {
       return found;
     }
-    const withMd = this._app.vault.getFileByPath(`${linkpath}.md`);
+    const withMd = this.app__.vault.getFileByPath(`${linkpath}.md`);
     if (withMd) {
       return withMd;
     }
-    for (const f of this._app.vault.getFiles()) {
+    for (const f of this.app__.vault.getFiles()) {
       if (f.basename === linkpath || f.name === linkpath) {
         return f;
       }
@@ -75,14 +70,19 @@ export class MetadataCache extends Events {
     return null;
   }
 
+  public setCache__(path: string, cache: CachedMetadata): void {
+    this.cache__.set(path, cache);
+    this.trigger('changed');
+  }
+
   private _parseFileMetadata(file: unknown): void {
     if (!(file instanceof TFileClass) || file.extension !== 'md') {
       return;
     }
     const vaultFile = file;
-    this._app.vault.cachedRead(vaultFile).then((content: string) => {
+    this.app__.vault.cachedRead(vaultFile).then((content: string) => {
       const cache = parseMarkdownContent(content);
-      this._cache.set(vaultFile.path, cache);
+      this.cache__.set(vaultFile.path, cache);
       this.trigger('changed', vaultFile, content, cache);
     }).catch(() => {
       // Silently ignore read errors during metadata parsing.

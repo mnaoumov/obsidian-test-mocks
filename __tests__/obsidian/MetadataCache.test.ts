@@ -98,7 +98,7 @@ describe('MetadataCache', () => {
       const manualCache = {
         headings: [{ heading: 'Manual', level: 1, position: { end: { col: 0, line: 0, offset: 0 }, start: { col: 0, line: 0, offset: 0 } } }]
       };
-      app.metadataCache._setCache(file.path, manualCache);
+      app.metadataCache.setCache__(file.path, manualCache);
 
       const cache = app.metadataCache.getCache(file.path);
       expect(cache?.headings?.[0]?.heading).toBe('Manual');

@@ -7,19 +7,19 @@ import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 
 export class Component {
-  public _children: Component[] = [];
-  public _cleanups: (() => unknown)[] = [];
-  public _events: EventRef[] = [];
-  public _intervals: number[] = [];
-  public _loaded = false;
+  public children__: Component[] = [];
+  public cleanups__: (() => unknown)[] = [];
+  public events__: EventRef[] = [];
+  public intervals__: number[] = [];
+  public loaded__ = false;
 
   protected constructor() {
     noop();
   }
 
   public addChild<T extends Component>(component: T): T {
-    this._children.push(component);
-    if (this._loaded) {
+    this.children__.push(component);
+    if (this.loaded__) {
       component.load();
     }
     return component;
@@ -30,7 +30,7 @@ export class Component {
   }
 
   public load(): void {
-    this._loaded = true;
+    this.loaded__ = true;
     this.onload();
   }
 
@@ -43,7 +43,7 @@ export class Component {
   }
 
   public register(cb: () => unknown): void {
-    this._cleanups.push(cb);
+    this.cleanups__.push(cb);
   }
 
   public registerDomEvent<K extends keyof WindowEventMap>(
@@ -77,46 +77,46 @@ export class Component {
   }
 
   public registerEvent(ref: EventRef): void {
-    this._events.push(ref);
+    this.events__.push(ref);
   }
 
   public registerInterval(id: number): number {
-    this._intervals.push(id);
+    this.intervals__.push(id);
     return id;
   }
 
   public removeChild<T extends Component>(component: T): T {
-    const index = this._children.indexOf(component);
+    const index = this.children__.indexOf(component);
     if (index !== -1) {
-      this._children.splice(index, 1);
+      this.children__.splice(index, 1);
     }
     component.unload();
     return component;
   }
 
   public unload(): void {
-    if (!this._loaded) {
+    if (!this.loaded__) {
       return;
     }
     this.onunload();
 
-    for (const child of [...this._children]) {
+    for (const child of [...this.children__]) {
       this.removeChild(child);
     }
-    this._children = [];
+    this.children__ = [];
 
-    this._events = [];
+    this.events__ = [];
 
-    for (const cleanup of this._cleanups) {
+    for (const cleanup of this.cleanups__) {
       cleanup();
     }
-    this._cleanups = [];
+    this.cleanups__ = [];
 
-    for (const id of this._intervals) {
+    for (const id of this.intervals__) {
       clearInterval(id);
     }
-    this._intervals = [];
+    this.intervals__ = [];
 
-    this._loaded = false;
+    this.loaded__ = false;
   }
 }
