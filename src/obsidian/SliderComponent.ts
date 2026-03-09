@@ -10,10 +10,6 @@ const DEFAULT_MAX = 100;
 export class SliderComponent extends ValueComponent<number> {
   public sliderEl: HTMLInputElement;
 
-  public override get inputEl(): HTMLInputElement {
-    return this.sliderEl;
-  }
-
   private _max = DEFAULT_MAX;
   private _min = 0;
   private _onChange: ((value: number) => unknown) | null = null;
@@ -24,7 +20,10 @@ export class SliderComponent extends ValueComponent<number> {
     super();
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
-    return strictMock(this);
+  }
+
+  public static create__(containerEl: HTMLElement): SliderComponent {
+    return strictMock(new SliderComponent(containerEl));
   }
 
   public override asOriginalType__(): SliderComponentOriginal {

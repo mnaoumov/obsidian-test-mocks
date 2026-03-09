@@ -16,10 +16,13 @@ export class HoverPopover extends Component {
   public constructor(_parent: HoverParent, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null) {
     super();
     this.hoverEl = createDiv();
-    return strictMock(this);
   }
 
-  public static forLeaf(_leaf: WorkspaceLeaf): HoverPopover | null {
+  public static create2__(parent: HoverParent, targetEl: HTMLElement | null, waitTime?: number, staticPos?: null): HoverPopover {
+    return strictMock(new HoverPopover(parent, targetEl, waitTime, staticPos));
+  }
+
+  public static forLeaf__(_leaf: WorkspaceLeaf): HoverPopover | null {
     return null;
   }
 

@@ -13,7 +13,7 @@ export class WorkspaceSplit extends WorkspaceParent {
     super();
   }
 
-  public static create__(workspace: Workspace, direction: string, id?: string): WorkspaceSplit {
+  public static create2__(workspace: Workspace, direction: string, id?: string): WorkspaceSplit {
     return strictMock(new WorkspaceSplit(workspace, direction, id));
   }
 

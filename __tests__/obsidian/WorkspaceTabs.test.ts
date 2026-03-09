@@ -10,7 +10,7 @@ import { WorkspaceTabs } from '../../src/obsidian/WorkspaceTabs.ts';
 describe('WorkspaceTabs', () => {
   it('should create an instance via create__', async () => {
     const app = await createMockApp();
-    const tabs = WorkspaceTabs.create__(app.workspace);
+    const tabs = WorkspaceTabs.create2__(app.workspace);
     expect(tabs).toBeInstanceOf(WorkspaceTabs);
   });
 });

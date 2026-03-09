@@ -22,12 +22,12 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public readonly isDeferred = false;
   public view: null | View = null;
 
-  public get _file(): null | TFile {
-    return this.__file;
+  public get file__(): null | TFile {
+    return this._file__;
   }
 
-  private __file: null | TFile = null;
   private _ephemeralState: Record<string, unknown> = {};
+  private _file__: null | TFile = null;
   private _group: null | string = null;
   private _pinned = false;
 
@@ -38,7 +38,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     this.id__ = id ?? String(nextLeafId++);
   }
 
-  public static create__(app: App, id?: string): WorkspaceLeaf {
+  public static create2__(app: App, id?: string): WorkspaceLeaf {
     return strictMock(new WorkspaceLeaf(app, id));
   }
 
@@ -92,7 +92,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
 
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async openFile(file: TFile, _openState?: OpenViewState): Promise<void> {
-    this.__file = file;
+    this._file__ = file;
   }
 
   public setEphemeralState(state: Record<string, unknown>): void {

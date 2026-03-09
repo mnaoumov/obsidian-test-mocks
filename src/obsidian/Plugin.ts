@@ -89,7 +89,7 @@ export abstract class Plugin extends Component {
     _sortOrder?: number
   ): MarkdownPostProcessor {
     this.markdownCodeBlockProcessors__.set(language, handler);
-    // eslint-disable-next-line func-style, func-names -- Placeholder processor assigned to typed const; real processing is not simulated.
+    // eslint-disable-next-line func-style, func-names -- Mock implementation.
     const processor: MarkdownPostProcessor = function (_el: HTMLElement, _ctx: MarkdownPostProcessorContext): void {
       noop();
     };

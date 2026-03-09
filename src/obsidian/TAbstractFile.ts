@@ -6,7 +6,7 @@ import type { Vault } from './Vault.ts';
 import { castTo } from '../internal/cast.ts';
 
 export abstract class TAbstractFile {
-  public deleted = false;
+  public deleted__ = false;
   public name: string;
   public parent: null | TFolder = null;
   public path: string;

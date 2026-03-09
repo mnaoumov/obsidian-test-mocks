@@ -13,7 +13,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
     super(workspace, direction, id);
   }
 
-  public static override create__(workspace: Workspace, direction: string, side: string, id?: string): WorkspaceSidedock {
+  public static override create2__(workspace: Workspace, direction: string, side: string, id?: string): WorkspaceSidedock {
     return strictMock(new WorkspaceSidedock(workspace, direction, side, id));
   }
 

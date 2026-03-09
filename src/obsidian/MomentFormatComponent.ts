@@ -11,7 +11,10 @@ export class MomentFormatComponent extends TextComponent {
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
     this.sampleEl = createDiv();
-    return strictMock(this);
+  }
+
+  public static override create__(containerEl: HTMLElement): MomentFormatComponent {
+    return strictMock(new MomentFormatComponent(containerEl));
   }
 
   public override asOriginalType__(): MomentFormatComponentOriginal {

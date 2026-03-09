@@ -3,6 +3,7 @@ import type { SecretComponent as SecretComponentOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class SecretComponent extends BaseComponent {
@@ -10,6 +11,10 @@ export class SecretComponent extends BaseComponent {
 
   public constructor(_app: App, _containerEl: HTMLElement) {
     super();
+  }
+
+  public static create__(app: App, containerEl: HTMLElement): SecretComponent {
+    return strictMock(new SecretComponent(app, containerEl));
   }
 
   public override asOriginalType__(): SecretComponentOriginal {

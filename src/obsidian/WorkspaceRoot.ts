@@ -19,7 +19,7 @@ export class WorkspaceRoot extends WorkspaceContainer {
     super(workspace, direction, id);
   }
 
-  public static override create__(workspace: Workspace, direction: string, id?: string): WorkspaceRoot {
+  public static override create2__(workspace: Workspace, direction: string, id?: string): WorkspaceRoot {
     return strictMock(new WorkspaceRoot(workspace, direction, id));
   }
 

@@ -14,10 +14,10 @@ import { parseYaml } from './parseYaml.ts';
 import { stringifyYaml } from './stringifyYaml.ts';
 
 export class FileManager {
-  public app: App;
+  public app__: App;
 
   protected constructor(app: App) {
-    this.app = app;
+    this.app__ = app;
   }
 
   public static create__(app: App): FileManager {
@@ -48,16 +48,16 @@ export class FileManager {
     const lastSlash = sourcePath.lastIndexOf('/');
     if (lastSlash > 0) {
       const parentPath = sourcePath.slice(0, lastSlash);
-      const folder = this.app.vault.getFolderByPath(parentPath);
+      const folder = this.app__.vault.getFolderByPath(parentPath);
       if (folder) {
         return folder;
       }
     }
-    return this.app.vault.getRoot();
+    return this.app__.vault.getRoot();
   }
 
   public async processFrontMatter(file: TFile, fn: (frontmatter: Record<string, unknown>) => void, options?: DataWriteOptions): Promise<void> {
-    const content = await this.app.vault.read(file);
+    const content = await this.app__.vault.read(file);
     let frontmatter: Record<string, unknown> = {};
     let body = content;
 
@@ -75,18 +75,18 @@ export class FileManager {
 
     const yamlOutput = stringifyYaml(frontmatter);
     const newContent = `---\n${yamlOutput}---${body ? `\n${body}` : '\n'}`;
-    await this.app.vault.modify(file, newContent, options);
+    await this.app__.vault.modify(file, newContent, options);
   }
 
   public async promptForDeletion(file: TAbstractFile): Promise<void> {
-    await this.app.vault.trash(file, true);
+    await this.app__.vault.trash(file, true);
   }
 
   public async renameFile(file: TAbstractFile, newPath: string): Promise<void> {
-    await this.app.vault.rename(file, newPath);
+    await this.app__.vault.rename(file, newPath);
   }
 
   public async trashFile(file: TAbstractFile): Promise<void> {
-    await this.app.vault.trash(file, true);
+    await this.app__.vault.trash(file, true);
   }
 }

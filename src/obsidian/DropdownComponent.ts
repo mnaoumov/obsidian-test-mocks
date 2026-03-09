@@ -7,10 +7,6 @@ import { ValueComponent } from './ValueComponent.ts';
 export class DropdownComponent extends ValueComponent<string> {
   public selectEl: HTMLSelectElement;
 
-  public override get inputEl(): HTMLSelectElement {
-    return this.selectEl;
-  }
-
   private changeCallback?: () => void;
 
   public constructor(containerEl: HTMLElement) {

@@ -7,7 +7,10 @@ import { AbstractTextComponent } from './AbstractTextComponent.ts';
 export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement> {
   public constructor(_containerEl: HTMLElement) {
     super(createEl('textarea'));
-    return strictMock(this);
+  }
+
+  public static create__(containerEl: HTMLElement): TextAreaComponent {
+    return strictMock(new TextAreaComponent(containerEl));
   }
 
   public override asOriginalType__(): TextAreaComponentOriginal {

@@ -17,7 +17,10 @@ export class ButtonComponent extends BaseComponent {
     super();
     this.buttonEl = containerEl.createEl('button');
     ButtonComponent.instances__.push(this);
-    return strictMock(this);
+  }
+
+  public static create__(containerEl: HTMLElement): ButtonComponent {
+    return strictMock(new ButtonComponent(containerEl));
   }
 
   public override asOriginalType__(): ButtonComponentOriginal {

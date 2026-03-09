@@ -25,12 +25,12 @@ export class App {
   private readonly _localStorage = new Map<string, unknown>();
 
   protected constructor(adapter: DataAdapter, _appId: string) {
-    this.vault = Vault.create__(adapter);
+    this.vault = Vault.create2__(adapter);
     this.fileManager = FileManager.create__(this);
     this.keymap = Keymap.create__();
-    this.metadataCache = MetadataCache.create__(this, this.vault);
+    this.metadataCache = MetadataCache.create2__(this, this.vault);
     this.scope = Scope.create__();
-    this.workspace = Workspace.create__(this, createDiv());
+    this.workspace = Workspace.create2__(this, createDiv());
   }
 
   public static create__(adapter: DataAdapter, appId: string): App {

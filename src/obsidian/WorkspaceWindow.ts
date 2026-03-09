@@ -19,7 +19,7 @@ export class WorkspaceWindow extends WorkspaceContainer {
     super(workspace, '', id);
   }
 
-  public static create2__(workspace: Workspace, id?: string, size?: Record<string, number>): WorkspaceWindow {
+  public static create3__(workspace: Workspace, id?: string, size?: Record<string, number>): WorkspaceWindow {
     return strictMock(new WorkspaceWindow(workspace, id, size));
   }
 

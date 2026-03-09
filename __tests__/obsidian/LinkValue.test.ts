@@ -15,12 +15,12 @@ describe('LinkValue', () => {
     it('should parse a simple wiki link', () => {
       const result = LinkValue.parseFromString(mockApp, '[[note]]', '');
       expect(result).toBeInstanceOf(LinkValue);
-      expect(result?.value).toBe('note');
+      expect(result?.value__).toBe('note');
     });
 
     it('should parse a wiki link with display text', () => {
       const result = LinkValue.parseFromString(mockApp, '[[note|display]]', '');
-      expect(result?.value).toBe('note');
+      expect(result?.value__).toBe('note');
     });
 
     it('should return null for non-wiki-link text', () => {

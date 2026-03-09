@@ -19,7 +19,10 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/cast.ts';
-import { noop } from '../internal/noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { debounce } from './debounce.ts';
 import { Events } from './Events.ts';
@@ -62,13 +65,13 @@ export class Workspace extends Events {
     this._app = _app;
     this._containerEl = containerEl;
     this.leftRibbon = WorkspaceRibbon.create__(this, 'left');
-    this.leftSplit = WorkspaceSidedock.create__(this, 'vertical', 'left');
+    this.leftSplit = WorkspaceSidedock.create2__(this, 'vertical', 'left');
     this.rightRibbon = WorkspaceRibbon.create__(this, 'right');
-    this.rightSplit = WorkspaceSidedock.create__(this, 'vertical', 'right');
-    this.rootSplit = WorkspaceRoot.create__(this, 'vertical');
+    this.rightSplit = WorkspaceSidedock.create2__(this, 'vertical', 'right');
+    this.rootSplit = WorkspaceRoot.create2__(this, 'vertical');
   }
 
-  public static create__(app: App, containerEl: HTMLElement): Workspace {
+  public static create2__(app: App, containerEl: HTMLElement): Workspace {
     return strictMock(new Workspace(app, containerEl));
   }
 
@@ -77,17 +80,17 @@ export class Workspace extends Events {
   }
 
   public async changeLayout(_workspace: unknown): Promise<void> {
-    // Empty async — layout changes are not simulated.
+    await noopAsync();
   }
 
   public createLeafBySplit(_leaf: WorkspaceLeaf, _direction?: SplitDirection, _before?: boolean): WorkspaceLeaf {
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
 
   public createLeafInParent(_parent: WorkspaceParent, _index: number): WorkspaceLeaf {
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
@@ -102,7 +105,7 @@ export class Workspace extends Events {
 
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async duplicateLeaf(_leaf: WorkspaceLeaf, _leafType?: boolean | PaneType, _direction?: SplitDirection): Promise<WorkspaceLeaf> {
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
@@ -113,14 +116,14 @@ export class Workspace extends Events {
     _side: Side,
     _options?: EnsureSideLeafOptions
   ): Promise<WorkspaceLeaf> {
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
 
   public getActiveFile(): null | TFile {
     if (this.activeLeaf) {
-      return this.activeLeaf._file;
+      return this.activeLeaf.file__;
     }
     return null;
   }
@@ -143,7 +146,7 @@ export class Workspace extends Events {
 
   public getLeaf(newLeaf?: boolean | PaneType): WorkspaceLeaf {
     if (newLeaf === true || newLeaf === 'tab' || newLeaf === 'split' || newLeaf === 'window') {
-      const leaf = WorkspaceLeaf.create__(this._app);
+      const leaf = WorkspaceLeaf.create2__(this._app);
       this._leaves.push(leaf);
       return leaf;
     }
@@ -152,7 +155,7 @@ export class Workspace extends Events {
       return this.activeLeaf;
     }
 
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     this.activeLeaf = leaf;
     return leaf;
@@ -167,7 +170,7 @@ export class Workspace extends Events {
   }
 
   public getLeftLeaf(_split: boolean): null | WorkspaceLeaf {
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
@@ -180,7 +183,7 @@ export class Workspace extends Events {
   }
 
   public getRightLeaf(_split: boolean): null | WorkspaceLeaf {
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
@@ -190,7 +193,7 @@ export class Workspace extends Events {
     if (unpinned) {
       return unpinned;
     }
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
@@ -211,7 +214,7 @@ export class Workspace extends Events {
     if (!this._leaves.includes(leaf)) {
       this._leaves.push(leaf);
     }
-    return WorkspaceWindow.create2__(this);
+    return WorkspaceWindow.create3__(this);
   }
 
   public onLayoutReady(callback: () => unknown): void {
@@ -223,11 +226,11 @@ export class Workspace extends Events {
   }
 
   public async openLinkText(_linktext: string, _sourcePath: string, _newLeaf?: boolean | PaneType, _openViewState?: OpenViewState): Promise<void> {
-    // Empty async — link navigation is not simulated.
+    await noopAsync();
   }
 
   public openPopoutLeaf(_data?: WorkspaceWindowInitData): WorkspaceLeaf {
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
@@ -254,12 +257,12 @@ export class Workspace extends Events {
   }
 
   public splitActiveLeaf(_direction?: SplitDirection): WorkspaceLeaf {
-    const leaf = WorkspaceLeaf.create__(this._app);
+    const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
 
   public updateOptions(): void {
-    // Empty — options update is not simulated.
+    noop();
   }
 }

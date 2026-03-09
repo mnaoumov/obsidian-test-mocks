@@ -14,7 +14,7 @@ export class WorkspaceTabs extends WorkspaceParent {
     super();
   }
 
-  public static create__(workspace: Workspace, id?: string): WorkspaceTabs {
+  public static create2__(workspace: Workspace, id?: string): WorkspaceTabs {
     return strictMock(new WorkspaceTabs(workspace, id));
   }
 

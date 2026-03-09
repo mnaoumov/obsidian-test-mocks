@@ -12,17 +12,17 @@ import { Component } from './Component.ts';
 import { MenuItem } from './MenuItem.ts';
 
 export class Menu extends Component {
-  public dom: HTMLElement;
+  public dom__: HTMLElement;
   public items__: MenuItem[] = [];
 
   private _onHideCallback: (() => unknown) | null = null;
 
   protected constructor() {
     super();
-    this.dom = createDiv();
+    this.dom__ = createDiv();
   }
 
-  public static create__(): Menu {
+  public static override create__(): Menu {
     return strictMock(new Menu());
   }
 

@@ -11,12 +11,12 @@ const TEST_NUMBER = 7;
 describe('NumberValue', () => {
   it('should default to 0', () => {
     const val = new NumberValue();
-    expect(val.value).toBe(0);
+    expect(val.value__).toBe(0);
   });
 
   it('should accept a value', () => {
     const val = new NumberValue(TEST_NUMBER);
-    expect(val.value).toBe(TEST_NUMBER);
+    expect(val.value__).toBe(TEST_NUMBER);
   });
 
   it('should return false for isTruthy when 0', () => {

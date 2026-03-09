@@ -9,12 +9,12 @@ import { BooleanValue } from '../../src/obsidian/BooleanValue.ts';
 describe('BooleanValue', () => {
   it('should default to false', () => {
     const val = new BooleanValue();
-    expect(val.value).toBe(false);
+    expect(val.value__).toBe(false);
   });
 
   it('should accept a value', () => {
     const val = new BooleanValue(true);
-    expect(val.value).toBe(true);
+    expect(val.value__).toBe(true);
   });
 
   it('should return false for isTruthy when false', () => {

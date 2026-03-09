@@ -11,7 +11,7 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
     super();
   }
 
-  public static create__(): WorkspaceMobileDrawer {
+  public static create2__(): WorkspaceMobileDrawer {
     return strictMock(new WorkspaceMobileDrawer());
   }
 
