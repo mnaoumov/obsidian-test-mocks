@@ -19,6 +19,7 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { debounce } from './debounce.ts';
 import { Events } from './Events.ts';
@@ -34,8 +35,9 @@ export class Workspace extends Events {
   public layoutReady = false;
   public leftRibbon: WorkspaceRibbon;
   public leftSplit: WorkspaceSidedock;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: layout saving is not simulated.
-  public requestSaveLayout = debounce(() => {});
+  public requestSaveLayout = debounce(() => {
+    noop();
+  });
   public rightRibbon: WorkspaceRibbon;
   public rightSplit: WorkspaceSidedock;
   public rootSplit: WorkspaceRoot;

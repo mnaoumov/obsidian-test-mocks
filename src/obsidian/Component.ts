@@ -4,6 +4,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 
 export class Component {
   public _children: Component[] = [];
@@ -12,8 +13,8 @@ export class Component {
   public _intervals: number[] = [];
   public _loaded = false;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for subclass instantiation.
   protected constructor() {
+    noop();
   }
 
   public addChild<T extends Component>(component: T): T {

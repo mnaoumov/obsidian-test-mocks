@@ -7,12 +7,13 @@ import type {
 import type { EventsEntry } from '../internal/Types.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for subclass instantiation.
   protected constructor() {
+    noop();
   }
 
   public asOriginalType__(): EventsOriginal {

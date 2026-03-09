@@ -14,6 +14,7 @@ import type {
 import type { CoordsLeftTop } from '../internal/Types.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 
 export abstract class Editor {
   private _focused = false;
@@ -33,8 +34,8 @@ export abstract class Editor {
     this._focused = false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: editor command execution is not simulated.
   public exec(_command: EditorCommandName): void {
+    noop();
   }
 
   public focus(): void {
@@ -157,8 +158,8 @@ export abstract class Editor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: refresh is a pure UI operation.
   public refresh(): void {
+    noop();
   }
 
   public replaceRange(replacement: string, from: EditorPosition, to?: EditorPosition, _origin?: string): void {
@@ -179,8 +180,8 @@ export abstract class Editor {
     this.replaceRange(replacement, from, to);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: scroll is a pure UI operation.
   public scrollIntoView(_range: EditorRange, _center?: boolean): void {
+    noop();
   }
 
   public scrollTo(x?: null | number, y?: null | number): void {

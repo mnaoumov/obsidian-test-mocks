@@ -4,6 +4,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
@@ -21,8 +22,8 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     return strictMock(this);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI operation.
   public applyScroll(_scroll: number): void {
+    noop();
   }
 
   public override asOriginalType__(): MarkdownPreviewViewOriginal {
@@ -41,8 +42,8 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     return 0;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI operation.
   public rerender(_full?: boolean): void {
+    noop();
   }
 
   public set(data: string, _clear: boolean): void {

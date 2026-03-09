@@ -1,6 +1,7 @@
 import type { SliderComponent as SliderComponentOriginal } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -67,7 +68,7 @@ export class SliderComponent extends ValueComponent<number> {
     return this;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI operation.
   public showTooltip(): void {
+    noop();
   }
 }

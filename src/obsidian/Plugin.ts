@@ -14,6 +14,7 @@ import type {
 import type { App } from './App.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { Component } from './Component.ts';
 
@@ -68,8 +69,8 @@ export abstract class Plugin extends Component {
     return this._data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public onUserEnable(): void {
+    noop();
   }
 
   public registerExtensions(extensions: string[], viewType: string): void {
@@ -88,8 +89,9 @@ export abstract class Plugin extends Component {
     _sortOrder?: number
   ): MarkdownPostProcessor {
     this._markdownCodeBlockProcessors.set(language, handler);
-    // eslint-disable-next-line @typescript-eslint/no-empty-function, func-style, func-names -- Placeholder processor assigned to typed const; real processing is not simulated.
+    // eslint-disable-next-line func-style, func-names -- Placeholder processor assigned to typed const; real processing is not simulated.
     const processor: MarkdownPostProcessor = function (_el: HTMLElement, _ctx: MarkdownPostProcessorContext): void {
+      noop();
     };
     this._markdownPostProcessors.push(processor);
     return processor;

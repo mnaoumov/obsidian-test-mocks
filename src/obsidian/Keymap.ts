@@ -8,13 +8,14 @@ import type {
 import type { Scope } from './Scope.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class Keymap {
   private readonly _scopeStack: Scope[] = [];
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor() {
+    noop();
   }
 
   public static create__(): Keymap {

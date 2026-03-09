@@ -1,6 +1,7 @@
 import type { Notice as NoticeOriginal } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class Notice {
@@ -27,8 +28,8 @@ export class Notice {
     return castTo<NoticeOriginal>(this);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI operation.
   public hide(): void {
+    noop();
   }
 
   public setMessage(message: DocumentFragment | string): this {
