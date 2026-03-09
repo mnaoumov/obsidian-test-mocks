@@ -8,7 +8,10 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
@@ -72,13 +75,11 @@ export abstract class View extends Component {
     this._state = state;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   protected async onClose(): Promise<void> {
-    noop();
+    await noopAsync();
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   protected async onOpen(): Promise<void> {
-    noop();
+    await noopAsync();
   }
 }

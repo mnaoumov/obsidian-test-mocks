@@ -38,6 +38,7 @@ export class Workspace extends Events {
   public requestSaveLayout = debounce(() => {
     noop();
   });
+
   public rightRibbon: WorkspaceRibbon;
   public rightSplit: WorkspaceSidedock;
   public rootSplit: WorkspaceRoot;
