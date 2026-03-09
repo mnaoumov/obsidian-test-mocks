@@ -11,8 +11,8 @@ export class SecretStorage {
   protected constructor(_app: App) {
   }
 
-  public static create__(_app: App): SecretStorage {
-    return strictMock(new SecretStorage(_app));
+  public static create__(app: App): SecretStorage {
+    return strictMock(new SecretStorage(app));
   }
 
   public asOriginalType__(): SecretStorageOriginal {

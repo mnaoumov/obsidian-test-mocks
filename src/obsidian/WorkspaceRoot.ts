@@ -15,12 +15,12 @@ export class WorkspaceRoot extends WorkspaceContainer {
     return window;
   }
 
-  protected constructor(_workspace: Workspace, _direction: string, _id?: string) {
-    super(_workspace, _direction, _id);
+  protected constructor(workspace: Workspace, direction: string, id?: string) {
+    super(workspace, direction, id);
   }
 
-  public static override create__(_workspace: Workspace, _direction: string, _id?: string): WorkspaceRoot {
-    return strictMock(new WorkspaceRoot(_workspace, _direction, _id));
+  public static override create__(workspace: Workspace, direction: string, id?: string): WorkspaceRoot {
+    return strictMock(new WorkspaceRoot(workspace, direction, id));
   }
 
   public override asOriginalType__(): WorkspaceRootOriginal {

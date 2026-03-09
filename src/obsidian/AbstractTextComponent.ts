@@ -7,7 +7,7 @@ import { ValueComponent } from './ValueComponent.ts';
 export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTextAreaElement> extends ValueComponent<string> {
   public override inputEl: T;
 
-  private _onChange?: (value: string) => unknown;
+  private _onChange?: (_value: string) => unknown;
   private _value = '';
 
   public constructor(inputEl: T) {

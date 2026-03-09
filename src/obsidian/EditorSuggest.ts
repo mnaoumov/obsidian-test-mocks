@@ -1,8 +1,8 @@
 import type {
   Editor,
   EditorPosition,
-  EditorSuggestContext,
   EditorSuggest as EditorSuggestOriginal,
+  EditorSuggestContext,
   EditorSuggestTriggerInfo,
   Instruction,
   TFile
@@ -27,7 +27,7 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
     return castTo<EditorSuggestOriginal<T>>(this);
   }
 
-  public abstract override getSuggestions(context: EditorSuggestContext): Promise<T[]> | T[];
+  public abstract override getSuggestions(_context: EditorSuggestContext): Promise<T[]> | T[];
 
   public abstract onTrigger(cursor: EditorPosition, editor: Editor, file: null | TFile): EditorSuggestTriggerInfo | null;
 

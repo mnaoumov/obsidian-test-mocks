@@ -1,7 +1,7 @@
 import type {
   Menu as MenuOriginal,
-  MenuPositionDef,
-  MenuItem as ObsidianMenuItem
+  MenuItem as ObsidianMenuItem,
+  MenuPositionDef
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';

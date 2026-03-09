@@ -71,7 +71,7 @@ export function onClickEvent(
 }
 
 export function onNodeInserted(
-  this: HTMLElement,
+  _this: HTMLElement,
   listener: () => unknown,
   _once?: boolean
 ): () => void {
@@ -81,7 +81,7 @@ export function onNodeInserted(
 }
 
 export function onWindowMigrated(
-  this: HTMLElement,
+  _this: HTMLElement,
   _listener: (win: Window) => unknown
 ): () => void {
   return (): void => {};

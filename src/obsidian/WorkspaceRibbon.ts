@@ -10,8 +10,8 @@ export class WorkspaceRibbon {
   protected constructor(_workspace: Workspace, _side: string) {
   }
 
-  public static create__(_workspace: Workspace, _side: string): WorkspaceRibbon {
-    return strictMock(new WorkspaceRibbon(_workspace, _side));
+  public static create__(workspace: Workspace, side: string): WorkspaceRibbon {
+    return strictMock(new WorkspaceRibbon(workspace, side));
   }
 
   public asOriginalType__(): WorkspaceRibbonOriginal {

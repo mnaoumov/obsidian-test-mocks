@@ -22,8 +22,8 @@ export class BasesViewConfig {
     this.name = name;
   }
 
-  public static create__(_query: string, _type: string, name: string): BasesViewConfig {
-    return strictMock(new BasesViewConfig(_query, _type, name));
+  public static create__(query: string, type: string, name: string): BasesViewConfig {
+    return strictMock(new BasesViewConfig(query, type, name));
   }
 
   public asOriginalType__(): BasesViewConfigOriginal {

@@ -38,8 +38,8 @@ export class WorkspaceLeaf extends WorkspaceItem {
     this._id = id ?? String(nextLeafId++);
   }
 
-  public static create__(_app: App, id?: string): WorkspaceLeaf {
-    return strictMock(new WorkspaceLeaf(_app, id));
+  public static create__(app: App, id?: string): WorkspaceLeaf {
+    return strictMock(new WorkspaceLeaf(app, id));
   }
 
   public _getGroup(): null | string {

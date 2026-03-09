@@ -64,8 +64,8 @@ export class Workspace extends Events {
     this.rootSplit = WorkspaceRoot.create__(this, 'vertical');
   }
 
-  public static create__(_app: App, containerEl: HTMLElement): Workspace {
-    return strictMock(new Workspace(_app, containerEl));
+  public static create__(app: App, containerEl: HTMLElement): Workspace {
+    return strictMock(new Workspace(app, containerEl));
   }
 
   public _setLayoutReady(): void {

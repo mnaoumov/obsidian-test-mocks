@@ -8,9 +8,9 @@ export function delegatedOff(
 ): void {
   const map = getMap(target);
   const byType = map.get(type);
-  if (!byType) { return; }
+  if (!byType) return;
   const wrapped = byType.get(listener);
-  if (!wrapped) { return; }
+  if (!wrapped) return;
   target.removeEventListener(type, wrapped, options);
   byType.delete(listener);
 }

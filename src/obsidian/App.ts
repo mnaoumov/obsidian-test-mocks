@@ -33,8 +33,8 @@ export class App {
     this.workspace = Workspace.create__(this, createDiv());
   }
 
-  public static create__(adapter: DataAdapter, _appId: string): App {
-    return strictMock(new App(adapter, _appId));
+  public static create__(adapter: DataAdapter, appId: string): App {
+    return strictMock(new App(adapter, appId));
   }
 
   public asOriginalType__(): AppOriginal {

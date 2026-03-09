@@ -22,8 +22,8 @@ export class MetadataCache extends Events {
     this._app = app;
   }
 
-  public static create__(app: App, _vault: Vault): MetadataCache {
-    return strictMock(new MetadataCache(app, _vault));
+  public static create__(app: App, vault: Vault): MetadataCache {
+    return strictMock(new MetadataCache(app, vault));
   }
 
   public _setCache(path: string, cache: CachedMetadata): void {

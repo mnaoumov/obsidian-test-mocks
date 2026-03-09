@@ -14,8 +14,8 @@ export class WorkspaceTabs extends WorkspaceParent {
     super();
   }
 
-  public static create__(_workspace: Workspace, _id?: string): WorkspaceTabs {
-    return strictMock(new WorkspaceTabs(_workspace, _id));
+  public static create__(workspace: Workspace, id?: string): WorkspaceTabs {
+    return strictMock(new WorkspaceTabs(workspace, id));
   }
 
   public override asOriginalType__(): WorkspaceTabsOriginal {

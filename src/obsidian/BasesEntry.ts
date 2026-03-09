@@ -18,8 +18,8 @@ export class BasesEntry implements FormulaContext {
     this.file = file;
   }
 
-  public static create__(_ctx: unknown, file: TFile): BasesEntry {
-    return strictMock(new BasesEntry(_ctx, file));
+  public static create__(ctx: unknown, file: TFile): BasesEntry {
+    return strictMock(new BasesEntry(ctx, file));
   }
 
   public asOriginalType__(): BasesEntryOriginal {
