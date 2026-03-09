@@ -8,14 +8,12 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
-  public static instances__: ButtonComponent[] = [];
   public buttonEl: HTMLButtonElement;
   private clickHandler?: (evt: MouseEvent) => unknown;
 
   public constructor(containerEl: HTMLElement) {
     super();
     this.buttonEl = containerEl.createEl('button');
-    ButtonComponent.instances__.push(this);
   }
 
   public static create__(containerEl: HTMLElement): ButtonComponent {
