@@ -8,7 +8,7 @@ import type {
 import type { Scope } from './Scope.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class Keymap {

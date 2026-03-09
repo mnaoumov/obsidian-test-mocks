@@ -1,4 +1,4 @@
-import { noopAsync } from '../internal/Noop.ts';
+import { noopAsync } from '../internal/noop.ts';
 
 export async function finishRenderMath(): Promise<void> {
   await noopAsync();

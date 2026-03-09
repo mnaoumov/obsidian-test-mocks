@@ -3,7 +3,7 @@ import type { WorkspaceRibbon as WorkspaceRibbonOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class WorkspaceRibbon {

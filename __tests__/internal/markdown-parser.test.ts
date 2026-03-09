@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { parseMarkdownContent } from '../../src/internal/MarkdownParser.ts';
+import { parseMarkdownContent } from '../../src/internal/markdown-parser.ts';
 
 const HEADING_COUNT_ALL = 6;
 const HEADING_LEVEL_2 = 2;

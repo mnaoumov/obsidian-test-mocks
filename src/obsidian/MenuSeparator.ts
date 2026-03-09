@@ -3,7 +3,7 @@ import type { MenuSeparator as MenuSeparatorOriginal } from 'obsidian';
 import type { Menu } from './Menu.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class MenuSeparator {
