@@ -102,11 +102,8 @@ Property "internalPlugins" is not mocked in App. To override, assign a value fir
 The strict proxy is fully override-friendly. Assign a value and subsequent reads just work:
 
 ```typescript
-// Override a method
-app.vault.read = vi.fn().mockResolvedValue('custom content');
-
 // Spy on an existing method
-vi.spyOn(app.vault, 'read').mockResolvedValue('spied content');
+vi.spyOn(app.vault, 'read').mockResolvedValue('custom content');
 
 // Batch-extend with Object.assign
 Object.assign(app, { commands: { addCommand: vi.fn() } });

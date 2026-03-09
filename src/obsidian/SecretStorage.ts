@@ -1,9 +1,26 @@
 import type { SecretStorage as SecretStorageOriginal } from 'obsidian';
 
+import type { App } from './App.ts';
+
 import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 
 export class SecretStorage {
   private readonly store = new Map<string, string>();
+
+  protected constructor(_app: App) {
+    const mock = strictMock(this);
+    SecretStorage.constructor__(mock, _app);
+    return mock;
+  }
+
+  public static constructor__(_instance: SecretStorage, _app: App): void {
+    // Spy hook.
+  }
+
+  public static create__(_app: App): SecretStorage {
+    return new SecretStorage(_app);
+  }
 
   public asOriginalType__(): SecretStorageOriginal {
     return castTo<SecretStorageOriginal>(this);

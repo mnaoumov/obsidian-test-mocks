@@ -4,6 +4,7 @@ import {
   it
 } from 'vitest';
 
+import { createMockApp } from '../../src/helpers/createMockApp.ts';
 import { NullValue } from '../../src/obsidian/NullValue.ts';
 import { NumberValue } from '../../src/obsidian/NumberValue.ts';
 import { RenderContext } from '../../src/obsidian/RenderContext.ts';
@@ -101,10 +102,11 @@ describe('Value', () => {
   });
 
   describe('renderTo', () => {
-    it('should not throw', () => {
+    it('should not throw', async () => {
+      const app = await createMockApp();
       const val = new StringValue('test');
       expect(() => {
-        val.renderTo({} as HTMLElement, new RenderContext());
+        val.renderTo({} as HTMLElement, RenderContext.create__(app));
       }).not.toThrow();
     });
   });

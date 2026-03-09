@@ -1,31 +1,20 @@
 import type {
-  DataAdapter,
-  EventRef,
   HoverPopover,
-  IconName,
-  MarkdownView as MarkdownViewOriginal,
-  Menu,
-  ViewStateResult
+  MarkdownView as MarkdownViewOriginal
 } from 'obsidian';
 
-import type { TFile } from './TFile.ts';
-
 import { castTo } from '../internal/Cast.ts';
-import { App } from './App.ts';
-import { Component } from './Component.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { Editor } from './Editor.ts';
-import { FileSystemAdapter } from './FileSystemAdapter.ts';
+import { TextFileView } from './TextFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 class MockEditor extends Editor {}
 
-export class MarkdownView {
-  public allowNoFile = false;
-  public app: App;
-  public containerEl: HTMLElement;
-  public contentEl: HTMLElement;
+export class MarkdownView extends TextFileView {
   public editor: Editor;
   private _currentModeScroll = 0;
+
   public currentMode = {
     applyScroll: (scroll: number): void => {
       this._currentModeScroll = scroll;
@@ -47,13 +36,7 @@ export class MarkdownView {
     }
   };
 
-  public data = '';
-  public file: null | TFile = null;
   public hoverPopover: HoverPopover | null = null;
-  public icon: IconName = '';
-  public leaf: WorkspaceLeaf;
-
-  public navigation = true;
 
   private _previewModeScroll = 0;
   public previewMode = {
@@ -78,47 +61,25 @@ export class MarkdownView {
     }
   };
 
-  public scope = null;
-  private _children: Component[] = [];
-  private _cleanups: (() => unknown)[] = [];
-  private _ephemeralState: unknown = {};
-  private _events: EventRef[] = [];
-  private _intervals: number[] = [];
-  private _loaded = false;
   private readonly _mode: 'preview' | 'source' = 'source';
 
-  private _state: unknown = {};
-
-  public constructor() {
-    this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapter, '');
-    this.containerEl = createDiv();
-    this.contentEl = createDiv();
+  public constructor(leaf: WorkspaceLeaf) {
+    super(leaf);
     this.editor = new MockEditor();
-    this.leaf = WorkspaceLeaf.create__(this.app);
+    const mock = strictMock(this);
+    MarkdownView.constructor__(mock, leaf);
+    return mock;
   }
 
-  public addAction(icon: IconName, title: string, callback: (evt: MouseEvent) => unknown): HTMLElement {
-    const el = createDiv();
-    el.setAttribute('aria-label', title);
-    el.setAttribute('data-icon', icon);
-    el.addEventListener('click', callback as EventListener);
-    this.containerEl.appendChild(el);
-    return el;
+  public static override constructor__(_instance: MarkdownView, _leaf: WorkspaceLeaf): void {
+    // Spy hook.
   }
 
-  public addChild<T extends Component>(component: T): T {
-    this._children.push(component);
-    if (this._loaded) {
-      component.load();
-    }
-    return component;
-  }
-
-  public asOriginalType__(): MarkdownViewOriginal {
+  public override asOriginalType__(): MarkdownViewOriginal {
     return castTo<MarkdownViewOriginal>(this);
   }
 
-  public canAcceptExtension(extension: string): boolean {
+  public override canAcceptExtension(extension: string): boolean {
     return extension === 'md';
   }
 
@@ -127,103 +88,16 @@ export class MarkdownView {
     this.editor.setValue('');
   }
 
-  public getDisplayText(): string {
-    return this.file?.basename ?? '';
-  }
-
-  public getEphemeralState(): unknown {
-    return this._ephemeralState;
-  }
-
-  public getIcon(): string {
-    return this.icon;
-  }
-
   public getMode(): 'preview' | 'source' {
     return this._mode;
-  }
-
-  public getState(): unknown {
-    return this._state;
   }
 
   public getViewData(): string {
     return this.data;
   }
 
-  public getViewType(): string {
+  public override getViewType(): string {
     return 'markdown';
-  }
-
-  public load(): void {
-    this._loaded = true;
-    this.onload();
-  }
-
-  public onload(): void {
-    // Override point.
-  }
-
-  public onPaneMenu(_menu: Menu, _source: string): void {
-    // Override point.
-  }
-
-  public onResize(): void {
-    // Override point.
-  }
-
-  public onunload(): void {
-    // Override point.
-  }
-
-  public register(cb: () => unknown): void {
-    this._cleanups.push(cb);
-  }
-
-  public registerDomEvent(
-    el: Document | HTMLElement | Window,
-    type: string,
-    callback: EventListenerOrEventListenerObject,
-    options?: AddEventListenerOptions | boolean
-  ): void {
-    el.addEventListener(type, callback, options);
-    this.register(() => {
-      el.removeEventListener(type, callback, options);
-    });
-  }
-
-  public registerEvent(ref: EventRef): void {
-    this._events.push(ref);
-  }
-
-  public registerInterval(id: number): number {
-    this._intervals.push(id);
-    return id;
-  }
-
-  public removeChild<T extends Component>(component: T): T {
-    const index = this._children.indexOf(component);
-    if (index !== -1) {
-      this._children.splice(index, 1);
-    }
-    component.unload();
-    return component;
-  }
-
-  public requestSave(): void {
-    // No-op in mock.
-  }
-
-  public async save(_clear?: boolean): Promise<void> {
-    // No-op in mock — no vault reference available.
-  }
-
-  public setEphemeralState(state: unknown): void {
-    this._ephemeralState = state;
-  }
-
-  public async setState(state: unknown, _result: ViewStateResult): Promise<void> {
-    this._state = state;
   }
 
   public setViewData(data: string, _clear: boolean): void {
@@ -233,28 +107,5 @@ export class MarkdownView {
 
   public showSearch(_replace?: boolean): void {
     // No-op in mock.
-  }
-
-  public unload(): void {
-    this.onunload();
-
-    for (const child of [...this._children]) {
-      this.removeChild(child);
-    }
-    this._children = [];
-
-    this._events = [];
-
-    for (const cleanup of this._cleanups) {
-      cleanup();
-    }
-    this._cleanups = [];
-
-    for (const id of this._intervals) {
-      clearInterval(id);
-    }
-    this._intervals = [];
-
-    this._loaded = false;
   }
 }

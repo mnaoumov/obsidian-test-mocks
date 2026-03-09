@@ -3,32 +3,31 @@ import type { WorkspaceRoot as WorkspaceRootOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { WorkspaceContainer } from './WorkspaceContainer.ts';
 
-export class WorkspaceRoot {
-  public get doc(): Document {
+export class WorkspaceRoot extends WorkspaceContainer {
+  public override get doc(): Document {
     return document;
   }
 
-  public get win(): Window {
+  public override get win(): Window {
     return window;
   }
 
   protected constructor(_workspace: Workspace, _direction: string, _id?: string) {
-    const mock = strictMock(this);
-    WorkspaceRoot.constructor__(mock, _workspace, _direction, _id);
-    return mock;
+    super(_workspace, _direction, _id);
+    WorkspaceRoot.constructor__(this, _workspace, _direction, _id);
   }
 
-  public static constructor__(_instance: WorkspaceRoot, _workspace: Workspace, _direction: string, _id?: string): void {
+  public static override constructor__(_instance: WorkspaceRoot, _workspace: Workspace, _direction: string, _id?: string): void {
     // Spy hook.
   }
 
-  public static create__(_workspace: Workspace, _direction: string, _id?: string): WorkspaceRoot {
+  public static override create__(_workspace: Workspace, _direction: string, _id?: string): WorkspaceRoot {
     return new WorkspaceRoot(_workspace, _direction, _id);
   }
 
-  public asOriginalType__(): WorkspaceRootOriginal {
+  public override asOriginalType__(): WorkspaceRootOriginal {
     return castTo<WorkspaceRootOriginal>(this);
   }
 }

@@ -3,26 +3,25 @@ import type { WorkspaceSidedock as WorkspaceSidedockOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
-export class WorkspaceSidedock {
+export class WorkspaceSidedock extends WorkspaceSplit {
   public collapsed = false;
 
   protected constructor(_workspace: Workspace, _direction: string, _side: string, _id?: string) {
-    const mock = strictMock(this);
-    WorkspaceSidedock.constructor__(mock, _workspace, _direction, _side, _id);
-    return mock;
+    super(_workspace, _direction, _id);
+    WorkspaceSidedock.constructor__(this, _workspace, _direction, _side, _id);
   }
 
-  public static constructor__(_instance: WorkspaceSidedock, _workspace: Workspace, _direction: string, _side: string, _id?: string): void {
+  public static override constructor__(_instance: WorkspaceSidedock, _workspace: Workspace, _direction: string, _side: string, _id?: string): void {
     // Spy hook.
   }
 
-  public static create__(_workspace: Workspace, _direction: string, _side: string, _id?: string): WorkspaceSidedock {
+  public static override create__(_workspace: Workspace, _direction: string, _side: string, _id?: string): WorkspaceSidedock {
     return new WorkspaceSidedock(_workspace, _direction, _side, _id);
   }
 
-  public asOriginalType__(): WorkspaceSidedockOriginal {
+  public override asOriginalType__(): WorkspaceSidedockOriginal {
     return castTo<WorkspaceSidedockOriginal>(this);
   }
 
