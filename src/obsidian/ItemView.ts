@@ -1,5 +1,5 @@
 import type {
-  IconName,
+  IconName as IconNameOriginal,
   ItemView as ItemViewOriginal
 } from 'obsidian';
 
@@ -17,7 +17,7 @@ export abstract class ItemView extends View {
     return strictMock(this);
   }
 
-  public addAction(_icon: IconName, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
+  public addAction(_icon: IconNameOriginal, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
     return createDiv();
   }
 

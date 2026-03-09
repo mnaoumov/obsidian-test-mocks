@@ -1,10 +1,10 @@
-import type { FrontMatterInfo } from 'obsidian';
+import type { FrontMatterInfo as FrontMatterInfoOriginal } from 'obsidian';
 
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
 const FRONTMATTER_DELIMITER_LENGTH = 3;
 
-export function getFrontMatterInfo(content: string): FrontMatterInfo {
+export function getFrontMatterInfo(content: string): FrontMatterInfoOriginal {
   const fmRegex = /^---(?<StartNewline>\r?\n)(?<FrontmatterBody>[\s\S]*?)\r?\n---(?<TrailingNewline>\r?\n|$)/;
   const match = fmRegex.exec(content);
   if (match) {

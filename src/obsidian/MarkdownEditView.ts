@@ -1,6 +1,6 @@
 import type {
-  DataAdapter,
-  HoverPopover,
+  DataAdapter as DataAdapterOriginal,
+  HoverPopover as HoverPopoverOriginal,
   MarkdownEditView as MarkdownEditViewOriginal
 } from 'obsidian';
 
@@ -15,12 +15,12 @@ class MockEditor extends Editor {}
 export class MarkdownEditView {
   public app: App;
   public editor__: Editor;
-  public hoverPopover: HoverPopover | null = null;
+  public hoverPopover: HoverPopoverOriginal | null = null;
 
   private _scroll = 0;
 
   public constructor() {
-    this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapter, '');
+    this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapterOriginal, '');
     this.editor__ = new MockEditor();
   }
 

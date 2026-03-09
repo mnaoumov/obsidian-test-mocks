@@ -1,10 +1,10 @@
 // eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
 // dprint-ignore -- Alias sort order differs from original name order.
 import type {
-  ExtraButtonComponent,
-  Setting as ObsidianSetting,
-  SearchComponent,
-  SettingGroup as SettingGroupOriginal
+  ExtraButtonComponent as ExtraButtonComponentOriginal,
+  SearchComponent as SearchComponentOriginal,
+  SettingGroup as SettingGroupOriginal,
+  Setting as SettingOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
@@ -30,21 +30,21 @@ export class SettingGroup {
     return this;
   }
 
-  public addExtraButton(cb: (component: ExtraButtonComponent) => unknown): this {
+  public addExtraButton(cb: (component: ExtraButtonComponentOriginal) => unknown): this {
     const comp = MockExtraButtonComponent.create__(this.listEl__);
-    cb(castTo<ExtraButtonComponent>(comp));
+    cb(castTo<ExtraButtonComponentOriginal>(comp));
     return this;
   }
 
-  public addSearch(cb: (component: SearchComponent) => unknown): this {
+  public addSearch(cb: (component: SearchComponentOriginal) => unknown): this {
     const comp = MockSearchComponent.create__(this.listEl__);
-    cb(castTo<SearchComponent>(comp));
+    cb(castTo<SearchComponentOriginal>(comp));
     return this;
   }
 
-  public addSetting(cb: (setting: ObsidianSetting) => void): this {
+  public addSetting(cb: (setting: SettingOriginal) => void): this {
     const setting = Setting.create__(this.listEl__);
-    cb(castTo<ObsidianSetting>(setting));
+    cb(castTo<SettingOriginal>(setting));
     return this;
   }
 

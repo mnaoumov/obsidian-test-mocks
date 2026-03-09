@@ -1,12 +1,12 @@
-import type { Debouncer } from 'obsidian';
+import type { Debouncer as DebouncerOriginal } from 'obsidian';
 
 import type { MaybeReturn } from '../internal/types.ts';
 
-export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, timeout = 0, resetTimer = true): Debouncer<T, V> {
+export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, timeout = 0, resetTimer = true): DebouncerOriginal<T, V> {
   let timerId: ReturnType<typeof setTimeout> | undefined;
   let lastArgs: [...T] | undefined;
 
-  function debouncer(...args: [...T]): Debouncer<T, V> {
+  function debouncer(...args: [...T]): DebouncerOriginal<T, V> {
     lastArgs = args;
     if (resetTimer && timerId !== undefined) {
       clearTimeout(timerId);
@@ -17,15 +17,15 @@ export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, tim
         cb(...args);
       }, timeout);
     }
-    return debouncer as Debouncer<T, V>;
+    return debouncer as DebouncerOriginal<T, V>;
   }
 
-  debouncer.cancel = (): Debouncer<T, V> => {
+  debouncer.cancel = (): DebouncerOriginal<T, V> => {
     if (timerId !== undefined) {
       clearTimeout(timerId);
       timerId = undefined;
     }
-    return debouncer as Debouncer<T, V>;
+    return debouncer as DebouncerOriginal<T, V>;
   };
 
   debouncer.run = (): MaybeReturn<V> => {
@@ -38,5 +38,5 @@ export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, tim
     }
   };
 
-  return debouncer as Debouncer<T, V>;
+  return debouncer as DebouncerOriginal<T, V>;
 }

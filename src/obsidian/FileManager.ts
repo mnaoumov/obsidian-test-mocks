@@ -1,5 +1,5 @@
 import type {
-  DataWriteOptions,
+  DataWriteOptions as DataWriteOptionsOriginal,
   FileManager as FileManagerOriginal
 } from 'obsidian';
 
@@ -56,7 +56,7 @@ export class FileManager {
     return this.app__.vault.getRoot();
   }
 
-  public async processFrontMatter(file: TFile, fn: (frontmatter: Record<string, unknown>) => void, options?: DataWriteOptions): Promise<void> {
+  public async processFrontMatter(file: TFile, fn: (frontmatter: Record<string, unknown>) => void, options?: DataWriteOptionsOriginal): Promise<void> {
     const content = await this.app__.vault.read(file);
     let frontmatter: Record<string, unknown> = {};
     let body = content;

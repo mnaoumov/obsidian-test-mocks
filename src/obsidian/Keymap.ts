@@ -1,8 +1,8 @@
 import type {
   Keymap as KeymapOriginal,
-  Modifier,
-  PaneType,
-  UserEvent
+  Modifier as ModifierOriginal,
+  PaneType as PaneTypeOriginal,
+  UserEvent as UserEventOriginal
 } from 'obsidian';
 
 import type { Scope } from './Scope.ts';
@@ -22,11 +22,11 @@ export class Keymap {
     return strictMock(new Keymap());
   }
 
-  public static isModEvent(_evt?: null | UserEvent): boolean | PaneType {
+  public static isModEvent(_evt?: null | UserEventOriginal): boolean | PaneTypeOriginal {
     return false;
   }
 
-  public static isModifier(_evt: KeyboardEvent | MouseEvent | TouchEvent, _modifier: Modifier): boolean {
+  public static isModifier(_evt: KeyboardEvent | MouseEvent | TouchEvent, _modifier: ModifierOriginal): boolean {
     return false;
   }
 

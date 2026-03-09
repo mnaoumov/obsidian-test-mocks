@@ -1,5 +1,5 @@
 import type {
-  CachedMetadata,
+  CachedMetadata as CachedMetadataOriginal,
   MetadataCache as MetadataCacheOriginal
 } from 'obsidian';
 
@@ -15,7 +15,7 @@ import { TFile as TFileClass } from './TFile.ts';
 
 export class MetadataCache extends Events {
   public app__: App;
-  public cache__ = new Map<string, CachedMetadata>();
+  public cache__ = new Map<string, CachedMetadataOriginal>();
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
@@ -45,11 +45,11 @@ export class MetadataCache extends Events {
     return file.name;
   }
 
-  public getCache(path: string): CachedMetadata | null {
+  public getCache(path: string): CachedMetadataOriginal | null {
     return this.cache__.get(path) ?? null;
   }
 
-  public getFileCache(file: TFile): CachedMetadata | null {
+  public getFileCache(file: TFile): CachedMetadataOriginal | null {
     return this.cache__.get(file.path) ?? null;
   }
 
@@ -70,7 +70,7 @@ export class MetadataCache extends Events {
     return null;
   }
 
-  public setCache__(path: string, cache: CachedMetadata): void {
+  public setCache__(path: string, cache: CachedMetadataOriginal): void {
     this.cache__.set(path, cache);
     this.trigger('changed');
   }

@@ -1,8 +1,8 @@
 import type {
-  BasesPropertyId,
-  BasesSortConfig,
+  BasesPropertyId as BasesPropertyIdOriginal,
+  BasesSortConfig as BasesSortConfigOriginal,
   BasesViewConfig as BasesViewConfigOriginal,
-  Value
+  Value as ValueOriginal
 } from 'obsidian';
 
 import type { BasesView } from './BasesView.ts';
@@ -14,9 +14,9 @@ import { NullValue } from './NullValue.ts';
 export class BasesViewConfig {
   public name: string;
   private readonly config = new Map<string, unknown>();
-  private readonly displayNames = new Map<BasesPropertyId, string>();
-  private order: BasesPropertyId[] = [];
-  private sort: BasesSortConfig[] = [];
+  private readonly displayNames = new Map<BasesPropertyIdOriginal, string>();
+  private order: BasesPropertyIdOriginal[] = [];
+  private sort: BasesSortConfigOriginal[] = [];
 
   protected constructor(_query: string, _type: string, name: string) {
     this.name = name;
@@ -34,27 +34,27 @@ export class BasesViewConfig {
     return this.config.get(key);
   }
 
-  public getAsPropertyId(key: string): BasesPropertyId | null {
+  public getAsPropertyId(key: string): BasesPropertyIdOriginal | null {
     const value = this.config.get(key);
     if (typeof value === 'string') {
-      return value as BasesPropertyId;
+      return value as BasesPropertyIdOriginal;
     }
     return null;
   }
 
-  public getDisplayName(propertyId: BasesPropertyId): string {
+  public getDisplayName(propertyId: BasesPropertyIdOriginal): string {
     return this.displayNames.get(propertyId) ?? propertyId.slice(propertyId.indexOf('.') + 1);
   }
 
-  public getEvaluatedFormula(_view: BasesView, _key: string): Value {
+  public getEvaluatedFormula(_view: BasesView, _key: string): ValueOriginal {
     return NullValue.create__();
   }
 
-  public getOrder(): BasesPropertyId[] {
+  public getOrder(): BasesPropertyIdOriginal[] {
     return this.order;
   }
 
-  public getSort(): BasesSortConfig[] {
+  public getSort(): BasesSortConfigOriginal[] {
     return this.sort;
   }
 
@@ -63,17 +63,17 @@ export class BasesViewConfig {
   }
 
   /** Mock-only. Sets the display name for a property. Not part of the Obsidian API. */
-  public setDisplayName__(propertyId: BasesPropertyId, displayName: string): void {
+  public setDisplayName__(propertyId: BasesPropertyIdOriginal, displayName: string): void {
     this.displayNames.set(propertyId, displayName);
   }
 
   /** Mock-only. Sets the property order. Not part of the Obsidian API. */
-  public setOrder__(order: BasesPropertyId[]): void {
+  public setOrder__(order: BasesPropertyIdOriginal[]): void {
     this.order = order;
   }
 
   /** Mock-only. Sets the sort config. Not part of the Obsidian API. */
-  public setSort__(sort: BasesSortConfig[]): void {
+  public setSort__(sort: BasesSortConfigOriginal[]): void {
     this.sort = sort;
   }
 }

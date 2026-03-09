@@ -1,5 +1,5 @@
 import type {
-  Instruction,
+  Instruction as InstructionOriginal,
   SuggestModal as SuggestModalOriginal
 } from 'obsidian';
 
@@ -15,7 +15,7 @@ const DEFAULT_LIMIT = 100;
 export abstract class SuggestModal<T> extends Modal {
   public emptyStateText = 'No results found.';
   public inputEl: HTMLInputElement;
-  public instructions__: Instruction[] = [];
+  public instructions__: InstructionOriginal[] = [];
   public limit = DEFAULT_LIMIT;
   public resultContainerEl: HTMLElement;
 
@@ -49,7 +49,7 @@ export abstract class SuggestModal<T> extends Modal {
     this.close();
   }
 
-  public setInstructions(instructions: Instruction[]): void {
+  public setInstructions(instructions: InstructionOriginal[]): void {
     this.instructions__ = instructions;
   }
 

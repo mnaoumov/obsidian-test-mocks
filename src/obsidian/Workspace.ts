@@ -1,14 +1,14 @@
 import type {
-  Constructor,
-  MarkdownFileInfo,
-  OpenViewState,
-  PaneType,
-  Side,
-  SplitDirection,
-  View,
+  Constructor as ConstructorOriginal,
+  MarkdownFileInfo as MarkdownFileInfoOriginal,
+  OpenViewState as OpenViewStateOriginal,
+  PaneType as PaneTypeOriginal,
+  Side as SideOriginal,
+  SplitDirection as SplitDirectionOriginal,
+  View as ViewOriginal,
   Workspace as WorkspaceOriginal,
-  WorkspaceParent,
-  WorkspaceWindowInitData
+  WorkspaceParent as WorkspaceParentOriginal,
+  WorkspaceWindowInitData as WorkspaceWindowInitDataOriginal
 } from 'obsidian';
 
 import type {
@@ -33,7 +33,7 @@ import { WorkspaceSidedock } from './WorkspaceSidedock.ts';
 import { WorkspaceWindow } from './WorkspaceWindow.ts';
 
 export class Workspace extends Events {
-  public activeEditor: MarkdownFileInfo | null = null;
+  public activeEditor: MarkdownFileInfoOriginal | null = null;
   public activeLeaf: null | WorkspaceLeaf = null;
   public layoutReady = false;
   public leftRibbon: WorkspaceRibbon;
@@ -83,13 +83,13 @@ export class Workspace extends Events {
     await noopAsync();
   }
 
-  public createLeafBySplit(_leaf: WorkspaceLeaf, _direction?: SplitDirection, _before?: boolean): WorkspaceLeaf {
+  public createLeafBySplit(_leaf: WorkspaceLeaf, _direction?: SplitDirectionOriginal, _before?: boolean): WorkspaceLeaf {
     const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
 
-  public createLeafInParent(_parent: WorkspaceParent, _index: number): WorkspaceLeaf {
+  public createLeafInParent(_parent: WorkspaceParentOriginal, _index: number): WorkspaceLeaf {
     const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
@@ -104,7 +104,7 @@ export class Workspace extends Events {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
-  public async duplicateLeaf(_leaf: WorkspaceLeaf, _leafType?: boolean | PaneType, _direction?: SplitDirection): Promise<WorkspaceLeaf> {
+  public async duplicateLeaf(_leaf: WorkspaceLeaf, _leafType?: boolean | PaneTypeOriginal, _direction?: SplitDirectionOriginal): Promise<WorkspaceLeaf> {
     const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
@@ -113,7 +113,7 @@ export class Workspace extends Events {
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async ensureSideLeaf(
     _type: string,
-    _side: Side,
+    _side: SideOriginal,
     _options?: EnsureSideLeafOptions
   ): Promise<WorkspaceLeaf> {
     const leaf = WorkspaceLeaf.create2__(this._app);
@@ -128,7 +128,7 @@ export class Workspace extends Events {
     return null;
   }
 
-  public getActiveViewOfType<T extends View>(_type: Constructor<T>): null | T {
+  public getActiveViewOfType<T extends ViewOriginal>(_type: ConstructorOriginal<T>): null | T {
     return null;
   }
 
@@ -144,7 +144,7 @@ export class Workspace extends Events {
     return {};
   }
 
-  public getLeaf(newLeaf?: boolean | PaneType): WorkspaceLeaf {
+  public getLeaf(newLeaf?: boolean | PaneTypeOriginal): WorkspaceLeaf {
     if (newLeaf === true || newLeaf === 'tab' || newLeaf === 'split' || newLeaf === 'window') {
       const leaf = WorkspaceLeaf.create2__(this._app);
       this._leaves.push(leaf);
@@ -175,7 +175,7 @@ export class Workspace extends Events {
     return leaf;
   }
 
-  public getMostRecentLeaf(_root?: WorkspaceParent): null | WorkspaceLeaf {
+  public getMostRecentLeaf(_root?: WorkspaceParentOriginal): null | WorkspaceLeaf {
     if (this._leaves.length === 0) {
       return null;
     }
@@ -210,7 +210,7 @@ export class Workspace extends Events {
     }
   }
 
-  public moveLeafToPopout(leaf: WorkspaceLeaf, _data?: WorkspaceWindowInitData): WorkspaceWindow {
+  public moveLeafToPopout(leaf: WorkspaceLeaf, _data?: WorkspaceWindowInitDataOriginal): WorkspaceWindow {
     if (!this._leaves.includes(leaf)) {
       this._leaves.push(leaf);
     }
@@ -225,11 +225,16 @@ export class Workspace extends Events {
     }
   }
 
-  public async openLinkText(_linktext: string, _sourcePath: string, _newLeaf?: boolean | PaneType, _openViewState?: OpenViewState): Promise<void> {
+  public async openLinkText(
+    _linktext: string,
+    _sourcePath: string,
+    _newLeaf?: boolean | PaneTypeOriginal,
+    _openViewState?: OpenViewStateOriginal
+  ): Promise<void> {
     await noopAsync();
   }
 
-  public openPopoutLeaf(_data?: WorkspaceWindowInitData): WorkspaceLeaf {
+  public openPopoutLeaf(_data?: WorkspaceWindowInitDataOriginal): WorkspaceLeaf {
     const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
@@ -256,7 +261,7 @@ export class Workspace extends Events {
     this._layoutReadyCallbacks = [];
   }
 
-  public splitActiveLeaf(_direction?: SplitDirection): WorkspaceLeaf {
+  public splitActiveLeaf(_direction?: SplitDirectionOriginal): WorkspaceLeaf {
     const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;

@@ -1,7 +1,7 @@
 import type {
   App as AppOriginal,
-  DataAdapter,
-  UserEvent
+  DataAdapter as DataAdapterOriginal,
+  UserEvent as UserEventOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
@@ -16,7 +16,7 @@ import { Workspace } from './Workspace.ts';
 export class App {
   public fileManager: FileManager;
   public keymap: Keymap;
-  public lastEvent: null | UserEvent = null;
+  public lastEvent: null | UserEventOriginal = null;
   public metadataCache: MetadataCache;
   public scope: Scope;
   public vault: Vault;
@@ -24,7 +24,7 @@ export class App {
 
   private readonly _localStorage = new Map<string, unknown>();
 
-  protected constructor(adapter: DataAdapter, _appId: string) {
+  protected constructor(adapter: DataAdapterOriginal, _appId: string) {
     this.vault = Vault.create2__(adapter);
     this.fileManager = FileManager.create__(this);
     this.keymap = Keymap.create__();
@@ -33,7 +33,7 @@ export class App {
     this.workspace = Workspace.create2__(this, createDiv());
   }
 
-  public static create__(adapter: DataAdapter, appId: string): App {
+  public static create__(adapter: DataAdapterOriginal, appId: string): App {
     return strictMock(new App(adapter, appId));
   }
 

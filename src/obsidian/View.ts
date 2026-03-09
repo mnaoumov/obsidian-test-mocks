@@ -1,10 +1,10 @@
 import type {
-  DataAdapter,
-  IconName,
-  Menu,
-  Scope,
+  DataAdapter as DataAdapterOriginal,
+  IconName as IconNameOriginal,
+  Menu as MenuOriginal,
+  Scope as ScopeOriginal,
   View as ViewOriginal,
-  ViewStateResult
+  ViewStateResult as ViewStateResultOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
@@ -21,10 +21,10 @@ import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 export abstract class View extends Component {
   public app: App;
   public containerEl: HTMLElement;
-  public icon: IconName = '';
+  public icon: IconNameOriginal = '';
   public leaf: WorkspaceLeaf;
   public navigation = true;
-  public scope: null | Scope = null;
+  public scope: null | ScopeOriginal = null;
 
   private _ephemeralState: unknown = {};
 
@@ -32,7 +32,7 @@ export abstract class View extends Component {
 
   public constructor(leaf: WorkspaceLeaf) {
     super();
-    this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapter, '');
+    this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapterOriginal, '');
     this.containerEl = createDiv();
     this.leaf = leaf;
     return strictMock(this);
@@ -48,7 +48,7 @@ export abstract class View extends Component {
     return this._ephemeralState as Record<string, unknown>;
   }
 
-  public getIcon(): IconName {
+  public getIcon(): IconNameOriginal {
     return this.icon;
   }
 
@@ -58,7 +58,7 @@ export abstract class View extends Component {
 
   public abstract getViewType(): string;
 
-  public onPaneMenu(_menu: Menu, _source: string): void {
+  public onPaneMenu(_menu: MenuOriginal, _source: string): void {
     noop();
   }
 
@@ -71,7 +71,7 @@ export abstract class View extends Component {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
-  public async setState(state: unknown, _result: ViewStateResult): Promise<void> {
+  public async setState(state: unknown, _result: ViewStateResultOriginal): Promise<void> {
     this._state = state;
   }
 

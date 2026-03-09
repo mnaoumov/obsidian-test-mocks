@@ -1,9 +1,9 @@
 // eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
 // dprint-ignore -- Alias sort order differs from original name order.
 import type {
+  MenuItem as MenuItemOriginal,
   Menu as MenuOriginal,
-  MenuPositionDef,
-  MenuItem as ObsidianMenuItem
+  MenuPositionDef as MenuPositionDefOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
@@ -30,10 +30,10 @@ export class Menu extends Component {
     return Menu.create__();
   }
 
-  public addItem(cb: (item: ObsidianMenuItem) => unknown): this {
+  public addItem(cb: (item: MenuItemOriginal) => unknown): this {
     const item = MenuItem.create__(this);
     this.items__.push(item);
-    cb(castTo<ObsidianMenuItem>(item));
+    cb(castTo<MenuItemOriginal>(item));
     return this;
   }
 
@@ -69,7 +69,7 @@ export class Menu extends Component {
     return this;
   }
 
-  public showAtPosition(_position: MenuPositionDef, _doc?: Document): this {
+  public showAtPosition(_position: MenuPositionDefOriginal, _doc?: Document): this {
     return this;
   }
 }

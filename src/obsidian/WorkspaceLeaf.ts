@@ -1,9 +1,9 @@
 import type {
-  HoverPopover,
-  IconName,
-  OpenViewState,
-  View,
-  ViewState,
+  HoverPopover as HoverPopoverOriginal,
+  IconName as IconNameOriginal,
+  OpenViewState as OpenViewStateOriginal,
+  View as ViewOriginal,
+  ViewState as ViewStateOriginal,
   WorkspaceLeaf as WorkspaceLeafOriginal
 } from 'obsidian';
 
@@ -17,10 +17,10 @@ import { WorkspaceItem } from './WorkspaceItem.ts';
 let nextLeafId = 1;
 
 export class WorkspaceLeaf extends WorkspaceItem {
-  public hoverPopover: HoverPopover | null = null;
+  public hoverPopover: HoverPopoverOriginal | null = null;
   public id__: string;
   public readonly isDeferred = false;
-  public view: null | View = null;
+  public view: null | ViewOriginal = null;
 
   public get file__(): null | TFile {
     return this._file__;
@@ -31,7 +31,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   private _group: null | string = null;
   private _pinned = false;
 
-  private _viewState: ViewState = { type: '' };
+  private _viewState: ViewStateOriginal = { type: '' };
 
   protected constructor(_app: App, id?: string) {
     super();
@@ -65,14 +65,14 @@ export class WorkspaceLeaf extends WorkspaceItem {
     return this._group;
   }
 
-  public getIcon(): IconName {
+  public getIcon(): IconNameOriginal {
     if (this.view) {
       return this.view.getIcon();
     }
     return '';
   }
 
-  public getViewState(): ViewState {
+  public getViewState(): ViewStateOriginal {
     return { ...this._viewState };
   }
 
@@ -91,7 +91,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
-  public async openFile(file: TFile, _openState?: OpenViewState): Promise<void> {
+  public async openFile(file: TFile, _openState?: OpenViewStateOriginal): Promise<void> {
     this._file__ = file;
   }
 
@@ -112,7 +112,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
-  public async setViewState(viewState: ViewState, eState?: Record<string, unknown>): Promise<void> {
+  public async setViewState(viewState: ViewStateOriginal, eState?: Record<string, unknown>): Promise<void> {
     this._viewState = { ...viewState };
     if (eState) {
       this._ephemeralState = { ...eState };

@@ -1,6 +1,6 @@
-import type { TooltipOptions } from 'obsidian';
+import type { TooltipOptions as TooltipOptionsOriginal } from 'obsidian';
 
-export function displayTooltip(el: HTMLElement, content: DocumentFragment | string, _options?: TooltipOptions): void {
+export function displayTooltip(el: HTMLElement, content: DocumentFragment | string, _options?: TooltipOptionsOriginal): void {
   el.createEl('span', {
     cls: 'tooltip',
     text: content

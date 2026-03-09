@@ -1,6 +1,6 @@
 import type {
   Component as ComponentOriginal,
-  EventRef
+  EventRef as EventRefOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
@@ -10,7 +10,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 export class Component {
   public children__: Component[] = [];
   public cleanups__: (() => unknown)[] = [];
-  public events__: EventRef[] = [];
+  public events__: EventRefOriginal[] = [];
   public intervals__: number[] = [];
   public loaded__ = false;
 
@@ -81,7 +81,7 @@ export class Component {
     });
   }
 
-  public registerEvent(ref: EventRef): void {
+  public registerEvent(ref: EventRefOriginal): void {
     this.events__.push(ref);
   }
 

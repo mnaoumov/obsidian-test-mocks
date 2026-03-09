@@ -1,7 +1,6 @@
 import type {
-  EventRef,
-  Events as EventsOriginal,
-  Events as ObsidianEvents
+  EventRef as EventRefOriginal,
+  Events as EventsOriginal
 } from 'obsidian';
 
 import type { EventsEntry } from '../internal/types.ts';
@@ -33,16 +32,16 @@ export class Events {
     this._[name] = entries.filter((entry) => entry.fn !== callback);
   }
 
-  public offref(ref: EventRef): void {
+  public offref(ref: EventRefOriginal): void {
     const entry = castTo<EventsEntry>(ref);
     // eslint-disable-next-line @typescript-eslint/unbound-method -- entry.fn is a stored function reference, not a class method.
     const fn = entry.fn as (...data: unknown[]) => unknown;
     this.off(entry.name, fn);
   }
 
-  public on(name: string, callback: (...data: unknown[]) => unknown, ctx?: unknown): EventRef {
+  public on(name: string, callback: (...data: unknown[]) => unknown, ctx?: unknown): EventRefOriginal {
     this._[name] ??= [];
-    const self = castTo<ObsidianEvents>(this);
+    const self = castTo<EventsOriginal>(this);
     this._[name].push({ ctx, e: self, fn: callback, name });
     return { e: self, fn: callback, name };
   }
@@ -57,7 +56,7 @@ export class Events {
     }
   }
 
-  public tryTrigger(evt: EventRef, args: unknown[]): void {
+  public tryTrigger(evt: EventRefOriginal, args: unknown[]): void {
     const entry = castTo<EventsEntry>(evt);
     entry.fn.call(entry.e, ...args);
   }
