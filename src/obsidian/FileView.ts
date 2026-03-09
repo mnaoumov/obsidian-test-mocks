@@ -6,7 +6,10 @@ import type {
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -41,19 +44,16 @@ export abstract class FileView extends ItemView {
     noop();
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async onLoadFile(_file: TFile): Promise<void> {
-    noop();
+    await noopAsync();
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async onRename(_file: TFile): Promise<void> {
-    noop();
+    await noopAsync();
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async onUnloadFile(_file: TFile): Promise<void> {
-    noop();
+    await noopAsync();
   }
 
   public override async setState(state: unknown, result: ViewStateResult): Promise<void> {
