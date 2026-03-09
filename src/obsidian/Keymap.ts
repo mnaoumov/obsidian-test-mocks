@@ -7,9 +7,9 @@ import type {
 
 import type { Scope } from './Scope.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class Keymap {
   private readonly _scopeStack: Scope[] = [];

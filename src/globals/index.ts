@@ -1,7 +1,7 @@
-import type { ObsidianGlobal } from '../internal/Types.ts';
+import type { ObsidianGlobal } from '../internal/types.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { assertGenericObject } from '../internal/TypeGuards.ts';
+import { castTo } from '../internal/cast.ts';
+import { assertGenericObject } from '../internal/type-guards.ts';
 import {
   contains,
   findLastIndex,

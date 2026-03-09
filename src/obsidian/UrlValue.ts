@@ -1,6 +1,6 @@
 import type { UrlValue as UrlValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { StringValue } from './StringValue.ts';
 
 export class UrlValue extends StringValue {

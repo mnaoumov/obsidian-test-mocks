@@ -3,7 +3,7 @@ import type {
   WorkspaceItem as WorkspaceItemOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {

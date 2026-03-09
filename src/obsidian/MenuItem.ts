@@ -5,8 +5,8 @@ import type {
 
 import type { Menu } from './Menu.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class MenuItem {
   public _checked: boolean | null = null;

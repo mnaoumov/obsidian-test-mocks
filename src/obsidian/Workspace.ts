@@ -14,13 +14,13 @@ import type {
 import type {
   EnsureSideLeafOptions,
   SetActiveLeafParams
-} from '../internal/Types.ts';
+} from '../internal/types.ts';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { debounce } from './debounce.ts';
 import { Events } from './Events.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';

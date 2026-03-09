@@ -1,4 +1,4 @@
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 
 export interface DomElementInfoLike {
   attr?: Record<string, boolean | null | number | string>;

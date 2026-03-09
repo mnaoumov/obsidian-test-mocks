@@ -12,8 +12,8 @@ import type {
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 const DEFAULT_LIMIT = 100;

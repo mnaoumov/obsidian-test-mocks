@@ -1,6 +1,6 @@
 import type { NotNullValue as NotNullValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { Value } from './Value.ts';
 
 export abstract class NotNullValue extends Value {

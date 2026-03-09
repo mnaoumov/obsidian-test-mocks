@@ -1,6 +1,6 @@
 import type { PrimitiveValue as PrimitiveValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export abstract class PrimitiveValue<T> extends NotNullValue {

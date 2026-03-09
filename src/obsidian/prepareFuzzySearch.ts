@@ -1,4 +1,4 @@
-import { ensureNonNullable } from '../internal/TypeGuards.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 
 const CONSECUTIVE_MATCH_SCORE = 2;
 const WORD_BOUNDARY_SCORE = 3;

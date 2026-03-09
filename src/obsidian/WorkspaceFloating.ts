@@ -1,7 +1,7 @@
 import type { WorkspaceFloating as WorkspaceFloatingOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceFloating extends WorkspaceParent {

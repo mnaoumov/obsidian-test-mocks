@@ -7,8 +7,8 @@ import type {
 
 import type { BasesView } from './BasesView.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { NullValue } from './NullValue.ts';
 
 export class BasesViewConfig {

@@ -1,6 +1,6 @@
 import type { StringValue as StringValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class StringValue extends PrimitiveValue<string> {

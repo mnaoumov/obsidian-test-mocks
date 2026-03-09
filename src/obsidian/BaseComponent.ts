@@ -1,6 +1,6 @@
 import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 
 export abstract class BaseComponent {

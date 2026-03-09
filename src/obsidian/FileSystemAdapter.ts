@@ -1,8 +1,8 @@
 import type { FileSystemAdapter as FileSystemAdapterOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
-import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class FileSystemAdapter extends InMemoryAdapter {
   protected constructor(basePath: string) {

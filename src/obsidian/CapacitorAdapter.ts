@@ -1,8 +1,8 @@
 import type { CapacitorAdapter as CapacitorAdapterOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
-import { InMemoryAdapter } from '../internal/InMemoryAdapter.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class CapacitorAdapter extends InMemoryAdapter {
   protected constructor(basePath: string, _fs: unknown) {

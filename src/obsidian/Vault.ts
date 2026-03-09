@@ -6,8 +6,8 @@ import type {
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';

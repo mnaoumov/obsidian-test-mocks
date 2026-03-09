@@ -11,9 +11,9 @@ import type {
   EditorTransaction
 } from 'obsidian';
 
-import type { CoordsLeftTop } from '../internal/Types.ts';
+import type { CoordsLeftTop } from '../internal/types.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 
 export abstract class Editor {

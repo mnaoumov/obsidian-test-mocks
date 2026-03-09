@@ -16,8 +16,8 @@ import type {
 
 import type { BaseComponent } from './BaseComponent.ts';
 
-import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { castTo } from '../internal/cast.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { ButtonComponent as MockButtonComponent } from './ButtonComponent.ts';
 import { ColorComponent as MockColorComponent } from './ColorComponent.ts';
 import { DropdownComponent as MockDropdownComponent } from './DropdownComponent.ts';

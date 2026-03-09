@@ -1,6 +1,6 @@
 import type { BasesView as BasesViewOriginal } from 'obsidian';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { Component } from './Component.ts';
 
 export abstract class BasesView extends Component {

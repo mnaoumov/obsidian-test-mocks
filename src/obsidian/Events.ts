@@ -4,9 +4,9 @@ import type {
   Events as ObsidianEvents
 } from 'obsidian';
 
-import type { EventsEntry } from '../internal/Types.ts';
+import type { EventsEntry } from '../internal/types.ts';
 
-import { castTo } from '../internal/Cast.ts';
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 
 export class Events {
