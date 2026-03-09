@@ -14,11 +14,13 @@ export class DateValue extends NotNullValue {
   public constructor() {
     super();
     this.value__ = momentFn();
-    this.constructor__();
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
   }
 
   public static create__(): DateValue {
-    return strictMock(new DateValue());
+    return new DateValue();
   }
 
   public override asOriginalType__(): DateValueOriginal {

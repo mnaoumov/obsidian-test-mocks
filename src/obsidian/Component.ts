@@ -16,11 +16,13 @@ export class Component {
 
   public constructor() {
     noop();
-    this.constructor__();
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
   }
 
   public static create__(): Component {
-    return strictMock(new Component());
+    return new Component();
   }
 
   public addChild<T extends Component>(component: T): T {

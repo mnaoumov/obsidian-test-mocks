@@ -20,11 +20,13 @@ export class SettingGroup {
   public constructor(containerEl: HTMLElement) {
     this.listEl__ = createDiv();
     containerEl.appendChild(this.listEl__);
-    this.constructor__(containerEl);
+    const self = strictMock(this);
+    self.constructor__(containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): SettingGroup {
-    return strictMock(new SettingGroup(containerEl));
+    return new SettingGroup(containerEl);
   }
 
   public addClass(cls: string): this {

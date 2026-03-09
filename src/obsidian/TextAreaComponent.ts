@@ -8,11 +8,13 @@ import { AbstractTextComponent } from './AbstractTextComponent.ts';
 export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement> {
   public constructor(_containerEl: HTMLElement) {
     super(createEl('textarea'));
-    this.constructor__(_containerEl);
+    const self = strictMock(this);
+    self.constructor__(_containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): TextAreaComponent {
-    return strictMock(new TextAreaComponent(containerEl));
+    return new TextAreaComponent(containerEl);
   }
 
   public override asOriginalType__(): TextAreaComponentOriginal {

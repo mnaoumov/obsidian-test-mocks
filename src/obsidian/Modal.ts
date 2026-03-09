@@ -25,11 +25,13 @@ export class Modal {
     this.modalEl = createDiv();
     this.scope = Scope.create__();
     this.titleEl = createDiv();
-    this.constructor__(app);
+    const self = strictMock(this);
+    self.constructor__(app);
+    return self;
   }
 
   public static create__(app: App): Modal {
-    return strictMock(new Modal(app));
+    return new Modal(app);
   }
 
   public asOriginalType__(): ModalOriginal {

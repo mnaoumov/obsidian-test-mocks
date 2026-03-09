@@ -15,11 +15,13 @@ export class ButtonComponent extends BaseComponent {
   public constructor(containerEl: HTMLElement) {
     super();
     this.buttonEl = containerEl.createEl('button');
-    this.constructor__(containerEl);
+    const self = strictMock(this);
+    self.constructor__(containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): ButtonComponent {
-    return strictMock(new ButtonComponent(containerEl));
+    return new ButtonComponent(containerEl);
   }
 
   public override asOriginalType__(): ButtonComponentOriginal {

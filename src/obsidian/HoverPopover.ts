@@ -6,6 +6,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
 
@@ -16,10 +17,13 @@ export class HoverPopover extends Component {
   public constructor(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null) {
     super();
     this.hoverEl = createDiv();
+    const self = strictMock(this);
+    self.constructor2__(_parent, _targetEl, _waitTime, _staticPos);
+    return self;
   }
 
   public static create2__(parent: HoverParentOriginal, targetEl: HTMLElement | null, waitTime?: number, staticPos?: null): HoverPopover {
-    return strictMock(new HoverPopover(parent, targetEl, waitTime, staticPos));
+    return new HoverPopover(parent, targetEl, waitTime, staticPos);
   }
 
   public static forLeaf__(_leaf: WorkspaceLeafOriginal): HoverPopover | null {
@@ -28,5 +32,9 @@ export class HoverPopover extends Component {
 
   public override asOriginalType__(): HoverPopoverOriginal {
     return castTo<HoverPopoverOriginal>(this);
+  }
+
+  public constructor2__(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null): void {
+    noop();
   }
 }

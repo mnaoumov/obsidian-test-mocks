@@ -1,6 +1,7 @@
 import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { TextComponent } from './TextComponent.ts';
 
@@ -11,14 +12,21 @@ export class MomentFormatComponent extends TextComponent {
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
     this.sampleEl = createDiv();
+    const self = strictMock(this);
+    self.constructor2__(containerEl);
+    return self;
   }
 
   public static override create__(containerEl: HTMLElement): MomentFormatComponent {
-    return strictMock(new MomentFormatComponent(containerEl));
+    return new MomentFormatComponent(containerEl);
   }
 
   public override asOriginalType__(): MomentFormatComponentOriginal {
     return castTo<MomentFormatComponentOriginal>(this);
+  }
+
+  public constructor2__(_containerEl: HTMLElement): void {
+    noop();
   }
 
   public setDefaultFormat(defaultFormat: string): this {

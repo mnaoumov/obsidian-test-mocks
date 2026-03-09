@@ -8,11 +8,13 @@ import { PrimitiveValue } from './PrimitiveValue.ts';
 export class BooleanValue extends PrimitiveValue<boolean> {
   public constructor(value = false) {
     super(value);
-    this.constructor__(value);
+    const self = strictMock(this);
+    self.constructor__(value);
+    return self;
   }
 
   public static create__(value = false): BooleanValue {
-    return strictMock(new BooleanValue(value));
+    return new BooleanValue(value);
   }
 
   public override asOriginalType__(): BooleanValueOriginal {

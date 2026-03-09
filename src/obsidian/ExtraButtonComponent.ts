@@ -12,11 +12,13 @@ export class ExtraButtonComponent extends BaseComponent {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.extraSettingsEl = createDiv();
-    this.constructor__(_containerEl);
+    const self = strictMock(this);
+    self.constructor__(_containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): ExtraButtonComponent {
-    return strictMock(new ExtraButtonComponent(containerEl));
+    return new ExtraButtonComponent(containerEl);
   }
 
   public override asOriginalType__(): ExtraButtonComponentOriginal {
