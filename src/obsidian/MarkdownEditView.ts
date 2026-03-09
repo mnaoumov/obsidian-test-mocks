@@ -5,6 +5,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
@@ -13,7 +14,6 @@ import { FileSystemAdapter } from './FileSystemAdapter.ts';
 class MockEditor extends Editor {}
 
 export class MarkdownEditView {
-  private static insideCreate__ = false;
   public app: App;
   public editor__: Editor;
   public hoverPopover: HoverPopoverOriginal | null = null;
@@ -23,16 +23,11 @@ export class MarkdownEditView {
   public constructor() {
     this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapterOriginal, '');
     this.editor__ = new MockEditor();
-    if (new.target === MarkdownEditView && !MarkdownEditView.insideCreate__) {
-      return MarkdownEditView.create__();
-    }
+    this.constructor__();
   }
 
   public static create__(): MarkdownEditView {
-    MarkdownEditView.insideCreate__ = true;
-    const instance = strictMock(new MarkdownEditView());
-    MarkdownEditView.insideCreate__ = false;
-    return instance;
+    return strictMock(new MarkdownEditView());
   }
 
   public applyScroll(scroll: number): void {
@@ -45,6 +40,10 @@ export class MarkdownEditView {
 
   public clear(): void {
     this.editor__.setValue('');
+  }
+
+  public constructor__(): void {
+    noop();
   }
 
   public get(): string {

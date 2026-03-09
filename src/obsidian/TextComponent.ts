@@ -1,11 +1,11 @@
 import type { TextComponent as TextComponentOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
-  private static insideCreate__ = false;
   public eventListeners__: Record<string, ((...args: unknown[]) => void)[]> = {};
 
   public constructor(_containerEl: HTMLElement) {
@@ -20,20 +20,19 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       }
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
-    if (new.target === TextComponent && !TextComponent.insideCreate__) {
-      return TextComponent.create__(_containerEl);
-    }
+    this.constructor__(_containerEl);
   }
 
   public static create__(containerEl: HTMLElement): TextComponent {
-    TextComponent.insideCreate__ = true;
-    const instance = strictMock(new TextComponent(containerEl));
-    TextComponent.insideCreate__ = false;
-    return instance;
+    return strictMock(new TextComponent(containerEl));
   }
 
   public override asOriginalType__(): TextComponentOriginal {
     return castTo<TextComponentOriginal>(this);
+  }
+
+  public constructor__(_containerEl: HTMLElement): void {
+    noop();
   }
 
   public override onChange(cb: (value: string) => unknown): this {

@@ -1,11 +1,11 @@
 import type { DropdownComponent as DropdownComponentOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class DropdownComponent extends ValueComponent<string> {
-  private static insideCreate__ = false;
   public selectEl: HTMLSelectElement;
 
   private changeCallback?: () => void;
@@ -13,16 +13,11 @@ export class DropdownComponent extends ValueComponent<string> {
   public constructor(containerEl: HTMLElement) {
     super();
     this.selectEl = containerEl.createEl('select');
-    if (new.target === DropdownComponent && !DropdownComponent.insideCreate__) {
-      return DropdownComponent.create__(containerEl);
-    }
+    this.constructor__(containerEl);
   }
 
   public static create__(containerEl: HTMLElement): DropdownComponent {
-    DropdownComponent.insideCreate__ = true;
-    const instance = strictMock(new DropdownComponent(containerEl));
-    DropdownComponent.insideCreate__ = false;
-    return instance;
+    return strictMock(new DropdownComponent(containerEl));
   }
 
   public addOption(value: string, display: string): this {
@@ -42,6 +37,10 @@ export class DropdownComponent extends ValueComponent<string> {
 
   public override asOriginalType__(): DropdownComponentOriginal {
     return castTo<DropdownComponentOriginal>(this);
+  }
+
+  public constructor__(_containerEl: HTMLElement): void {
+    noop();
   }
 
   public override getValue(): string {

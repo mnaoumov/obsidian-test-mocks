@@ -4,11 +4,11 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ToggleComponent extends ValueComponent<boolean> {
-  private static insideCreate__ = false;
   public toggleEl: HTMLElement;
 
   private _onChange: ((value: boolean) => unknown) | null = null;
@@ -17,20 +17,19 @@ export class ToggleComponent extends ValueComponent<boolean> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.toggleEl = createDiv();
-    if (new.target === ToggleComponent && !ToggleComponent.insideCreate__) {
-      return ToggleComponent.create__(_containerEl);
-    }
+    this.constructor__(_containerEl);
   }
 
   public static create__(containerEl: HTMLElement): ToggleComponent {
-    ToggleComponent.insideCreate__ = true;
-    const instance = strictMock(new ToggleComponent(containerEl));
-    ToggleComponent.insideCreate__ = false;
-    return instance;
+    return strictMock(new ToggleComponent(containerEl));
   }
 
   public override asOriginalType__(): ToggleComponentOriginal {
     return castTo<ToggleComponentOriginal>(this);
+  }
+
+  public constructor__(_containerEl: HTMLElement): void {
+    noop();
   }
 
   public override getValue(): boolean {

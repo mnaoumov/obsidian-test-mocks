@@ -5,6 +5,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -25,7 +26,6 @@ const HEX_SLICE_B_END = 6;
 /* eslint-enable no-magic-numbers -- Re-enable after constants. */
 
 export class ColorComponent extends ValueComponent<string> {
-  private static insideCreate__ = false;
   public colorPickerEl__: HTMLInputElement;
 
   private _onChange?: (value: string) => unknown;
@@ -35,20 +35,19 @@ export class ColorComponent extends ValueComponent<string> {
     super();
     this.colorPickerEl__ = containerEl.createEl('input');
     this.colorPickerEl__.type = 'color';
-    if (new.target === ColorComponent && !ColorComponent.insideCreate__) {
-      return ColorComponent.create__(containerEl);
-    }
+    this.constructor__(containerEl);
   }
 
   public static create__(containerEl: HTMLElement): ColorComponent {
-    ColorComponent.insideCreate__ = true;
-    const instance = strictMock(new ColorComponent(containerEl));
-    ColorComponent.insideCreate__ = false;
-    return instance;
+    return strictMock(new ColorComponent(containerEl));
   }
 
   public override asOriginalType__(): ColorComponentOriginal {
     return castTo<ColorComponentOriginal>(this);
+  }
+
+  public constructor__(_containerEl: HTMLElement): void {
+    noop();
   }
 
   public override getValue(): string {
