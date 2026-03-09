@@ -8,6 +8,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ToggleComponent extends ValueComponent<boolean> {
+  private static insideCreate__ = false;
   public toggleEl: HTMLElement;
 
   private _onChange: ((value: boolean) => unknown) | null = null;
@@ -16,10 +17,16 @@ export class ToggleComponent extends ValueComponent<boolean> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.toggleEl = createDiv();
+    if (new.target === ToggleComponent && !ToggleComponent.insideCreate__) {
+      return ToggleComponent.create__(_containerEl);
+    }
   }
 
   public static create__(containerEl: HTMLElement): ToggleComponent {
-    return strictMock(new ToggleComponent(containerEl));
+    ToggleComponent.insideCreate__ = true;
+    const instance = strictMock(new ToggleComponent(containerEl));
+    ToggleComponent.insideCreate__ = false;
+    return instance;
   }
 
   public override asOriginalType__(): ToggleComponentOriginal {

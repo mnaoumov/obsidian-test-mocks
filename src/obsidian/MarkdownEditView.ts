@@ -13,6 +13,7 @@ import { FileSystemAdapter } from './FileSystemAdapter.ts';
 class MockEditor extends Editor {}
 
 export class MarkdownEditView {
+  private static insideCreate__ = false;
   public app: App;
   public editor__: Editor;
   public hoverPopover: HoverPopoverOriginal | null = null;
@@ -22,10 +23,16 @@ export class MarkdownEditView {
   public constructor() {
     this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapterOriginal, '');
     this.editor__ = new MockEditor();
+    if (new.target === MarkdownEditView && !MarkdownEditView.insideCreate__) {
+      return MarkdownEditView.create__();
+    }
   }
 
   public static create__(): MarkdownEditView {
-    return strictMock(new MarkdownEditView());
+    MarkdownEditView.insideCreate__ = true;
+    const instance = strictMock(new MarkdownEditView());
+    MarkdownEditView.insideCreate__ = false;
+    return instance;
   }
 
   public applyScroll(scroll: number): void {

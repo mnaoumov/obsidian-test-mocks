@@ -31,6 +31,7 @@ import { TextComponent as MockTextComponent } from './TextComponent.ts';
 import { ToggleComponent as MockToggleComponent } from './ToggleComponent.ts';
 
 export class Setting {
+  private static insideCreate__ = false;
   public components: BaseComponent[] = [];
   public controlEl: HTMLElement;
   public descEl: HTMLElement;
@@ -49,10 +50,16 @@ export class Setting {
     this.infoEl.appendChild(this.descEl);
     this.settingEl.appendChild(this.controlEl);
     containerEl.appendChild(this.settingEl);
+    if (new.target === Setting && !Setting.insideCreate__) {
+      return Setting.create__(containerEl);
+    }
   }
 
   public static create__(containerEl: HTMLElement): Setting {
-    return strictMock(new Setting(containerEl));
+    Setting.insideCreate__ = true;
+    const instance = strictMock(new Setting(containerEl));
+    Setting.insideCreate__ = false;
+    return instance;
   }
 
   public addButton(cb: (component: ButtonComponentOriginal) => unknown): this {

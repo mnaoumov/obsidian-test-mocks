@@ -8,6 +8,7 @@ import { ValueComponent } from './ValueComponent.ts';
 const DEFAULT_MAX = 100;
 
 export class SliderComponent extends ValueComponent<number> {
+  private static insideCreate__ = false;
   public sliderEl: HTMLInputElement;
 
   private _max = DEFAULT_MAX;
@@ -20,10 +21,16 @@ export class SliderComponent extends ValueComponent<number> {
     super();
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
+    if (new.target === SliderComponent && !SliderComponent.insideCreate__) {
+      return SliderComponent.create__(_containerEl);
+    }
   }
 
   public static create__(containerEl: HTMLElement): SliderComponent {
-    return strictMock(new SliderComponent(containerEl));
+    SliderComponent.insideCreate__ = true;
+    const instance = strictMock(new SliderComponent(containerEl));
+    SliderComponent.insideCreate__ = false;
+    return instance;
   }
 
   public override asOriginalType__(): SliderComponentOriginal {

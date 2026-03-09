@@ -8,6 +8,7 @@ import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export class Component {
+  private static insideCreate__ = false;
   public children__: Component[] = [];
   public cleanups__: (() => unknown)[] = [];
   public events__: EventRefOriginal[] = [];
@@ -16,10 +17,16 @@ export class Component {
 
   public constructor() {
     noop();
+    if (new.target === Component && !Component.insideCreate__) {
+      return Component.create__();
+    }
   }
 
   public static create__(): Component {
-    return strictMock(new Component());
+    Component.insideCreate__ = true;
+    const instance = strictMock(new Component());
+    Component.insideCreate__ = false;
+    return instance;
   }
 
   public addChild<T extends Component>(component: T): T {
