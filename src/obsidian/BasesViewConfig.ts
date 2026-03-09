@@ -62,17 +62,14 @@ export class BasesViewConfig {
     this.config.set(key, value);
   }
 
-  /** Mock-only. Sets the display name for a property. Not part of the Obsidian API. */
   public setDisplayName__(propertyId: BasesPropertyIdOriginal, displayName: string): void {
     this.displayNames.set(propertyId, displayName);
   }
 
-  /** Mock-only. Sets the property order. Not part of the Obsidian API. */
   public setOrder__(order: BasesPropertyIdOriginal[]): void {
     this.order = order;
   }
 
-  /** Mock-only. Sets the sort config. Not part of the Obsidian API. */
   public setSort__(sort: BasesSortConfigOriginal[]): void {
     this.sort = sort;
   }

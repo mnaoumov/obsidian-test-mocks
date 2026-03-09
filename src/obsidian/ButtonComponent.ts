@@ -8,7 +8,6 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
-  /** Mock-only. Tracks all created instances for test assertions. Not part of the Obsidian API. */
   public static instances__: ButtonComponent[] = [];
   public buttonEl: HTMLButtonElement;
   private clickHandler?: (evt: MouseEvent) => unknown;
@@ -67,7 +66,6 @@ export class ButtonComponent extends BaseComponent {
     return this;
   }
 
-  /** Mock-only. Simulates a button click by invoking the registered click handler. Not part of the Obsidian API. */
   public simulateClick__(): void {
     this.clickHandler?.(new Event('click') as MouseEvent);
   }

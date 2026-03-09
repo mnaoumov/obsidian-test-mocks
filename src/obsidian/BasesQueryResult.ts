@@ -42,17 +42,14 @@ export class BasesQueryResult {
     throw new Error('getSummaryValue is not implemented in mock');
   }
 
-  /** Mock-only. Sets the data entries. Not part of the Obsidian API. */
   public setData__(data: BasesEntry[]): void {
     this.data = data;
   }
 
-  /** Mock-only. Sets the grouped data. Not part of the Obsidian API. */
   public setGroupedData__(groupedData: BasesEntryGroup[]): void {
     this._groupedData = groupedData;
   }
 
-  /** Mock-only. Sets the properties. Not part of the Obsidian API. */
   public setProperties__(properties: BasesPropertyIdOriginal[]): void {
     this._properties = properties;
   }
