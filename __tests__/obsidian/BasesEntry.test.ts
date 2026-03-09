@@ -32,14 +32,14 @@ describe('BasesEntry', () => {
   it('should return value set via setValue__', () => {
     const entry = BasesEntry.create__(undefined, mockFile);
     const value = new StringValue('test');
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+
     entry.setValue__('prop.name' as BasesPropertyId, value);
     expect(entry.getValue('prop.name' as BasesPropertyId)).toBe(value);
   });
 
   it('should allow setting null values', () => {
     const entry = BasesEntry.create__(undefined, mockFile);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+
     entry.setValue__('prop.name' as BasesPropertyId, null);
     expect(entry.getValue('prop.name' as BasesPropertyId)).toBeNull();
   });

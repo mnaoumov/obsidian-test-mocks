@@ -24,7 +24,7 @@ describe('BasesQueryResult', () => {
   it('should store data via setData__', () => {
     const entry = BasesEntry.create__(undefined, mockFile);
     const result = BasesQueryResult.create__();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+
     result.setData__([entry]);
     expect(result.data).toEqual([entry]);
   });
@@ -32,7 +32,7 @@ describe('BasesQueryResult', () => {
   it('should return groupedData via getter', () => {
     const group = BasesEntryGroup.create__([], undefined);
     const result = BasesQueryResult.create__();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+
     result.setGroupedData__([group]);
     expect(result.groupedData).toEqual([group]);
   });
@@ -40,7 +40,7 @@ describe('BasesQueryResult', () => {
   it('should return properties via getter', () => {
     const props = ['prop.a' as BasesPropertyId, 'prop.b' as BasesPropertyId];
     const result = BasesQueryResult.create__();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+
     result.setProperties__(props);
     expect(result.properties).toEqual(props);
   });
