@@ -17,6 +17,7 @@ import type {
 import type { BaseComponent } from './BaseComponent.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ButtonComponent as MockButtonComponent } from './ButtonComponent.ts';
 import { ColorComponent as MockColorComponent } from './ColorComponent.ts';
@@ -31,7 +32,6 @@ import { TextComponent as MockTextComponent } from './TextComponent.ts';
 import { ToggleComponent as MockToggleComponent } from './ToggleComponent.ts';
 
 export class Setting {
-  private static insideCreate__ = false;
   public components: BaseComponent[] = [];
   public controlEl: HTMLElement;
   public descEl: HTMLElement;
@@ -50,16 +50,11 @@ export class Setting {
     this.infoEl.appendChild(this.descEl);
     this.settingEl.appendChild(this.controlEl);
     containerEl.appendChild(this.settingEl);
-    if (new.target === Setting && !Setting.insideCreate__) {
-      return Setting.create__(containerEl);
-    }
+    this.constructor__(containerEl);
   }
 
   public static create__(containerEl: HTMLElement): Setting {
-    Setting.insideCreate__ = true;
-    const instance = strictMock(new Setting(containerEl));
-    Setting.insideCreate__ = false;
-    return instance;
+    return strictMock(new Setting(containerEl));
   }
 
   public addButton(cb: (component: ButtonComponentOriginal) => unknown): this {
@@ -152,6 +147,10 @@ export class Setting {
   public clear(): this {
     this.components = [];
     return this;
+  }
+
+  public constructor__(_containerEl: HTMLElement): void {
+    noop();
   }
 
   public setClass(cls: string): this {

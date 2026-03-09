@@ -10,25 +10,23 @@ import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export class Events {
-  private static insideCreate__ = false;
   private _: Record<string, EventsEntry[]> = {};
 
   public constructor() {
     noop();
-    if (new.target === Events && !Events.insideCreate__) {
-      return Events.create__();
-    }
+    this.constructor__();
   }
 
   public static create__(): Events {
-    Events.insideCreate__ = true;
-    const instance = strictMock(new Events());
-    Events.insideCreate__ = false;
-    return instance;
+    return strictMock(new Events());
   }
 
   public asOriginalType__(): EventsOriginal {
     return castTo<EventsOriginal>(this);
+  }
+
+  public constructor__(): void {
+    noop();
   }
 
   public off(name: string, callback: (...data: unknown[]) => unknown): void {

@@ -4,31 +4,30 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
-  private static insideCreate__ = false;
   public buttonEl: HTMLButtonElement;
   private clickHandler?: (evt: MouseEvent) => unknown;
 
   public constructor(containerEl: HTMLElement) {
     super();
     this.buttonEl = containerEl.createEl('button');
-    if (new.target === ButtonComponent && !ButtonComponent.insideCreate__) {
-      return ButtonComponent.create__(containerEl);
-    }
+    this.constructor__(containerEl);
   }
 
   public static create__(containerEl: HTMLElement): ButtonComponent {
-    ButtonComponent.insideCreate__ = true;
-    const instance = strictMock(new ButtonComponent(containerEl));
-    ButtonComponent.insideCreate__ = false;
-    return instance;
+    return strictMock(new ButtonComponent(containerEl));
   }
 
   public override asOriginalType__(): ButtonComponentOriginal {
     return castTo<ButtonComponentOriginal>(this);
+  }
+
+  public constructor__(_containerEl: HTMLElement): void {
+    noop();
   }
 
   public onClick(callback: (evt: MouseEvent) => unknown): this {

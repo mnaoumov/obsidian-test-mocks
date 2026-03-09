@@ -1,31 +1,30 @@
 import type { ExtraButtonComponent as ExtraButtonComponentOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ExtraButtonComponent extends BaseComponent {
-  private static insideCreate__ = false;
   public extraSettingsEl: HTMLElement;
   private clickHandler?: () => unknown;
 
   public constructor(_containerEl: HTMLElement) {
     super();
     this.extraSettingsEl = createDiv();
-    if (new.target === ExtraButtonComponent && !ExtraButtonComponent.insideCreate__) {
-      return ExtraButtonComponent.create__(_containerEl);
-    }
+    this.constructor__(_containerEl);
   }
 
   public static create__(containerEl: HTMLElement): ExtraButtonComponent {
-    ExtraButtonComponent.insideCreate__ = true;
-    const instance = strictMock(new ExtraButtonComponent(containerEl));
-    ExtraButtonComponent.insideCreate__ = false;
-    return instance;
+    return strictMock(new ExtraButtonComponent(containerEl));
   }
 
   public override asOriginalType__(): ExtraButtonComponentOriginal {
     return castTo<ExtraButtonComponentOriginal>(this);
+  }
+
+  public constructor__(_containerEl: HTMLElement): void {
+    noop();
   }
 
   public onClick(callback: () => unknown): this {

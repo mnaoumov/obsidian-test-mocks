@@ -8,28 +8,23 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ExtraButtonComponent as MockExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
 
 export class SettingGroup {
-  private static insideCreate__ = false;
   public listEl__: HTMLElement;
 
   public constructor(containerEl: HTMLElement) {
     this.listEl__ = createDiv();
     containerEl.appendChild(this.listEl__);
-    if (new.target === SettingGroup && !SettingGroup.insideCreate__) {
-      return SettingGroup.create__(containerEl);
-    }
+    this.constructor__(containerEl);
   }
 
   public static create__(containerEl: HTMLElement): SettingGroup {
-    SettingGroup.insideCreate__ = true;
-    const instance = strictMock(new SettingGroup(containerEl));
-    SettingGroup.insideCreate__ = false;
-    return instance;
+    return strictMock(new SettingGroup(containerEl));
   }
 
   public addClass(cls: string): this {
@@ -57,6 +52,10 @@ export class SettingGroup {
 
   public asOriginalType__(): SettingGroupOriginal {
     return castTo<SettingGroupOriginal>(this);
+  }
+
+  public constructor__(_containerEl: HTMLElement): void {
+    noop();
   }
 
   public setHeading(text: DocumentFragment | string): this {
