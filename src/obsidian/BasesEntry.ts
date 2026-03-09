@@ -30,7 +30,6 @@ export class BasesEntry implements FormulaContextOriginal {
     return this.values.get(propertyId) ?? null;
   }
 
-  /** Mock-only. Sets a value for a property. Not part of the Obsidian API. */
   public setValue__(propertyId: BasesPropertyIdOriginal, value: null | ValueOriginal): void {
     this.values.set(propertyId, value);
   }

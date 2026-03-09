@@ -5,9 +5,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
-  /** Mock-only. Tracks all created instances for test assertions. Not part of the Obsidian API. */
   public static instances__: TextComponent[] = [];
-  /** Mock-only. Tracks registered event listeners for use with {@link simulateEvent__}. Not part of the Obsidian API. */
   public eventListeners__: Record<string, ((...args: unknown[]) => void)[]> = {};
 
   public constructor(_containerEl: HTMLElement) {
@@ -37,7 +35,6 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     return super.onChange(cb);
   }
 
-  /** Mock-only. Simulates a DOM event on inputEl by invoking registered listeners. Not part of the Obsidian API. */
   public simulateEvent__(event: string, ...args: unknown[]): void {
     for (const handler of this.eventListeners__[event] ?? []) {
       handler(...args);
