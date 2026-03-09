@@ -62,7 +62,7 @@ describe('BasesViewConfig', () => {
     it('should return custom display name when set', () => {
       const config = BasesViewConfig.create__('', '', 'test');
       const propId = 'prop.status' as BasesPropertyId;
-      // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+
       config.setDisplayName__(propId, 'Status');
       expect(config.getDisplayName(propId)).toBe('Status');
     });
@@ -95,7 +95,7 @@ describe('BasesViewConfig', () => {
     it('should return the set order', () => {
       const config = BasesViewConfig.create__('', '', 'test');
       const order = ['prop.a' as BasesPropertyId, 'prop.b' as BasesPropertyId];
-      // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+
       config.setOrder__(order);
       expect(config.getOrder()).toEqual(order);
     });
@@ -110,7 +110,7 @@ describe('BasesViewConfig', () => {
     it('should return the set sort config', () => {
       const config = BasesViewConfig.create__('', '', 'test');
       const sort: BasesSortConfig[] = [{ direction: 'ASC', property: 'prop.a' as BasesPropertyId }];
-      // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing mock-only API
+
       config.setSort__(sort);
       expect(config.getSort()).toEqual(sort);
     });
