@@ -5,6 +5,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ProgressBarComponent extends ValueComponent<number> {
+  private static insideCreate__ = false;
   public progressBar__: HTMLElement;
 
   private _value = 0;
@@ -12,10 +13,16 @@ export class ProgressBarComponent extends ValueComponent<number> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.progressBar__ = createDiv();
+    if (new.target === ProgressBarComponent && !ProgressBarComponent.insideCreate__) {
+      return ProgressBarComponent.create__(_containerEl);
+    }
   }
 
   public static create__(containerEl: HTMLElement): ProgressBarComponent {
-    return strictMock(new ProgressBarComponent(containerEl));
+    ProgressBarComponent.insideCreate__ = true;
+    const instance = strictMock(new ProgressBarComponent(containerEl));
+    ProgressBarComponent.insideCreate__ = false;
+    return instance;
   }
 
   public override asOriginalType__(): ProgressBarComponentOriginal {

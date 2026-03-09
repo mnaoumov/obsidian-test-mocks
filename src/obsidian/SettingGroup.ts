@@ -14,15 +14,22 @@ import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
 
 export class SettingGroup {
+  private static insideCreate__ = false;
   public listEl__: HTMLElement;
 
   public constructor(containerEl: HTMLElement) {
     this.listEl__ = createDiv();
     containerEl.appendChild(this.listEl__);
+    if (new.target === SettingGroup && !SettingGroup.insideCreate__) {
+      return SettingGroup.create__(containerEl);
+    }
   }
 
   public static create__(containerEl: HTMLElement): SettingGroup {
-    return strictMock(new SettingGroup(containerEl));
+    SettingGroup.insideCreate__ = true;
+    const instance = strictMock(new SettingGroup(containerEl));
+    SettingGroup.insideCreate__ = false;
+    return instance;
   }
 
   public addClass(cls: string): this {

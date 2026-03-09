@@ -8,6 +8,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { Scope } from './Scope.ts';
 
 export class Modal {
+  private static insideCreate__ = false;
   public app: App;
   public containerEl: HTMLElement;
   public contentEl: HTMLElement;
@@ -25,10 +26,16 @@ export class Modal {
     this.modalEl = createDiv();
     this.scope = Scope.create__();
     this.titleEl = createDiv();
+    if (new.target === Modal && !Modal.insideCreate__) {
+      return Modal.create__(app);
+    }
   }
 
   public static create__(app: App): Modal {
-    return strictMock(new Modal(app));
+    Modal.insideCreate__ = true;
+    const instance = strictMock(new Modal(app));
+    Modal.insideCreate__ = false;
+    return instance;
   }
 
   public asOriginalType__(): ModalOriginal {

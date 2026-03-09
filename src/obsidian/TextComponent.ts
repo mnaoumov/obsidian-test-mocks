@@ -5,6 +5,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
+  private static insideCreate__ = false;
   public eventListeners__: Record<string, ((...args: unknown[]) => void)[]> = {};
 
   public constructor(_containerEl: HTMLElement) {
@@ -19,10 +20,16 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       }
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
+    if (new.target === TextComponent && !TextComponent.insideCreate__) {
+      return TextComponent.create__(_containerEl);
+    }
   }
 
   public static create__(containerEl: HTMLElement): TextComponent {
-    return strictMock(new TextComponent(containerEl));
+    TextComponent.insideCreate__ = true;
+    const instance = strictMock(new TextComponent(containerEl));
+    TextComponent.insideCreate__ = false;
+    return instance;
   }
 
   public override asOriginalType__(): TextComponentOriginal {
