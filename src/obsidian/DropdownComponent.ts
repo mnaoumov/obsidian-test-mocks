@@ -13,10 +13,13 @@ export class DropdownComponent extends ValueComponent<string> {
 
   private changeCallback?: () => void;
 
-  public constructor(_containerEl: HTMLElement) {
+  public constructor(containerEl: HTMLElement) {
     super();
-    this.selectEl = createEl('select');
-    return strictMock(this);
+    this.selectEl = containerEl.createEl('select');
+  }
+
+  public static create__(containerEl: HTMLElement): DropdownComponent {
+    return strictMock(new DropdownComponent(containerEl));
   }
 
   public addOption(value: string, display: string): this {

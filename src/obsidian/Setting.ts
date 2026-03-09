@@ -73,7 +73,7 @@ export class Setting {
   }
 
   public addDropdown(cb: (component: DropdownComponent) => unknown): this {
-    const comp = new MockDropdownComponent(this.controlEl);
+    const comp = MockDropdownComponent.create__(this.controlEl);
     this.components.push(castTo<BaseComponent>(comp));
     cb(castTo<DropdownComponent>(comp));
     return this;
