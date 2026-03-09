@@ -14,7 +14,7 @@ import type {
 import type { CoordsLeftTop } from '../internal/Types.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 
 export abstract class Editor {
   private _focused = false;

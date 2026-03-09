@@ -7,7 +7,7 @@ import type {
 import type { EventsEntry } from '../internal/Types.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};

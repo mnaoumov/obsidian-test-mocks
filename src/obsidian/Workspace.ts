@@ -19,7 +19,7 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { debounce } from './debounce.ts';
 import { Events } from './Events.ts';

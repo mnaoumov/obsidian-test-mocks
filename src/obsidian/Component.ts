@@ -4,7 +4,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 
 export class Component {
   public _children: Component[] = [];

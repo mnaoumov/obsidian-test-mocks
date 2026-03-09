@@ -7,7 +7,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import { noopAsync } from '../internal/Noop.ts';
+import { noopAsync } from '../internal/noop.ts';
 import { MarkdownRenderChild } from './MarkdownRenderChild.ts';
 
 export abstract class MarkdownRenderer extends MarkdownRenderChild {

@@ -11,7 +11,7 @@ import { castTo } from '../internal/Cast.ts';
 import {
   noop,
   noopAsync
-} from '../internal/Noop.ts';
+} from '../internal/noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';

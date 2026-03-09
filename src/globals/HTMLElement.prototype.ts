@@ -2,7 +2,7 @@ import {
   delegatedOff,
   delegatedOn
 } from '../internal/DelegatedEventRegistry.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 import { ensureNonNullable } from '../internal/TypeGuards.ts';
 
 export function find(this: HTMLElement, selector: string): HTMLElement {

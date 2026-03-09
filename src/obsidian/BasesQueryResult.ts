@@ -9,7 +9,7 @@ import type { BasesEntryGroup } from './BasesEntryGroup.ts';
 import type { QueryController } from './QueryController.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class BasesQueryResult {

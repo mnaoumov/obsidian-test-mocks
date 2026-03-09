@@ -1,4 +1,4 @@
-import { noop } from './Noop.ts';
+import { noop } from './noop.ts';
 
 export type GenericObject = Record<string, unknown>;
 

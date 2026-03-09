@@ -9,7 +9,7 @@ import { castTo } from '../internal/Cast.ts';
 import {
   noop,
   noopAsync
-} from '../internal/Noop.ts';
+} from '../internal/noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';

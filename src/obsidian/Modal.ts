@@ -3,7 +3,7 @@ import type { Modal as ModalOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { noop } from '../internal/Noop.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { Scope } from './Scope.ts';
 
