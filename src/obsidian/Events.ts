@@ -35,7 +35,8 @@ export class Events {
   }
 
   public offref(ref: EventRef): void {
-    this.off(ref.name, ref.fn as (...data: unknown[]) => unknown);
+    const entry = castTo<EventsEntry>(ref);
+    this.off(entry.name, entry.fn as (...data: unknown[]) => unknown);
   }
 
   public on(name: string, callback: (...data: unknown[]) => unknown, ctx?: unknown): EventRef {
@@ -58,6 +59,7 @@ export class Events {
   }
 
   public tryTrigger(evt: EventRef, args: unknown[]): void {
-    evt.fn.call(evt.e, ...args);
+    const entry = castTo<EventsEntry>(evt);
+    entry.fn.call(entry.e, ...args);
   }
 }

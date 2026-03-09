@@ -12,7 +12,7 @@ Comprehensive test mocks for the [Obsidian](https://obsidian.md/) plugin API. Pr
 npm install --save-dev obsidian-test-mocks
 ```
 
-Peer dependencies: `obsidian`, `obsidian-typings`
+Peer dependencies: `obsidian`
 
 ## Entry Points
 
@@ -159,9 +159,7 @@ app.internalPlugins = { manifests: {} };
 
 ## Type Bridging with `asOriginalType__()`
 
-When `obsidian-typings` is installed, its `declare module 'obsidian'` augmentations add dozens of extra properties to obsidian types. This makes the augmented types structurally incompatible with the mock types — you cannot assign a mock `App` to a parameter typed as `import('obsidian').App`.
-
-Every mock class provides an `asOriginalType__()` method that returns the instance typed as its original obsidian counterpart:
+Mock types and original obsidian types are structurally different — you cannot assign a mock `App` to a parameter typed as `import('obsidian').App`. Every mock class provides an `asOriginalType__()` method that returns the instance typed as its original obsidian counterpart:
 
 ```typescript
 import type { App as AppOriginal } from 'obsidian';
@@ -188,7 +186,7 @@ const original = app.asOriginalType__();
 pluginInit(original);
 
 // Fix: assign the missing member before calling
-original.internalPlugins = { manifests: {} };
+(app as Record<string, unknown>)['internalPlugins'] = { manifests: {} };
 pluginInit(original); // works
 ```
 
@@ -216,7 +214,7 @@ it('uses the overridden apiVersion', () => {
 - **Only `obsidian.d.ts`** — mocks expose exactly the public API, nothing extra
 - **Meaningful implementations** — real in-memory behavior (state tracking, callbacks, data storage), not empty stubs
 - **Spyable** — all instance creation routes through `create__()` so `vi.spyOn()` works everywhere
-- **No `obsidian-typings` augmentation in core mocks** — type shapes are inlined to avoid global module augmentation side effects
+- **No `obsidian-typings` dependency** — type shapes are inlined to avoid global module augmentation side effects
 
 ## Support
 
