@@ -13,19 +13,19 @@ import {
 } from './Array.prototype.ts';
 import { combine } from './Array.ts';
 import {
-  off,
-  on
+  off as documentOff,
+  on as documentOn
 } from './Document.prototype.ts';
 import {
-  find,
-  findAll
+  find as documentFragmentFind,
+  findAll as documentFragmentFindAll
 } from './DocumentFragment.prototype.ts';
 import {
   addClass,
   addClasses,
-  find,
-  findAll,
-  findAllSelf,
+  find as elementFind,
+  findAll as elementFindAll,
+  findAllSelf as elementFindAllSelf,
   getAttr,
   getCssPropertyValue,
   getText,
@@ -42,33 +42,33 @@ import {
 import {
   ajax,
   ajaxPromise,
-  createDiv,
-  createEl,
   createFragment,
-  createSpan,
-  createSvg,
   fish,
   fishAll,
+  createDiv as globalCreateDiv,
+  createEl as globalCreateEl,
+  createSpan as globalCreateSpan,
+  createSvg as globalCreateSvg,
   isBoolean,
   nextFrame,
   ready,
   sleep
 } from './functions.ts';
 import {
-  find,
-  findAll,
-  findAllSelf,
   hide,
+  find as htmlElementFind,
+  findAll as htmlElementFindAll,
+  findAllSelf as htmlElementFindAllSelf,
+  off as htmlElementOff,
+  on as htmlElementOn,
+  setCssProps as htmlElementSetCssProps,
+  setCssStyles as htmlElementSetCssStyles,
   innerHeight,
   innerWidth,
   isShown,
-  off,
-  on,
   onClickEvent,
   onNodeInserted,
   onWindowMigrated,
-  setCssProps,
-  setCssStyles,
   show,
   toggle,
   toggleVisibility,
@@ -81,16 +81,16 @@ import {
 import {
   appendText,
   constructorWin,
-  createDiv,
-  createEl,
-  createSpan,
-  createSvg,
   detach,
   doc,
   empty,
   indexOf,
   insertAfter,
   instanceOf,
+  createDiv as nodeCreateDiv,
+  createEl as nodeCreateEl,
+  createSpan as nodeCreateSpan,
+  createSvg as nodeCreateSvg,
   setChildrenInPlace,
   win
 } from './Node.prototype.ts';
@@ -100,13 +100,13 @@ import {
   isEmpty
 } from './Object.ts';
 import {
-  contains as StringPrototype_contains,
-  format
+  format,
+  contains as stringContains
 } from './String.prototype.ts';
 import { isString } from './String.ts';
 import {
-  setCssProps,
-  setCssStyles
+  setCssProps as svgElementSetCssProps,
+  setCssStyles as svgElementSetCssStyles
 } from './SVGElement.prototype.ts';
 
 export function mockObsidianDeclareGlobal(): void {
@@ -144,11 +144,11 @@ export function mockObsidianDeclareGlobal(): void {
 
   if (hasDom()) {
     define(globalThis, {
-      createDiv,
-      createEl,
+      createDiv: globalCreateDiv,
+      createEl: globalCreateEl,
       createFragment,
-      createSpan,
-      createSvg,
+      createSpan: globalCreateSpan,
+      createSvg: globalCreateSvg,
       fish,
       fishAll
     });
@@ -166,17 +166,17 @@ export function mockObsidianDeclareGlobal(): void {
   });
 
   define(String.prototype, {
-    contains: StringPrototype_contains,
+    contains: stringContains,
     format
   });
 
   if (hasDom() && typeof Node !== 'undefined') {
     define(Node.prototype, {
       appendText,
-      createDiv,
-      createEl,
-      createSpan,
-      createSvg,
+      createDiv: nodeCreateDiv,
+      createEl: nodeCreateEl,
+      createSpan: nodeCreateSpan,
+      createSvg: nodeCreateSvg,
       detach,
       empty,
       indexOf,
@@ -194,9 +194,9 @@ export function mockObsidianDeclareGlobal(): void {
     define(Element.prototype, {
       addClass,
       addClasses,
-      find,
-      findAll,
-      findAllSelf,
+      find: elementFind,
+      findAll: elementFindAll,
+      findAllSelf: elementFindAllSelf,
       getAttr,
       getCssPropertyValue,
       getText,
@@ -214,18 +214,18 @@ export function mockObsidianDeclareGlobal(): void {
 
   if (hasDom() && typeof HTMLElement !== 'undefined') {
     define(HTMLElement.prototype, {
-      find,
-      findAll,
-      findAllSelf,
+      find: htmlElementFind,
+      findAll: htmlElementFindAll,
+      findAllSelf: htmlElementFindAllSelf,
       hide,
       isShown,
-      off,
-      on,
+      off: htmlElementOff,
+      on: htmlElementOn,
       onClickEvent,
       onNodeInserted,
       onWindowMigrated,
-      setCssProps,
-      setCssStyles,
+      setCssProps: htmlElementSetCssProps,
+      setCssStyles: htmlElementSetCssStyles,
       show,
       toggle,
       toggleVisibility,
@@ -238,22 +238,22 @@ export function mockObsidianDeclareGlobal(): void {
 
   if (hasDom() && typeof SVGElement !== 'undefined') {
     define(SVGElement.prototype, {
-      setCssProps,
-      setCssStyles
+      setCssProps: svgElementSetCssProps,
+      setCssStyles: svgElementSetCssStyles
     });
   }
 
   if (hasDom() && typeof DocumentFragment !== 'undefined') {
     define(DocumentFragment.prototype, {
-      find,
-      findAll
+      find: documentFragmentFind,
+      findAll: documentFragmentFindAll
     });
   }
 
   if (hasDom() && typeof Document !== 'undefined') {
     define(Document.prototype, {
-      off,
-      on
+      off: documentOff,
+      on: documentOn
     });
   }
 
