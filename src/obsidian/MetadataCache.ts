@@ -8,8 +8,10 @@ import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { parseMarkdownContent } from '../internal/MarkdownParser.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { Events } from './Events.ts';
+import { TFile as TFileClass } from './TFile.ts';
 
 export class MetadataCache extends Events {
   public _app: App;
@@ -17,9 +19,15 @@ export class MetadataCache extends Events {
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
-  protected constructor(app: App, _vault: Vault) {
+  protected constructor(app: App, vault: Vault) {
     super();
     this._app = app;
+    vault.on('create', (...data: unknown[]) => {
+      this._parseFileMetadata(data[0]);
+    });
+    vault.on('modify', (...data: unknown[]) => {
+      this._parseFileMetadata(data[0]);
+    });
   }
 
   public static create__(app: App, vault: Vault): MetadataCache {
@@ -65,5 +73,19 @@ export class MetadataCache extends Events {
       }
     }
     return null;
+  }
+
+  private _parseFileMetadata(file: unknown): void {
+    if (!(file instanceof TFileClass) || file.extension !== 'md') {
+      return;
+    }
+    const vaultFile = file;
+    this._app.vault.cachedRead(vaultFile).then((content: string) => {
+      const cache = parseMarkdownContent(content);
+      this._cache.set(vaultFile.path, cache);
+      this.trigger('changed', vaultFile, content, cache);
+    }).catch(() => {
+      // Silently ignore read errors during metadata parsing.
+    });
   }
 }
