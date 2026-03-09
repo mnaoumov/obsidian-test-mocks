@@ -19,8 +19,8 @@ Peer dependencies: `obsidian`
 | Import path                    | Description                                                              |
 | ------------------------------ | ------------------------------------------------------------------------ |
 | `obsidian-test-mocks/obsidian` | Mocks for every class/function in `obsidian.d.ts`                        |
-| `obsidian-test-mocks/globals`  | Prototype extensions (`HTMLElement`, `Document`, `Array`, `String`, etc.) |
-| `obsidian-test-mocks/helpers`  | Test helpers (`createMockApp`, etc.) — not part of the Obsidian API      |
+| `obsidian-test-mocks/globals`  | Prototype extensions (`HTMLElement`, `Document`, `Array`, `String`, etc.)|
+| `obsidian-test-mocks/helpers`  | Test helpers (`createMockApp`, etc.) -- not part of the Obsidian API     |
 
 ## Usage with Vitest
 
@@ -208,6 +208,40 @@ it('uses the overridden apiVersion', () => {
   expect(apiVersion).toBe('1.8.0');
 });
 ```
+
+## Using with `obsidian-typings`
+
+This package does **not** depend on [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings), but it works seamlessly if your project uses it.
+
+`obsidian-typings` uses `declare module 'obsidian'` to augment obsidian types with dozens of internal properties (e.g., `App.internalPlugins`, `App.commands`). This makes `import('obsidian').App` a superset of what `obsidian.d.ts` alone declares. The mock types only implement the public API from `obsidian.d.ts`, so the two are structurally incompatible.
+
+Use `asOriginalType__()` to bridge the gap when passing mocks to code that expects obsidian types:
+
+```typescript
+import type { App } from 'obsidian';
+
+function myPluginHelper(app: App): void { /* ... */ }
+
+const app = await createMockApp();
+myPluginHelper(app.asOriginalType__());
+```
+
+With `obsidian-typings` installed, the returned type includes all augmented properties, so you can assign internal members in a type-safe way:
+
+```typescript
+const original = app.asOriginalType__();
+
+// Type-safe with obsidian-typings — no casts needed
+original.internalPlugins = { manifests: {} };
+```
+
+Without `obsidian-typings`, you can still assign them via a `Record` cast:
+
+```typescript
+(app as unknown as Record<string, unknown>)['internalPlugins'] = { manifests: {} };
+```
+
+Remember that accessing any property not assigned on the mock will throw a [strict mock](#strict-mocks) error at runtime, regardless of whether `obsidian-typings` makes it compile.
 
 ## Design Principles
 
