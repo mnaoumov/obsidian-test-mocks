@@ -1,7 +1,7 @@
 import type {
-  BasesPropertyId,
+  BasesPropertyId as BasesPropertyIdOriginal,
   BasesQueryResult as BasesQueryResultOriginal,
-  Value
+  Value as ValueOriginal
 } from 'obsidian';
 
 import type { BasesEntry } from './BasesEntry.ts';
@@ -18,13 +18,13 @@ export class BasesQueryResult {
     return this._groupedData;
   }
 
-  public get properties(): BasesPropertyId[] {
+  public get properties(): BasesPropertyIdOriginal[] {
     return this._properties;
   }
 
   private _groupedData: BasesEntryGroup[] = [];
 
-  private _properties: BasesPropertyId[] = [];
+  private _properties: BasesPropertyIdOriginal[] = [];
 
   protected constructor() {
     noop();
@@ -38,7 +38,7 @@ export class BasesQueryResult {
     return castTo<BasesQueryResultOriginal>(this);
   }
 
-  public getSummaryValue(_queryController: QueryController, _entries: BasesEntry[], _prop: BasesPropertyId, _summaryKey: string): Value {
+  public getSummaryValue(_queryController: QueryController, _entries: BasesEntry[], _prop: BasesPropertyIdOriginal, _summaryKey: string): ValueOriginal {
     throw new Error('getSummaryValue is not implemented in mock');
   }
 
@@ -53,7 +53,7 @@ export class BasesQueryResult {
   }
 
   /** Mock-only. Sets the properties. Not part of the Obsidian API. */
-  public setProperties__(properties: BasesPropertyId[]): void {
+  public setProperties__(properties: BasesPropertyIdOriginal[]): void {
     this._properties = properties;
   }
 }

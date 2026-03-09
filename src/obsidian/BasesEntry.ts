@@ -1,8 +1,8 @@
 import type {
   BasesEntry as BasesEntryOriginal,
-  BasesPropertyId,
-  FormulaContext,
-  Value
+  BasesPropertyId as BasesPropertyIdOriginal,
+  FormulaContext as FormulaContextOriginal,
+  Value as ValueOriginal
 } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
@@ -10,9 +10,9 @@ import type { TFile } from './TFile.ts';
 import { castTo } from '../internal/cast.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
-export class BasesEntry implements FormulaContext {
+export class BasesEntry implements FormulaContextOriginal {
   public file: TFile;
-  private readonly values = new Map<BasesPropertyId, null | Value>();
+  private readonly values = new Map<BasesPropertyIdOriginal, null | ValueOriginal>();
 
   protected constructor(_ctx: unknown, file: TFile) {
     this.file = file;
@@ -26,12 +26,12 @@ export class BasesEntry implements FormulaContext {
     return castTo<BasesEntryOriginal>(this);
   }
 
-  public getValue(propertyId: BasesPropertyId): null | Value {
+  public getValue(propertyId: BasesPropertyIdOriginal): null | ValueOriginal {
     return this.values.get(propertyId) ?? null;
   }
 
   /** Mock-only. Sets a value for a property. Not part of the Obsidian API. */
-  public setValue__(propertyId: BasesPropertyId, value: null | Value): void {
+  public setValue__(propertyId: BasesPropertyIdOriginal, value: null | ValueOriginal): void {
     this.values.set(propertyId, value);
   }
 }

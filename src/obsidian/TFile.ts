@@ -1,5 +1,5 @@
 import type {
-  FileStats,
+  FileStats as FileStatsOriginal,
   TFile as TFileOriginal
 } from 'obsidian';
 
@@ -12,7 +12,7 @@ import { TAbstractFile } from './TAbstractFile.ts';
 export class TFile extends TAbstractFile {
   public basename: string;
   public extension: string;
-  public stat: FileStats = { ctime: 0, mtime: 0, size: 0 };
+  public stat: FileStatsOriginal = { ctime: 0, mtime: 0, size: 0 };
 
   protected constructor(vault: Vault, path: string) {
     super(vault, path);

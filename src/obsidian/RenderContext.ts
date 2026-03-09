@@ -1,5 +1,5 @@
 import type {
-  HoverPopover,
+  HoverPopover as HoverPopoverOriginal,
   RenderContext as RenderContextOriginal
 } from 'obsidian';
 
@@ -10,7 +10,7 @@ import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export class RenderContext {
-  public hoverPopover: HoverPopover | null = null;
+  public hoverPopover: HoverPopoverOriginal | null = null;
 
   protected constructor(_app: App) {
     noop();

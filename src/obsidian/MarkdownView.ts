@@ -1,5 +1,5 @@
 import type {
-  HoverPopover,
+  HoverPopover as HoverPopoverOriginal,
   MarkdownView as MarkdownViewOriginal
 } from 'obsidian';
 
@@ -36,7 +36,7 @@ export class MarkdownView extends TextFileView {
     }
   };
 
-  public hoverPopover: HoverPopover | null = null;
+  public hoverPopover: HoverPopoverOriginal | null = null;
 
   private _previewModeScroll = 0;
   public previewMode = {

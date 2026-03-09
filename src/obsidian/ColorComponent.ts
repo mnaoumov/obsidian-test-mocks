@@ -1,7 +1,7 @@
 import type {
   ColorComponent as ColorComponentOriginal,
-  HSL,
-  RGB
+  HSL as HSLOriginal,
+  RGB as RGBOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
@@ -48,7 +48,7 @@ export class ColorComponent extends ValueComponent<string> {
     return this._value;
   }
 
-  public getValueHsl(): HSL {
+  public getValueHsl(): HSLOriginal {
     const { b, g, r } = this.getValueRgb();
     const rn = r / RGB_MAX;
     const gn = g / RGB_MAX;
@@ -72,7 +72,7 @@ export class ColorComponent extends ValueComponent<string> {
     return { h, l, s };
   }
 
-  public getValueRgb(): RGB {
+  public getValueRgb(): RGBOriginal {
     const hex = this._value.replace('#', '');
     const r = parseInt(hex.slice(0, HEX_SLICE_R_END), HEX_RADIX) || 0;
     const g = parseInt(hex.slice(HEX_SLICE_R_END, HEX_SLICE_G_END), HEX_RADIX) || 0;
@@ -92,18 +92,18 @@ export class ColorComponent extends ValueComponent<string> {
     return this;
   }
 
-  public setValueHsl(hsl: HSL): this {
+  public setValueHsl(hsl: HSLOriginal): this {
     const { b, g, r } = hslToRgb(hsl);
     return this.setValueRgb({ b, g, r });
   }
 
-  public setValueRgb(rgb: RGB): this {
+  public setValueRgb(rgb: RGBOriginal): this {
     const hex = `#${[rgb.r, rgb.g, rgb.b].map((c) => Math.round(c).toString(HEX_RADIX).padStart(HEX_PAD_LENGTH, '0')).join('')}`;
     return this.setValue(hex);
   }
 }
 
-function hslToRgb(hsl: HSL): RGB {
+function hslToRgb(hsl: HSLOriginal): RGBOriginal {
   const { h, l, s } = hsl;
   if (s === 0) {
     const v = Math.round(l * RGB_MAX);

@@ -1,6 +1,6 @@
 import type {
   ButtonComponent as ButtonComponentOriginal,
-  TooltipOptions
+  TooltipOptions as TooltipOptionsOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
@@ -57,7 +57,7 @@ export class ButtonComponent extends BaseComponent {
     return this;
   }
 
-  public setTooltip(tooltip: string, _options?: TooltipOptions): this {
+  public setTooltip(tooltip: string, _options?: TooltipOptionsOriginal): this {
     this.buttonEl.setAttribute('aria-label', tooltip);
     return this;
   }

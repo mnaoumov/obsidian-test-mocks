@@ -1,14 +1,14 @@
 // eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
 // dprint-ignore -- Alias sort order differs from original name order.
 import type {
-  EditorChange,
-  EditorCommandName,
+  EditorChange as EditorChangeOriginal,
+  EditorCommandName as EditorCommandNameOriginal,
   Editor as EditorOriginal,
-  EditorPosition,
-  EditorRange,
-  EditorSelection,
-  EditorSelectionOrCaret,
-  EditorTransaction
+  EditorPosition as EditorPositionOriginal,
+  EditorRange as EditorRangeOriginal,
+  EditorSelectionOrCaret as EditorSelectionOrCaretOriginal,
+  EditorSelection as EditorSelectionOriginal,
+  EditorTransaction as EditorTransactionOriginal
 } from 'obsidian';
 
 import type { CoordsLeftTop } from '../internal/types.ts';
@@ -22,9 +22,9 @@ export abstract class Editor {
   private _scrollLeft = 0;
   private _scrollTop = 0;
   private readonly _undoStack: string[] = [];
-  private anchor: EditorPosition = { ch: 0, line: 0 };
+  private anchor: EditorPositionOriginal = { ch: 0, line: 0 };
   private content = '';
-  private head: EditorPosition = { ch: 0, line: 0 };
+  private head: EditorPositionOriginal = { ch: 0, line: 0 };
 
   public asOriginalType__(): EditorOriginal {
     return castTo<EditorOriginal>(this);
@@ -34,7 +34,7 @@ export abstract class Editor {
     this._focused = false;
   }
 
-  public exec(_command: EditorCommandName): void {
+  public exec(_command: EditorCommandNameOriginal): void {
     noop();
   }
 
@@ -42,7 +42,7 @@ export abstract class Editor {
     this._focused = true;
   }
 
-  public getCursor(side?: 'anchor' | 'from' | 'head' | 'to'): EditorPosition {
+  public getCursor(side?: 'anchor' | 'from' | 'head' | 'to'): EditorPositionOriginal {
     switch (side) {
       case 'anchor':
         return { ...this.anchor };
@@ -63,7 +63,7 @@ export abstract class Editor {
     return this.getLines()[line] ?? '';
   }
 
-  public getRange(from: EditorPosition, to: EditorPosition): string {
+  public getRange(from: EditorPositionOriginal, to: EditorPositionOriginal): string {
     const startOffset = this.posToOffset(from);
     const endOffset = this.posToOffset(to);
     return this.content.slice(startOffset, endOffset);
@@ -98,11 +98,11 @@ export abstract class Editor {
     return this.getLines().length;
   }
 
-  public listSelections(): EditorSelection[] {
+  public listSelections(): EditorSelectionOriginal[] {
     return [{ anchor: { ...this.anchor }, head: { ...this.head } }];
   }
 
-  public offsetToPos(offset: number): EditorPosition {
+  public offsetToPos(offset: number): EditorPositionOriginal {
     const clamped = Math.max(0, Math.min(offset, this.content.length));
     const before = this.content.slice(0, clamped);
     const lines = before.split('\n');
@@ -111,7 +111,7 @@ export abstract class Editor {
     return { ch, line };
   }
 
-  public posToOffset(pos: EditorPosition): number {
+  public posToOffset(pos: EditorPositionOriginal): number {
     const lines = this.getLines();
     let offset = 0;
     for (let i = 0; i < pos.line && i < lines.length; i++) {
@@ -124,11 +124,11 @@ export abstract class Editor {
 
   public processLines<T>(
     read: (line: number, lineText: string) => null | T,
-    write: (line: number, lineText: string, value: null | T) => EditorChange | undefined,
+    write: (line: number, lineText: string, value: null | T) => EditorChangeOriginal | undefined,
     _ignoreEmpty?: boolean
   ): void {
     const lines = this.getLines();
-    const changes: EditorChange[] = [];
+    const changes: EditorChangeOriginal[] = [];
 
     for (let i = 0; i < lines.length; i++) {
       const lineText = lines[i] ?? '';
@@ -162,7 +162,7 @@ export abstract class Editor {
     noop();
   }
 
-  public replaceRange(replacement: string, from: EditorPosition, to?: EditorPosition, _origin?: string): void {
+  public replaceRange(replacement: string, from: EditorPositionOriginal, to?: EditorPositionOriginal, _origin?: string): void {
     this._undoStack.push(this.content);
     this._redoStack = [];
     const startOffset = this.posToOffset(from);
@@ -180,7 +180,7 @@ export abstract class Editor {
     this.replaceRange(replacement, from, to);
   }
 
-  public scrollIntoView(_range: EditorRange, _center?: boolean): void {
+  public scrollIntoView(_range: EditorRangeOriginal, _center?: boolean): void {
     noop();
   }
 
@@ -193,8 +193,8 @@ export abstract class Editor {
     }
   }
 
-  public setCursor(pos: EditorPosition | number, ch?: number): void {
-    const resolved: EditorPosition = typeof pos === 'number'
+  public setCursor(pos: EditorPositionOriginal | number, ch?: number): void {
+    const resolved: EditorPositionOriginal = typeof pos === 'number'
       ? { ch: ch ?? 0, line: pos }
       : { ...pos };
     this.anchor = { ...resolved };
@@ -202,18 +202,18 @@ export abstract class Editor {
   }
 
   public setLine(n: number, text: string): void {
-    const from: EditorPosition = { ch: 0, line: n };
+    const from: EditorPositionOriginal = { ch: 0, line: n };
     const lineLength = (this.getLines()[n] ?? '').length;
-    const to: EditorPosition = { ch: lineLength, line: n };
+    const to: EditorPositionOriginal = { ch: lineLength, line: n };
     this.replaceRange(text, from, to);
   }
 
-  public setSelection(anchor: EditorPosition, head?: EditorPosition): void {
+  public setSelection(anchor: EditorPositionOriginal, head?: EditorPositionOriginal): void {
     this.anchor = { ...anchor };
     this.head = head ? { ...head } : { ...anchor };
   }
 
-  public setSelections(ranges: EditorSelectionOrCaret[], main?: number): void {
+  public setSelections(ranges: EditorSelectionOrCaretOriginal[], main?: number): void {
     const index = main ?? 0;
     const sel = ranges[index] ?? ranges[0];
     if (sel) {
@@ -232,7 +232,7 @@ export abstract class Editor {
     return this.anchor.line !== this.head.line || this.anchor.ch !== this.head.ch;
   }
 
-  public transaction(tx: EditorTransaction, _origin?: string): void {
+  public transaction(tx: EditorTransactionOriginal, _origin?: string): void {
     if (tx.changes) {
       for (const change of tx.changes) {
         this.replaceRange(change.text, change.from, change.to);
@@ -244,7 +244,7 @@ export abstract class Editor {
     }
 
     if (tx.selections) {
-      this.setSelections(tx.selections as unknown as EditorSelectionOrCaret[]);
+      this.setSelections(tx.selections as unknown as EditorSelectionOrCaretOriginal[]);
     }
   }
 
@@ -259,7 +259,7 @@ export abstract class Editor {
     }
   }
 
-  public wordAt(pos: EditorPosition): EditorRange | null {
+  public wordAt(pos: EditorPositionOriginal): EditorRangeOriginal | null {
     const line = this.getLine(pos.line);
     if (!line || pos.ch > line.length) {
       return null;
@@ -290,14 +290,14 @@ export abstract class Editor {
     return this.content.split('\n');
   }
 
-  private maxPos(a: EditorPosition, b: EditorPosition): EditorPosition {
+  private maxPos(a: EditorPositionOriginal, b: EditorPositionOriginal): EditorPositionOriginal {
     if (a.line > b.line || (a.line === b.line && a.ch > b.ch)) {
       return { ...a };
     }
     return { ...b };
   }
 
-  private minPos(a: EditorPosition, b: EditorPosition): EditorPosition {
+  private minPos(a: EditorPositionOriginal, b: EditorPositionOriginal): EditorPositionOriginal {
     if (a.line < b.line || (a.line === b.line && a.ch < b.ch)) {
       return { ...a };
     }

@@ -1,14 +1,14 @@
 // eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
 // dprint-ignore -- Alias sort order differs from original name order.
 import type {
-  Command,
-  HoverLinkSource,
-  MarkdownPostProcessor,
-  MarkdownPostProcessorContext,
-  PluginManifest,
+  Command as CommandOriginal,
+  HoverLinkSource as HoverLinkSourceOriginal,
+  MarkdownPostProcessorContext as MarkdownPostProcessorContextOriginal,
+  MarkdownPostProcessor as MarkdownPostProcessorOriginal,
+  PluginManifest as PluginManifestOriginal,
   Plugin as PluginOriginal,
-  PluginSettingTab,
-  ViewCreator
+  PluginSettingTab as PluginSettingTabOriginal,
+  ViewCreator as ViewCreatorOriginal
 } from 'obsidian';
 
 import type { App } from './App.ts';
@@ -20,26 +20,26 @@ import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
   public app: App;
-  public commands = new Map<string, Command>();
+  public commands = new Map<string, CommandOriginal>();
   public data__: unknown = {};
   public extensions__ = new Map<string, string>();
-  public hoverLinkSources__ = new Map<string, HoverLinkSource>();
-  public manifest: PluginManifest;
-  public markdownCodeBlockProcessors__ = new Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown>();
-  public markdownPostProcessors__: MarkdownPostProcessor[] = [];
+  public hoverLinkSources__ = new Map<string, HoverLinkSourceOriginal>();
+  public manifest: PluginManifestOriginal;
+  public markdownCodeBlockProcessors__ = new Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => unknown>();
+  public markdownPostProcessors__: MarkdownPostProcessorOriginal[] = [];
   public ribbonActions__: HTMLElement[] = [];
-  public settingTabs__: PluginSettingTab[] = [];
+  public settingTabs__: PluginSettingTabOriginal[] = [];
   public statusBarItems__: HTMLElement[] = [];
-  public views__ = new Map<string, ViewCreator>();
+  public views__ = new Map<string, ViewCreatorOriginal>();
 
-  public constructor(app: App, manifest: PluginManifest) {
+  public constructor(app: App, manifest: PluginManifestOriginal) {
     super();
     this.app = app;
     this.manifest = manifest;
     return strictMock(this);
   }
 
-  public addCommand(command: Command): Command {
+  public addCommand(command: CommandOriginal): CommandOriginal {
     this.commands.set(command.id, command);
     return command;
   }
@@ -50,7 +50,7 @@ export abstract class Plugin extends Component {
     return el;
   }
 
-  public addSettingTab(settingTab: PluginSettingTab): void {
+  public addSettingTab(settingTab: PluginSettingTabOriginal): void {
     this.settingTabs__.push(settingTab);
   }
 
@@ -79,30 +79,30 @@ export abstract class Plugin extends Component {
     }
   }
 
-  public registerHoverLinkSource(id: string, info: HoverLinkSource): void {
+  public registerHoverLinkSource(id: string, info: HoverLinkSourceOriginal): void {
     this.hoverLinkSources__.set(id, info);
   }
 
   public registerMarkdownCodeBlockProcessor(
     language: string,
-    handler: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown,
+    handler: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => unknown,
     _sortOrder?: number
-  ): MarkdownPostProcessor {
+  ): MarkdownPostProcessorOriginal {
     this.markdownCodeBlockProcessors__.set(language, handler);
     // eslint-disable-next-line func-style, func-names -- Mock implementation.
-    const processor: MarkdownPostProcessor = function (_el: HTMLElement, _ctx: MarkdownPostProcessorContext): void {
+    const processor: MarkdownPostProcessorOriginal = function (_el: HTMLElement, _ctx: MarkdownPostProcessorContextOriginal): void {
       noop();
     };
     this.markdownPostProcessors__.push(processor);
     return processor;
   }
 
-  public registerMarkdownPostProcessor(postProcessor: MarkdownPostProcessor, _sortOrder?: number): MarkdownPostProcessor {
+  public registerMarkdownPostProcessor(postProcessor: MarkdownPostProcessorOriginal, _sortOrder?: number): MarkdownPostProcessorOriginal {
     this.markdownPostProcessors__.push(postProcessor);
     return postProcessor;
   }
 
-  public registerView(type: string, viewCreator: ViewCreator): void {
+  public registerView(type: string, viewCreator: ViewCreatorOriginal): void {
     this.views__.set(type, viewCreator);
   }
 

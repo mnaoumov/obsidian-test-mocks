@@ -1,5 +1,5 @@
 import type {
-  WorkspaceContainer,
+  WorkspaceContainer as WorkspaceContainerOriginal,
   WorkspaceItem as WorkspaceItemOriginal
 } from 'obsidian';
 
@@ -15,8 +15,8 @@ export abstract class WorkspaceItem extends Events {
     return castTo<WorkspaceItemOriginal>(this);
   }
 
-  public getContainer(): WorkspaceContainer {
-    return castTo<WorkspaceContainer>(this);
+  public getContainer(): WorkspaceContainerOriginal {
+    return castTo<WorkspaceContainerOriginal>(this);
   }
 
   public getRoot(): this {

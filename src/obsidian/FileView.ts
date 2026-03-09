@@ -1,6 +1,6 @@
 import type {
   FileView as FileViewOriginal,
-  ViewStateResult
+  ViewStateResult as ViewStateResultOriginal
 } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
@@ -56,7 +56,7 @@ export abstract class FileView extends ItemView {
     await noopAsync();
   }
 
-  public override async setState(state: unknown, result: ViewStateResult): Promise<void> {
+  public override async setState(state: unknown, result: ViewStateResultOriginal): Promise<void> {
     await super.setState(state, result);
   }
 }

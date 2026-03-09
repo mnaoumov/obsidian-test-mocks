@@ -1,6 +1,6 @@
 import type {
   MarkdownPreviewView as MarkdownPreviewViewOriginal,
-  TFile
+  TFile as TFileOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
@@ -10,8 +10,8 @@ import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
 export class MarkdownPreviewView extends MarkdownRenderer {
   public override containerEl: HTMLElement;
-  public get file(): TFile {
-    return castTo<TFile>(null);
+  public get file(): TFileOriginal {
+    return castTo<TFileOriginal>(null);
   }
 
   private _data = '';

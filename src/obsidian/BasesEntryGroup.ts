@@ -1,6 +1,6 @@
 import type {
   BasesEntryGroup as BasesEntryGroupOriginal,
-  Value
+  Value as ValueOriginal
 } from 'obsidian';
 
 import type { BasesEntry } from './BasesEntry.ts';
@@ -10,12 +10,12 @@ import { strictMock } from '../internal/strict-mock.ts';
 
 export class BasesEntryGroup {
   public entries: BasesEntry[];
-  public key?: Value;
+  public key?: ValueOriginal;
 
   protected constructor(entries: BasesEntry[], key: unknown) {
     this.entries = entries;
     if (key !== undefined) {
-      this.key = key as Value;
+      this.key = key as ValueOriginal;
     }
   }
 

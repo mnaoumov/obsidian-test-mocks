@@ -1,6 +1,6 @@
 import type {
   ToggleComponent as ToggleComponentOriginal,
-  TooltipOptions
+  TooltipOptions as TooltipOptionsOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
@@ -40,7 +40,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
     this._onChange?.(this._value);
   }
 
-  public setTooltip(tooltip: string, _options?: TooltipOptions): this {
+  public setTooltip(tooltip: string, _options?: TooltipOptionsOriginal): this {
     this.toggleEl.setAttribute('aria-label', tooltip);
     return this;
   }

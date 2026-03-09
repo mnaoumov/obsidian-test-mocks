@@ -1,6 +1,6 @@
 import type {
-  DataAdapter,
-  DataWriteOptions,
+  DataAdapter as DataAdapterOriginal,
+  DataWriteOptions as DataWriteOptionsOriginal,
   Vault as VaultOriginal
 } from 'obsidian';
 
@@ -13,11 +13,11 @@ import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
 
 export class Vault extends Events {
-  public adapter: DataAdapter;
+  public adapter: DataAdapterOriginal;
   public configDir = '.obsidian';
   public fileMap__: Record<string, TAbstractFile> = {};
 
-  protected constructor(adapter: DataAdapter) {
+  protected constructor(adapter: DataAdapterOriginal) {
     super();
     this.adapter = adapter;
     const root = TFolder.create__(this, '/');
@@ -25,7 +25,7 @@ export class Vault extends Events {
     root.deleted__ = false;
   }
 
-  public static create2__(adapter: DataAdapter): Vault {
+  public static create2__(adapter: DataAdapterOriginal): Vault {
     return strictMock(new Vault(adapter));
   }
 
@@ -38,7 +38,7 @@ export class Vault extends Events {
     }
   }
 
-  public async append(file: TFile, data: string, options?: DataWriteOptions): Promise<void> {
+  public async append(file: TFile, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
     await this.adapter.append(file.path, data, options);
     this.trigger('modify', file);
   }
@@ -59,7 +59,7 @@ export class Vault extends Events {
     return newFile;
   }
 
-  public async create(path: string, data: string, options?: DataWriteOptions): Promise<TFile> {
+  public async create(path: string, data: string, options?: DataWriteOptionsOriginal): Promise<TFile> {
     await this.adapter.write(path, data, options);
     const file = TFile.create__(this, path);
     setVaultAbstractFile(this, path, file);
@@ -67,7 +67,7 @@ export class Vault extends Events {
     return file;
   }
 
-  public async createBinary(path: string, data: ArrayBuffer, options?: DataWriteOptions): Promise<TFile> {
+  public async createBinary(path: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<TFile> {
     await this.adapter.writeBinary(path, data, options);
     const file = TFile.create__(this, path);
     setVaultAbstractFile(this, path, file);
@@ -141,17 +141,17 @@ export class Vault extends Events {
     return fallback;
   }
 
-  public async modify(file: TFile, data: string, options?: DataWriteOptions): Promise<void> {
+  public async modify(file: TFile, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
     await this.adapter.write(file.path, data, options);
     this.trigger('modify', file);
   }
 
-  public async modifyBinary(file: TFile, data: ArrayBuffer, options?: DataWriteOptions): Promise<void> {
+  public async modifyBinary(file: TFile, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
     await this.adapter.writeBinary(file.path, data, options);
     this.trigger('modify', file);
   }
 
-  public async process(file: TFile, fn: (data: string) => string, options?: DataWriteOptions): Promise<string> {
+  public async process(file: TFile, fn: (data: string) => string, options?: DataWriteOptionsOriginal): Promise<string> {
     const content = await this.adapter.read(file.path);
     const result = fn(content);
     await this.adapter.write(file.path, result, options);

@@ -1,5 +1,5 @@
 import type {
-  IconName,
+  IconName as IconNameOriginal,
   MenuItem as MenuItemOriginal
 } from 'obsidian';
 
@@ -11,7 +11,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 export class MenuItem {
   public checked__: boolean | null = null;
   public disabled__ = false;
-  public icon__: IconName | null = null;
+  public icon__: IconNameOriginal | null = null;
   public isLabel__ = false;
   public onClick__: ((evt: KeyboardEvent | MouseEvent) => unknown) | null = null;
   public section__ = '';
@@ -46,7 +46,7 @@ export class MenuItem {
     return this;
   }
 
-  public setIcon(icon: IconName | null): this {
+  public setIcon(icon: IconNameOriginal | null): this {
     this.icon__ = icon;
     return this;
   }
