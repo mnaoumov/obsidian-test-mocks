@@ -1,13 +1,27 @@
 {
   "version": "0.2",
-  "ignorePaths": [],
+  "ignorePaths": [
+    "tsconfig.tsbuildinfo"
+  ],
   "dictionaryDefinitions": [],
   "dictionaries": [],
   "words": [
+    "Debouncer",
+    "debouncer",
     "Keymap",
+    "linkpath",
+    "Linkpath",
+    "linktext",
+    "Linktext",
     "mnaoumov",
+    "mytag",
     "Naumov",
-    "spyable"
+    "offref",
+    "Popout",
+    "Precomputes",
+    "Sidedock",
+    "spyable",
+    "wikilinks"
   ],
   "ignoreWords": [],
   "import": [],
