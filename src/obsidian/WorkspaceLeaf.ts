@@ -17,8 +17,8 @@ import { WorkspaceItem } from './WorkspaceItem.ts';
 let nextLeafId = 1;
 
 export class WorkspaceLeaf extends WorkspaceItem {
-  public _id: string;
   public hoverPopover: HoverPopover | null = null;
+  public id__: string;
   public readonly isDeferred = false;
   public view: null | View = null;
 
@@ -35,19 +35,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
 
   protected constructor(_app: App, id?: string) {
     super();
-    this._id = id ?? String(nextLeafId++);
+    this.id__ = id ?? String(nextLeafId++);
   }
 
   public static create__(app: App, id?: string): WorkspaceLeaf {
     return strictMock(new WorkspaceLeaf(app, id));
-  }
-
-  public _getGroup(): null | string {
-    return this._group;
-  }
-
-  public _isPinned(): boolean {
-    return this._pinned;
   }
 
   public override asOriginalType__(): WorkspaceLeafOriginal {
@@ -69,6 +61,10 @@ export class WorkspaceLeaf extends WorkspaceItem {
     return { ...this._ephemeralState };
   }
 
+  public getGroup__(): null | string {
+    return this._group;
+  }
+
   public getIcon(): IconName {
     if (this.view) {
       return this.view.getIcon();
@@ -78,6 +74,10 @@ export class WorkspaceLeaf extends WorkspaceItem {
 
   public getViewState(): ViewState {
     return { ...this._viewState };
+  }
+
+  public isPinned__(): boolean {
+    return this._pinned;
   }
 
   public async loadIfDeferred(): Promise<void> {
@@ -104,7 +104,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public setGroupMember(other: WorkspaceLeaf): void {
-    this._group = other._getGroup();
+    this._group = other.getGroup__();
   }
 
   public setPinned(pinned: boolean): void {

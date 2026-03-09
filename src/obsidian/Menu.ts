@@ -12,8 +12,8 @@ import { Component } from './Component.ts';
 import { MenuItem } from './MenuItem.ts';
 
 export class Menu extends Component {
-  public _items: MenuItem[] = [];
   public dom: HTMLElement;
+  public items__: MenuItem[] = [];
 
   private _onHideCallback: (() => unknown) | null = null;
 
@@ -32,7 +32,7 @@ export class Menu extends Component {
 
   public addItem(cb: (item: ObsidianMenuItem) => unknown): this {
     const item = MenuItem.create__(this);
-    this._items.push(item);
+    this.items__.push(item);
     cb(castTo<ObsidianMenuItem>(item));
     return this;
   }

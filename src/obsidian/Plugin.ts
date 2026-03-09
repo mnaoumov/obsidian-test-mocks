@@ -19,18 +19,18 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
-  public _data: unknown = {};
-  public _extensions = new Map<string, string>();
-  public _hoverLinkSources = new Map<string, HoverLinkSource>();
-  public _markdownCodeBlockProcessors = new Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown>();
-  public _markdownPostProcessors: MarkdownPostProcessor[] = [];
-  public _ribbonActions: HTMLElement[] = [];
-  public _settingTabs: PluginSettingTab[] = [];
-  public _statusBarItems: HTMLElement[] = [];
-  public _views = new Map<string, ViewCreator>();
   public app: App;
   public commands = new Map<string, Command>();
+  public data__: unknown = {};
+  public extensions__ = new Map<string, string>();
+  public hoverLinkSources__ = new Map<string, HoverLinkSource>();
   public manifest: PluginManifest;
+  public markdownCodeBlockProcessors__ = new Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown>();
+  public markdownPostProcessors__: MarkdownPostProcessor[] = [];
+  public ribbonActions__: HTMLElement[] = [];
+  public settingTabs__: PluginSettingTab[] = [];
+  public statusBarItems__: HTMLElement[] = [];
+  public views__ = new Map<string, ViewCreator>();
 
   public constructor(app: App, manifest: PluginManifest) {
     super();
@@ -46,17 +46,17 @@ export abstract class Plugin extends Component {
 
   public addRibbonIcon(_icon: string, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
     const el = createDiv();
-    this._ribbonActions.push(el);
+    this.ribbonActions__.push(el);
     return el;
   }
 
   public addSettingTab(settingTab: PluginSettingTab): void {
-    this._settingTabs.push(settingTab);
+    this.settingTabs__.push(settingTab);
   }
 
   public addStatusBarItem(): HTMLElement {
     const el = createDiv();
-    this._statusBarItems.push(el);
+    this.statusBarItems__.push(el);
     return el;
   }
 
@@ -66,7 +66,7 @@ export abstract class Plugin extends Component {
 
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async loadData(): Promise<unknown> {
-    return this._data;
+    return this.data__;
   }
 
   public onUserEnable(): void {
@@ -75,12 +75,12 @@ export abstract class Plugin extends Component {
 
   public registerExtensions(extensions: string[], viewType: string): void {
     for (const ext of extensions) {
-      this._extensions.set(ext, viewType);
+      this.extensions__.set(ext, viewType);
     }
   }
 
   public registerHoverLinkSource(id: string, info: HoverLinkSource): void {
-    this._hoverLinkSources.set(id, info);
+    this.hoverLinkSources__.set(id, info);
   }
 
   public registerMarkdownCodeBlockProcessor(
@@ -88,22 +88,22 @@ export abstract class Plugin extends Component {
     handler: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => unknown,
     _sortOrder?: number
   ): MarkdownPostProcessor {
-    this._markdownCodeBlockProcessors.set(language, handler);
+    this.markdownCodeBlockProcessors__.set(language, handler);
     // eslint-disable-next-line func-style, func-names -- Placeholder processor assigned to typed const; real processing is not simulated.
     const processor: MarkdownPostProcessor = function (_el: HTMLElement, _ctx: MarkdownPostProcessorContext): void {
       noop();
     };
-    this._markdownPostProcessors.push(processor);
+    this.markdownPostProcessors__.push(processor);
     return processor;
   }
 
   public registerMarkdownPostProcessor(postProcessor: MarkdownPostProcessor, _sortOrder?: number): MarkdownPostProcessor {
-    this._markdownPostProcessors.push(postProcessor);
+    this.markdownPostProcessors__.push(postProcessor);
     return postProcessor;
   }
 
   public registerView(type: string, viewCreator: ViewCreator): void {
-    this._views.set(type, viewCreator);
+    this.views__.set(type, viewCreator);
   }
 
   public removeCommand(commandId: string): void {
@@ -112,6 +112,6 @@ export abstract class Plugin extends Component {
 
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async saveData(data: unknown): Promise<void> {
-    this._data = data;
+    this.data__ = data;
   }
 }

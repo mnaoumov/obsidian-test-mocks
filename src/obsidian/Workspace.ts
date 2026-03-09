@@ -72,14 +72,6 @@ export class Workspace extends Events {
     return strictMock(new Workspace(app, containerEl));
   }
 
-  public _setLayoutReady(): void {
-    this.layoutReady = true;
-    for (const callback of this._layoutReadyCallbacks) {
-      callback();
-    }
-    this._layoutReadyCallbacks = [];
-  }
-
   public override asOriginalType__(): WorkspaceOriginal {
     return castTo<WorkspaceOriginal>(this);
   }
@@ -138,7 +130,7 @@ export class Workspace extends Events {
   }
 
   public getGroupLeaves(group: string): WorkspaceLeaf[] {
-    return this._leaves.filter((leaf) => leaf._getGroup() === group);
+    return this._leaves.filter((leaf) => leaf.getGroup__() === group);
   }
 
   public getLastOpenFiles(): string[] {
@@ -167,7 +159,7 @@ export class Workspace extends Events {
   }
 
   public getLeafById(id: string): null | WorkspaceLeaf {
-    return this._leaves.find((leaf) => leaf._id === id) ?? null;
+    return this._leaves.find((leaf) => leaf.id__ === id) ?? null;
   }
 
   public getLeavesOfType(viewType: string): WorkspaceLeaf[] {
@@ -194,7 +186,7 @@ export class Workspace extends Events {
   }
 
   public getUnpinnedLeaf(): WorkspaceLeaf {
-    const unpinned = this._leaves.find((leaf) => !leaf._isPinned());
+    const unpinned = this._leaves.find((leaf) => !leaf.isPinned__());
     if (unpinned) {
       return unpinned;
     }
@@ -251,6 +243,14 @@ export class Workspace extends Events {
       this._leaves.push(leaf);
     }
     this.trigger('active-leaf-change', leaf);
+  }
+
+  public setLayoutReady__(): void {
+    this.layoutReady = true;
+    for (const callback of this._layoutReadyCallbacks) {
+      callback();
+    }
+    this._layoutReadyCallbacks = [];
   }
 
   public splitActiveLeaf(_direction?: SplitDirection): WorkspaceLeaf {
