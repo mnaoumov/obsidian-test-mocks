@@ -22,20 +22,20 @@ describe('App', () => {
       expect(original).toBe(app);
     });
 
-    it('should throw when accessing an unmocked property via the original type', async () => {
+    it('should throw when accessing an unmocked property', async () => {
       const app = await createMockApp();
-      const original = app.asOriginalType__();
-      expect(() => original.internalPlugins).toThrow(
-        'Property "internalPlugins" is not mocked in App. To override, assign a value first: mock.internalPlugins = ...'
+      const record = app as unknown as Record<string, unknown>;
+      expect(() => record['nonExistentProperty']).toThrow(
+        'Property "nonExistentProperty" is not mocked in App. To override, assign a value first: mock.nonExistentProperty = ...'
       );
     });
 
-    it('should allow accessing an unmocked property after assigning it', async () => {
+    it('should allow accessing a property after assigning it', async () => {
       const app = await createMockApp();
-      const original = app.asOriginalType__();
-      const mockPlugins = { manifests: {} };
-      original.internalPlugins = mockPlugins;
-      expect(original.internalPlugins).toBe(mockPlugins);
+      const record = app as unknown as Record<string, unknown>;
+      const mockValue = { test: true };
+      record['customProperty'] = mockValue;
+      expect(record['customProperty']).toBe(mockValue);
     });
   });
 });

@@ -18,8 +18,7 @@
     "skipLibCheck": false,
     "target": "ES2024",
     "types": [
-      "node",
-      "obsidian-typings"
+      "node"
     ],
     "verbatimModuleSyntax": true
   },
