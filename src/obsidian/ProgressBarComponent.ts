@@ -13,11 +13,13 @@ export class ProgressBarComponent extends ValueComponent<number> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.progressBar__ = createDiv();
-    this.constructor__(_containerEl);
+    const self = strictMock(this);
+    self.constructor__(_containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): ProgressBarComponent {
-    return strictMock(new ProgressBarComponent(containerEl));
+    return new ProgressBarComponent(containerEl);
   }
 
   public override asOriginalType__(): ProgressBarComponentOriginal {

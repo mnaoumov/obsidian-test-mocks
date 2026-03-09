@@ -35,11 +35,13 @@ export class ColorComponent extends ValueComponent<string> {
     super();
     this.colorPickerEl__ = containerEl.createEl('input');
     this.colorPickerEl__.type = 'color';
-    this.constructor__(containerEl);
+    const self = strictMock(this);
+    self.constructor__(containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): ColorComponent {
-    return strictMock(new ColorComponent(containerEl));
+    return new ColorComponent(containerEl);
   }
 
   public override asOriginalType__(): ColorComponentOriginal {

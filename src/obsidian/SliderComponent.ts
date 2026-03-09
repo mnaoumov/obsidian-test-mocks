@@ -20,11 +20,13 @@ export class SliderComponent extends ValueComponent<number> {
     super();
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
-    this.constructor__(_containerEl);
+    const self = strictMock(this);
+    self.constructor__(_containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): SliderComponent {
-    return strictMock(new SliderComponent(containerEl));
+    return new SliderComponent(containerEl);
   }
 
   public override asOriginalType__(): SliderComponentOriginal {

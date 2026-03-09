@@ -50,11 +50,13 @@ export class Setting {
     this.infoEl.appendChild(this.descEl);
     this.settingEl.appendChild(this.controlEl);
     containerEl.appendChild(this.settingEl);
-    this.constructor__(containerEl);
+    const self = strictMock(this);
+    self.constructor__(containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): Setting {
-    return strictMock(new Setting(containerEl));
+    return new Setting(containerEl);
   }
 
   public addButton(cb: (component: ButtonComponentOriginal) => unknown): this {

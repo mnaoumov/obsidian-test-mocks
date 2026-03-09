@@ -23,11 +23,13 @@ export class MarkdownEditView {
   public constructor() {
     this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapterOriginal, '');
     this.editor__ = new MockEditor();
-    this.constructor__();
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
   }
 
   public static create__(): MarkdownEditView {
-    return strictMock(new MarkdownEditView());
+    return new MarkdownEditView();
   }
 
   public applyScroll(scroll: number): void {

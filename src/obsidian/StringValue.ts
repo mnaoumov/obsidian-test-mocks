@@ -8,11 +8,13 @@ import { PrimitiveValue } from './PrimitiveValue.ts';
 export class StringValue extends PrimitiveValue<string> {
   public constructor(value = '') {
     super(value);
-    this.constructor__(value);
+    const self = strictMock(this);
+    self.constructor__(value);
+    return self;
   }
 
   public static create__(value = ''): StringValue {
-    return strictMock(new StringValue(value));
+    return new StringValue(value);
   }
 
   public override asOriginalType__(): StringValueOriginal {

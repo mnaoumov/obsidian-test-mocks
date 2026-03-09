@@ -14,11 +14,13 @@ export class Events {
 
   public constructor() {
     noop();
-    this.constructor__();
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
   }
 
   public static create__(): Events {
-    return strictMock(new Events());
+    return new Events();
   }
 
   public asOriginalType__(): EventsOriginal {

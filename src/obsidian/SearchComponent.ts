@@ -12,11 +12,13 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     super(createEl('input'));
     this.inputEl.type = 'search';
     this.clearButtonEl = createDiv();
-    this.constructor__(_containerEl);
+    const self = strictMock(this);
+    self.constructor__(_containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): SearchComponent {
-    return strictMock(new SearchComponent(containerEl));
+    return new SearchComponent(containerEl);
   }
 
   public override asOriginalType__(): SearchComponentOriginal {

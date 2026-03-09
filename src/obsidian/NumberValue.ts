@@ -8,11 +8,13 @@ import { PrimitiveValue } from './PrimitiveValue.ts';
 export class NumberValue extends PrimitiveValue<number> {
   public constructor(value = 0) {
     super(value);
-    this.constructor__(value);
+    const self = strictMock(this);
+    self.constructor__(value);
+    return self;
   }
 
   public static create__(value = 0): NumberValue {
-    return strictMock(new NumberValue(value));
+    return new NumberValue(value);
   }
 
   public override asOriginalType__(): NumberValueOriginal {

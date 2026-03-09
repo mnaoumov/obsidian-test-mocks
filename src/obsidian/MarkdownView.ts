@@ -4,6 +4,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Editor } from './Editor.ts';
 import { TextFileView } from './TextFileView.ts';
@@ -66,10 +67,13 @@ export class MarkdownView extends TextFileView {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.editor = new MockEditor();
+    const self = strictMock(this);
+    self.constructor2__(leaf);
+    return self;
   }
 
   public static create2__(leaf: WorkspaceLeaf): MarkdownView {
-    return strictMock(new MarkdownView(leaf));
+    return new MarkdownView(leaf);
   }
 
   public override asOriginalType__(): MarkdownViewOriginal {
@@ -83,6 +87,10 @@ export class MarkdownView extends TextFileView {
   public clear(): void {
     this.data = '';
     this.editor.setValue('');
+  }
+
+  public constructor2__(_leaf: WorkspaceLeaf): void {
+    noop();
   }
 
   public getMode(): 'preview' | 'source' {

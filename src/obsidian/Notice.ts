@@ -21,11 +21,13 @@ export class Notice {
       this.messageEl.appendChild(message.cloneNode(true));
     }
     (this as { duration__: number }).duration__ = duration ?? 0;
-    this.constructor__(message, duration);
+    const self = strictMock(this);
+    self.constructor__(message, duration);
+    return self;
   }
 
   public static create__(message: DocumentFragment | string, duration?: number): Notice {
-    return strictMock(new Notice(message, duration));
+    return new Notice(message, duration);
   }
 
   public asOriginalType__(): NoticeOriginal {

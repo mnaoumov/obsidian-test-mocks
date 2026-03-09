@@ -20,11 +20,13 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       }
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
-    this.constructor__(_containerEl);
+    const self = strictMock(this);
+    self.constructor__(_containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): TextComponent {
-    return strictMock(new TextComponent(containerEl));
+    return new TextComponent(containerEl);
   }
 
   public override asOriginalType__(): TextComponentOriginal {

@@ -1,19 +1,27 @@
 import type { TagValue as TagValueOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { StringValue } from './StringValue.ts';
 
 export class TagValue extends StringValue {
   public constructor(value: string) {
     super(value);
+    const self = strictMock(this);
+    self.constructor2__(value);
+    return self;
   }
 
   public static override create__(value: string): TagValue {
-    return strictMock(new TagValue(value));
+    return new TagValue(value);
   }
 
   public override asOriginalType__(): TagValueOriginal {
     return castTo<TagValueOriginal>(this);
+  }
+
+  public constructor2__(_value: string): void {
+    noop();
   }
 }

@@ -12,11 +12,13 @@ export class SecretComponent extends BaseComponent {
 
   public constructor(_app: App, _containerEl: HTMLElement) {
     super();
-    this.constructor__(_app, _containerEl);
+    const self = strictMock(this);
+    self.constructor__(_app, _containerEl);
+    return self;
   }
 
   public static create__(app: App, containerEl: HTMLElement): SecretComponent {
-    return strictMock(new SecretComponent(app, containerEl));
+    return new SecretComponent(app, containerEl);
   }
 
   public override asOriginalType__(): SecretComponentOriginal {

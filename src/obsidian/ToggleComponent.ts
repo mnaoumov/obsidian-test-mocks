@@ -17,11 +17,13 @@ export class ToggleComponent extends ValueComponent<boolean> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.toggleEl = createDiv();
-    this.constructor__(_containerEl);
+    const self = strictMock(this);
+    self.constructor__(_containerEl);
+    return self;
   }
 
   public static create__(containerEl: HTMLElement): ToggleComponent {
-    return strictMock(new ToggleComponent(containerEl));
+    return new ToggleComponent(containerEl);
   }
 
   public override asOriginalType__(): ToggleComponentOriginal {
