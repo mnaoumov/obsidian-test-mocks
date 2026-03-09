@@ -1,7 +1,7 @@
 {
   "name": "obsidian-test-mocks",
   "version": "0.1.0",
-  "description": "Comprehensive test mocks for the Obsidian API and obsidian-typings",
+  "description": "Comprehensive test mocks for the Obsidian API",
   "keywords": [
     "obsidian",
     "testing",
@@ -29,16 +29,6 @@
       "require": {
         "types": "./dist/lib/cjs/obsidian/index.d.cts",
         "default": "./dist/lib/cjs/obsidian/index.cjs"
-      }
-    },
-    "./obsidian-typings/implementations": {
-      "import": {
-        "types": "./dist/lib/esm/obsidian-typings/implementations/index.d.mts",
-        "default": "./dist/lib/esm/obsidian-typings/implementations/index.mjs"
-      },
-      "require": {
-        "types": "./dist/lib/cjs/obsidian-typings/implementations/index.d.cts",
-        "default": "./dist/lib/cjs/obsidian-typings/implementations/index.cjs"
       }
     },
     "./globals": {
