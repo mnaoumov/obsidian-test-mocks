@@ -11,12 +11,11 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
-import { Events } from './Events.ts';
+import { WorkspaceItem } from './WorkspaceItem.ts';
 
 let nextLeafId = 1;
 
-export class WorkspaceLeaf extends Events {
+export class WorkspaceLeaf extends WorkspaceItem {
   public _id: string;
   public hoverPopover: HoverPopover | null = null;
   public readonly isDeferred = false;
@@ -36,9 +35,7 @@ export class WorkspaceLeaf extends Events {
   protected constructor(_app: App, id?: string) {
     super();
     this._id = id ?? String(nextLeafId++);
-    const mock = strictMock(this);
-    WorkspaceLeaf.constructor__(mock, _app, id);
-    return mock;
+    WorkspaceLeaf.constructor__(this, _app, id);
   }
 
   public static override constructor__(_instance: WorkspaceLeaf, _app: App, _id?: string): void {

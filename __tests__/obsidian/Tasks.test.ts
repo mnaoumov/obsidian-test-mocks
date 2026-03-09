@@ -8,24 +8,24 @@ import { Tasks } from '../../src/obsidian/Tasks.ts';
 
 describe('Tasks', () => {
   it('should start empty', () => {
-    const tasks = new Tasks();
+    const tasks = Tasks.create__();
     expect(tasks.isEmpty()).toBe(true);
   });
 
   it('should not be empty after add', () => {
-    const tasks = new Tasks();
+    const tasks = Tasks.create__();
     tasks.add(() => Promise.resolve());
     expect(tasks.isEmpty()).toBe(false);
   });
 
   it('should not be empty after addPromise', () => {
-    const tasks = new Tasks();
+    const tasks = Tasks.create__();
     tasks.addPromise(Promise.resolve());
     expect(tasks.isEmpty()).toBe(false);
   });
 
   it('should invoke the callback immediately on add', () => {
-    const tasks = new Tasks();
+    const tasks = Tasks.create__();
     let called = false;
     tasks.add(() => {
       called = true;
@@ -35,7 +35,7 @@ describe('Tasks', () => {
   });
 
   it('should resolve all promises on promise()', async () => {
-    const tasks = new Tasks();
+    const tasks = Tasks.create__();
     const results: string[] = [];
     tasks.add(() => {
       results.push('a');

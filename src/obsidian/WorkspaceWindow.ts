@@ -3,32 +3,31 @@ import type { WorkspaceWindow as WorkspaceWindowOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
+import { WorkspaceContainer } from './WorkspaceContainer.ts';
 
-export class WorkspaceWindow {
-  public get doc(): Document {
+export class WorkspaceWindow extends WorkspaceContainer {
+  public override get doc(): Document {
     return document;
   }
 
-  public get win(): Window {
+  public override get win(): Window {
     return window;
   }
 
   protected constructor(_workspace: Workspace, _id?: string, _size?: Record<string, number>) {
-    const mock = strictMock(this);
-    WorkspaceWindow.constructor__(mock, _workspace, _id, _size);
-    return mock;
+    super(_workspace, '', _id);
+    WorkspaceWindow.constructor4__(this, _workspace, _id, _size);
   }
 
-  public static constructor__(_instance: WorkspaceWindow, _workspace: Workspace, _id?: string, _size?: Record<string, number>): void {
+  public static constructor4__(_instance: WorkspaceWindow, _workspace: Workspace, _id?: string, _size?: Record<string, number>): void {
     // Spy hook.
   }
 
-  public static create__(_workspace: Workspace, _id?: string, _size?: Record<string, number>): WorkspaceWindow {
+  public static create2__(_workspace: Workspace, _id?: string, _size?: Record<string, number>): WorkspaceWindow {
     return new WorkspaceWindow(_workspace, _id, _size);
   }
 
-  public asOriginalType__(): WorkspaceWindowOriginal {
+  public override asOriginalType__(): WorkspaceWindowOriginal {
     return castTo<WorkspaceWindowOriginal>(this);
   }
 }

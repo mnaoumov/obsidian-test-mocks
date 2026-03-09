@@ -220,7 +220,7 @@ export class Workspace extends Events {
     if (!this._leaves.includes(leaf)) {
       this._leaves.push(leaf);
     }
-    return WorkspaceWindow.create__(this);
+    return WorkspaceWindow.create2__(this);
   }
 
   public onLayoutReady(callback: () => unknown): void {
