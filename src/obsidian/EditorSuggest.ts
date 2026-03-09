@@ -1,8 +1,8 @@
 import type {
   Editor,
   EditorPosition,
-  EditorSuggest as EditorSuggestOriginal,
   EditorSuggestContext,
+  EditorSuggest as EditorSuggestOriginal,
   EditorSuggestTriggerInfo,
   Instruction,
   TFile
@@ -20,13 +20,7 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public constructor(app: App) {
     super(app);
-    const mock = strictMock(this);
-    EditorSuggest.constructor__(mock, app);
-    return mock;
-  }
-
-  public static override constructor__(_instance: EditorSuggest<unknown>, _app: App): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public override asOriginalType__(): EditorSuggestOriginal<T> {

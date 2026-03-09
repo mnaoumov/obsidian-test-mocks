@@ -12,17 +12,10 @@ export class WorkspaceTabs extends WorkspaceParent {
 
   protected constructor(_workspace: Workspace, _id?: string) {
     super();
-    const mock = strictMock(this);
-    WorkspaceTabs.constructor__(mock, _workspace, _id);
-    return mock;
-  }
-
-  public static override constructor__(_instance: WorkspaceTabs, _workspace: Workspace, _id?: string): void {
-    // Spy hook.
   }
 
   public static create__(_workspace: Workspace, _id?: string): WorkspaceTabs {
-    return new WorkspaceTabs(_workspace, _id);
+    return strictMock(new WorkspaceTabs(_workspace, _id));
   }
 
   public override asOriginalType__(): WorkspaceTabsOriginal {

@@ -24,17 +24,10 @@ export class Vault extends Events {
     const root = TFolder.create__(this, '/');
     this._fileMap['/'] = root;
     root.deleted = false;
-    const mock = strictMock(this);
-    Vault.constructor__(mock, adapter);
-    return mock;
-  }
-
-  public static override constructor__(_instance: Vault, _adapter: DataAdapter): void {
-    // Spy hook.
   }
 
   public static create__(adapter: DataAdapter): Vault {
-    return new Vault(adapter);
+    return strictMock(new Vault(adapter));
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {

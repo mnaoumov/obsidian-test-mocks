@@ -4,7 +4,6 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
 
 export class Component {
   public _children: Component[] = [];
@@ -14,13 +13,6 @@ export class Component {
   public _loaded = false;
 
   protected constructor() {
-    const mock = strictMock(this);
-    Component.constructor__(mock);
-    return mock;
-  }
-
-  public static constructor__(_instance: Component, ..._args: unknown[]): void {
-    // Spy hook.
   }
 
   public addChild<T extends Component>(component: T): T {

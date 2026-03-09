@@ -4,7 +4,6 @@ import type { TFolder } from './TFolder.ts';
 import type { Vault } from './Vault.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
 
 export abstract class TAbstractFile {
   public deleted = false;
@@ -18,13 +17,6 @@ export abstract class TAbstractFile {
     this.path = path;
     const parts = path.split('/');
     this.name = parts[parts.length - 1] ?? '';
-    const mock = strictMock(this);
-    TAbstractFile.constructor__(mock, vault, path);
-    return mock;
-  }
-
-  public static constructor__(_instance: TAbstractFile, _vault: Vault, _path: string): void {
-    // Spy hook.
   }
 
   public asOriginalType__(): TAbstractFileOriginal {

@@ -11,11 +11,6 @@ export abstract class WorkspaceContainer extends WorkspaceSplit {
 
   protected constructor(_workspace: Workspace, _direction: string, _id?: string) {
     super(_workspace, _direction, _id);
-    WorkspaceContainer.constructor__(this, _workspace, _direction, _id);
-  }
-
-  public static override constructor__(_instance: WorkspaceContainer, ..._args: unknown[]): void {
-    // Spy hook.
   }
 
   public override asOriginalType__(): WorkspaceContainerOriginal {

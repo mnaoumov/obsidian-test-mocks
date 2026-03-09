@@ -26,17 +26,10 @@ export class BasesQueryResult {
   private _properties: BasesPropertyId[] = [];
 
   protected constructor() {
-    const mock = strictMock(this);
-    BasesQueryResult.constructor__(mock);
-    return mock;
-  }
-
-  public static constructor__(_instance: BasesQueryResult): void {
-    // Spy hook.
   }
 
   public static create__(): BasesQueryResult {
-    return new BasesQueryResult();
+    return strictMock(new BasesQueryResult());
   }
 
   public asOriginalType__(): BasesQueryResultOriginal {

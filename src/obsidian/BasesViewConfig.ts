@@ -20,17 +20,10 @@ export class BasesViewConfig {
 
   protected constructor(_query: string, _type: string, name: string) {
     this.name = name;
-    const mock = strictMock(this);
-    BasesViewConfig.constructor__(mock, _query, _type, name);
-    return mock;
-  }
-
-  public static constructor__(_instance: BasesViewConfig, _query: string, _type: string, _name: string): void {
-    // Spy hook.
   }
 
   public static create__(_query: string, _type: string, name: string): BasesViewConfig {
-    return new BasesViewConfig(_query, _type, name);
+    return strictMock(new BasesViewConfig(_query, _type, name));
   }
 
   public asOriginalType__(): BasesViewConfigOriginal {
@@ -54,7 +47,7 @@ export class BasesViewConfig {
   }
 
   public getEvaluatedFormula(_view: BasesView, _key: string): Value {
-    return new NullValue();
+    return strictMock(new NullValue());
   }
 
   public getOrder(): BasesPropertyId[] {

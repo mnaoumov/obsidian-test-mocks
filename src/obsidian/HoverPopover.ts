@@ -16,19 +16,7 @@ export class HoverPopover extends Component {
   public constructor(_parent: HoverParent, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null) {
     super();
     this.hoverEl = createDiv();
-    const mock = strictMock(this);
-    HoverPopover.constructor__(mock, _parent, _targetEl, _waitTime, _staticPos);
-    return mock;
-  }
-
-  public static override constructor__(
-    _instance: HoverPopover,
-    _parent: HoverParent,
-    _targetEl: HTMLElement | null,
-    _waitTime?: number,
-    _staticPos?: null
-  ): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public static forLeaf(_leaf: WorkspaceLeaf): HoverPopover | null {

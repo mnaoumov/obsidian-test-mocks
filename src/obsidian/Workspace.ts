@@ -62,17 +62,10 @@ export class Workspace extends Events {
     this.rightRibbon = WorkspaceRibbon.create__(this, 'right');
     this.rightSplit = WorkspaceSidedock.create__(this, 'vertical', 'right');
     this.rootSplit = WorkspaceRoot.create__(this, 'vertical');
-    const mock = strictMock(this);
-    Workspace.constructor__(mock, _app, containerEl);
-    return mock;
-  }
-
-  public static override constructor__(_instance: Workspace, _app: App, _containerEl: HTMLElement): void {
-    // Spy hook.
   }
 
   public static create__(_app: App, containerEl: HTMLElement): Workspace {
-    return new Workspace(_app, containerEl);
+    return strictMock(new Workspace(_app, containerEl));
   }
 
   public _setLayoutReady(): void {

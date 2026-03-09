@@ -7,17 +7,10 @@ export class Tasks {
   private readonly promises: Promise<unknown>[] = [];
 
   protected constructor() {
-    const mock = strictMock(this);
-    Tasks.constructor__(mock);
-    return mock;
-  }
-
-  public static constructor__(_instance: Tasks): void {
-    // Spy hook.
   }
 
   public static create__(): Tasks {
-    return new Tasks();
+    return strictMock(new Tasks());
   }
 
   public add(callback: () => Promise<unknown>): void {

@@ -1,7 +1,7 @@
 import type {
   Menu as MenuOriginal,
-  MenuItem as ObsidianMenuItem,
-  MenuPositionDef
+  MenuPositionDef,
+  MenuItem as ObsidianMenuItem
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
@@ -18,17 +18,10 @@ export class Menu extends Component {
   protected constructor() {
     super();
     this.dom = createDiv();
-    const mock = strictMock(this);
-    Menu.constructor__(mock);
-    return mock;
-  }
-
-  public static override constructor__(_instance: Menu): void {
-    // Spy hook.
   }
 
   public static create__(): Menu {
-    return new Menu();
+    return strictMock(new Menu());
   }
 
   public static forEvent(_evt: MouseEvent | PointerEvent): Menu {

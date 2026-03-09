@@ -3,8 +3,8 @@ import type {
   HoverLinkSource,
   MarkdownPostProcessor,
   MarkdownPostProcessorContext,
-  Plugin as PluginOriginal,
   PluginManifest,
+  Plugin as PluginOriginal,
   PluginSettingTab,
   ViewCreator
 } from 'obsidian';
@@ -33,13 +33,7 @@ export abstract class Plugin extends Component {
     super();
     this.app = app;
     this.manifest = manifest;
-    const mock = strictMock(this);
-    Plugin.constructor__(mock, app, manifest);
-    return mock;
-  }
-
-  public static override constructor__(_instance: Plugin, _app: App, _manifest: PluginManifest): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public addCommand(command: Command): Command {

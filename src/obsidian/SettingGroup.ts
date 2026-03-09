@@ -1,7 +1,7 @@
 import type {
   ExtraButtonComponent,
-  SearchComponent,
   Setting as ObsidianSetting,
+  SearchComponent,
   SettingGroup as SettingGroupOriginal
 } from 'obsidian';
 
@@ -17,13 +17,7 @@ export class SettingGroup {
   public constructor(containerEl: HTMLElement) {
     this.listEl = createDiv();
     containerEl.appendChild(this.listEl);
-    const mock = strictMock(this);
-    SettingGroup.constructor__(mock, containerEl);
-    return mock;
-  }
-
-  public static constructor__(_instance: SettingGroup, _containerEl: HTMLElement): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public addClass(cls: string): this {

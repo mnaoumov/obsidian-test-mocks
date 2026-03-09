@@ -24,13 +24,7 @@ export class Modal {
     this.modalEl = createDiv();
     this.scope = Scope.create__();
     this.titleEl = createDiv();
-    const mock = strictMock(this);
-    Modal.constructor__(mock, app);
-    return mock;
-  }
-
-  public static constructor__(_instance: Modal, _app: App): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public asOriginalType__(): ModalOriginal {

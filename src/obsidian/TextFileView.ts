@@ -12,13 +12,7 @@ export abstract class TextFileView extends EditableFileView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const mock = strictMock(this);
-    TextFileView.constructor__(mock, leaf);
-    return mock;
-  }
-
-  public static override constructor__(_instance: TextFileView, _leaf: WorkspaceLeaf): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public override asOriginalType__(): TextFileViewOriginal {

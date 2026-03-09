@@ -18,17 +18,10 @@ export class FileManager {
 
   protected constructor(app: App) {
     this.app = app;
-    const mock = strictMock(this);
-    FileManager.constructor__(mock, app);
-    return mock;
-  }
-
-  public static constructor__(_instance: FileManager, _app: App): void {
-    // Spy hook.
   }
 
   public static create__(app: App): FileManager {
-    return new FileManager(app);
+    return strictMock(new FileManager(app));
   }
 
   public asOriginalType__(): FileManagerOriginal {

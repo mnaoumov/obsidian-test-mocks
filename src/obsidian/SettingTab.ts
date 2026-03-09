@@ -12,13 +12,7 @@ export abstract class SettingTab {
   public constructor(app: App) {
     this.app = app;
     this.containerEl = createDiv();
-    const mock = strictMock(this);
-    SettingTab.constructor__(mock, app);
-    return mock;
-  }
-
-  public static constructor__(_instance: SettingTab, _app: App, ..._args: unknown[]): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public asOriginalType__(): SettingTabOriginal {

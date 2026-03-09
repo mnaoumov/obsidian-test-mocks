@@ -7,19 +7,11 @@ import type {
 import type { EventsEntry } from '../internal/Types.ts';
 
 import { castTo } from '../internal/Cast.ts';
-import { strictMock } from '../internal/StrictMock.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
   protected constructor() {
-    const mock = strictMock(this);
-    Events.constructor__(mock);
-    return mock;
-  }
-
-  public static constructor__(_instance: Events, ..._args: unknown[]): void {
-    // Spy hook.
   }
 
   public asOriginalType__(): EventsOriginal {
