@@ -30,7 +30,7 @@ export class BasesEntry implements FormulaContext {
     return this.values.get(propertyId) ?? null;
   }
 
-  /** @deprecated Mock-only. Sets a value for a property. Not part of the Obsidian API. */
+  /** Mock-only. Sets a value for a property. Not part of the Obsidian API. */
   public setValue__(propertyId: BasesPropertyId, value: null | Value): void {
     this.values.set(propertyId, value);
   }

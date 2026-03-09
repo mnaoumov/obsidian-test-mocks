@@ -59,7 +59,7 @@ export class DropdownComponent extends ValueComponent<string> {
   }
 
   /** Test helper to trigger change callback. */
-  public simulateChange(): void {
+  public simulateChange__(): void {
     this.changeCallback?.();
   }
 }

@@ -12,7 +12,6 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
 
   public constructor(inputEl: T) {
     super();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Assigning mock-only @deprecated inputEl.
     this.inputEl = inputEl;
     return strictMock(this);
   }
@@ -35,14 +34,12 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   }
 
   public setPlaceholder(placeholder: string): this {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Accessing mock-only @deprecated inputEl.
     this.inputEl.placeholder = placeholder;
     return this;
   }
 
   public override setValue(value: string): this {
     this._value = value;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Accessing mock-only @deprecated inputEl.
     this.inputEl.value = value;
     this._onChange?.(value);
     return this;

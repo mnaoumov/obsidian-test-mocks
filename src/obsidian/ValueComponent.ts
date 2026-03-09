@@ -4,8 +4,6 @@ import { castTo } from '../internal/Cast.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export abstract class ValueComponent<T> extends BaseComponent {
-  /** @deprecated Mock-only abstract getter. inputEl is a concrete property in the Obsidian API. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Declaring mock-only abstract getter.
   public abstract get inputEl(): HTMLElement;
 
   protected constructor() {
