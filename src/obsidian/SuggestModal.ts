@@ -9,11 +9,13 @@ import { castTo } from '../internal/Cast.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
 
+const DEFAULT_LIMIT = 100;
+
 export abstract class SuggestModal<T> extends Modal {
   public emptyStateText = 'No results found.';
   public inputEl: HTMLInputElement;
   public instructions: Instruction[] = [];
-  public limit = 100;
+  public limit = DEFAULT_LIMIT;
   public resultContainerEl: HTMLElement;
 
   public constructor(app: App) {
@@ -35,6 +37,7 @@ export abstract class SuggestModal<T> extends Modal {
 
   public abstract onChooseSuggestion(item: T, evt: KeyboardEvent | MouseEvent): void;
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public onNoSuggestion(): void {
   }
 

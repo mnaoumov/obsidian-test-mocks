@@ -27,6 +27,7 @@ export class Notice {
     return castTo<NoticeOriginal>(this);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI operation.
   public hide(): void {
   }
 

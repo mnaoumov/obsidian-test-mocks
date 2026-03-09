@@ -13,9 +13,7 @@ export function htmlToMarkdown(html: Document | DocumentFragment | HTMLElement |
 
   const wrapper = document.createElement('div');
   if (html instanceof Document) {
-    if (html.body) {
-      wrapper.innerHTML = html.body.innerHTML;
-    }
+    wrapper.innerHTML = html.body.innerHTML;
   } else {
     wrapper.appendChild(html.cloneNode(true));
   }

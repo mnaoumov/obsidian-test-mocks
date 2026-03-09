@@ -39,6 +39,7 @@ export class FileManager {
     return `[[${link}]]`;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async getAvailablePathForAttachment(filename: string, _sourcePath?: string): Promise<string> {
     return filename;
   }
@@ -60,9 +61,9 @@ export class FileManager {
     let frontmatter: Record<string, unknown> = {};
     let body = content;
 
-    const fmMatch = /^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/.exec(content);
+    const fmMatch = /^---\r?\n(?<yaml>[\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(content);
     if (fmMatch) {
-      const yamlStr = fmMatch[1] ?? '';
+      const yamlStr = fmMatch.groups?.['yaml'] ?? '';
       const parsed = parseYaml(yamlStr);
       if (parsed && typeof parsed === 'object') {
         frontmatter = parsed as Record<string, unknown>;

@@ -3,9 +3,10 @@ import type {
   MenuItem as MenuItemOriginal
 } from 'obsidian';
 
+import type { Menu } from './Menu.ts';
+
 import { castTo } from '../internal/Cast.ts';
 import { strictMock } from '../internal/StrictMock.ts';
-import { Menu } from './Menu.ts';
 
 export class MenuItem {
   public _checked: boolean | null = null;
@@ -61,7 +62,10 @@ export class MenuItem {
   }
 
   public setSubmenu(): Menu {
-    return Menu.create__();
+    // Lazy import to break circular dependency (Menu <-> MenuItem).
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Required to break import cycle synchronously.
+    const { Menu: MenuClass } = require('./Menu.ts') as typeof import('./Menu.ts');
+    return MenuClass.create__();
   }
 
   public setTitle(title: DocumentFragment | string): this {

@@ -24,6 +24,7 @@ export function ajax(_options: unknown): void {
   // Intentionally a no-op in tests.
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await -- Matches the async signature of Obsidian's ajaxPromise.
 export async function ajaxPromise(_options: unknown): Promise<unknown> {
   // Intentionally resolves to undefined in tests.
   return undefined;

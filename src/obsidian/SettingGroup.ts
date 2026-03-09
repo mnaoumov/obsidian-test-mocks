@@ -1,7 +1,9 @@
+// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
+// dprint-ignore -- Alias sort order differs from original name order.
 import type {
   ExtraButtonComponent,
-  SearchComponent,
   Setting as ObsidianSetting,
+  SearchComponent,
   SettingGroup as SettingGroupOriginal
 } from 'obsidian';
 

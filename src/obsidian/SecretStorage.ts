@@ -8,6 +8,7 @@ import { strictMock } from '../internal/StrictMock.ts';
 export class SecretStorage {
   private readonly store = new Map<string, string>();
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor(_app: App) {
   }
 

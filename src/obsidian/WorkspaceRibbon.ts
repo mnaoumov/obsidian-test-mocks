@@ -7,6 +7,7 @@ import { strictMock } from '../internal/StrictMock.ts';
 
 export class WorkspaceRibbon {
   // Intentionally has no additional members, obsidian.d.ts doesn't have any members to mock.
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor(_workspace: Workspace, _side: string) {
   }
 

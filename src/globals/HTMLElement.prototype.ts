@@ -22,7 +22,6 @@ export function findAllSelf(this: HTMLElement, selector: string): HTMLElement[] 
 }
 
 export function hide(this: HTMLElement): void {
-  // eslint-disable-next-line obsidianmd/no-static-styles-assignment -- DOM manipulation.
   this.style.display = 'none';
 }
 
@@ -77,6 +76,7 @@ export function onNodeInserted(
 ): () => void {
   // Jsdom doesn't implement real insertion observers; invoke immediately for safety.
   listener();
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Returns a noop unsubscribe callback.
   return (): void => {};
 }
 
@@ -84,6 +84,7 @@ export function onWindowMigrated(
   _this: HTMLElement,
   _listener: (win: Window) => unknown
 ): () => void {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Returns a noop unsubscribe callback.
   return (): void => {};
 }
 
@@ -98,7 +99,6 @@ export function setCssStyles(this: HTMLElement, styles: Partial<CSSStyleDeclarat
 }
 
 export function show(this: HTMLElement): void {
-  // eslint-disable-next-line obsidianmd/no-static-styles-assignment -- DOM manipulation.
   this.style.display = '';
 }
 

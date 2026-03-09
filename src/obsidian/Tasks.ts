@@ -6,6 +6,7 @@ import { strictMock } from '../internal/StrictMock.ts';
 export class Tasks {
   private readonly promises: Promise<unknown>[] = [];
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor() {
   }
 

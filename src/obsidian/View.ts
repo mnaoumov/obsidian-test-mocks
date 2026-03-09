@@ -54,9 +54,11 @@ export abstract class View extends Component {
 
   public abstract getViewType(): string;
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: pane menu construction is not simulated.
   public onPaneMenu(_menu: Menu, _source: string): void {
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: resize is a pure UI operation.
   public onResize(): void {
   }
 
@@ -64,13 +66,16 @@ export abstract class View extends Component {
     this._ephemeralState = state;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async setState(state: unknown, _result: ViewStateResult): Promise<void> {
     this._state = state;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   protected async onClose(): Promise<void> {
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   protected async onOpen(): Promise<void> {
   }
 }

@@ -30,6 +30,7 @@ export abstract class FuzzySuggestModal<T> extends Modal {
     return '';
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Abstract-like override point for subclasses.
   public onChooseItem(_item: T, _evt: KeyboardEvent | MouseEvent): void {
   }
 

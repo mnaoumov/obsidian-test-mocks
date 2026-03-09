@@ -5,6 +5,7 @@ import { castTo } from '../internal/Cast.ts';
 export abstract class BaseComponent {
   public disabled = false;
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for subclass instantiation.
   protected constructor() {
   }
 

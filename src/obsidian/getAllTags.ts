@@ -1,5 +1,6 @@
 import { parseFrontMatterTags } from './parseFrontMatterTags.ts';
 
+// eslint-disable-next-line no-restricted-syntax -- Matches obsidian.d.ts signature.
 export function getAllTags(cache: { frontmatter?: Record<string, unknown>; tags?: { tag: string }[] }): null | string[] {
   const tags: string[] = [];
   if (cache.tags) {

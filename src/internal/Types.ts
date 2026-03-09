@@ -19,7 +19,7 @@ export interface EventsEntry {
   name: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Matches obsidian.d.ts return type pattern.
 export type MaybeReturn<T> = T | void;
 
 export interface ObsidianGlobal {

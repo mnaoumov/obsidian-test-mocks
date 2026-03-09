@@ -6,6 +6,7 @@ import { castTo } from '../internal/Cast.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class MenuSeparator {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor(_menu: Menu) {
   }
 

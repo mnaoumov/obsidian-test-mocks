@@ -1,10 +1,12 @@
+// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
+// dprint-ignore -- Alias sort order differs from original name order.
 import type {
   Command,
   HoverLinkSource,
   MarkdownPostProcessor,
   MarkdownPostProcessorContext,
-  Plugin as PluginOriginal,
   PluginManifest,
+  Plugin as PluginOriginal,
   PluginSettingTab,
   ViewCreator
 } from 'obsidian';
@@ -61,10 +63,12 @@ export abstract class Plugin extends Component {
     return castTo<PluginOriginal>(this);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async loadData(): Promise<unknown> {
     return this._data;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public onUserEnable(): void {
   }
 
@@ -84,7 +88,8 @@ export abstract class Plugin extends Component {
     _sortOrder?: number
   ): MarkdownPostProcessor {
     this._markdownCodeBlockProcessors.set(language, handler);
-    const processor: MarkdownPostProcessor = (_el: HTMLElement, _ctx: MarkdownPostProcessorContext): void => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function, func-style, func-names -- Placeholder processor assigned to typed const; real processing is not simulated.
+    const processor: MarkdownPostProcessor = function (_el: HTMLElement, _ctx: MarkdownPostProcessorContext): void {
     };
     this._markdownPostProcessors.push(processor);
     return processor;
@@ -103,6 +108,7 @@ export abstract class Plugin extends Component {
     this.commands.delete(commandId);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async saveData(data: unknown): Promise<void> {
     this._data = data;
   }

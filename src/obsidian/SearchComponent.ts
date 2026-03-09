@@ -18,6 +18,7 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     return castTo<SearchComponentOriginal>(this);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI callback override point.
   public override onChanged(): void {
   }
 }

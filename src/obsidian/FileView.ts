@@ -36,15 +36,19 @@ export abstract class FileView extends ItemView {
     return { ...super.getState() };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public override onload(): void {
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public async onLoadFile(_file: TFile): Promise<void> {
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public async onRename(_file: TFile): Promise<void> {
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public async onUnloadFile(_file: TFile): Promise<void> {
   }
 
