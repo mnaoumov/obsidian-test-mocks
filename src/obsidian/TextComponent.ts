@@ -5,7 +5,6 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
-  public static instances__: TextComponent[] = [];
   public eventListeners__: Record<string, ((...args: unknown[]) => void)[]> = {};
 
   public constructor(_containerEl: HTMLElement) {
@@ -20,7 +19,6 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       }
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
-    TextComponent.instances__.push(this);
   }
 
   public static create__(containerEl: HTMLElement): TextComponent {
