@@ -13,6 +13,7 @@ import { strictMock } from '../internal/StrictMock.ts';
 export class Keymap {
   private readonly _scopeStack: Scope[] = [];
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor() {
   }
 

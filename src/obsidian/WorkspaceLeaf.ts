@@ -90,6 +90,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async openFile(file: TFile, _openState?: OpenViewState): Promise<void> {
     this.__file = file;
   }
@@ -110,6 +111,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     this._pinned = pinned;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async setViewState(viewState: ViewState, eState?: Record<string, unknown>): Promise<void> {
     this._viewState = { ...viewState };
     if (eState) {

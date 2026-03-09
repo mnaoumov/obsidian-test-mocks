@@ -39,36 +39,40 @@ import {
   setText,
   toggleClass
 } from './Element.prototype.ts';
+// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
+// dprint-ignore -- Alias sort order differs from original name order.
 import {
   ajax,
   ajaxPromise,
-  createDiv as globalCreateDiv,
-  createEl as globalCreateEl,
   createFragment,
-  createSpan as globalCreateSpan,
-  createSvg as globalCreateSvg,
   fish,
   fishAll,
+  createDiv as globalCreateDiv,
+  createEl as globalCreateEl,
+  createSpan as globalCreateSpan,
+  createSvg as globalCreateSvg,
   isBoolean,
   nextFrame,
   ready,
   sleep
 } from './functions.ts';
+// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
+// dprint-ignore -- Alias sort order differs from original name order.
 import {
+  hide,
   find as htmlElementFind,
   findAll as htmlElementFindAll,
   findAllSelf as htmlElementFindAllSelf,
-  hide,
+  off as htmlElementOff,
+  on as htmlElementOn,
+  setCssProps as htmlElementSetCssProps,
+  setCssStyles as htmlElementSetCssStyles,
   innerHeight,
   innerWidth,
   isShown,
-  off as htmlElementOff,
-  on as htmlElementOn,
   onClickEvent,
   onNodeInserted,
   onWindowMigrated,
-  setCssProps as htmlElementSetCssProps,
-  setCssStyles as htmlElementSetCssStyles,
   show,
   toggle,
   toggleVisibility,
@@ -78,19 +82,21 @@ import {
   clamp,
   square
 } from './Math.ts';
+// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
+// dprint-ignore -- Alias sort order differs from original name order.
 import {
   appendText,
   constructorWin,
-  createDiv as nodeCreateDiv,
-  createEl as nodeCreateEl,
-  createSpan as nodeCreateSpan,
-  createSvg as nodeCreateSvg,
   detach,
   doc,
   empty,
   indexOf,
   insertAfter,
   instanceOf,
+  createDiv as nodeCreateDiv,
+  createEl as nodeCreateEl,
+  createSpan as nodeCreateSpan,
+  createSvg as nodeCreateSvg,
   setChildrenInPlace,
   win
 } from './Node.prototype.ts';
@@ -99,9 +105,11 @@ import {
   each,
   isEmpty
 } from './Object.ts';
+// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
+// dprint-ignore -- Alias sort order differs from original name order.
 import {
-  contains as stringContains,
-  format
+  format,
+  contains as stringContains
 } from './String.prototype.ts';
 import { isString } from './String.ts';
 import {
@@ -273,16 +281,16 @@ export function mockObsidianDeclareGlobal(): void {
  * This is intended to polyfill Obsidian's `declare global` helpers/prototypes
  * in tests without overwriting any existing implementation (e.g. jsdom / Node).
  */
-function define<Target extends object>(target: Target, values: Record<string, unknown>): void {
+function define(target: object, values: Record<string, unknown>): void {
   for (const [key, value] of Object.entries(values)) {
     defineValueIfMissing(target, key, value);
   }
 }
 
-function defineGetterIfMissing<Target extends object, Return>(
+function defineGetterIfMissing<Target extends object>(
   target: Target,
   key: string,
-  getter: (this: Target) => Return
+  getter: (this: Target) => unknown
 ): void {
   assertGenericObject(target);
   if (target[key] !== undefined) {

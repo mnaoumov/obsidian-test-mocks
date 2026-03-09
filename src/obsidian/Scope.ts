@@ -18,6 +18,7 @@ interface MockKeyScope {
 export class Scope {
   private readonly _keys: MockKeyScope[] = [];
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor(_parent?: Scope) {
   }
 

@@ -11,6 +11,7 @@ import { castTo } from '../internal/Cast.ts';
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for subclass instantiation.
   protected constructor() {
   }
 
@@ -28,13 +29,13 @@ export class Events {
 
   public offref(ref: EventRef): void {
     const entry = castTo<EventsEntry>(ref);
-    this.off(entry.name, entry.fn as (...data: unknown[]) => unknown);
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- entry.fn is a stored function reference, not a class method.
+    const fn = entry.fn as (...data: unknown[]) => unknown;
+    this.off(entry.name, fn);
   }
 
   public on(name: string, callback: (...data: unknown[]) => unknown, ctx?: unknown): EventRef {
-    if (!this._[name]) {
-      this._[name] = [];
-    }
+    this._[name] ??= [];
     const self = castTo<ObsidianEvents>(this);
     this._[name].push({ ctx, e: self, fn: callback, name });
     return { e: self, fn: callback, name };

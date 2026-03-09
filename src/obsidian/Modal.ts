@@ -36,9 +36,11 @@ export class Modal {
     this._closeCallback?.();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public onClose(): void {
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public onOpen(): void {
   }
 

@@ -1,8 +1,10 @@
+// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
+// dprint-ignore -- Alias sort order differs from original name order.
 import type {
   Editor,
   EditorPosition,
-  EditorSuggest as EditorSuggestOriginal,
   EditorSuggestContext,
+  EditorSuggest as EditorSuggestOriginal,
   EditorSuggestTriggerInfo,
   Instruction,
   TFile
@@ -14,9 +16,11 @@ import { castTo } from '../internal/Cast.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
+const DEFAULT_LIMIT = 100;
+
 export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
   public instructions: Instruction[] = [];
-  public limit = 100;
+  public limit = DEFAULT_LIMIT;
 
   public constructor(app: App) {
     super(app);

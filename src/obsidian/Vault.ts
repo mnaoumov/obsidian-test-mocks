@@ -15,7 +15,6 @@ import { TFolder } from './TFolder.ts';
 export class Vault extends Events {
   public _fileMap: Record<string, TAbstractFile> = {};
   public adapter: DataAdapter;
-  // eslint-disable-next-line obsidianmd/hardcoded-config-path -- Default value for testing.
   public configDir = '.obsidian';
 
   protected constructor(adapter: DataAdapter) {

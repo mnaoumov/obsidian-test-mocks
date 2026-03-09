@@ -1,7 +1,9 @@
+// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
+// dprint-ignore -- Alias sort order differs from original name order.
 import type {
-  Editor as EditorOriginal,
   EditorChange,
   EditorCommandName,
+  Editor as EditorOriginal,
   EditorPosition,
   EditorRange,
   EditorSelection,
@@ -31,6 +33,7 @@ export abstract class Editor {
     this._focused = false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: editor command execution is not simulated.
   public exec(_command: EditorCommandName): void {
   }
 
@@ -154,6 +157,7 @@ export abstract class Editor {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: refresh is a pure UI operation.
   public refresh(): void {
   }
 
@@ -175,14 +179,15 @@ export abstract class Editor {
     this.replaceRange(replacement, from, to);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: scroll is a pure UI operation.
   public scrollIntoView(_range: EditorRange, _center?: boolean): void {
   }
 
   public scrollTo(x?: null | number, y?: null | number): void {
-    if (x != null) {
+    if (x !== null && x !== undefined) {
       this._scrollLeft = x;
     }
-    if (y != null) {
+    if (y !== null && y !== undefined) {
       this._scrollTop = y;
     }
   }

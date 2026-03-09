@@ -1,7 +1,9 @@
+// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
+// dprint-ignore -- Alias sort order differs from original name order.
 import type {
   Menu as MenuOriginal,
-  MenuItem as ObsidianMenuItem,
-  MenuPositionDef
+  MenuPositionDef,
+  MenuItem as ObsidianMenuItem
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';

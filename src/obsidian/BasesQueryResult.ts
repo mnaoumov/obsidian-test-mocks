@@ -25,6 +25,7 @@ export class BasesQueryResult {
 
   private _properties: BasesPropertyId[] = [];
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor() {
   }
 

@@ -9,11 +9,12 @@ interface RequestUrlResponse {
 type RequestUrlResponsePromise = Promise<RequestUrlResponse> & RequestUrlResponse;
 
 export function requestUrl(_request: unknown): RequestUrlResponsePromise {
+  const HTTP_OK = 200;
   const response: RequestUrlResponse = {
     arrayBuffer: new ArrayBuffer(0),
     headers: {},
     json: null,
-    status: 200,
+    status: HTTP_OK,
     text: ''
   };
   const promise = Promise.resolve(response) as RequestUrlResponsePromise;

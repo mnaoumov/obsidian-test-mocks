@@ -21,6 +21,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     return strictMock(this);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI operation.
   public applyScroll(_scroll: number): void {
   }
 
@@ -40,6 +41,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     return 0;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI operation.
   public rerender(_full?: boolean): void {
   }
 

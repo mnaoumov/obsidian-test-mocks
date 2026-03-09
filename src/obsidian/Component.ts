@@ -12,6 +12,7 @@ export class Component {
   public _intervals: number[] = [];
   public _loaded = false;
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for subclass instantiation.
   protected constructor() {
   }
 

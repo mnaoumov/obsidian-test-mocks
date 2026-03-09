@@ -11,6 +11,7 @@ import { strictMock } from '../internal/StrictMock.ts';
 export class RenderContext {
   public hoverPopover: HoverPopover | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor(_app: App) {
   }
 

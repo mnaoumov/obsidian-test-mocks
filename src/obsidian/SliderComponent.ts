@@ -4,6 +4,8 @@ import { castTo } from '../internal/Cast.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
+const DEFAULT_MAX = 100;
+
 export class SliderComponent extends ValueComponent<number> {
   public sliderEl: HTMLInputElement;
 
@@ -11,7 +13,7 @@ export class SliderComponent extends ValueComponent<number> {
     return this.sliderEl;
   }
 
-  private _max = 100;
+  private _max = DEFAULT_MAX;
   private _min = 0;
   private _onChange: ((value: number) => unknown) | null = null;
   private _step: 'any' | number = 1;
@@ -51,7 +53,7 @@ export class SliderComponent extends ValueComponent<number> {
 
   public setLimits(min: null | number, max: null | number, step: 'any' | number): this {
     this._min = min ?? 0;
-    this._max = max ?? 100;
+    this._max = max ?? DEFAULT_MAX;
     this._step = step;
     this.sliderEl.setAttribute('min', String(this._min));
     this.sliderEl.setAttribute('max', String(this._max));
@@ -65,6 +67,7 @@ export class SliderComponent extends ValueComponent<number> {
     return this;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI operation.
   public showTooltip(): void {
   }
 }
