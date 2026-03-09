@@ -11,17 +11,10 @@ export class TFolder extends TAbstractFile {
 
   protected constructor(vault: Vault, path: string) {
     super(vault, path);
-    const mock = strictMock(this);
-    TFolder.constructor__(mock, vault, path);
-    return mock;
-  }
-
-  public static override constructor__(_instance: TFolder, _vault: Vault, _path: string): void {
-    // Spy hook.
   }
 
   public static create__(vault: Vault, path: string): TFolder {
-    return new TFolder(vault, path);
+    return strictMock(new TFolder(vault, path));
   }
 
   public override asOriginalType__(): TFolderOriginal {

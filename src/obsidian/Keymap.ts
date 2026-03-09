@@ -14,17 +14,10 @@ export class Keymap {
   private readonly _scopeStack: Scope[] = [];
 
   protected constructor() {
-    const mock = strictMock(this);
-    Keymap.constructor__(mock);
-    return mock;
-  }
-
-  public static constructor__(_instance: Keymap): void {
-    // Spy hook.
   }
 
   public static create__(): Keymap {
-    return new Keymap();
+    return strictMock(new Keymap());
   }
 
   public static isModEvent(_evt?: null | UserEvent): boolean | PaneType {

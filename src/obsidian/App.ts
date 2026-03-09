@@ -31,17 +31,10 @@ export class App {
     this.metadataCache = MetadataCache.create__(this, this.vault);
     this.scope = Scope.create__();
     this.workspace = Workspace.create__(this, createDiv());
-    const mock = strictMock(this);
-    App.constructor__(mock, adapter, _appId);
-    return mock;
-  }
-
-  public static constructor__(_instance: App, _adapter: DataAdapter, _appId: string): void {
-    // Spy hook.
   }
 
   public static create__(adapter: DataAdapter, _appId: string): App {
-    return new App(adapter, _appId);
+    return strictMock(new App(adapter, _appId));
   }
 
   public asOriginalType__(): AppOriginal {

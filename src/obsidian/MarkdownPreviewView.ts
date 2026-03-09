@@ -18,13 +18,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   public constructor() {
     super(createDiv());
     this.containerEl = createDiv();
-    const mock = strictMock(this);
-    MarkdownPreviewView.constructor__(mock);
-    return mock;
-  }
-
-  public static override constructor__(_instance: MarkdownPreviewView): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public applyScroll(_scroll: number): void {

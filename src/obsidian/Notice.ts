@@ -20,13 +20,7 @@ export class Notice {
       this.messageEl.appendChild(message.cloneNode(true));
     }
     (this as { duration: number }).duration = duration ?? 0;
-    const mock = strictMock(this);
-    Notice.constructor__(mock, message, duration);
-    return mock;
-  }
-
-  public static constructor__(_instance: Notice, _message: DocumentFragment | string, _duration?: number): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public asOriginalType__(): NoticeOriginal {

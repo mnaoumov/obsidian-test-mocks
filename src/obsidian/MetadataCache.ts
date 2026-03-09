@@ -20,17 +20,10 @@ export class MetadataCache extends Events {
   protected constructor(app: App, _vault: Vault) {
     super();
     this._app = app;
-    const mock = strictMock(this);
-    MetadataCache.constructor__(mock, app, _vault);
-    return mock;
-  }
-
-  public static override constructor__(_instance: MetadataCache, _app: App, _vault: Vault): void {
-    // Spy hook.
   }
 
   public static create__(app: App, _vault: Vault): MetadataCache {
-    return new MetadataCache(app, _vault);
+    return strictMock(new MetadataCache(app, _vault));
   }
 
   public _setCache(path: string, cache: CachedMetadata): void {

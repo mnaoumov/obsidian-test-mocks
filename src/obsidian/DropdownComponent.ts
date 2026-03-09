@@ -16,13 +16,7 @@ export class DropdownComponent extends ValueComponent<string> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.selectEl = createEl('select');
-    const mock = strictMock(this);
-    DropdownComponent.constructor__(mock, _containerEl);
-    return mock;
-  }
-
-  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public addOption(value: string, display: string): this {

@@ -17,17 +17,10 @@ export class BasesEntryGroup {
     if (key !== undefined) {
       this.key = key as Value;
     }
-    const mock = strictMock(this);
-    BasesEntryGroup.constructor__(mock, entries, key);
-    return mock;
-  }
-
-  public static constructor__(_instance: BasesEntryGroup, _entries: BasesEntry[], _key: unknown): void {
-    // Spy hook.
   }
 
   public static create__(entries: BasesEntry[], key: unknown): BasesEntryGroup {
-    return new BasesEntryGroup(entries, key);
+    return strictMock(new BasesEntryGroup(entries, key));
   }
 
   public asOriginalType__(): BasesEntryGroupOriginal {

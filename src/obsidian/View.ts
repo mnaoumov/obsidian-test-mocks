@@ -31,13 +31,7 @@ export abstract class View extends Component {
     this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapter, '');
     this.containerEl = createDiv();
     this.leaf = leaf;
-    const mock = strictMock(this);
-    View.constructor__(mock, leaf);
-    return mock;
-  }
-
-  public static override constructor__(_instance: View, _leaf: WorkspaceLeaf): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public override asOriginalType__(): ViewOriginal {

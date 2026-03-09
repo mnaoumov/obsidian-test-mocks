@@ -10,13 +10,7 @@ export class MarkdownRenderChild extends Component {
   public constructor(containerEl: HTMLElement) {
     super();
     this.containerEl = containerEl;
-    const mock = strictMock(this);
-    MarkdownRenderChild.constructor__(mock, containerEl);
-    return mock;
-  }
-
-  public static override constructor__(_instance: MarkdownRenderChild, _containerEl: HTMLElement): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public override asOriginalType__(): MarkdownRenderChildOriginal {

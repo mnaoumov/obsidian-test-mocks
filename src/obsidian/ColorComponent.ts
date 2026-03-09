@@ -22,13 +22,7 @@ export class ColorComponent extends ValueComponent<string> {
     super();
     this.colorPickerEl = createEl('input');
     this.colorPickerEl.type = 'color';
-    const mock = strictMock(this);
-    ColorComponent.constructor__(mock, _containerEl);
-    return mock;
-  }
-
-  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public override asOriginalType__(): ColorComponentOriginal {
@@ -102,11 +96,11 @@ function hslToRgb(hsl: HSL): RGB {
   }
   const hue2rgb = (p: number, q: number, t: number): number => {
     let tn = t;
-    if (tn < 0) tn += 1;
-    if (tn > 1) tn -= 1;
-    if (tn < 1 / 6) return p + (q - p) * 6 * tn;
-    if (tn < 1 / 2) return q;
-    if (tn < 2 / 3) return p + (q - p) * (2 / 3 - tn) * 6;
+    if (tn < 0) { tn += 1; }
+    if (tn > 1) { tn -= 1; }
+    if (tn < 1 / 6) { return p + (q - p) * 6 * tn; }
+    if (tn < 1 / 2) { return q; }
+    if (tn < 2 / 3) { return p + (q - p) * (2 / 3 - tn) * 6; }
     return p;
   };
   const q = l < 0.5 ? l * (1 + s) : l + s - l * s;

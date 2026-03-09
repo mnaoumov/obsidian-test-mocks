@@ -19,12 +19,7 @@ export class MenuItem {
 
   private constructor(_menu: unknown) {
     const mock = strictMock(this);
-    MenuItem.constructor__(mock, _menu);
     return mock;
-  }
-
-  public static constructor__(_instance: MenuItem, _menu: unknown): void {
-    // Spy hook.
   }
 
   public static create__(_menu: unknown): MenuItem {

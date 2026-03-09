@@ -1,7 +1,5 @@
 import type { TextComponent as TextComponentOriginal } from 'obsidian';
 
-import type { ValueComponent } from './ValueComponent.ts';
-
 import { castTo } from '../internal/Cast.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
@@ -27,13 +25,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     } as HTMLInputElement['addEventListener'];
     TextComponent.instances.push(this);
     /* eslint-enable @typescript-eslint/no-deprecated -- Mock internals. */
-    const mock = strictMock(this);
-    TextComponent.constructor__(mock, _containerEl);
-    return mock;
-  }
-
-  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public override asOriginalType__(): TextComponentOriginal {

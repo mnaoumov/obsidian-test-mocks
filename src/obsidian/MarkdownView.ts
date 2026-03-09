@@ -66,13 +66,7 @@ export class MarkdownView extends TextFileView {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.editor = new MockEditor();
-    const mock = strictMock(this);
-    MarkdownView.constructor__(mock, leaf);
-    return mock;
-  }
-
-  public static override constructor__(_instance: MarkdownView, _leaf: WorkspaceLeaf): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public override asOriginalType__(): MarkdownViewOriginal {

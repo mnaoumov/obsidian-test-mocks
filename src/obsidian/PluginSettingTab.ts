@@ -13,13 +13,7 @@ export abstract class PluginSettingTab extends SettingTab {
   public constructor(app: App, plugin: Plugin) {
     super(app);
     this.plugin = plugin;
-    const mock = strictMock(this);
-    PluginSettingTab.constructor__(mock, app, plugin);
-    return mock;
-  }
-
-  public static override constructor__(_instance: PluginSettingTab, _app: App, _plugin: Plugin): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public override asOriginalType__(): PluginSettingTabOriginal {

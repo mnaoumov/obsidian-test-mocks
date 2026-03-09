@@ -19,17 +19,10 @@ export class TFile extends TAbstractFile {
     const dotIndex = this.name.lastIndexOf('.');
     this.extension = dotIndex >= 0 ? this.name.slice(dotIndex + 1) : '';
     this.basename = dotIndex >= 0 ? this.name.slice(0, dotIndex) : this.name;
-    const mock = strictMock(this);
-    TFile.constructor__(mock, vault, path);
-    return mock;
-  }
-
-  public static override constructor__(_instance: TFile, _vault: Vault, _path: string): void {
-    // Spy hook.
   }
 
   public static create__(vault: Vault, path: string): TFile {
-    return new TFile(vault, path);
+    return strictMock(new TFile(vault, path));
   }
 
   public override asOriginalType__(): TFileOriginal {

@@ -11,6 +11,7 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { strictMock } from '../internal/StrictMock.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 let nextLeafId = 1;
@@ -35,15 +36,10 @@ export class WorkspaceLeaf extends WorkspaceItem {
   protected constructor(_app: App, id?: string) {
     super();
     this._id = id ?? String(nextLeafId++);
-    WorkspaceLeaf.constructor__(this, _app, id);
-  }
-
-  public static override constructor__(_instance: WorkspaceLeaf, _app: App, _id?: string): void {
-    // Spy hook.
   }
 
   public static create__(_app: App, id?: string): WorkspaceLeaf {
-    return new WorkspaceLeaf(_app, id);
+    return strictMock(new WorkspaceLeaf(_app, id));
   }
 
   public _getGroup(): null | string {

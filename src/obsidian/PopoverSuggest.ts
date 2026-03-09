@@ -14,13 +14,7 @@ export abstract class PopoverSuggest<T> {
   public constructor(app: App, scope?: Scope) {
     this.app = app;
     this.scope = scope ?? Scope.create__();
-    const mock = strictMock(this);
-    PopoverSuggest.constructor__(mock, app, scope);
-    return mock;
-  }
-
-  public static constructor__(_instance: PopoverSuggest<unknown>, ..._args: unknown[]): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public asOriginalType__(): PopoverSuggestOriginal<T> {

@@ -12,17 +12,10 @@ export class RenderContext {
   public hoverPopover: HoverPopover | null = null;
 
   protected constructor(_app: App) {
-    const mock = strictMock(this);
-    RenderContext.constructor__(mock, _app);
-    return mock;
-  }
-
-  public static constructor__(_instance: RenderContext, _app: App): void {
-    // Spy hook.
   }
 
   public static create__(_app: App): RenderContext {
-    return new RenderContext(_app);
+    return strictMock(new RenderContext(_app));
   }
 
   public asOriginalType__(): RenderContextOriginal {

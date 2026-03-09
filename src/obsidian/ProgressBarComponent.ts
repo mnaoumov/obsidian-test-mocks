@@ -16,13 +16,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.progressBar = createDiv();
-    const mock = strictMock(this);
-    ProgressBarComponent.constructor__(mock, _containerEl);
-    return mock;
-  }
-
-  public static override constructor__<T>(_instance: ValueComponent<T>, ..._args: unknown[]): void {
-    // Spy hook.
+    return strictMock(this);
   }
 
   public override asOriginalType__(): ProgressBarComponentOriginal {
