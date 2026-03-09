@@ -1,12 +1,13 @@
 import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 
 export abstract class BaseComponent {
   public disabled = false;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for subclass instantiation.
   protected constructor() {
+    noop();
   }
 
   public asOriginalType__(): BaseComponentOriginal {

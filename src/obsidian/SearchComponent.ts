@@ -1,6 +1,7 @@
 import type { SearchComponent as SearchComponentOriginal } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
@@ -18,7 +19,7 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     return castTo<SearchComponentOriginal>(this);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop UI callback override point.
   public override onChanged(): void {
+    noop();
   }
 }

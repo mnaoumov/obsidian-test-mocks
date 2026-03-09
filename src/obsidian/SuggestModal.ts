@@ -6,6 +6,7 @@ import type {
 import type { App } from './App.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
 
@@ -37,8 +38,8 @@ export abstract class SuggestModal<T> extends Modal {
 
   public abstract onChooseSuggestion(item: T, evt: KeyboardEvent | MouseEvent): void;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public onNoSuggestion(): void {
+    noop();
   }
 
   public abstract renderSuggestion(value: T, _el: HTMLElement): void;

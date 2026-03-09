@@ -8,6 +8,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
@@ -54,12 +55,12 @@ export abstract class View extends Component {
 
   public abstract getViewType(): string;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: pane menu construction is not simulated.
   public onPaneMenu(_menu: Menu, _source: string): void {
+    noop();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Noop: resize is a pure UI operation.
   public onResize(): void {
+    noop();
   }
 
   public setEphemeralState(state: unknown): void {
@@ -71,11 +72,13 @@ export abstract class View extends Component {
     this._state = state;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
+  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   protected async onClose(): Promise<void> {
+    noop();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
+  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   protected async onOpen(): Promise<void> {
+    noop();
   }
 }

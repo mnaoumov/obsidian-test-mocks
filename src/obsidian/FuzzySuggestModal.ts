@@ -6,6 +6,7 @@ import type {
 import type { App } from './App.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { Modal } from './Modal.ts';
 
@@ -30,8 +31,8 @@ export abstract class FuzzySuggestModal<T> extends Modal {
     return '';
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Abstract-like override point for subclasses.
   public onChooseItem(_item: T, _evt: KeyboardEvent | MouseEvent): void {
+    noop();
   }
 
   public selectSuggestion(value: FuzzyMatch<T>, evt: KeyboardEvent | MouseEvent): void {

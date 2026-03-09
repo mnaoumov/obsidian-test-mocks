@@ -2,6 +2,7 @@ import {
   delegatedOff,
   delegatedOn
 } from '../internal/DelegatedEventRegistry.ts';
+import { noop } from '../internal/Noop.ts';
 import { ensureNonNullable } from '../internal/TypeGuards.ts';
 
 export function find(this: HTMLElement, selector: string): HTMLElement {
@@ -76,16 +77,18 @@ export function onNodeInserted(
 ): () => void {
   // Jsdom doesn't implement real insertion observers; invoke immediately for safety.
   listener();
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Returns a noop unsubscribe callback.
-  return (): void => {};
+  return (): void => {
+    noop();
+  };
 }
 
 export function onWindowMigrated(
   _this: HTMLElement,
   _listener: (win: Window) => unknown
 ): () => void {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Returns a noop unsubscribe callback.
-  return (): void => {};
+  return (): void => {
+    noop();
+  };
 }
 
 export function setCssProps(this: HTMLElement, props: Record<string, string>): void {

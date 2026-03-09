@@ -3,6 +3,7 @@ import type { Modal as ModalOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 import { Scope } from './Scope.ts';
 
@@ -36,12 +37,12 @@ export class Modal {
     this._closeCallback?.();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public onClose(): void {
+    noop();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Override point for subclasses.
   public onOpen(): void {
+    noop();
   }
 
   public open(): void {

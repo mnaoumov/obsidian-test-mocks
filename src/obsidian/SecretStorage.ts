@@ -3,13 +3,14 @@ import type { SecretStorage as SecretStorageOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 export class SecretStorage {
   private readonly store = new Map<string, string>();
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor(_app: App) {
+    noop();
   }
 
   public static create__(app: App): SecretStorage {

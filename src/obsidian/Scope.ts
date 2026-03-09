@@ -6,6 +6,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/Cast.ts';
+import { noop } from '../internal/Noop.ts';
 import { strictMock } from '../internal/StrictMock.ts';
 
 interface MockKeyScope {
@@ -18,8 +19,8 @@ interface MockKeyScope {
 export class Scope {
   private readonly _keys: MockKeyScope[] = [];
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Protected constructor for create__() factory pattern.
   protected constructor(_parent?: Scope) {
+    noop();
   }
 
   public static create__(parent?: Scope): Scope {
