@@ -38,8 +38,8 @@ export class ExtraButtonComponent extends BaseComponent {
     return this;
   }
 
-  /** @deprecated Mock-only. Simulates a click by invoking the registered click handler. Not part of the Obsidian API. */
-  public simulateClick(): void {
+  /** Mock-only. Simulates a click by invoking the registered click handler. Not part of the Obsidian API. */
+  public simulateClick__(): void {
     this.clickHandler?.();
   }
 }

@@ -49,7 +49,7 @@ import { App } from 'obsidian';
 const app = App.create__();
 ```
 
-The `__` suffix signals this method is not part of the real Obsidian API — it exists only in the mocks.
+The `__` suffix signals this member is not part of the real Obsidian API — it exists only in the mocks for testing purposes. This convention applies to all mock-only public members: factory methods (`create__()`), type-bridge helpers (`asOriginalType__()`), test helpers (`simulateClick__()`, `simulateChange__()`), and tracking fields (`instances__`).
 
 ### Spying on Instance Creation
 

@@ -9,7 +9,6 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
 
   public constructor(_containerEl: HTMLElement) {
     super(createEl('input'));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Accessing mock-only @deprecated inputEl.
     this.inputEl.type = 'search';
     this.clearButtonEl = createDiv();
     return strictMock(this);

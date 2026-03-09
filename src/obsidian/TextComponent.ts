@@ -5,15 +5,14 @@ import { strictMock } from '../internal/StrictMock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
-  /** @deprecated Mock-only. Tracks all created instances for test assertions. Not part of the Obsidian API. */
-  public static instances: TextComponent[] = [];
-  /** @deprecated Mock-only. Tracks registered event listeners for use with {@link simulateEvent}. Not part of the Obsidian API. */
-  public eventListeners: Record<string, ((...args: unknown[]) => void)[]> = {};
+  /** Mock-only. Tracks all created instances for test assertions. Not part of the Obsidian API. */
+  public static instances__: TextComponent[] = [];
+  /** Mock-only. Tracks registered event listeners for use with {@link simulateEvent__}. Not part of the Obsidian API. */
+  public eventListeners__: Record<string, ((...args: unknown[]) => void)[]> = {};
 
   public constructor(_containerEl: HTMLElement) {
     super(createEl('input'));
-    /* eslint-disable @typescript-eslint/no-deprecated -- Mock internals. */
-    const eventListeners = this.eventListeners;
+    const eventListeners = this.eventListeners__;
     const origAddEventListener = this.inputEl.addEventListener.bind(this.inputEl);
     this.inputEl.addEventListener = function addEventListenerWrapper(this: HTMLInputElement, ...args: Parameters<HTMLInputElement['addEventListener']>): void {
       const [event, handler] = args;
@@ -23,8 +22,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       }
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
-    TextComponent.instances.push(this);
-    /* eslint-enable @typescript-eslint/no-deprecated -- Mock internals. */
+    TextComponent.instances__.push(this);
     return strictMock(this);
   }
 
@@ -36,10 +34,9 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     return super.onChange(cb);
   }
 
-  /** @deprecated Mock-only. Simulates a DOM event on inputEl by invoking registered listeners. Not part of the Obsidian API. */
-  public simulateEvent(event: string, ...args: unknown[]): void {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Mock-only method uses mock-only field.
-    for (const handler of this.eventListeners[event] ?? []) {
+  /** Mock-only. Simulates a DOM event on inputEl by invoking registered listeners. Not part of the Obsidian API. */
+  public simulateEvent__(event: string, ...args: unknown[]): void {
+    for (const handler of this.eventListeners__[event] ?? []) {
       handler(...args);
     }
   }

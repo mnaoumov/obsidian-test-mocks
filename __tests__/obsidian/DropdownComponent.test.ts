@@ -122,21 +122,21 @@ describe('DropdownComponent', () => {
     });
   });
 
-  describe('simulateChange', () => {
+  describe('simulateChange__', () => {
     it('should trigger the change callback', () => {
       const dropdown = createDropdown();
       dropdown.addOption('val', 'Val');
       dropdown.setValue('val');
       const cb = vi.fn();
       dropdown.onChange(cb);
-      dropdown.simulateChange();
+      dropdown.simulateChange__();
       expect(cb).toHaveBeenCalledWith('val');
     });
 
     it('should not throw if no callback is registered', () => {
       const dropdown = createDropdown();
       expect(() => {
-        dropdown.simulateChange();
+        dropdown.simulateChange__();
       }).not.toThrow();
     });
   });
