@@ -9,7 +9,10 @@ import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
 import { castTo } from '../internal/cast.ts';
-import { noop } from '../internal/noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { parseYaml } from './parseYaml.ts';
 import { stringifyYaml } from './stringifyYaml.ts';
@@ -47,8 +50,8 @@ export class FileManager {
     return `[[${link}]]`;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async getAvailablePathForAttachment(filename: string, _sourcePath?: string): Promise<string> {
+    await noopAsync();
     return filename;
   }
 

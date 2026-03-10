@@ -76,8 +76,8 @@ export abstract class View extends Component {
     this._ephemeralState = state;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async setState(state: unknown, _result: ViewStateResultOriginal): Promise<void> {
+    await noopAsync();
     this._state = state;
   }
 

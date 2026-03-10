@@ -12,7 +12,10 @@ import type {
 import type { App } from './App.ts';
 
 import { castTo } from '../internal/cast.ts';
-import { noop } from '../internal/noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
 
@@ -68,8 +71,8 @@ export abstract class Plugin extends Component {
     noop();
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async loadData(): Promise<unknown> {
+    await noopAsync();
     return this.data__;
   }
 
@@ -114,8 +117,8 @@ export abstract class Plugin extends Component {
     this.commands.delete(commandId);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async saveData(data: unknown): Promise<void> {
+    await noopAsync();
     this.data__ = data;
   }
 }
