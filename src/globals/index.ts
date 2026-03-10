@@ -39,40 +39,36 @@ import {
   setText,
   toggleClass
 } from './Element.prototype.ts';
-// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
-// dprint-ignore -- Alias sort order differs from original name order.
 import {
   ajax,
   ajaxPromise,
-  createFragment,
-  fish,
-  fishAll,
   createDiv as globalCreateDiv,
   createEl as globalCreateEl,
+  createFragment,
   createSpan as globalCreateSpan,
   createSvg as globalCreateSvg,
+  fish,
+  fishAll,
   isBoolean,
   nextFrame,
   ready,
   sleep
 } from './functions.ts';
-// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
-// dprint-ignore -- Alias sort order differs from original name order.
 import {
-  hide,
   find as htmlElementFind,
   findAll as htmlElementFindAll,
   findAllSelf as htmlElementFindAllSelf,
-  off as htmlElementOff,
-  on as htmlElementOn,
-  setCssProps as htmlElementSetCssProps,
-  setCssStyles as htmlElementSetCssStyles,
+  hide,
   innerHeight,
   innerWidth,
   isShown,
+  off as htmlElementOff,
+  on as htmlElementOn,
   onClickEvent,
   onNodeInserted,
   onWindowMigrated,
+  setCssProps as htmlElementSetCssProps,
+  setCssStyles as htmlElementSetCssStyles,
   show,
   toggle,
   toggleVisibility,
@@ -82,21 +78,19 @@ import {
   clamp,
   square
 } from './Math.ts';
-// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
-// dprint-ignore -- Alias sort order differs from original name order.
 import {
   appendText,
   constructorWin,
+  createDiv as nodeCreateDiv,
+  createEl as nodeCreateEl,
+  createSpan as nodeCreateSpan,
+  createSvg as nodeCreateSvg,
   detach,
   doc,
   empty,
   indexOf,
   insertAfter,
   instanceOf,
-  createDiv as nodeCreateDiv,
-  createEl as nodeCreateEl,
-  createSpan as nodeCreateSpan,
-  createSvg as nodeCreateSvg,
   setChildrenInPlace,
   win
 } from './Node.prototype.ts';
@@ -105,11 +99,9 @@ import {
   each,
   isEmpty
 } from './Object.ts';
-// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
-// dprint-ignore -- Alias sort order differs from original name order.
 import {
-  format,
-  contains as stringContains
+  contains as stringContains,
+  format
 } from './String.prototype.ts';
 import { isString } from './String.ts';
 import {

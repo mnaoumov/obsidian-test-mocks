@@ -1,5 +1,5 @@
-// eslint-disable-next-line capitalized-comments -- dprint-ignore-file directive must be lowercase.
-// dprint-ignore-file -- Export sort order conflicts with dprint.
+// eslint-disable-next-line capitalized-comments -- dprint directive must be lowercase.
+// dprint-ignore-file
 export { AbstractInputSuggest } from './AbstractInputSuggest.ts';
 export { AbstractTextComponent } from './AbstractTextComponent.ts';
 export { addIcon } from './addIcon.ts';

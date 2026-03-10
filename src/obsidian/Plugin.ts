@@ -1,12 +1,10 @@
-// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
-// dprint-ignore -- Alias sort order differs from original name order.
 import type {
   Command as CommandOriginal,
   HoverLinkSource as HoverLinkSourceOriginal,
-  MarkdownPostProcessorContext as MarkdownPostProcessorContextOriginal,
   MarkdownPostProcessor as MarkdownPostProcessorOriginal,
-  PluginManifest as PluginManifestOriginal,
+  MarkdownPostProcessorContext as MarkdownPostProcessorContextOriginal,
   Plugin as PluginOriginal,
+  PluginManifest as PluginManifestOriginal,
   PluginSettingTab as PluginSettingTabOriginal,
   ViewCreator as ViewCreatorOriginal
 } from 'obsidian';
