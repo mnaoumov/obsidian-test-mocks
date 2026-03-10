@@ -110,19 +110,19 @@ export class Workspace extends Events {
     this._leaves = this._leaves.filter((leaf) => leaf.getViewState().type !== viewType);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async duplicateLeaf(_leaf: WorkspaceLeaf, _leafType?: boolean | PaneTypeOriginal, _direction?: SplitDirectionOriginal): Promise<WorkspaceLeaf> {
+    await noopAsync();
     const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async ensureSideLeaf(
     _type: string,
     _side: SideOriginal,
     _options?: EnsureSideLeafOptions
   ): Promise<WorkspaceLeaf> {
+    await noopAsync();
     const leaf = WorkspaceLeaf.create2__(this._app);
     this._leaves.push(leaf);
     return leaf;
@@ -247,8 +247,8 @@ export class Workspace extends Events {
     return leaf;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.
   public async revealLeaf(leaf: WorkspaceLeaf): Promise<void> {
+    await noopAsync();
     this.setActiveLeaf(leaf);
   }
 
