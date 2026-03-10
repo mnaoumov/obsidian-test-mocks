@@ -9,7 +9,7 @@ export class BooleanValue extends PrimitiveValue<boolean> {
   public constructor(value = false) {
     super(value);
     const self = strictMock(this);
-    self.constructor__(value);
+    self.constructor4__(value);
     return self;
   }
 
@@ -21,7 +21,7 @@ export class BooleanValue extends PrimitiveValue<boolean> {
     return castTo<BooleanValueOriginal>(this);
   }
 
-  public constructor__(_value = false): void {
+  public constructor4__(_value = false): void {
     noop();
   }
 }

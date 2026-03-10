@@ -3,6 +3,7 @@ import type { WorkspaceSidedock as WorkspaceSidedockOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
@@ -11,10 +12,13 @@ export class WorkspaceSidedock extends WorkspaceSplit {
 
   protected constructor(workspace: Workspace, direction: string, _side: string, id?: string) {
     super(workspace, direction, id);
+    const self = strictMock(this);
+    self.constructor5__(workspace, direction, _side, id);
+    return self;
   }
 
   public static override create2__(workspace: Workspace, direction: string, side: string, id?: string): WorkspaceSidedock {
-    return strictMock(new WorkspaceSidedock(workspace, direction, side, id));
+    return new WorkspaceSidedock(workspace, direction, side, id);
   }
 
   public override asOriginalType__(): WorkspaceSidedockOriginal {
@@ -23,6 +27,10 @@ export class WorkspaceSidedock extends WorkspaceSplit {
 
   public collapse(): void {
     this.collapsed = true;
+  }
+
+  public constructor5__(_workspace: Workspace, _direction: string, _side: string, _id?: string): void {
+    noop();
   }
 
   public expand(): void {

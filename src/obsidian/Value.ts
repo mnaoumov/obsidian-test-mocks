@@ -3,9 +3,17 @@ import type { Value as ValueOriginal } from 'obsidian';
 import type { RenderContext } from './RenderContext.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export abstract class Value {
   public static type: string;
+
+  public constructor() {
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
+  }
 
   public static equals(a: null | Value, b: null | Value): boolean {
     if (a === null || b === null) {
@@ -23,6 +31,10 @@ export abstract class Value {
 
   public asOriginalType__(): ValueOriginal {
     return castTo<ValueOriginal>(this);
+  }
+
+  public constructor__(): void {
+    noop();
   }
 
   public equals(other: this): boolean {

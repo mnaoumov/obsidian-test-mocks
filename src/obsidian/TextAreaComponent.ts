@@ -9,7 +9,7 @@ export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement
   public constructor(_containerEl: HTMLElement) {
     super(createEl('textarea'));
     const self = strictMock(this);
-    self.constructor__(_containerEl);
+    self.constructor4__(_containerEl);
     return self;
   }
 
@@ -21,7 +21,7 @@ export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement
     return castTo<TextAreaComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor4__(_containerEl: HTMLElement): void {
     noop();
   }
 }

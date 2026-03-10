@@ -16,7 +16,7 @@ export class ButtonComponent extends BaseComponent {
     super();
     this.buttonEl = containerEl.createEl('button');
     const self = strictMock(this);
-    self.constructor__(containerEl);
+    self.constructor2__(containerEl);
     return self;
   }
 
@@ -28,7 +28,7 @@ export class ButtonComponent extends BaseComponent {
     return castTo<ButtonComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor2__(_containerEl: HTMLElement): void {
     noop();
   }
 

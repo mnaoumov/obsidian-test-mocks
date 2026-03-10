@@ -21,7 +21,7 @@ export class SliderComponent extends ValueComponent<number> {
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
     const self = strictMock(this);
-    self.constructor__(_containerEl);
+    self.constructor3__(_containerEl);
     return self;
   }
 
@@ -33,7 +33,7 @@ export class SliderComponent extends ValueComponent<number> {
     return castTo<SliderComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor3__(_containerEl: HTMLElement): void {
     noop();
   }
 

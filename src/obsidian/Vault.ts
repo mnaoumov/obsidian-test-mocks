@@ -7,6 +7,7 @@ import type {
 import type { TAbstractFile } from './TAbstractFile.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
@@ -23,10 +24,13 @@ export class Vault extends Events {
     const root = TFolder.create__(this, '/');
     this.fileMap__['/'] = root;
     root.deleted__ = false;
+    const self = strictMock(this);
+    self.constructor2__(adapter);
+    return self;
   }
 
   public static create2__(adapter: DataAdapterOriginal): Vault {
-    return strictMock(new Vault(adapter));
+    return new Vault(adapter);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {
@@ -49,6 +53,10 @@ export class Vault extends Events {
 
   public async cachedRead(file: TFile): Promise<string> {
     return this.adapter.read(file.path);
+  }
+
+  public constructor2__(_adapter: DataAdapterOriginal): void {
+    noop();
   }
 
   public async copy(file: TFile, newPath: string): Promise<TFile> {

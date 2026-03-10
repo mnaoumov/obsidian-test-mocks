@@ -23,7 +23,9 @@ export abstract class SuggestModal<T> extends Modal {
     super(app);
     this.inputEl = createEl('input');
     this.resultContainerEl = createDiv();
-    return strictMock(this);
+    const self = strictMock(this);
+    self.constructor2__(app);
+    return self;
   }
 
   public override asOriginalType__(): SuggestModalOriginal<T> {
@@ -32,6 +34,10 @@ export abstract class SuggestModal<T> extends Modal {
 
   public override close(): void {
     super.close();
+  }
+
+  public constructor2__(_app: App): void {
+    noop();
   }
 
   public abstract getSuggestions(_query: string): Promise<T[]> | T[];

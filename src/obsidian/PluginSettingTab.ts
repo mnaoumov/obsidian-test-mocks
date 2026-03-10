@@ -4,6 +4,7 @@ import type { App } from './App.ts';
 import type { Plugin } from './Plugin.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { SettingTab } from './SettingTab.ts';
 
@@ -13,10 +14,16 @@ export abstract class PluginSettingTab extends SettingTab {
   public constructor(app: App, plugin: Plugin) {
     super(app);
     this.plugin = plugin;
-    return strictMock(this);
+    const self = strictMock(this);
+    self.constructor2__(app, plugin);
+    return self;
   }
 
   public override asOriginalType__(): PluginSettingTabOriginal {
     return castTo<PluginSettingTabOriginal>(this);
+  }
+
+  public constructor2__(_app: App, _plugin: Plugin): void {
+    noop();
   }
 }

@@ -9,7 +9,7 @@ export class NumberValue extends PrimitiveValue<number> {
   public constructor(value = 0) {
     super(value);
     const self = strictMock(this);
-    self.constructor__(value);
+    self.constructor4__(value);
     return self;
   }
 
@@ -21,7 +21,7 @@ export class NumberValue extends PrimitiveValue<number> {
     return castTo<NumberValueOriginal>(this);
   }
 
-  public constructor__(_value = 0): void {
+  public constructor4__(_value = 0): void {
     noop();
   }
 }

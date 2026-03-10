@@ -16,10 +16,13 @@ export class Keymap {
 
   protected constructor() {
     noop();
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
   }
 
   public static create__(): Keymap {
-    return strictMock(new Keymap());
+    return new Keymap();
   }
 
   public static isModEvent(_evt?: null | UserEventOriginal): boolean | PaneTypeOriginal {
@@ -32,6 +35,10 @@ export class Keymap {
 
   public asOriginalType__(): KeymapOriginal {
     return castTo<KeymapOriginal>(this);
+  }
+
+  public constructor__(): void {
+    noop();
   }
 
   public popScope(scope: Scope): void {

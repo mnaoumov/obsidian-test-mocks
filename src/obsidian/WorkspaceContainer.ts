@@ -3,6 +3,8 @@ import type { WorkspaceContainer as WorkspaceContainerOriginal } from 'obsidian'
 import type { Workspace } from './Workspace.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 export abstract class WorkspaceContainer extends WorkspaceSplit {
@@ -11,9 +13,16 @@ export abstract class WorkspaceContainer extends WorkspaceSplit {
 
   protected constructor(workspace: Workspace, direction: string, id?: string) {
     super(workspace, direction, id);
+    const self = strictMock(this);
+    self.constructor5__(workspace, direction, id);
+    return self;
   }
 
   public override asOriginalType__(): WorkspaceContainerOriginal {
     return castTo<WorkspaceContainerOriginal>(this);
+  }
+
+  public constructor5__(_workspace: Workspace, _direction: string, _id?: string): void {
+    noop();
   }
 }

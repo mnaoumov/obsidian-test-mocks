@@ -15,16 +15,24 @@ import type { CoordsLeftTop } from '../internal/types.ts';
 
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export abstract class Editor {
   private _focused = false;
+
   private _redoStack: string[] = [];
+
   private _scrollLeft = 0;
   private _scrollTop = 0;
   private readonly _undoStack: string[] = [];
   private anchor: EditorPositionOriginal = { ch: 0, line: 0 };
   private content = '';
   private head: EditorPositionOriginal = { ch: 0, line: 0 };
+  public constructor() {
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
+  }
 
   public asOriginalType__(): EditorOriginal {
     return castTo<EditorOriginal>(this);
@@ -32,6 +40,10 @@ export abstract class Editor {
 
   public blur(): void {
     this._focused = false;
+  }
+
+  public constructor__(): void {
+    noop();
   }
 
   public exec(_command: EditorCommandNameOriginal): void {

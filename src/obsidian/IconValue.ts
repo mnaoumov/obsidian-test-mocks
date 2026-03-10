@@ -1,15 +1,27 @@
 import type { IconValue as IconValueOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { StringValue } from './StringValue.ts';
 
 export class IconValue extends StringValue {
+  public constructor(value = '') {
+    super(value);
+    const self = strictMock(this);
+    self.constructor5__(value);
+    return self;
+  }
+
   public static override create__(value = ''): IconValue {
-    return strictMock(new IconValue(value));
+    return new IconValue(value);
   }
 
   public override asOriginalType__(): IconValueOriginal {
     return castTo<IconValueOriginal>(this);
+  }
+
+  public constructor5__(_value: string): void {
+    noop();
   }
 }

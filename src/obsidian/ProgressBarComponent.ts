@@ -14,7 +14,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
     super();
     this.progressBar__ = createDiv();
     const self = strictMock(this);
-    self.constructor__(_containerEl);
+    self.constructor3__(_containerEl);
     return self;
   }
 
@@ -26,7 +26,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
     return castTo<ProgressBarComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor3__(_containerEl: HTMLElement): void {
     noop();
   }
 

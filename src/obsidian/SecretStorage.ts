@@ -11,14 +11,21 @@ export class SecretStorage {
 
   protected constructor(_app: App) {
     noop();
+    const self = strictMock(this);
+    self.constructor__(_app);
+    return self;
   }
 
   public static create__(app: App): SecretStorage {
-    return strictMock(new SecretStorage(app));
+    return new SecretStorage(app);
   }
 
   public asOriginalType__(): SecretStorageOriginal {
     return castTo<SecretStorageOriginal>(this);
+  }
+
+  public constructor__(_app: App): void {
+    noop();
   }
 
   public getSecret(id: string): null | string {

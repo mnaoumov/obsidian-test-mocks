@@ -3,12 +3,20 @@ import type { LinkValue as LinkValueOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { StringValue } from './StringValue.ts';
 
 export class LinkValue extends StringValue {
+  public constructor(value = '') {
+    super(value);
+    const self = strictMock(this);
+    self.constructor5__(value);
+    return self;
+  }
+
   public static override create__(value = ''): LinkValue {
-    return strictMock(new LinkValue(value));
+    return new LinkValue(value);
   }
 
   public static parseFromString(_app: App, input: string, _sourcePath: string): LinkValue | null {
@@ -24,5 +32,9 @@ export class LinkValue extends StringValue {
 
   public override asOriginalType__(): LinkValueOriginal {
     return castTo<LinkValueOriginal>(this);
+  }
+
+  public constructor5__(_value: string): void {
+    noop();
   }
 }

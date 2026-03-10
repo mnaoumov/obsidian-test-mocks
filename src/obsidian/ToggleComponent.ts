@@ -18,7 +18,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
     super();
     this.toggleEl = createDiv();
     const self = strictMock(this);
-    self.constructor__(_containerEl);
+    self.constructor3__(_containerEl);
     return self;
   }
 
@@ -30,7 +30,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
     return castTo<ToggleComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor3__(_containerEl: HTMLElement): void {
     noop();
   }
 

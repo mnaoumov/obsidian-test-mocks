@@ -14,7 +14,7 @@ export class DropdownComponent extends ValueComponent<string> {
     super();
     this.selectEl = containerEl.createEl('select');
     const self = strictMock(this);
-    self.constructor__(containerEl);
+    self.constructor3__(containerEl);
     return self;
   }
 
@@ -41,7 +41,7 @@ export class DropdownComponent extends ValueComponent<string> {
     return castTo<DropdownComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor3__(_containerEl: HTMLElement): void {
     noop();
   }
 

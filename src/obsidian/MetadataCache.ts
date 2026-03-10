@@ -9,6 +9,7 @@ import type { Vault } from './Vault.ts';
 
 import { castTo } from '../internal/cast.ts';
 import { parseMarkdownContent } from '../internal/markdown-parser.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Events } from './Events.ts';
 import { TFile as TFileClass } from './TFile.ts';
@@ -28,14 +29,21 @@ export class MetadataCache extends Events {
     vault.on('modify', (...data: unknown[]) => {
       this._parseFileMetadata(data[0]);
     });
+    const self = strictMock(this);
+    self.constructor2__(app, vault);
+    return self;
   }
 
   public static create2__(app: App, vault: Vault): MetadataCache {
-    return strictMock(new MetadataCache(app, vault));
+    return new MetadataCache(app, vault);
   }
 
   public override asOriginalType__(): MetadataCacheOriginal {
     return castTo<MetadataCacheOriginal>(this);
+  }
+
+  public constructor2__(_app: App, _vault: Vault): void {
+    noop();
   }
 
   public fileToLinktext(file: TFile, _sourcePath: string, omitMdExtension?: boolean): string {

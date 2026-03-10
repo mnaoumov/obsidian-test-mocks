@@ -4,6 +4,8 @@ import type { TFolder } from './TFolder.ts';
 import type { Vault } from './Vault.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export abstract class TAbstractFile {
   public deleted__ = false;
@@ -17,9 +19,16 @@ export abstract class TAbstractFile {
     this.path = path;
     const parts = path.split('/');
     this.name = parts[parts.length - 1] ?? '';
+    const self = strictMock(this);
+    self.constructor__(vault, path);
+    return self;
   }
 
   public asOriginalType__(): TAbstractFileOriginal {
     return castTo<TAbstractFileOriginal>(this);
+  }
+
+  public constructor__(_vault: Vault, _path: string): void {
+    noop();
   }
 }

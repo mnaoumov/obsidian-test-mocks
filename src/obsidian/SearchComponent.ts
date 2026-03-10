@@ -13,7 +13,7 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     this.inputEl.type = 'search';
     this.clearButtonEl = createDiv();
     const self = strictMock(this);
-    self.constructor__(_containerEl);
+    self.constructor4__(_containerEl);
     return self;
   }
 
@@ -25,7 +25,7 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     return castTo<SearchComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor4__(_containerEl: HTMLElement): void {
     noop();
   }
 

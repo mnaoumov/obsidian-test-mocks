@@ -8,6 +8,7 @@ import type {
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export class BasesEntry implements FormulaContextOriginal {
@@ -16,14 +17,21 @@ export class BasesEntry implements FormulaContextOriginal {
 
   protected constructor(_ctx: unknown, file: TFile) {
     this.file = file;
+    const self = strictMock(this);
+    self.constructor__(_ctx, file);
+    return self;
   }
 
   public static create__(ctx: unknown, file: TFile): BasesEntry {
-    return strictMock(new BasesEntry(ctx, file));
+    return new BasesEntry(ctx, file);
   }
 
   public asOriginalType__(): BasesEntryOriginal {
     return castTo<BasesEntryOriginal>(this);
+  }
+
+  public constructor__(_ctx: unknown, _file: TFile): void {
+    noop();
   }
 
   public getValue(propertyId: BasesPropertyIdOriginal): null | ValueOriginal {

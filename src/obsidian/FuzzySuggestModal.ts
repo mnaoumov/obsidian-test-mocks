@@ -16,11 +16,17 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   public constructor(app: App) {
     super(app);
     this.inputEl = createEl('input');
-    return strictMock(this);
+    const self = strictMock(this);
+    self.constructor2__(app);
+    return self;
   }
 
   public override asOriginalType__(): FuzzySuggestModalOriginal<T> {
     return castTo<FuzzySuggestModalOriginal<T>>(this);
+  }
+
+  public constructor2__(_app: App): void {
+    noop();
   }
 
   public getItems(): T[] {

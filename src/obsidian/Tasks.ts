@@ -9,10 +9,13 @@ export class Tasks {
 
   protected constructor() {
     noop();
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
   }
 
   public static create__(): Tasks {
-    return strictMock(new Tasks());
+    return new Tasks();
   }
 
   public add(callback: () => Promise<unknown>): void {
@@ -25,6 +28,10 @@ export class Tasks {
 
   public asOriginalType__(): TasksOriginal {
     return castTo<TasksOriginal>(this);
+  }
+
+  public constructor__(): void {
+    noop();
   }
 
   public isEmpty(): boolean {

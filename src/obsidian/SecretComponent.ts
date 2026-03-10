@@ -13,7 +13,7 @@ export class SecretComponent extends BaseComponent {
   public constructor(_app: App, _containerEl: HTMLElement) {
     super();
     const self = strictMock(this);
-    self.constructor__(_app, _containerEl);
+    self.constructor2__(_app, _containerEl);
     return self;
   }
 
@@ -25,7 +25,7 @@ export class SecretComponent extends BaseComponent {
     return castTo<SecretComponentOriginal>(this);
   }
 
-  public constructor__(_app: App, _containerEl: HTMLElement): void {
+  public constructor2__(_app: App, _containerEl: HTMLElement): void {
     noop();
   }
 

@@ -9,6 +9,7 @@ import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { parseYaml } from './parseYaml.ts';
 import { stringifyYaml } from './stringifyYaml.ts';
@@ -18,14 +19,21 @@ export class FileManager {
 
   protected constructor(app: App) {
     this.app__ = app;
+    const self = strictMock(this);
+    self.constructor__(app);
+    return self;
   }
 
   public static create__(app: App): FileManager {
-    return strictMock(new FileManager(app));
+    return new FileManager(app);
   }
 
   public asOriginalType__(): FileManagerOriginal {
     return castTo<FileManagerOriginal>(this);
+  }
+
+  public constructor__(_app: App): void {
+    noop();
   }
 
   public generateMarkdownLink(file: TFile, _sourcePath: string, subpath?: string, alias?: string): string {

@@ -21,7 +21,9 @@ export abstract class FileView extends ItemView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    return strictMock(this);
+    const self = strictMock(this);
+    self.constructor4__(leaf);
+    return self;
   }
 
   public override asOriginalType__(): FileViewOriginal {
@@ -30,6 +32,10 @@ export abstract class FileView extends ItemView {
 
   public canAcceptExtension(_extension: string): boolean {
     return false;
+  }
+
+  public constructor4__(_leaf: WorkspaceLeaf): void {
+    noop();
   }
 
   public getDisplayText(): string {

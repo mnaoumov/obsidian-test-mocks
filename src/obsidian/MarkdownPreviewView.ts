@@ -19,10 +19,13 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   protected constructor() {
     super(createDiv());
     this.containerEl = createDiv();
+    const self = strictMock(this);
+    self.constructor4__();
+    return self;
   }
 
   public static override create__(): MarkdownPreviewView {
-    return strictMock(new MarkdownPreviewView());
+    return new MarkdownPreviewView();
   }
 
   public applyScroll(_scroll: number): void {
@@ -35,6 +38,10 @@ export class MarkdownPreviewView extends MarkdownRenderer {
 
   public clear(): void {
     this._data = '';
+  }
+
+  public constructor4__(): void {
+    noop();
   }
 
   public get(): string {
