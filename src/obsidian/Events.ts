@@ -13,7 +13,6 @@ export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
   public constructor() {
-    noop();
     const self = strictMock(this);
     self.constructor__();
     return self;

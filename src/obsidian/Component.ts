@@ -15,7 +15,6 @@ export class Component {
   public loaded__ = false;
 
   public constructor() {
-    noop();
     const self = strictMock(this);
     self.constructor__();
     return self;
