@@ -1,8 +1,8 @@
 import type {
   Editor as EditorOriginal,
   EditorPosition as EditorPositionOriginal,
-  EditorSuggest as EditorSuggestOriginal,
   EditorSuggestContext as EditorSuggestContextOriginal,
+  EditorSuggest as EditorSuggestOriginal,
   EditorSuggestTriggerInfo as EditorSuggestTriggerInfoOriginal,
   Instruction as InstructionOriginal,
   TFile as TFileOriginal

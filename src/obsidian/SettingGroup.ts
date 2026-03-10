@@ -1,8 +1,8 @@
 import type {
   ExtraButtonComponent as ExtraButtonComponentOriginal,
   SearchComponent as SearchComponentOriginal,
-  Setting as SettingOriginal,
-  SettingGroup as SettingGroupOriginal
+  SettingGroup as SettingGroupOriginal,
+  Setting as SettingOriginal
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
