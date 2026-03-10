@@ -46,11 +46,11 @@ export class Component {
   }
 
   public onload(): void {
-    // Override point
+    noop();
   }
 
   public onunload(): void {
-    // Override point
+    noop();
   }
 
   public register(cb: () => unknown): void {

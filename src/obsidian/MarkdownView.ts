@@ -30,7 +30,7 @@ export class MarkdownView extends TextFileView {
       return this._currentModeScroll;
     },
     rerender: (): void => {
-      // No-op in mock.
+      noop();
     },
     set: (data: string, _clear: boolean): void => {
       this.editor.setValue(data);
@@ -55,7 +55,7 @@ export class MarkdownView extends TextFileView {
       return this._previewModeScroll;
     },
     rerender: (): void => {
-      // No-op in mock.
+      noop();
     },
     set: (data: string, _clear: boolean): void => {
       this.data = data;
@@ -111,6 +111,6 @@ export class MarkdownView extends TextFileView {
   }
 
   public showSearch(_replace?: boolean): void {
-    // No-op in mock.
+    noop();
   }
 }
