@@ -8,7 +8,6 @@ import { strictMock } from '../internal/strict-mock.ts';
 
 export class MenuSeparator {
   protected constructor(_menu: Menu) {
-    noop();
     const self = strictMock(this);
     self.constructor__(_menu);
     return self;

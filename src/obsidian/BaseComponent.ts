@@ -8,7 +8,6 @@ export abstract class BaseComponent {
   public disabled = false;
 
   protected constructor() {
-    noop();
     const self = strictMock(this);
     self.constructor__();
     return self;

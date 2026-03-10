@@ -10,7 +10,6 @@ export class SecretStorage {
   private readonly store = new Map<string, string>();
 
   protected constructor(_app: App) {
-    noop();
     const self = strictMock(this);
     self.constructor__(_app);
     return self;

@@ -8,7 +8,6 @@ export class Tasks {
   private readonly promises: Promise<unknown>[] = [];
 
   protected constructor() {
-    noop();
     const self = strictMock(this);
     self.constructor__();
     return self;
