@@ -15,7 +15,6 @@ export class Keymap {
   private readonly _scopeStack: Scope[] = [];
 
   protected constructor() {
-    noop();
     const self = strictMock(this);
     self.constructor__();
     return self;

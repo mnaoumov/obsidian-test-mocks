@@ -27,7 +27,6 @@ export class BasesQueryResult {
   private _properties: BasesPropertyIdOriginal[] = [];
 
   protected constructor() {
-    noop();
     const self = strictMock(this);
     self.constructor__();
     return self;

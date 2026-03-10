@@ -8,7 +8,6 @@ import { Component } from './Component.ts';
 export abstract class BasesView extends Component {
   public constructor() {
     super();
-    noop();
     const self = strictMock(this);
     self.constructor2__();
     return self;

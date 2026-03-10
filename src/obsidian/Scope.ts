@@ -20,7 +20,6 @@ export class Scope {
   private readonly _keys: MockKeyScope[] = [];
 
   protected constructor(_parent?: Scope) {
-    noop();
     const self = strictMock(this);
     self.constructor__(_parent);
     return self;
