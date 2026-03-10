@@ -1,11 +1,11 @@
 import type {
-  Editor as EditorOriginal,
   EditorChange as EditorChangeOriginal,
   EditorCommandName as EditorCommandNameOriginal,
+  Editor as EditorOriginal,
   EditorPosition as EditorPositionOriginal,
   EditorRange as EditorRangeOriginal,
-  EditorSelection as EditorSelectionOriginal,
   EditorSelectionOrCaret as EditorSelectionOrCaretOriginal,
+  EditorSelection as EditorSelectionOriginal,
   EditorTransaction as EditorTransactionOriginal
 } from 'obsidian';
 

@@ -1,10 +1,10 @@
 import type {
   Command as CommandOriginal,
   HoverLinkSource as HoverLinkSourceOriginal,
-  MarkdownPostProcessor as MarkdownPostProcessorOriginal,
   MarkdownPostProcessorContext as MarkdownPostProcessorContextOriginal,
-  Plugin as PluginOriginal,
+  MarkdownPostProcessor as MarkdownPostProcessorOriginal,
   PluginManifest as PluginManifestOriginal,
+  Plugin as PluginOriginal,
   PluginSettingTab as PluginSettingTabOriginal,
   ViewCreator as ViewCreatorOriginal
 } from 'obsidian';

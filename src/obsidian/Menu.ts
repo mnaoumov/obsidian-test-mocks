@@ -1,6 +1,6 @@
 import type {
-  Menu as MenuOriginal,
   MenuItem as MenuItemOriginal,
+  Menu as MenuOriginal,
   MenuPositionDef as MenuPositionDefOriginal
 } from 'obsidian';
 

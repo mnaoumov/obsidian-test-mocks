@@ -8,6 +8,10 @@
     "importDeclaration.forceMultiLine": "whenMultiple",
     "lineWidth": 160,
     "quoteStyle": "alwaysSingle",
+    "exportDeclaration.sortNamedExports": "maintain",
+    "importDeclaration.sortNamedImports": "maintain",
+    "module.sortExportDeclarations": "maintain",
+    "module.sortImportDeclarations": "maintain",
     "trailingCommas": "never"
   },
   "json": {},

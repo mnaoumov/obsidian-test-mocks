@@ -315,10 +315,7 @@ function getModulesNewlinesConfigs(): Linter.Config[] {
 function getPerfectionistConfigs(): Linter.Config[] {
   return defineConfig([{
     extends: [perfectionistConfigs['recommended-alphabetical']],
-    files: typeScriptFiles,
-    rules: {
-      'perfectionist/sort-named-imports': 'off'
-    }
+    files: typeScriptFiles
   }]);
 }
 
