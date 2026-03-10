@@ -3,7 +3,10 @@ import type { TextFileView as TextFileViewOriginal } from 'obsidian';
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/cast.ts';
-import { noop } from '../internal/noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { EditableFileView } from './EditableFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -31,19 +34,19 @@ export abstract class TextFileView extends EditableFileView {
   public abstract getViewData(): string;
 
   public override async onLoadFile(_file: TFile): Promise<void> {
-    // Lifecycle hook for subclasses to override.
+    await noopAsync();
   }
 
   public override async onUnloadFile(_file: TFile): Promise<void> {
-    // Lifecycle hook for subclasses to override.
+    await noopAsync();
   }
 
   public requestSave(): void {
-    // Scheduling hint — not simulated.
+    noop();
   }
 
   public async save(_clear?: boolean): Promise<void> {
-    // Empty async — save is not simulated.
+    await noopAsync();
   }
 
   public abstract setViewData(data: string, clear: boolean): void;

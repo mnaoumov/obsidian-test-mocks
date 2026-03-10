@@ -48,7 +48,7 @@ export abstract class Value {
   }
 
   public renderTo(_el: HTMLElement, _ctx: RenderContext): void {
-    // Pure UI operation.
+    noop();
   }
 
   public abstract toString(): string;

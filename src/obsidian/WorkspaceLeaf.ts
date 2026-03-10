@@ -11,7 +11,10 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/cast.ts';
-import { noop } from '../internal/noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
@@ -55,7 +58,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public detach(): void {
-    // Detach is a no-op in the mock.
+    noop();
   }
 
   public getDisplayText(): string {
@@ -89,7 +92,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public async loadIfDeferred(): Promise<void> {
-    // IsDeferred is always false; nothing to load.
+    await noopAsync();
   }
 
   public onResize(): void {
