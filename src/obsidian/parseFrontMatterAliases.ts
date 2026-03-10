@@ -1,8 +1,11 @@
-export function parseFrontMatterAliases(frontmatter: null | Record<string, unknown>): null | string[] {
+import { castTo } from '../internal/cast.ts';
+
+export function parseFrontMatterAliases(frontmatter: unknown): null | string[] {
   if (!frontmatter) {
     return null;
   }
-  const aliases = frontmatter['aliases'] ?? frontmatter['alias'];
+  const fm = castTo<Record<string, unknown>>(frontmatter);
+  const aliases = fm['aliases'] ?? fm['alias'];
   if (typeof aliases === 'string') {
     return [aliases];
   }
