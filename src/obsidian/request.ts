@@ -1,4 +1,8 @@
-// eslint-disable-next-line @typescript-eslint/require-await -- Noop stub matching obsidian.d.ts.
-export async function request(_request: unknown): Promise<string> {
+import type { RequestUrlParam as RequestUrlParamOriginal } from 'obsidian';
+
+import { noopAsync } from '../internal/noop.ts';
+
+export async function request(_request: RequestUrlParamOriginal | string): Promise<string> {
+  await noopAsync();
   return '';
 }
