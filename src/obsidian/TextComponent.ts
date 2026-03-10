@@ -21,7 +21,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
     const self = strictMock(this);
-    self.constructor__(_containerEl);
+    self.constructor4__(_containerEl);
     return self;
   }
 
@@ -33,7 +33,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     return castTo<TextComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor4__(_containerEl: HTMLElement): void {
     noop();
   }
 

@@ -1,6 +1,7 @@
 import type { WorkspaceMobileDrawer as WorkspaceMobileDrawerOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
@@ -9,10 +10,13 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
 
   protected constructor() {
     super();
+    const self = strictMock(this);
+    self.constructor4__();
+    return self;
   }
 
   public static create2__(): WorkspaceMobileDrawer {
-    return strictMock(new WorkspaceMobileDrawer());
+    return new WorkspaceMobileDrawer();
   }
 
   public override asOriginalType__(): WorkspaceMobileDrawerOriginal {
@@ -21,6 +25,10 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
 
   public collapse(): void {
     this.collapsed = true;
+  }
+
+  public constructor4__(): void {
+    noop();
   }
 
   public expand(): void {

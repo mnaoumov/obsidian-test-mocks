@@ -36,7 +36,9 @@ export abstract class Plugin extends Component {
     super();
     this.app = app;
     this.manifest = manifest;
-    return strictMock(this);
+    const self = strictMock(this);
+    self.constructor2__(app, manifest);
+    return self;
   }
 
   public addCommand(command: CommandOriginal): CommandOriginal {
@@ -62,6 +64,10 @@ export abstract class Plugin extends Component {
 
   public override asOriginalType__(): PluginOriginal {
     return castTo<PluginOriginal>(this);
+  }
+
+  public constructor2__(_app: App, _manifest: PluginManifestOriginal): void {
+    noop();
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await -- Implements async obsidian.d.ts interface.

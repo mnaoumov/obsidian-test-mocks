@@ -8,6 +8,7 @@ import type {
 import type { BasesView } from './BasesView.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { NullValue } from './NullValue.ts';
 
@@ -20,14 +21,21 @@ export class BasesViewConfig {
 
   protected constructor(_query: string, _type: string, name: string) {
     this.name = name;
+    const self = strictMock(this);
+    self.constructor__(_query, _type, name);
+    return self;
   }
 
   public static create__(query: string, type: string, name: string): BasesViewConfig {
-    return strictMock(new BasesViewConfig(query, type, name));
+    return new BasesViewConfig(query, type, name);
   }
 
   public asOriginalType__(): BasesViewConfigOriginal {
     return castTo<BasesViewConfigOriginal>(this);
+  }
+
+  public constructor__(_query: string, _type: string, _name: string): void {
+    noop();
   }
 
   public get(key: string): unknown {

@@ -1,16 +1,28 @@
 import type { RegExpValue as RegExpValueOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class RegExpValue extends NotNullValue {
+  public constructor() {
+    super();
+    const self = strictMock(this);
+    self.constructor3__();
+    return self;
+  }
+
   public static create__(): RegExpValue {
-    return strictMock(new RegExpValue());
+    return new RegExpValue();
   }
 
   public override asOriginalType__(): RegExpValueOriginal {
     return castTo<RegExpValueOriginal>(this);
+  }
+
+  public constructor3__(): void {
+    noop();
   }
 
   public isTruthy(): boolean {

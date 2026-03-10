@@ -6,6 +6,7 @@ import type {
 import type { Menu } from './Menu.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export class MenuItem {
@@ -29,6 +30,10 @@ export class MenuItem {
 
   public asOriginalType__(): MenuItemOriginal {
     return castTo<MenuItemOriginal>(this);
+  }
+
+  public constructor__(_menu: unknown): void {
+    noop();
   }
 
   public onClick(callback: (evt: KeyboardEvent | MouseEvent) => unknown): this {

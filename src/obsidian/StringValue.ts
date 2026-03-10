@@ -9,7 +9,7 @@ export class StringValue extends PrimitiveValue<string> {
   public constructor(value = '') {
     super(value);
     const self = strictMock(this);
-    self.constructor__(value);
+    self.constructor4__(value);
     return self;
   }
 
@@ -21,7 +21,7 @@ export class StringValue extends PrimitiveValue<string> {
     return castTo<StringValueOriginal>(this);
   }
 
-  public constructor__(_value = ''): void {
+  public constructor4__(_value = ''): void {
     noop();
   }
 }

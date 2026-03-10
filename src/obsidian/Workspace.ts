@@ -69,10 +69,13 @@ export class Workspace extends Events {
     this.rightRibbon = WorkspaceRibbon.create__(this, 'right');
     this.rightSplit = WorkspaceSidedock.create2__(this, 'vertical', 'right');
     this.rootSplit = WorkspaceRoot.create2__(this, 'vertical');
+    const self = strictMock(this);
+    self.constructor2__(_app, containerEl);
+    return self;
   }
 
   public static create2__(app: App, containerEl: HTMLElement): Workspace {
-    return strictMock(new Workspace(app, containerEl));
+    return new Workspace(app, containerEl);
   }
 
   public override asOriginalType__(): WorkspaceOriginal {
@@ -81,6 +84,10 @@ export class Workspace extends Events {
 
   public async changeLayout(_workspace: unknown): Promise<void> {
     await noopAsync();
+  }
+
+  public constructor2__(_app: App, _containerEl: HTMLElement): void {
+    noop();
   }
 
   public createLeafBySplit(_leaf: WorkspaceLeaf, _direction?: SplitDirectionOriginal, _before?: boolean): WorkspaceLeaf {

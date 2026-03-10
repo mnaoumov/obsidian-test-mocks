@@ -1,6 +1,7 @@
 import type { AbstractTextComponent as AbstractTextComponentOriginal } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -13,11 +14,17 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   public constructor(inputEl: T) {
     super();
     this.inputEl = inputEl;
-    return strictMock(this);
+    const self = strictMock(this);
+    self.constructor3__(inputEl);
+    return self;
   }
 
   public override asOriginalType__(): AbstractTextComponentOriginal<T> {
     return castTo<AbstractTextComponentOriginal<T>>(this);
+  }
+
+  public constructor3__(_inputEl: T): void {
+    noop();
   }
 
   public override getValue(): string {

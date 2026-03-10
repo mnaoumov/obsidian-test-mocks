@@ -7,6 +7,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
 import { MenuItem } from './MenuItem.ts';
@@ -20,10 +21,13 @@ export class Menu extends Component {
   protected constructor() {
     super();
     this.dom__ = createDiv();
+    const self = strictMock(this);
+    self.constructor2__();
+    return self;
   }
 
   public static override create__(): Menu {
-    return strictMock(new Menu());
+    return new Menu();
   }
 
   public static forEvent(_evt: MouseEvent | PointerEvent): Menu {
@@ -47,6 +51,10 @@ export class Menu extends Component {
 
   public close(): void {
     this._onHideCallback?.();
+  }
+
+  public constructor2__(): void {
+    noop();
   }
 
   public hide(): this {

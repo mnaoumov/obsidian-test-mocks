@@ -9,7 +9,7 @@ export class TagValue extends StringValue {
   public constructor(value: string) {
     super(value);
     const self = strictMock(this);
-    self.constructor2__(value);
+    self.constructor5__(value);
     return self;
   }
 
@@ -21,7 +21,7 @@ export class TagValue extends StringValue {
     return castTo<TagValueOriginal>(this);
   }
 
-  public constructor2__(_value: string): void {
+  public constructor5__(_value: string): void {
     noop();
   }
 }

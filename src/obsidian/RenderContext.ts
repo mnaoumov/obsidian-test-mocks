@@ -14,13 +14,20 @@ export class RenderContext {
 
   protected constructor(_app: App) {
     noop();
+    const self = strictMock(this);
+    self.constructor__(_app);
+    return self;
   }
 
   public static create__(app: App): RenderContext {
-    return strictMock(new RenderContext(app));
+    return new RenderContext(app);
   }
 
   public asOriginalType__(): RenderContextOriginal {
     return castTo<RenderContextOriginal>(this);
+  }
+
+  public constructor__(_app: App): void {
+    noop();
   }
 }

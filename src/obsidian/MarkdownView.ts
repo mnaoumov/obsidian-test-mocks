@@ -68,7 +68,7 @@ export class MarkdownView extends TextFileView {
     super(leaf);
     this.editor = new MockEditor();
     const self = strictMock(this);
-    self.constructor2__(leaf);
+    self.constructor7__(leaf);
     return self;
   }
 
@@ -89,7 +89,7 @@ export class MarkdownView extends TextFileView {
     this.editor.setValue('');
   }
 
-  public constructor2__(_leaf: WorkspaceLeaf): void {
+  public constructor7__(_leaf: WorkspaceLeaf): void {
     noop();
   }
 

@@ -11,6 +11,7 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
@@ -36,14 +37,21 @@ export class WorkspaceLeaf extends WorkspaceItem {
   protected constructor(_app: App, id?: string) {
     super();
     this.id__ = id ?? String(nextLeafId++);
+    const self = strictMock(this);
+    self.constructor3__(_app, id);
+    return self;
   }
 
   public static create2__(app: App, id?: string): WorkspaceLeaf {
-    return strictMock(new WorkspaceLeaf(app, id));
+    return new WorkspaceLeaf(app, id);
   }
 
   public override asOriginalType__(): WorkspaceLeafOriginal {
     return castTo<WorkspaceLeafOriginal>(this);
+  }
+
+  public constructor3__(_app: App, _id?: string): void {
+    noop();
   }
 
   public detach(): void {

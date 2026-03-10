@@ -15,7 +15,7 @@ export class DateValue extends NotNullValue {
     super();
     this.value__ = momentFn();
     const self = strictMock(this);
-    self.constructor__();
+    self.constructor3__();
     return self;
   }
 
@@ -27,7 +27,7 @@ export class DateValue extends NotNullValue {
     return castTo<DateValueOriginal>(this);
   }
 
-  public constructor__(): void {
+  public constructor3__(): void {
     noop();
   }
 

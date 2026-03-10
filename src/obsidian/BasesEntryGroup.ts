@@ -6,6 +6,7 @@ import type {
 import type { BasesEntry } from './BasesEntry.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export class BasesEntryGroup {
@@ -17,14 +18,21 @@ export class BasesEntryGroup {
     if (key !== undefined) {
       this.key = key as ValueOriginal;
     }
+    const self = strictMock(this);
+    self.constructor__(entries, key);
+    return self;
   }
 
   public static create__(entries: BasesEntry[], key: unknown): BasesEntryGroup {
-    return strictMock(new BasesEntryGroup(entries, key));
+    return new BasesEntryGroup(entries, key);
   }
 
   public asOriginalType__(): BasesEntryGroupOriginal {
     return castTo<BasesEntryGroupOriginal>(this);
+  }
+
+  public constructor__(_entries: BasesEntry[], _key: unknown): void {
+    noop();
   }
 
   public hasKey(): boolean {

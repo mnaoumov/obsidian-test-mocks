@@ -13,7 +13,7 @@ export class MomentFormatComponent extends TextComponent {
     super(containerEl);
     this.sampleEl = createDiv();
     const self = strictMock(this);
-    self.constructor2__(containerEl);
+    self.constructor5__(containerEl);
     return self;
   }
 
@@ -25,7 +25,7 @@ export class MomentFormatComponent extends TextComponent {
     return castTo<MomentFormatComponentOriginal>(this);
   }
 
-  public constructor2__(_containerEl: HTMLElement): void {
+  public constructor5__(_containerEl: HTMLElement): void {
     noop();
   }
 

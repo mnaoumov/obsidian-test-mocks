@@ -4,9 +4,17 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
+import { strictMock } from '../internal/strict-mock.ts';
 
 export class MarkdownPreviewRenderer {
   private static _postProcessors: MarkdownPostProcessorOriginal[] = [];
+
+  public constructor() {
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
+  }
 
   public static registerPostProcessor(postProcessor: MarkdownPostProcessorOriginal, _sortOrder?: number): void {
     MarkdownPreviewRenderer._postProcessors.push(postProcessor);
@@ -18,5 +26,9 @@ export class MarkdownPreviewRenderer {
 
   public asOriginalType__(): MarkdownPreviewRendererOriginal {
     return castTo<MarkdownPreviewRendererOriginal>(this);
+  }
+
+  public constructor__(): void {
+    noop();
   }
 }

@@ -21,14 +21,21 @@ export class Scope {
 
   protected constructor(_parent?: Scope) {
     noop();
+    const self = strictMock(this);
+    self.constructor__(_parent);
+    return self;
   }
 
   public static create__(parent?: Scope): Scope {
-    return strictMock(new Scope(parent));
+    return new Scope(parent);
   }
 
   public asOriginalType__(): ScopeOriginal {
     return castTo<ScopeOriginal>(this);
+  }
+
+  public constructor__(_parent?: Scope): void {
+    noop();
   }
 
   public register(modifiers: ModifierOriginal[] | null, key: null | string, _func: KeymapEventListenerOriginal): KeymapEventHandlerOriginal {

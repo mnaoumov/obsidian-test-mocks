@@ -36,7 +36,7 @@ export class ColorComponent extends ValueComponent<string> {
     this.colorPickerEl__ = containerEl.createEl('input');
     this.colorPickerEl__.type = 'color';
     const self = strictMock(this);
-    self.constructor__(containerEl);
+    self.constructor3__(containerEl);
     return self;
   }
 
@@ -48,7 +48,7 @@ export class ColorComponent extends ValueComponent<string> {
     return castTo<ColorComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor3__(_containerEl: HTMLElement): void {
     noop();
   }
 

@@ -28,14 +28,21 @@ export class BasesQueryResult {
 
   protected constructor() {
     noop();
+    const self = strictMock(this);
+    self.constructor__();
+    return self;
   }
 
   public static create__(): BasesQueryResult {
-    return strictMock(new BasesQueryResult());
+    return new BasesQueryResult();
   }
 
   public asOriginalType__(): BasesQueryResultOriginal {
     return castTo<BasesQueryResultOriginal>(this);
+  }
+
+  public constructor__(): void {
+    noop();
   }
 
   public getSummaryValue(_queryController: QueryController, _entries: BasesEntry[], _prop: BasesPropertyIdOriginal, _summaryKey: string): ValueOriginal {

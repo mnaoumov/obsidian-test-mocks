@@ -46,6 +46,8 @@
 
 8. **Private fields that shadow obsidian-typings.** When `obsidian-typings` declares a field as public (e.g., `Events._`) but `obsidian.d.ts` does not, our mock keeps it private and uses `castTo` where needed for type compatibility.
 
+9. **`strictMock` constructors with `constructor__()` hooks.** Every mock class (including abstract classes) must use `strictMock(this)` in its constructor and provide a spyable `constructorN__()` method. The pattern is: `constructor(args) { /* init */ const self = strictMock(this); self.constructorN__(args); return self; }` with a corresponding `public constructorN__(_args): void { noop(); }`. The `strictMock()` call prevents access to unmocked properties. The `constructorN__()` method enables spying on construction via `vi.spyOn(Class.prototype, 'constructorN__')`. Numbering follows inheritance depth: a root class uses `constructor__()`, its child uses `constructor2__()`, grandchild `constructor3__()`, etc. — each class in the chain gets the next available number to avoid signature conflicts with `override`.
+
 ### Internal Modules
 
 - `Cast.ts` — `castTo<T>()` utility for unsafe type bridging

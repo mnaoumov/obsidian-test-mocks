@@ -5,6 +5,7 @@ import type {
 } from 'obsidian';
 
 import { castTo } from '../internal/cast.ts';
+import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { FileManager } from './FileManager.ts';
 import { Keymap } from './Keymap.ts';
@@ -31,14 +32,21 @@ export class App {
     this.metadataCache = MetadataCache.create2__(this, this.vault);
     this.scope = Scope.create__();
     this.workspace = Workspace.create2__(this, createDiv());
+    const self = strictMock(this);
+    self.constructor__(adapter, _appId);
+    return self;
   }
 
   public static create__(adapter: DataAdapterOriginal, appId: string): App {
-    return strictMock(new App(adapter, appId));
+    return new App(adapter, appId);
   }
 
   public asOriginalType__(): AppOriginal {
     return castTo<AppOriginal>(this);
+  }
+
+  public constructor__(_adapter: DataAdapterOriginal, _appId: string): void {
+    noop();
   }
 
   public isDarkMode(): boolean {

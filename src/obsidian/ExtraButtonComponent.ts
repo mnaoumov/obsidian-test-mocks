@@ -13,7 +13,7 @@ export class ExtraButtonComponent extends BaseComponent {
     super();
     this.extraSettingsEl = createDiv();
     const self = strictMock(this);
-    self.constructor__(_containerEl);
+    self.constructor2__(_containerEl);
     return self;
   }
 
@@ -25,7 +25,7 @@ export class ExtraButtonComponent extends BaseComponent {
     return castTo<ExtraButtonComponentOriginal>(this);
   }
 
-  public constructor__(_containerEl: HTMLElement): void {
+  public constructor2__(_containerEl: HTMLElement): void {
     noop();
   }
 

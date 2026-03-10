@@ -35,11 +35,17 @@ export abstract class View extends Component {
     this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapterOriginal, '');
     this.containerEl = createDiv();
     this.leaf = leaf;
-    return strictMock(this);
+    const self = strictMock(this);
+    self.constructor2__(leaf);
+    return self;
   }
 
   public override asOriginalType__(): ViewOriginal {
     return castTo<ViewOriginal>(this);
+  }
+
+  public constructor2__(_leaf: WorkspaceLeaf): void {
+    noop();
   }
 
   public abstract getDisplayText(): string;
