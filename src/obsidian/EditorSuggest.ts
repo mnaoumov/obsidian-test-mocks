@@ -1,10 +1,8 @@
-// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
-// dprint-ignore -- Alias sort order differs from original name order.
 import type {
   Editor as EditorOriginal,
   EditorPosition as EditorPositionOriginal,
-  EditorSuggestContext as EditorSuggestContextOriginal,
   EditorSuggest as EditorSuggestOriginal,
+  EditorSuggestContext as EditorSuggestContextOriginal,
   EditorSuggestTriggerInfo as EditorSuggestTriggerInfoOriginal,
   Instruction as InstructionOriginal,
   TFile as TFileOriginal

@@ -1,13 +1,11 @@
-// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
-// dprint-ignore -- Alias sort order differs from original name order.
 import type {
+  Editor as EditorOriginal,
   EditorChange as EditorChangeOriginal,
   EditorCommandName as EditorCommandNameOriginal,
-  Editor as EditorOriginal,
   EditorPosition as EditorPositionOriginal,
   EditorRange as EditorRangeOriginal,
-  EditorSelectionOrCaret as EditorSelectionOrCaretOriginal,
   EditorSelection as EditorSelectionOriginal,
+  EditorSelectionOrCaret as EditorSelectionOrCaretOriginal,
   EditorTransaction as EditorTransactionOriginal
 } from 'obsidian';
 

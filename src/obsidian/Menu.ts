@@ -1,8 +1,6 @@
-// eslint-disable-next-line capitalized-comments -- dprint-ignore directive must be lowercase.
-// dprint-ignore -- Alias sort order differs from original name order.
 import type {
-  MenuItem as MenuItemOriginal,
   Menu as MenuOriginal,
+  MenuItem as MenuItemOriginal,
   MenuPositionDef as MenuPositionDefOriginal
 } from 'obsidian';
 
