@@ -1,44 +1,35 @@
-/* eslint-disable no-magic-numbers -- Magic numbers are used throughout ESLint configs for rule options. */
-
+/* eslint-disable no-magic-numbers -- We disabled magic numbers because they are used all over the configs. */
 import type { Linter } from 'eslint';
 
 import commentsConfigs from '@eslint-community/eslint-plugin-eslint-comments/configs';
+import { includeIgnoreFile } from '@eslint/compat';
 import eslint from '@eslint/js';
-// eslint-disable-next-line import-x/no-rename-default -- The default export name `plugin` is too generic.
+// eslint-disable-next-line import-x/no-rename-default -- The default export name `plugin` is too confusing.
 import stylistic from '@stylistic/eslint-plugin';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import { flatConfigs as eslintPluginImportXFlatConfigs } from 'eslint-plugin-import-x';
 import eslintPluginModulesNewlines from 'eslint-plugin-modules-newlines';
 import { configs as perfectionistConfigs } from 'eslint-plugin-perfectionist';
-import {
-  defineConfig,
-  globalIgnores
-} from 'eslint/config';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-// eslint-disable-next-line import-x/no-rename-default -- The default export name `_default` is too generic.
+import { existsSync } from 'node:fs';
+import {
+  dirname,
+  join
+} from 'node:path/posix';
+// eslint-disable-next-line import-x/no-rename-default -- The default export name `_default` is too confusing.
 import tseslint from 'typescript-eslint';
 
-const tsconfigRootDir = dirname(dirname(fileURLToPath(import.meta.url)));
+const scriptFiles = ['scripts/**/*.ts'];
 
 const typeScriptFiles = [
+  ...scriptFiles,
   'src/**/*.ts',
-  'scripts/**/*.ts',
-  '__tests__/**/*.ts',
-  'eslint.config.mts',
-  'commitlint.config.ts',
-  'vitest.config.ts'
+  '__tests__/**/*.ts'
 ];
 
-export const eslintConfig: Linter.Config[] = defineConfig(
-  globalIgnores([
-    '**/*.cjs',
-    '**/*.js',
-    '**/*.mjs',
-    'dist/**',
-    'templates/**'
-  ]),
+export const config: Linter.Config[] = defineConfig(
+  includeIgnoreFile(join(getRootFolder() ?? '', '.gitignore')),
   ...getEslintConfigs(),
   ...getTseslintConfigs(),
   ...getStylisticConfigs(),
@@ -52,7 +43,7 @@ export const eslintConfig: Linter.Config[] = defineConfig(
 function getEslintCommentsConfigs(): Linter.Config[] {
   return defineConfig([
     {
-      // eslint-disable-next-line import-x/no-named-as-default-member -- This is the standard API usage.
+      // eslint-disable-next-line import-x/no-named-as-default-member -- The default export name `recommended` is too confusing.
       extends: [commentsConfigs.recommended],
       files: typeScriptFiles,
       rules: {
@@ -106,6 +97,7 @@ function getEslintConfigs(): Linter.Config[] {
             ]
           }
         ],
+        'no-constructor-return': 'off',
         'no-div-regex': 'error',
         'no-else-return': [
           'error',
@@ -176,6 +168,14 @@ function getEslintConfigs(): Linter.Config[] {
           {
             message: 'Do not use anonymous inline object types in interface/method signatures. Define a named interface instead.',
             selector: 'TSMethodSignature TSTypeLiteral'
+          },
+          {
+            message: 'Do not use anonymous inline object types as type arguments. Define a named interface instead.',
+            selector: 'TSTypeParameterInstantiation > TSTypeLiteral'
+          },
+          {
+            message: 'Do not use anonymous inline object types in type annotations. Define a named interface instead.',
+            selector: 'TSTypeAnnotation > TSTypeLiteral'
           }
         ],
         'no-return-assign': 'error',
@@ -289,7 +289,7 @@ function getImportXConfigs(): Linter.Config[] {
       }
     },
     {
-      files: ['scripts/**/*.ts', 'src/**/*.ts', '__tests__/**/*.ts'],
+      files: scriptFiles,
       rules: {
         'import-x/no-nodejs-modules': 'off'
       }
@@ -317,6 +317,18 @@ function getPerfectionistConfigs(): Linter.Config[] {
     extends: [perfectionistConfigs['recommended-alphabetical']],
     files: typeScriptFiles
   }]);
+}
+
+function getRootFolder(cwd?: string): null | string {
+  let currentFolder = toPosixPath(cwd ?? process.cwd());
+  while (currentFolder !== '.' && currentFolder !== '/') {
+    if (existsSync(join(currentFolder, 'package.json'))) {
+      return toPosixPath(currentFolder);
+    }
+    currentFolder = dirname(currentFolder);
+  }
+
+  return null;
 }
 
 function getStylisticConfigs(): Linter.Config[] {
@@ -375,9 +387,9 @@ function getTseslintConfigs(): Linter.Config[] {
   return defineConfig([
     {
       extends: [
-        // eslint-disable-next-line import-x/no-named-as-default-member -- This is the standard API usage.
+        // eslint-disable-next-line import-x/no-named-as-default-member -- The default export name `_default` is too confusing.
         ...tseslint.configs.strictTypeChecked,
-        // eslint-disable-next-line import-x/no-named-as-default-member -- This is the standard API usage.
+        // eslint-disable-next-line import-x/no-named-as-default-member -- The default export name `_default` is too confusing.
         ...tseslint.configs.stylisticTypeChecked
       ],
       files: typeScriptFiles,
@@ -390,13 +402,12 @@ function getTseslintConfigs(): Linter.Config[] {
             jsx: true
           },
           projectService: true,
-          tsconfigRootDir
+          tsconfigRootDir: getRootFolder() ?? ''
         }
       },
       rules: {
         '@typescript-eslint/explicit-function-return-type': 'error',
         '@typescript-eslint/explicit-member-accessibility': 'error',
-        '@typescript-eslint/no-extraneous-class': 'off',
         '@typescript-eslint/no-invalid-void-type': ['error', {
           allowAsThisParameter: true
         }],
@@ -423,4 +434,8 @@ function getTseslintConfigs(): Linter.Config[] {
   ]);
 }
 
-/* eslint-enable no-magic-numbers -- Re-enable after ESLint config section. */
+function toPosixPath(path: string): string {
+  return path.replace(/\\/g, '/');
+}
+
+/* eslint-enable no-magic-numbers -- We disabled magic numbers because they are used all over the configs. */

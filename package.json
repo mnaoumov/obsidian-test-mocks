@@ -80,17 +80,13 @@
     "version": "jiti scripts/version.ts"
   },
   "dependencies": {
-    "moment": ">=2.29.0",
-    "turndown": ">=7.0.0",
-    "yaml": ">=2.0.0"
+    "@eslint/compat": "latest",
+    "moment": "2.29.4",
+    "turndown": "latest",
+    "yaml": "latest"
   },
   "peerDependencies": {
-    "obsidian": ">=1.0.0"
-  },
-  "overrides": {
-    "@antfu/utils": "9.2.0",
-    "dompurify": "3.0.1",
-    "esbuild": "$esbuild"
+    "obsidian": "latest"
   },
   "devDependencies": {
     "@commitlint/cli": "latest",
@@ -99,9 +95,9 @@
     "@eslint-community/eslint-plugin-eslint-comments": "latest",
     "@eslint/js": "latest",
     "@stylistic/eslint-plugin": "latest",
+    "@tsconfig/strictest": "latest",
     "@types/markdown-it": "latest",
     "@types/turndown": "latest",
-    "@tsconfig/strictest": "latest",
     "@vitest/coverage-v8": "latest",
     "commitizen": "latest",
     "cspell": "latest",
