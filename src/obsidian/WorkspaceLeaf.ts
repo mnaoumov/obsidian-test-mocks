@@ -38,7 +38,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   private _viewState: ViewStateOriginal = { type: '' };
 
   protected constructor(_app: App, id?: string) {
-    super();
+    super(_app.workspace, id);
     this.id__ = id ?? String(nextLeafId++);
     const self = strictMock(this);
     self.constructor3__(_app, id);

@@ -1,6 +1,6 @@
 import type { Debouncer as DebouncerOriginal } from 'obsidian';
 
-import type { MaybeReturn } from '../internal/types.ts';
+import type { MaybeReturn } from '../../internal/types.ts';
 
 export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, timeout = 0, resetTimer = true): DebouncerOriginal<T, V> {
   let timerId: ReturnType<typeof setTimeout> | undefined;

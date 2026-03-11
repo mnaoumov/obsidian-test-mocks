@@ -17,7 +17,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
     return self;
   }
 
-  public static override create2__(workspace: Workspace, direction: string, side: string, id?: string): WorkspaceSidedock {
+  public static create3__(workspace: Workspace, direction: string, side: string, id?: string): WorkspaceSidedock {
     return new WorkspaceSidedock(workspace, direction, side, id);
   }
 

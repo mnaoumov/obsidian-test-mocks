@@ -11,7 +11,7 @@ export class WorkspaceSplit extends WorkspaceParent {
   declare public parent: WorkspaceParent;
 
   protected constructor(_workspace: Workspace, _direction: string, _id?: string) {
-    super();
+    super(_workspace, _id);
     const self = strictMock(this);
     self.constructor4__(_workspace, _direction, _id);
     return self;

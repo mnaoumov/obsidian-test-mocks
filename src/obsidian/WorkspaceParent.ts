@@ -1,15 +1,17 @@
 import type { WorkspaceParent as WorkspaceParentOriginal } from 'obsidian';
 
+import type { Workspace } from './Workspace.ts';
+
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 export abstract class WorkspaceParent extends WorkspaceItem {
-  protected constructor() {
-    super();
+  protected constructor(workspace?: Workspace, id?: string) {
+    super(workspace, id);
     const self = strictMock(this);
-    self.constructor3__();
+    self.constructor3__(workspace, id);
     return self;
   }
 
@@ -17,7 +19,7 @@ export abstract class WorkspaceParent extends WorkspaceItem {
     return castTo<WorkspaceParentOriginal>(this);
   }
 
-  public constructor3__(): void {
+  public constructor3__(_workspace?: Workspace, _id?: string): void {
     noop();
   }
 }

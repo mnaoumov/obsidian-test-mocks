@@ -3,11 +3,11 @@ import type {
   MenuItem as MenuItemOriginal
 } from 'obsidian';
 
-import type { Menu } from './Menu.ts';
-
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
+// eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
+import { Menu } from './Menu.ts';
 
 export class MenuItem {
   public checked__: boolean | null = null;
@@ -67,10 +67,7 @@ export class MenuItem {
   }
 
   public setSubmenu(): Menu {
-    // Lazy import to break circular dependency (Menu <-> MenuItem).
-    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Required to break import cycle synchronously.
-    const { Menu: MenuClass } = require('./Menu.ts') as typeof import('./Menu.ts');
-    return MenuClass.create__();
+    return Menu.create2__();
   }
 
   public setTitle(title: DocumentFragment | string): this {

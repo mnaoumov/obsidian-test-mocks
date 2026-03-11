@@ -8,12 +8,12 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
-  private readonly inputEl: HTMLInputElement | HTMLTextAreaElement;
-  public constructor(app: App, inputEl: HTMLInputElement | HTMLTextAreaElement) {
+  private readonly inputEl: HTMLDivElement | HTMLInputElement;
+  public constructor(app: App, textInputEl: HTMLDivElement | HTMLInputElement) {
     super(app);
-    this.inputEl = inputEl;
+    this.inputEl = textInputEl;
     const self = strictMock(this);
-    self.constructor2__(app, inputEl);
+    self.constructor2__(app, textInputEl);
     return self;
   }
 
@@ -21,15 +21,23 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
     return castTo<AbstractInputSuggestOriginal<T>>(this);
   }
 
-  public constructor2__(_app: App, _inputEl: HTMLInputElement | HTMLTextAreaElement): void {
+  public constructor2__(_app: App, _textInputEl: HTMLDivElement | HTMLInputElement): void {
     noop();
   }
 
   public getValue(): string {
-    return this.inputEl.value;
+    if (this.inputEl instanceof HTMLInputElement) {
+      return this.inputEl.value;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- textContent can be null.
+    return this.inputEl.textContent ?? '';
   }
 
   public setValue(value: string): void {
-    this.inputEl.value = value;
+    if (this.inputEl instanceof HTMLInputElement) {
+      this.inputEl.value = value;
+    } else {
+      this.inputEl.textContent = value;
+    }
   }
 }

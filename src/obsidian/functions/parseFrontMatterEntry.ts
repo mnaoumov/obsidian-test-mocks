@@ -1,4 +1,4 @@
-import { castTo } from '../internal/cast.ts';
+import { castTo } from '../../internal/cast.ts';
 
 export function parseFrontMatterEntry(frontmatter: unknown, key: RegExp | string): unknown {
   if (!frontmatter) {

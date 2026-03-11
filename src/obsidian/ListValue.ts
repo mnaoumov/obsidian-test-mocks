@@ -10,22 +10,25 @@ import { NotNullValue } from './NotNullValue.ts';
 export class ListValue extends NotNullValue {
   public values__: Value[] = [];
 
-  public constructor() {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
+  public constructor(value: (unknown | Value)[]) {
     super();
     const self = strictMock(this);
-    self.constructor3__();
+    self.constructor3__(value);
     return self;
   }
 
-  public static create__(): ListValue {
-    return new ListValue();
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
+  public static create__(value: (unknown | Value)[]): ListValue {
+    return new ListValue(value);
   }
 
   public override asOriginalType__(): ListValueOriginal {
     return castTo<ListValueOriginal>(this);
   }
 
-  public constructor3__(): void {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
+  public constructor3__(_value: (unknown | Value)[]): void {
     noop();
   }
 

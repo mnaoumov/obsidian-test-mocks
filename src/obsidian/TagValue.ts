@@ -13,7 +13,7 @@ export class TagValue extends StringValue {
     return self;
   }
 
-  public static override create__(value: string): TagValue {
+  public static create2__(value: string): TagValue {
     return new TagValue(value);
   }
 

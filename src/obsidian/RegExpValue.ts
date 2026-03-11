@@ -6,22 +6,22 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class RegExpValue extends NotNullValue {
-  public constructor() {
+  public constructor(regexp: RegExp) {
     super();
     const self = strictMock(this);
-    self.constructor3__();
+    self.constructor3__(regexp);
     return self;
   }
 
-  public static create__(): RegExpValue {
-    return new RegExpValue();
+  public static create__(regexp: RegExp): RegExpValue {
+    return new RegExpValue(regexp);
   }
 
   public override asOriginalType__(): RegExpValueOriginal {
     return castTo<RegExpValueOriginal>(this);
   }
 
-  public constructor3__(): void {
+  public constructor3__(_regexp: RegExp): void {
     noop();
   }
 

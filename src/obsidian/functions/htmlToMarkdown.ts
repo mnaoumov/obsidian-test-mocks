@@ -11,7 +11,7 @@ export function htmlToMarkdown(html: Document | DocumentFragment | HTMLElement |
     return turndownService.turndown(html);
   }
 
-  const wrapper = document.createElement('div');
+  const wrapper = createDiv();
   if (html instanceof Document) {
     wrapper.innerHTML = html.body.innerHTML;
   } else {

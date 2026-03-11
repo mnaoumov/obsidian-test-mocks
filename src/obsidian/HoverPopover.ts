@@ -1,6 +1,7 @@
 import type {
   HoverParent as HoverParentOriginal,
   HoverPopover as HoverPopoverOriginal,
+  Point as PointOriginal,
   PopoverState as PopoverStateOriginal,
   WorkspaceLeaf as WorkspaceLeafOriginal
 } from 'obsidian';
@@ -14,7 +15,7 @@ export class HoverPopover extends Component {
   public hoverEl: HTMLElement;
   public state: PopoverStateOriginal = 0;
 
-  public constructor(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null) {
+  public constructor(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null | PointOriginal) {
     super();
     this.hoverEl = createDiv();
     const self = strictMock(this);
@@ -22,7 +23,7 @@ export class HoverPopover extends Component {
     return self;
   }
 
-  public static create2__(parent: HoverParentOriginal, targetEl: HTMLElement | null, waitTime?: number, staticPos?: null): HoverPopover {
+  public static create2__(parent: HoverParentOriginal, targetEl: HTMLElement | null, waitTime?: number, staticPos?: null | PointOriginal): HoverPopover {
     return new HoverPopover(parent, targetEl, waitTime, staticPos);
   }
 
@@ -34,7 +35,7 @@ export class HoverPopover extends Component {
     return castTo<HoverPopoverOriginal>(this);
   }
 
-  public constructor2__(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null): void {
+  public constructor2__(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null | PointOriginal): void {
     noop();
   }
 }

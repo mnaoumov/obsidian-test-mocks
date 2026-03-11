@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { displayTooltip } from '../../src/obsidian/displayTooltip.ts';
+import { displayTooltip } from '../../src/obsidian/functions/displayTooltip.ts';
 
 describe('displayTooltip', () => {
   it('should create a span with tooltip class and text content', () => {

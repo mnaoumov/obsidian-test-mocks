@@ -17,7 +17,7 @@ export class MomentFormatComponent extends TextComponent {
     return self;
   }
 
-  public static override create__(containerEl: HTMLElement): MomentFormatComponent {
+  public static create2__(containerEl: HTMLElement): MomentFormatComponent {
     return new MomentFormatComponent(containerEl);
   }
 
