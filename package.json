@@ -80,7 +80,8 @@
     "version": "jiti scripts/version.ts"
   },
   "dependencies": {
-    "@eslint/compat": "latest",
+    "@codemirror/state": "6.5.0",
+    "@codemirror/view": "6.38.6",
     "moment": "2.29.4",
     "turndown": "latest",
     "yaml": "latest"
@@ -93,6 +94,7 @@
     "@commitlint/config-conventional": "latest",
     "@commitlint/types": "latest",
     "@eslint-community/eslint-plugin-eslint-comments": "latest",
+    "@eslint/compat": "latest",
     "@eslint/js": "latest",
     "@stylistic/eslint-plugin": "latest",
     "@tsconfig/strictest": "latest",
