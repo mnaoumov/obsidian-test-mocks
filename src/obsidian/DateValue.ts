@@ -11,23 +11,23 @@ import { NotNullValue } from './NotNullValue.ts';
 export class DateValue extends NotNullValue {
   public value__: moment.Moment;
 
-  public constructor() {
+  public constructor(date: unknown, showTime?: boolean) {
     super();
     this.value__ = momentFn();
     const self = strictMock(this);
-    self.constructor3__();
+    self.constructor3__(date, showTime);
     return self;
   }
 
-  public static create__(): DateValue {
-    return new DateValue();
+  public static create__(date: unknown, showTime?: boolean): DateValue {
+    return new DateValue(date, showTime);
   }
 
   public override asOriginalType__(): DateValueOriginal {
     return castTo<DateValueOriginal>(this);
   }
 
-  public constructor3__(): void {
+  public constructor3__(_date: unknown, _showTime?: boolean): void {
     noop();
   }
 

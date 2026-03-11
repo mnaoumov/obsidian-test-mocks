@@ -11,8 +11,8 @@ import type {
   TagCache
 } from 'obsidian';
 
-import { getFrontMatterInfo } from '../obsidian/getFrontMatterInfo.ts';
-import { parseYaml } from '../obsidian/parseYaml.ts';
+import { getFrontMatterInfo } from '../obsidian/functions/getFrontMatterInfo.ts';
+import { parseYaml } from '../obsidian/functions/parseYaml.ts';
 
 /**
  * Parses markdown content into a `CachedMetadata` object.

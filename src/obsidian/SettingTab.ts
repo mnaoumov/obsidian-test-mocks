@@ -1,4 +1,8 @@
-import type { SettingTab as SettingTabOriginal } from 'obsidian';
+import type {
+  IconName as IconNameOriginal,
+  Setting as SettingOriginal,
+  SettingTab as SettingTabOriginal
+} from 'obsidian';
 
 import type { App } from './App.ts';
 
@@ -9,12 +13,13 @@ import { strictMock } from '../internal/strict-mock.ts';
 export abstract class SettingTab {
   public app: App;
   public containerEl: HTMLDivElement;
+  public icon: IconNameOriginal = '';
 
-  public constructor(app: App) {
+  public constructor(app: App, setting?: SettingOriginal) {
     this.app = app;
     this.containerEl = createDiv();
     const self = strictMock(this);
-    self.constructor__(app);
+    self.constructor__(app, setting);
     return self;
   }
 
@@ -22,7 +27,7 @@ export abstract class SettingTab {
     return castTo<SettingTabOriginal>(this);
   }
 
-  public constructor__(_app: App): void {
+  public constructor__(_app: App, _setting?: SettingOriginal): void {
     noop();
   }
 

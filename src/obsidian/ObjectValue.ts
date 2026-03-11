@@ -6,22 +6,22 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ObjectValue extends NotNullValue {
-  public constructor() {
+  public constructor(data: unknown) {
     super();
     const self = strictMock(this);
-    self.constructor3__();
+    self.constructor3__(data);
     return self;
   }
 
-  public static create__(): ObjectValue {
-    return new ObjectValue();
+  public static create__(data: unknown): ObjectValue {
+    return new ObjectValue(data);
   }
 
   public override asOriginalType__(): ObjectValueOriginal {
     return castTo<ObjectValueOriginal>(this);
   }
 
-  public constructor3__(): void {
+  public constructor3__(_data: unknown): void {
     noop();
   }
 

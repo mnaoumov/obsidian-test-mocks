@@ -13,7 +13,7 @@ export class IconValue extends StringValue {
     return self;
   }
 
-  public static override create__(value = ''): IconValue {
+  public static create2__(value = ''): IconValue {
     return new IconValue(value);
   }
 

@@ -1,15 +1,17 @@
 import type { BasesView as BasesViewOriginal } from 'obsidian';
 
+import type { QueryController } from './QueryController.ts';
+
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
 
 export abstract class BasesView extends Component {
-  public constructor() {
+  public constructor(controller: QueryController) {
     super();
     const self = strictMock(this);
-    self.constructor2__();
+    self.constructor2__(controller);
     return self;
   }
 
@@ -17,7 +19,7 @@ export abstract class BasesView extends Component {
     return castTo<BasesViewOriginal>(this);
   }
 
-  public constructor2__(): void {
+  public constructor2__(_controller: QueryController): void {
     noop();
   }
 }

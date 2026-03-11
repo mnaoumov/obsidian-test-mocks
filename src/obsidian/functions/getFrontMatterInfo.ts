@@ -1,6 +1,6 @@
 import type { FrontMatterInfo as FrontMatterInfoOriginal } from 'obsidian';
 
-import { ensureNonNullable } from '../internal/type-guards.ts';
+import { ensureNonNullable } from '../../internal/type-guards.ts';
 
 const FRONTMATTER_DELIMITER_LENGTH = 3;
 

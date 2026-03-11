@@ -12,7 +12,7 @@ export class WorkspaceTabs extends WorkspaceParent {
   declare public parent: WorkspaceSplit;
 
   protected constructor(_workspace: Workspace, _id?: string) {
-    super();
+    super(_workspace, _id);
     const self = strictMock(this);
     self.constructor4__(_workspace, _id);
     return self;

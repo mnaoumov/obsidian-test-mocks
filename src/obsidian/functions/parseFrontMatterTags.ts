@@ -1,11 +1,11 @@
-import { castTo } from '../internal/cast.ts';
+import { castTo } from '../../internal/cast.ts';
 
 export function parseFrontMatterTags(frontmatter: unknown): null | string[] {
   if (!frontmatter) {
     return null;
   }
   const fm = castTo<Record<string, unknown>>(frontmatter);
-  const raw = fm['tags'] ?? fm['tag'];
+  const raw = fm['tags'] ?? fm['tag'] ?? null;
   if (typeof raw === 'string') {
     return [raw.startsWith('#') ? raw : `#${raw}`];
   }

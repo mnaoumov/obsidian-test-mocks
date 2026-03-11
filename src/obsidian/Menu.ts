@@ -8,6 +8,7 @@ import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
+// eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
 import { MenuItem } from './MenuItem.ts';
 
 export class Menu extends Component {
@@ -24,12 +25,12 @@ export class Menu extends Component {
     return self;
   }
 
-  public static override create__(): Menu {
+  public static create2__(): Menu {
     return new Menu();
   }
 
   public static forEvent(_evt: MouseEvent | PointerEvent): Menu {
-    return Menu.create__();
+    return Menu.create2__();
   }
 
   public addItem(cb: (item: MenuItemOriginal) => unknown): this {

@@ -1,4 +1,4 @@
-import type { ParsedLinktext } from '../internal/types.ts';
+import type { ParsedLinktext } from '../../internal/types.ts';
 
 export function parseLinktext(linktext: string): ParsedLinktext {
   const hashIndex = linktext.indexOf('#');

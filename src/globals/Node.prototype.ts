@@ -1,13 +1,6 @@
-import type {
-  DomElementInfoLike,
-  SvgElementInfoLike
-} from './functions.ts';
-
 import { castTo } from '../internal/cast.ts';
-import {
-  createEl as createElGlobal,
-  createSvg as createSvgGlobal
-} from './functions.ts';
+import { createEl as createElGlobal } from './functions/createEl.ts';
+import { createSvg as createSvgGlobal } from './functions/createSvg.ts';
 
 export function appendText(this: Node, val: string): void {
   this.appendChild(document.createTextNode(val));
@@ -19,7 +12,7 @@ export function constructorWin(this: Node): Window {
 
 export function createDiv(
   this: Node,
-  o?: DomElementInfoLike | string,
+  o?: DomElementInfo | string,
   callback?: (el: HTMLDivElement) => void
 ): HTMLDivElement {
   return createEl.call(this, 'div', o, callback as never) as HTMLDivElement;
@@ -29,7 +22,7 @@ export function createDiv(
 export function createEl<K extends keyof HTMLElementTagNameMap>(
   this: Node,
   tag: K,
-  o?: DomElementInfoLike | string,
+  o?: DomElementInfo | string,
   callback?: (el: HTMLElementTagNameMap[K]) => void
 ): HTMLElementTagNameMap[K] {
   return createElGlobal(tag, { ...(typeof o === 'string' ? { cls: o } : (o ?? {})), parent: this }, callback);
@@ -37,7 +30,7 @@ export function createEl<K extends keyof HTMLElementTagNameMap>(
 
 export function createSpan(
   this: Node,
-  o?: DomElementInfoLike | string,
+  o?: DomElementInfo | string,
   callback?: (el: HTMLSpanElement) => void
 ): HTMLSpanElement {
   return createEl.call(this, 'span', o, callback);
@@ -46,7 +39,7 @@ export function createSpan(
 export function createSvg<K extends keyof SVGElementTagNameMap>(
   this: Node,
   tag: K,
-  o?: string | SvgElementInfoLike,
+  o?: string | SvgElementInfo,
   callback?: (el: SVGElementTagNameMap[K]) => void
 ): SVGElementTagNameMap[K] {
   return createSvgGlobal(tag, { ...(typeof o === 'string' ? { cls: o } : (o ?? {})), parent: this }, callback);

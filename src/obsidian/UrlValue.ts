@@ -6,22 +6,22 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { StringValue } from './StringValue.ts';
 
 export class UrlValue extends StringValue {
-  public constructor(value = '') {
+  public constructor(value: string, display?: null | string) {
     super(value);
     const self = strictMock(this);
-    self.constructor5__(value);
+    self.constructor5__(value, display);
     return self;
   }
 
-  public static override create__(value = ''): UrlValue {
-    return new UrlValue(value);
+  public static create2__(value: string, display?: null | string): UrlValue {
+    return new UrlValue(value, display);
   }
 
   public override asOriginalType__(): UrlValueOriginal {
     return castTo<UrlValueOriginal>(this);
   }
 
-  public constructor5__(_value: string): void {
+  public constructor5__(_value: string, _display?: null | string): void {
     noop();
   }
 }

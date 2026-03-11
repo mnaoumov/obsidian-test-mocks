@@ -8,25 +8,25 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { StringValue } from './StringValue.ts';
 
 export class LinkValue extends StringValue {
-  public constructor(value = '') {
+  public constructor(app: App, value: string, sourcePath: string, display?: null | string) {
     super(value);
     const self = strictMock(this);
-    self.constructor5__(value);
+    self.constructor5__(app, value, sourcePath, display);
     return self;
   }
 
-  public static override create__(value = ''): LinkValue {
-    return new LinkValue(value);
+  public static create2__(app: App, value: string, sourcePath: string, display?: null | string): LinkValue {
+    return new LinkValue(app, value, sourcePath, display);
   }
 
-  public static parseFromString(_app: App, input: string, _sourcePath: string): LinkValue | null {
+  public static parseFromString(app: App, input: string, sourcePath: string): LinkValue | null {
     const match = /^\[\[(?<inner>[^\]]+)\]\]$/.exec(input);
     if (!match) {
       return null;
     }
     const inner = match.groups?.['inner'] ?? '';
     const pipeIndex = inner.indexOf('|');
-    const linkValue = LinkValue.create__(pipeIndex >= 0 ? inner.slice(0, pipeIndex) : inner);
+    const linkValue = LinkValue.create2__(app, pipeIndex >= 0 ? inner.slice(0, pipeIndex) : inner, sourcePath);
     return linkValue;
   }
 
@@ -34,7 +34,7 @@ export class LinkValue extends StringValue {
     return castTo<LinkValueOriginal>(this);
   }
 
-  public constructor5__(_value: string): void {
+  public constructor5__(_app: App, _value: string, _sourcePath: string, _display?: null | string): void {
     noop();
   }
 }

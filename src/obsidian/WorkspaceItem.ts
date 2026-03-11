@@ -3,16 +3,18 @@ import type {
   WorkspaceItem as WorkspaceItemOriginal
 } from 'obsidian';
 
+import type { Workspace } from './Workspace.ts';
+
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {
-  protected constructor() {
+  protected constructor(workspace?: Workspace, id?: string) {
     super();
     const self = strictMock(this);
-    self.constructor2__();
+    self.constructor2__(workspace, id);
     return self;
   }
 
@@ -20,7 +22,7 @@ export abstract class WorkspaceItem extends Events {
     return castTo<WorkspaceItemOriginal>(this);
   }
 
-  public constructor2__(): void {
+  public constructor2__(_workspace?: Workspace, _id?: string): void {
     noop();
   }
 

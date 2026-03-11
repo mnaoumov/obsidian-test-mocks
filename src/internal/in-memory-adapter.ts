@@ -4,6 +4,8 @@ import type {
   Stat
 } from 'obsidian';
 
+import { noopAsync } from './noop.ts';
+
 interface FileMeta {
   ctime: number;
   mtime: number;
@@ -23,8 +25,8 @@ export class InMemoryAdapter {
     // Do nothing.
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async append(normalizedPath: string, data: string, _options?: DataWriteOptions): Promise<void> {
+    await noopAsync();
     const existing = this.textFiles.get(normalizedPath) ?? '';
     const newContent = existing + data;
     this.textFiles.set(normalizedPath, newContent);
@@ -40,8 +42,8 @@ export class InMemoryAdapter {
     this.ensureParentDirs(normalizedPath);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async copy(normalizedPath: string, normalizedNewPath: string): Promise<void> {
+    await noopAsync();
     const now = Date.now();
 
     const textContent = this.textFiles.get(normalizedPath);
@@ -70,8 +72,8 @@ export class InMemoryAdapter {
     this.ensureParentDirs(normalizedNewPath);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async exists(normalizedPath: string, _sensitive?: boolean): Promise<boolean> {
+    await noopAsync();
     return this.textFiles.has(normalizedPath)
       || this.binaryFiles.has(normalizedPath)
       || this.directories.has(normalizedPath);
@@ -89,8 +91,8 @@ export class InMemoryAdapter {
     return `app://local/${normalizedPath}`;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async list(normalizedPath: string): Promise<ListedFiles> {
+    await noopAsync();
     const files: string[] = [];
     const folders: string[] = [];
     const prefix = normalizedPath === '' ? '' : `${normalizedPath}/`;
@@ -116,8 +118,8 @@ export class InMemoryAdapter {
     return { files, folders };
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async mkdir(normalizedPath: string): Promise<void> {
+    await noopAsync();
     this.mkdirSync(normalizedPath);
   }
 
@@ -128,8 +130,8 @@ export class InMemoryAdapter {
     return result;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async read(normalizedPath: string): Promise<string> {
+    await noopAsync();
     const content = this.textFiles.get(normalizedPath);
     if (content === undefined) {
       throw new Error(`File not found: ${normalizedPath}`);
@@ -137,8 +139,8 @@ export class InMemoryAdapter {
     return content;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async readBinary(normalizedPath: string): Promise<ArrayBuffer> {
+    await noopAsync();
     const content = this.binaryFiles.get(normalizedPath);
     if (content === undefined) {
       throw new Error(`File not found: ${normalizedPath}`);
@@ -146,15 +148,15 @@ export class InMemoryAdapter {
     return content;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async remove(normalizedPath: string): Promise<void> {
+    await noopAsync();
     this.textFiles.delete(normalizedPath);
     this.binaryFiles.delete(normalizedPath);
     this.fileMeta.delete(normalizedPath);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async rename(normalizedPath: string, normalizedNewPath: string): Promise<void> {
+    await noopAsync();
     if (this.directories.has(normalizedPath)) {
       const oldPrefix = normalizedPath === '' ? '' : `${normalizedPath}/`;
       const newPrefix = normalizedNewPath === '' ? '' : `${normalizedNewPath}/`;
@@ -217,8 +219,8 @@ export class InMemoryAdapter {
     this.ensureParentDirs(normalizedNewPath);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async rmdir(normalizedPath: string, recursive: boolean): Promise<void> {
+    await noopAsync();
     if (recursive) {
       const prefix = normalizedPath === '' ? '' : `${normalizedPath}/`;
 
@@ -244,8 +246,8 @@ export class InMemoryAdapter {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async stat(normalizedPath: string): Promise<null | Stat> {
+    await noopAsync();
     if (this.directories.has(normalizedPath)) {
       return {
         ctime: 0,
@@ -277,8 +279,8 @@ export class InMemoryAdapter {
     return true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async write(normalizedPath: string, data: string, _options?: DataWriteOptions): Promise<void> {
+    await noopAsync();
     const now = Date.now();
     const meta = this.fileMeta.get(normalizedPath);
 
@@ -292,8 +294,8 @@ export class InMemoryAdapter {
     this.ensureParentDirs(normalizedPath);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Implements async DataAdapter interface with sync in-memory logic.
   public async writeBinary(normalizedPath: string, data: ArrayBuffer, _options?: DataWriteOptions): Promise<void> {
+    await noopAsync();
     const now = Date.now();
     const meta = this.fileMeta.get(normalizedPath);
 

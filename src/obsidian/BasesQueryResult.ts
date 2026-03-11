@@ -1,11 +1,14 @@
 import type {
   BasesPropertyId as BasesPropertyIdOriginal,
+  BasesProperty as BasesPropertyOriginal,
   BasesQueryResult as BasesQueryResultOriginal,
   Value as ValueOriginal
 } from 'obsidian';
 
+import type { App } from './App.ts';
 import type { BasesEntry } from './BasesEntry.ts';
 import type { BasesEntryGroup } from './BasesEntryGroup.ts';
+import type { BasesViewConfig } from './BasesViewConfig.ts';
 import type { QueryController } from './QueryController.ts';
 
 import { castTo } from '../internal/cast.ts';
@@ -26,21 +29,21 @@ export class BasesQueryResult {
 
   private _properties: BasesPropertyIdOriginal[] = [];
 
-  protected constructor() {
+  protected constructor(app: App, config: BasesViewConfig, allProperties: BasesPropertyOriginal[], data: BasesEntry[]) {
     const self = strictMock(this);
-    self.constructor__();
+    self.constructor__(app, config, allProperties, data);
     return self;
   }
 
-  public static create__(): BasesQueryResult {
-    return new BasesQueryResult();
+  public static create__(app: App, config: BasesViewConfig, allProperties: BasesPropertyOriginal[], data: BasesEntry[]): BasesQueryResult {
+    return new BasesQueryResult(app, config, allProperties, data);
   }
 
   public asOriginalType__(): BasesQueryResultOriginal {
     return castTo<BasesQueryResultOriginal>(this);
   }
 
-  public constructor__(): void {
+  public constructor__(_app: App, _config: BasesViewConfig, _allProperties: BasesPropertyOriginal[], _data: BasesEntry[]): void {
     noop();
   }
 

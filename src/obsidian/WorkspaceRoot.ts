@@ -23,7 +23,7 @@ export class WorkspaceRoot extends WorkspaceContainer {
     return self;
   }
 
-  public static override create2__(workspace: Workspace, direction: string, id?: string): WorkspaceRoot {
+  public static create3__(workspace: Workspace, direction: string, id?: string): WorkspaceRoot {
     return new WorkspaceRoot(workspace, direction, id);
   }
 

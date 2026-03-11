@@ -13,7 +13,7 @@ export class HTMLValue extends StringValue {
     return self;
   }
 
-  public static override create__(value = ''): HTMLValue {
+  public static create2__(value = ''): HTMLValue {
     return new HTMLValue(value);
   }
 
