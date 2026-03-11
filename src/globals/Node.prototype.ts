@@ -59,7 +59,7 @@ export function empty(this: Node): void {
   }
 }
 
-export function indexOf(_this: Node, other: Node): number {
+export function indexOf(this: Node, other: Node): number {
   const parent = other.parentNode;
   if (!parent) {
     return -1;
