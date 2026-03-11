@@ -24,6 +24,8 @@ data.json
 dist
 coverage
 
+index.ts
+
 /tsconfig.tsbuildinfo
 /.env
 

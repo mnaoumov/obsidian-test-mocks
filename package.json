@@ -63,6 +63,7 @@
     "build": "jiti scripts/build.ts",
     "build:clean": "jiti scripts/build-clean.ts",
     "build:compile:typescript": "jiti scripts/build-compile-typescript.ts",
+    "build:generate:indices": "jiti scripts/build-generate-indices.ts",
     "build:lib": "jiti scripts/build-lib.ts",
     "build:types": "jiti scripts/build-types.ts",
     "commit": "jiti scripts/commit.ts",
