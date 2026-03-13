@@ -93,7 +93,7 @@ const app = await createMockApp({
 
 Every mock instance is wrapped in a `Proxy` that throws a descriptive error when you access a property that isn't implemented, instead of silently returning `undefined`:
 
-```
+```text
 Property "internalPlugins" is not mocked in App. To override, assign a value first: mock.internalPlugins = ...
 ```
 
@@ -113,7 +113,7 @@ Object.assign(app, { commands: { addCommand: vi.fn() } });
 
 Properties not implemented in the mock (such as `app.internalPlugins`) will throw at runtime:
 
-```
+```text
 Property "internalPlugins" is not mocked in App. To override, assign a value first: mock.internalPlugins = ...
 ```
 
