@@ -45,7 +45,16 @@ export class App {
   }
 
   public static async createConfigured__(params: CreateConfiguredParams = {}): Promise<App> {
-    const adapter = params.adapter ?? FileSystemAdapter.create__('/mock-vault') as DataAdapterOriginal;
+    let adapter: DataAdapterOriginal;
+    if (params.adapter) {
+      adapter = params.adapter;
+    } else {
+      const mockAdapter = FileSystemAdapter.create__('/mock-vault');
+      if (params.isAdapterCaseInsensitive) {
+        mockAdapter.insensitive__ = true;
+      }
+      adapter = mockAdapter;
+    }
     const app = App.create__(adapter, params.appId ?? '');
 
     const neededFolders = new Set<string>();

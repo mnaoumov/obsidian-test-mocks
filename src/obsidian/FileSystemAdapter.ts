@@ -7,8 +7,7 @@ import { strictMock } from '../internal/strict-mock.ts';
 
 export class FileSystemAdapter extends InMemoryAdapter {
   protected constructor(basePath: string) {
-    super();
-    this.basePath = basePath;
+    super(basePath);
     const self = strictMock(this);
     self.constructor__(basePath);
     return self;

@@ -10,4 +10,5 @@ export interface CreateConfiguredParams {
    * Parent folders are created automatically.
    */
   files?: Record<string, string>;
+  isAdapterCaseInsensitive?: boolean;
 }

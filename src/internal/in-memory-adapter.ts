@@ -5,7 +5,10 @@ import type {
   Stat as StatOriginal
 } from 'obsidian';
 
-import { noopAsync } from './noop.ts';
+import {
+  noop,
+  noopAsync
+} from './noop.ts';
 
 interface FileMeta {
   ctime: number;
@@ -14,8 +17,7 @@ interface FileMeta {
 }
 
 export class InMemoryAdapter implements DataAdapterOriginal {
-  public basePath = '/mock-vault';
-  public insensitive = false;
+  public insensitive__ = false;
 
   private readonly binaryFiles = new Map<string, ArrayBuffer>();
   private readonly directories = new Set<string>(['']);
@@ -23,8 +25,8 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   private readonly lowerCaseKeys = new Set<string>(['']);
   private readonly textFiles = new Map<string, string>();
 
-  protected constructor() {
-    // Do nothing.
+  protected constructor(private readonly basePath: string) {
+    noop();
   }
 
   public async append(normalizedPath: string, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
@@ -100,7 +102,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
 
   public async exists(normalizedPath: string, sensitive?: boolean): Promise<boolean> {
     await noopAsync();
-    if (sensitive || !this.insensitive) {
+    if (sensitive || !this.insensitive__) {
       return this.textFiles.has(normalizedPath)
         || this.binaryFiles.has(normalizedPath)
         || this.directories.has(normalizedPath);
