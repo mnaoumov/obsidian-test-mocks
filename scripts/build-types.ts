@@ -15,11 +15,6 @@ import { execFromRoot } from './helpers/exec.ts';
 const ESM_DIR = 'dist/lib/esm';
 const CJS_DIR = 'dist/lib/cjs';
 
-await execFromRoot('tsc --project tsconfig.build.json');
-await rewriteAndRenameDeclarations(ESM_DIR, '.d.mts');
-cpSync(ESM_DIR, CJS_DIR, { filter: (src) => src.endsWith('.d.mts') || statSync(src).isDirectory(), recursive: true });
-await rewriteAndRenameDeclarations(CJS_DIR, '.d.cts');
-
 function collectFiles(dir: string, ext: string): string[] {
   const result: string[] = [];
   for (const entry of readdirSync(dir)) {
@@ -31,6 +26,13 @@ function collectFiles(dir: string, ext: string): string[] {
     }
   }
   return result;
+}
+
+async function main(): Promise<void> {
+  await execFromRoot('tsc --project tsconfig.build.json');
+  await rewriteAndRenameDeclarations(ESM_DIR, '.d.mts');
+  cpSync(ESM_DIR, CJS_DIR, { filter: (src) => src.endsWith('.d.mts') || statSync(src).isDirectory(), recursive: true });
+  await rewriteAndRenameDeclarations(CJS_DIR, '.d.cts');
 }
 
 async function rewriteAndRenameDeclarations(dir: string, targetExt: string): Promise<void> {
@@ -52,3 +54,5 @@ async function rewriteAndRenameDeclarations(dir: string, targetExt: string): Pro
     }
   }
 }
+
+await main();
