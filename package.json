@@ -53,11 +53,12 @@
     }
   },
   "files": [
-    "dist/",
     "!dist/*.tgz",
+    "**/package.json",
+    "dist/",
     "LICENSE",
     "README.md",
-    "**/package.json"
+    "scripts/postinstall.mjs"
   ],
   "scripts": {
     "build": "jiti scripts/build.ts",
