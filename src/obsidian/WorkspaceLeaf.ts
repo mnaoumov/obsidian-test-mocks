@@ -30,6 +30,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     return this._file__;
   }
 
+  private readonly _app: App;
   private _ephemeralState: Record<string, unknown> = {};
   private _file__: null | TFile = null;
   private _group: null | string = null;
@@ -37,11 +38,12 @@ export class WorkspaceLeaf extends WorkspaceItem {
 
   private _viewState: ViewStateOriginal = { type: '' };
 
-  protected constructor(_app: App, id?: string) {
-    super(_app.workspace, id);
+  protected constructor(app: App, id?: string) {
+    super(app.workspace, id);
+    this._app = app;
     this.id__ = id ?? String(nextLeafId++);
     const self = strictMock(this);
-    self.constructor3__(_app, id);
+    self.constructor3__(app, id);
     return self;
   }
 
@@ -58,7 +60,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public detach(): void {
-    noop();
+    this._app.workspace.removeLeaf__(this);
   }
 
   public getDisplayText(): string {
