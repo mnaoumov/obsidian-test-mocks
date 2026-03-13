@@ -266,7 +266,7 @@ async function updateVersion(versionUpdateType?: string): Promise<void> {
   await npmRun('lint:md');
   await npmRun('build');
   await npmRun('lint');
-  await npmRun('test');
+  await npmRun('test:coverage');
 
   const newVersion = await getNewVersion(versionUpdateType);
   await updateVersionInFiles(newVersion);
