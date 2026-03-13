@@ -4,10 +4,13 @@ import type {
   UserEvent as UserEventOriginal
 } from 'obsidian';
 
+import type { CreateConfiguredParams } from '../internal/mock-app.ts';
+
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { FileManager } from './FileManager.ts';
+import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { Keymap } from './Keymap.ts';
 import { MetadataCache } from './MetadataCache.ts';
 import { Scope } from './Scope.ts';
@@ -41,6 +44,31 @@ export class App {
     return new App(adapter, appId);
   }
 
+  public static async createConfigured__(params: CreateConfiguredParams = {}): Promise<App> {
+    const adapter = params.adapter ?? FileSystemAdapter.create__('/mock-vault') as DataAdapterOriginal;
+    const app = App.create__(adapter, params.appId ?? '');
+
+    const neededFolders = new Set<string>();
+
+    for (const filePath of Object.keys(params.files ?? {})) {
+      const lastSlash = filePath.lastIndexOf('/');
+      if (lastSlash > 0) {
+        addFolderAndParents(neededFolders, filePath.slice(0, lastSlash));
+      }
+    }
+
+    const sortedFolders = [...neededFolders].sort();
+    for (const folder of sortedFolders) {
+      await app.vault.createFolder(folder);
+    }
+
+    for (const [filePath, content] of Object.entries(params.files ?? {})) {
+      await app.vault.create(filePath, content);
+    }
+
+    return app;
+  }
+
   public asOriginalType__(): AppOriginal {
     return castTo<AppOriginal>(this);
   }
@@ -59,5 +87,17 @@ export class App {
 
   public saveLocalStorage(key: string, data: unknown): void {
     this._localStorage.set(key, data);
+  }
+}
+
+function addFolderAndParents(folders: Set<string>, path: string): void {
+  let current = path;
+  while (current && current !== '/') {
+    if (folders.has(current)) {
+      break;
+    }
+    folders.add(current);
+    const lastSlash = current.lastIndexOf('/');
+    current = lastSlash > 0 ? current.slice(0, lastSlash) : '';
   }
 }

@@ -1,7 +1,7 @@
 {
   "name": "obsidian-test-mocks",
   "version": "0.1.0",
-  "description": "Comprehensive test mocks for the Obsidian API",
+  "description": "Comprehensive test mocks for the Obsidian API.",
   "keywords": [
     "obsidian",
     "testing",
@@ -60,8 +60,8 @@
     "**/package.json"
   ],
   "scripts": {
-    "build": "jiti scripts/build.ts",
     "build:clean": "jiti scripts/build-clean.ts",
+    "build:compile": "jiti scripts/build-compile.ts",
     "build:compile:typescript": "jiti scripts/build-compile-typescript.ts",
     "build:generate:indices": "jiti scripts/build-generate-indices.ts",
     "build:lib": "jiti scripts/build-lib.ts",
@@ -73,6 +73,7 @@
     "lint:fix": "jiti scripts/lint-fix.ts",
     "lint:md": "jiti scripts/lint-md.ts",
     "lint:md:fix": "jiti scripts/lint-md-fix.ts",
+    "postinstall": "node scripts/postinstall.mjs",
     "prepare": "jiti scripts/prepare.ts",
     "spellcheck": "jiti scripts/spellcheck.ts",
     "test": "jiti scripts/test.ts",
@@ -100,8 +101,10 @@
     "@stylistic/eslint-plugin": "latest",
     "@tsconfig/strictest": "latest",
     "@types/markdown-it": "latest",
+    "@types/semver": "latest",
     "@types/turndown": "latest",
     "@vitest/coverage-v8": "latest",
+    "@vitest/runner": "4.1.0",
     "commitizen": "latest",
     "cspell": "latest",
     "cz-conventional-changelog": "latest",
@@ -110,18 +113,23 @@
     "eslint": "latest",
     "eslint-import-resolver-typescript": "latest",
     "eslint-plugin-import-x": "latest",
-    "eslint-plugin-modules-newlines": "latest",
     "eslint-plugin-perfectionist": "latest",
     "globals": "latest",
     "husky": "latest",
     "jiti": "latest",
     "jsdom": "latest",
+    "markdownlint": "latest",
     "markdownlint-cli2": "latest",
     "markdownlint-rule-relative-links": "latest",
+    "nano-staged": "latest",
     "obsidian": "latest",
-    "obsidian-dev-utils": "latest",
+    "patch-package": "latest",
+    "semver": "latest",
     "typescript": "latest",
     "typescript-eslint": "latest",
     "vitest": "latest"
+  },
+  "overrides": {
+    "type-fest": "latest"
   }
 }

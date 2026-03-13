@@ -1,4 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/require-await -- Noop stub matching obsidian.d.ts.
+import { noopAsync } from '../../internal/noop.ts';
+
 export async function loadMermaid(): Promise<unknown> {
+  await noopAsync();
   return {};
 }

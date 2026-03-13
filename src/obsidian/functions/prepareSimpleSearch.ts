@@ -1,9 +1,9 @@
-// eslint-disable-next-line no-restricted-syntax -- Matches obsidian.d.ts signature.
-export function prepareSimpleSearch(query: string): (text: string) => { matches: [number, number][]; score: number } | null {
+import type { SearchResult as SearchResultOriginal } from 'obsidian';
+
+export function prepareSimpleSearch(query: string): (text: string) => null | SearchResultOriginal {
   const lowerQuery = query.toLowerCase();
 
-  // eslint-disable-next-line no-restricted-syntax -- Matches obsidian.d.ts signature.
-  return (text: string): { matches: [number, number][]; score: number } | null => {
+  return (text: string): null | SearchResultOriginal => {
     const lowerText = text.toLowerCase();
     const index = lowerText.indexOf(lowerQuery);
 

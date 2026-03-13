@@ -1,6 +1,3 @@
-import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
-import { execFromRoot } from 'obsidian-dev-utils/ScriptUtils/Root';
+import { execFromRoot } from './helpers/exec.ts';
 
-await wrapCliTask(async () => {
-  await execFromRoot('vitest run --coverage');
-});
+await execFromRoot('vitest run --coverage');

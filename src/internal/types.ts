@@ -1,5 +1,16 @@
 import type { Events } from 'obsidian';
 
+export interface AjaxOptions {
+  data?: ArrayBuffer | object | string;
+  error?: (error: unknown, req: XMLHttpRequest) => unknown;
+  headers?: Record<string, string>;
+  method?: 'GET' | 'POST';
+  req?: XMLHttpRequest;
+  success?: (response: unknown, req: XMLHttpRequest) => unknown;
+  url: string;
+  withCredentials?: boolean;
+}
+
 export interface CoordsLeftTop {
   left: number;
   top: number;
@@ -36,4 +47,11 @@ export interface ParsedLinktext {
 
 export interface SetActiveLeafParams {
   focus?: boolean;
+}
+
+export interface SvgElementInfo {
+  attr?: Record<string, boolean | null | number | string>;
+  cls?: string | string[];
+  parent?: Node;
+  prepend?: boolean;
 }

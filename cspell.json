@@ -1,14 +1,19 @@
 {
   "version": "0.2",
   "ignorePaths": [
+    ".husky",
+    "patches",
+    "scripts/helpers/@types/markdownlint-cli2-config-schema.d.ts",
     "tsconfig.tsbuildinfo"
   ],
   "dictionaryDefinitions": [],
   "dictionaries": [],
   "words": [
+    "creatordate",
     "debouncer",
     "Debouncer",
     "Keymap",
+    "linkinator",
     "linkpath",
     "Linkpath",
     "linktext",
@@ -16,9 +21,14 @@
     "mnaoumov",
     "mytag",
     "Naumov",
+    "obsidianmd",
     "offref",
     "Popout",
     "Precomputes",
+    "premajor",
+    "preminor",
+    "prepatch",
+    "Promisable",
     "Sidedock",
     "spyable",
     "wikilinks"

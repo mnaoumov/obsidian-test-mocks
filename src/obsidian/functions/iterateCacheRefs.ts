@@ -1,19 +1,27 @@
+import type {
+  CachedMetadata as CachedMetadataOriginal,
+  ReferenceCache as ReferenceCacheOriginal,
+  Reference as ReferenceOriginal
+} from 'obsidian';
+
+import type { MaybeReturn } from '../../internal/types.ts';
+
 import { iterateRefs } from './iterateRefs.ts';
 
-export function iterateCacheRefs(
-  // eslint-disable-next-line no-restricted-syntax -- Matches obsidian.d.ts signature.
-  cache: { embeds?: unknown[]; frontmatterLinks?: unknown[]; links?: unknown[] },
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Matches obsidian.d.ts signature.
-  cb: (ref: unknown) => boolean | void
-): boolean {
-  if (cache.links && iterateRefs(cache.links, cb)) {
+export function iterateCacheRefs(cache: CachedMetadataOriginal, cb: (ref: ReferenceCacheOriginal) => MaybeReturn<boolean>): boolean {
+  if (cache.links && iterateRefs(cache.links, referenceCallback)) {
     return true;
   }
-  if (cache.embeds && iterateRefs(cache.embeds, cb)) {
-    return true;
-  }
-  if (cache.frontmatterLinks && iterateRefs(cache.frontmatterLinks, cb)) {
+  if (cache.embeds && iterateRefs(cache.embeds, referenceCallback)) {
     return true;
   }
   return false;
+
+  function referenceCallback(ref: ReferenceOriginal): MaybeReturn<boolean> {
+    const maybeReferenceCache = ref as Partial<ReferenceCacheOriginal>;
+    if (!maybeReferenceCache.position) {
+      throw new Error('Should be ReferenceCache, but position property is missing');
+    }
+    return cb(maybeReferenceCache as ReferenceCacheOriginal);
+  }
 }

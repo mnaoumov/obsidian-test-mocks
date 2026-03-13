@@ -1,5 +1,7 @@
 import TurndownService from 'turndown';
 
+import { sanitizeHTMLToDom } from './sanitizeHTMLToDom.ts';
+
 const turndownService = new TurndownService();
 
 export function htmlToMarkdown(html: Document | DocumentFragment | HTMLElement | string): string {
@@ -13,7 +15,8 @@ export function htmlToMarkdown(html: Document | DocumentFragment | HTMLElement |
 
   const wrapper = createDiv();
   if (html instanceof Document) {
-    wrapper.innerHTML = html.body.innerHTML;
+    wrapper.empty();
+    wrapper.appendChild(sanitizeHTMLToDom(html.body.innerHTML));
   } else {
     wrapper.appendChild(html.cloneNode(true));
   }

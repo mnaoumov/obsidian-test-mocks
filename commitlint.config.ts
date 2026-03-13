@@ -1,3 +1,3 @@
-import { commitlintConfig } from './scripts/commitlint-config.ts';
+import { config } from './scripts/commitlint-config.ts';
 
-export default commitlintConfig;
+export default config;

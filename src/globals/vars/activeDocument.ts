@@ -1,1 +1,1 @@
-export let activeDocument = document;
+export const activeDocument = document;

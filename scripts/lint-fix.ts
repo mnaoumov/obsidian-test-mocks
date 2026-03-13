@@ -1,4 +1,7 @@
-import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
-import { lint } from 'obsidian-dev-utils/ScriptUtils/ESLint/ESLint';
+import process from 'node:process';
 
-await wrapCliTask(() => lint(true));
+import { lint } from './helpers/eslint.ts';
+
+const [, , ...paths] = process.argv;
+
+await lint({ paths, shouldFix: true });

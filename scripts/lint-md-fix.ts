@@ -1,4 +1,7 @@
-import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
-import { lintMarkdown } from 'obsidian-dev-utils/ScriptUtils/markdownlint/markdownlint';
+import process from 'node:process';
 
-await wrapCliTask(() => lintMarkdown(true));
+import { lint } from './helpers/markdownlint.ts';
+
+const [, , ...paths] = process.argv;
+
+await lint({ paths, shouldFix: true });

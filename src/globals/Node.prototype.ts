@@ -1,3 +1,5 @@
+import type { SvgElementInfo } from '../internal/types.ts';
+
 import { castTo } from '../internal/cast.ts';
 import { createEl as createElGlobal } from './functions/createEl.ts';
 import { createSvg as createSvgGlobal } from './functions/createSvg.ts';
