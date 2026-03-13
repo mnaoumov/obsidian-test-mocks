@@ -16,13 +16,15 @@ import { TFolder } from './TFolder.ts';
 export class Vault extends Events {
   public adapter: DataAdapterOriginal;
   public configDir = '.obsidian';
-  public fileMap__: Record<string, TAbstractFile> = {};
+  private fileMap: Record<string, TAbstractFile> = {};
+  private fileMapLowerCase: Record<string, TAbstractFile> = {};
 
   protected constructor(adapter: DataAdapterOriginal) {
     super();
     this.adapter = adapter;
     const root = TFolder.create__(this, '/');
-    this.fileMap__['/'] = root;
+    this.fileMap['/'] = root;
+    this.fileMapLowerCase['/'] = root;
     root.deleted__ = false;
     const self = strictMock(this);
     self.constructor2__(adapter);
@@ -62,7 +64,7 @@ export class Vault extends Events {
   public async copy(file: TFile, newPath: string): Promise<TFile> {
     await this.adapter.copy(file.path, newPath);
     const newFile = TFile.create__(this, newPath);
-    setVaultAbstractFile(this, newPath, newFile);
+    this.setVaultAbstractFile(newPath, newFile);
     this.trigger('create', newFile);
     return newFile;
   }
@@ -70,7 +72,7 @@ export class Vault extends Events {
   public async create(path: string, data: string, options?: DataWriteOptionsOriginal): Promise<TFile> {
     await this.adapter.write(path, data, options);
     const file = TFile.create__(this, path);
-    setVaultAbstractFile(this, path, file);
+    this.setVaultAbstractFile(path, file);
     this.trigger('create', file);
     return file;
   }
@@ -78,7 +80,7 @@ export class Vault extends Events {
   public async createBinary(path: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<TFile> {
     await this.adapter.writeBinary(path, data, options);
     const file = TFile.create__(this, path);
-    setVaultAbstractFile(this, path, file);
+    this.setVaultAbstractFile(path, file);
     this.trigger('create', file);
     return file;
   }
@@ -86,7 +88,7 @@ export class Vault extends Events {
   public async createFolder(path: string): Promise<TFolder> {
     await this.adapter.mkdir(path);
     const folder = TFolder.create__(this, path);
-    setVaultAbstractFile(this, path, folder);
+    this.setVaultAbstractFile(path, folder);
     this.trigger('create', folder);
     return folder;
   }
@@ -97,38 +99,42 @@ export class Vault extends Events {
     } else {
       await this.adapter.remove(file.path);
     }
-    deleteVaultAbstractFile(this, file);
+    this.deleteVaultAbstractFile(file);
     this.trigger('delete', file);
   }
 
   public getAbstractFileByPath(path: string): null | TAbstractFile {
-    return this.fileMap__[path] ?? null;
+    return this.fileMap[path] ?? null;
+  }
+
+  public getAbstractFileByPathInsensitive__(path: string): null | TAbstractFile {
+    return this.fileMapLowerCase[path.toLowerCase()] ?? null;
   }
 
   public getAllFolders(_includeRoot?: boolean): TFolder[] {
-    return Object.values(this.fileMap__).filter((f): f is TFolder => f instanceof TFolder);
+    return Object.values(this.fileMap).filter((f): f is TFolder => f instanceof TFolder);
   }
 
   public getAllLoadedFiles(): TAbstractFile[] {
-    return Object.values(this.fileMap__);
+    return Object.values(this.fileMap);
   }
 
   public getFileByPath(path: string): null | TFile {
-    const f = this.fileMap__[path];
+    const f = this.fileMap[path];
     return f instanceof TFile ? f : null;
   }
 
   public getFiles(): TFile[] {
-    return Object.values(this.fileMap__).filter((f): f is TFile => f instanceof TFile);
+    return Object.values(this.fileMap).filter((f): f is TFile => f instanceof TFile);
   }
 
   public getFolderByPath(path: string): null | TFolder {
-    const f = this.fileMap__[path];
+    const f = this.fileMap[path];
     return f instanceof TFolder ? f : null;
   }
 
   public getMarkdownFiles(): TFile[] {
-    return Object.values(this.fileMap__).filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
+    return Object.values(this.fileMap).filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
   }
 
   public getName(): string {
@@ -140,12 +146,12 @@ export class Vault extends Events {
   }
 
   public getRoot(): TFolder {
-    const root = this.fileMap__['/'];
+    const root = this.fileMap['/'];
     if (root instanceof TFolder) {
       return root;
     }
     const fallback = TFolder.create__(this, '/');
-    this.fileMap__['/'] = fallback;
+    this.fileMap['/'] = fallback;
     return fallback;
   }
 
@@ -181,7 +187,7 @@ export class Vault extends Events {
 
     // Remove old entry from fileMap__ and parent's children
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-    delete this.fileMap__[oldPath];
+    delete this.fileMap[oldPath];
     if (file.parent) {
       const idx = file.parent.children.indexOf(file);
       if (idx !== -1) {
@@ -200,7 +206,7 @@ export class Vault extends Events {
     }
 
     // Re-register in fileMap__ with new path and attach to new parent
-    setVaultAbstractFile(this, newPath, file);
+    this.setVaultAbstractFile(newPath, file);
 
     this.trigger('rename', file, oldPath);
   }
@@ -211,34 +217,35 @@ export class Vault extends Events {
     } else {
       await this.adapter.remove(file.path);
     }
-    deleteVaultAbstractFile(this, file);
+    this.deleteVaultAbstractFile(file);
     this.trigger('delete', file);
   }
-}
 
-function deleteVaultAbstractFile(vault: Vault, file: TAbstractFile): void {
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-  delete vault.fileMap__[file.path];
-  file.deleted__ = true;
-  if (file.parent) {
-    const idx = file.parent.children.indexOf(file);
-    if (idx !== -1) {
-      file.parent.children.splice(idx, 1);
+  private deleteVaultAbstractFile(file: TAbstractFile): void {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
+    delete this.fileMap[file.path];
+    file.deleted__ = true;
+    if (file.parent) {
+      const idx = file.parent.children.indexOf(file);
+      if (idx !== -1) {
+        file.parent.children.splice(idx, 1);
+      }
     }
   }
-}
 
-function setVaultAbstractFile(vault: Vault, path: string, file: TAbstractFile): void {
-  vault.fileMap__[path] = file;
-  file.deleted__ = false;
-  if (path !== '/' && path !== '') {
-    const lastSlash = path.lastIndexOf('/');
-    const parentKey = lastSlash > 0 ? path.slice(0, lastSlash) : '/';
-    const parentFile = vault.fileMap__[parentKey];
-    if (parentFile instanceof TFolder) {
-      file.parent = parentFile;
-      if (!parentFile.children.includes(file)) {
-        parentFile.children.push(file);
+  private setVaultAbstractFile(path: string, file: TAbstractFile): void {
+    this.fileMap[path] = file;
+    this.fileMapLowerCase[path.toLowerCase()] = file;
+    file.deleted__ = false;
+    if (path !== '/' && path !== '') {
+      const lastSlash = path.lastIndexOf('/');
+      const parentKey = lastSlash > 0 ? path.slice(0, lastSlash) : '/';
+      const parentFile = this.fileMap[parentKey];
+      if (parentFile instanceof TFolder) {
+        file.parent = parentFile;
+        if (!parentFile.children.includes(file)) {
+          parentFile.children.push(file);
+        }
       }
     }
   }
