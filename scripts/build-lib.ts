@@ -1,8 +1,11 @@
+import type { Plugin } from 'esbuild';
+
 import { build } from 'esbuild';
 import {
   readdirSync,
   statSync
 } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 function getEntryPoints(dir: string): string[] {
@@ -34,15 +37,35 @@ async function main(): Promise<void> {
       ...commonOptions,
       format: 'esm',
       outdir: 'dist/lib/esm',
-      outExtension: { '.js': '.mjs' }
+      outExtension: { '.js': '.mjs' },
+      plugins: [rewriteExtensionsPlugin('.mjs')]
     }),
     build({
       ...commonOptions,
       format: 'cjs',
       outdir: 'dist/lib/cjs',
-      outExtension: { '.js': '.cjs' }
+      outExtension: { '.js': '.cjs' },
+      plugins: [rewriteExtensionsPlugin('.cjs')]
     })
   ]);
+}
+
+function rewriteExtensionsPlugin(ext: string): Plugin {
+  return {
+    name: 'rewrite-ts-extensions',
+    setup(pluginBuild): void {
+      pluginBuild.onLoad({ filter: /\.ts$/ }, async (args) => {
+        const contents = await readFile(args.path, 'utf8');
+        return {
+          contents: contents.replace(
+            /(?<prefix>from\s+['"])(?<path>[^'"]*?)\.ts(?<quote>['"])/g,
+            `$<prefix>$<path>${ext}$<quote>`
+          ),
+          loader: 'ts'
+        };
+      });
+    }
+  };
 }
 
 await main();
