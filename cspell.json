@@ -2,6 +2,7 @@
   "version": "0.2",
   "ignorePaths": [
     ".husky",
+    "coverage",
     "patches",
     "scripts/helpers/@types/markdownlint-cli2-config-schema.d.ts",
     "tsconfig.tsbuildinfo"
