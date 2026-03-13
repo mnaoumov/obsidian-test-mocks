@@ -20,6 +20,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   private readonly binaryFiles = new Map<string, ArrayBuffer>();
   private readonly directories = new Set<string>(['']);
   private readonly fileMeta = new Map<string, FileMeta>();
+  private readonly lowerCaseKeys = new Set<string>(['']);
   private readonly textFiles = new Map<string, string>();
 
   protected constructor() {
@@ -31,6 +32,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     const existing = this.textFiles.get(normalizedPath) ?? '';
     const newContent = existing + data;
     this.textFiles.set(normalizedPath, newContent);
+    this.addLowerCaseKey(normalizedPath);
 
     const now = Date.now();
     const meta = this.fileMeta.get(normalizedPath);
@@ -51,6 +53,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     newContentArr.set(new Uint8Array(binaryContent), 0);
     newContentArr.set(new Uint8Array(data), binaryContent.byteLength);
     this.binaryFiles.set(normalizedPath, newContentArr.buffer);
+    this.addLowerCaseKey(normalizedPath);
 
     const now = Date.now();
     const meta = this.fileMeta.get(normalizedPath);
@@ -75,6 +78,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       } else {
         const copied = binaryContent.slice(0);
         this.binaryFiles.set(normalizedNewPath, copied);
+        this.addLowerCaseKey(normalizedNewPath);
         this.fileMeta.set(normalizedNewPath, {
           ctime: now,
           mtime: now,
@@ -83,6 +87,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       }
     } else {
       this.textFiles.set(normalizedNewPath, textContent);
+      this.addLowerCaseKey(normalizedNewPath);
       this.fileMeta.set(normalizedNewPath, {
         ctime: now,
         mtime: now,
@@ -93,11 +98,15 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     this.ensureParentDirs(normalizedNewPath);
   }
 
-  public async exists(normalizedPath: string, _sensitive?: boolean): Promise<boolean> {
+  public async exists(normalizedPath: string, sensitive?: boolean): Promise<boolean> {
     await noopAsync();
-    return this.textFiles.has(normalizedPath)
-      || this.binaryFiles.has(normalizedPath)
-      || this.directories.has(normalizedPath);
+    if (sensitive || !this.insensitive) {
+      return this.textFiles.has(normalizedPath)
+        || this.binaryFiles.has(normalizedPath)
+        || this.directories.has(normalizedPath);
+    }
+
+    return this.lowerCaseKeys.has(normalizedPath.toLowerCase());
   }
 
   public getFilePath(normalizedPath: string): string {
@@ -174,6 +183,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     this.textFiles.delete(normalizedPath);
     this.binaryFiles.delete(normalizedPath);
     this.fileMeta.delete(normalizedPath);
+    this.rebuildLowerCaseKeys();
   }
 
   public async rename(normalizedPath: string, normalizedNewPath: string): Promise<void> {
@@ -214,6 +224,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       }
 
       this.ensureParentDirs(normalizedNewPath);
+      this.rebuildLowerCaseKeys();
       return;
     }
 
@@ -238,6 +249,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     }
 
     this.ensureParentDirs(normalizedNewPath);
+    this.rebuildLowerCaseKeys();
   }
 
   public async rmdir(normalizedPath: string, recursive: boolean): Promise<void> {
@@ -265,6 +277,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     } else {
       this.directories.delete(normalizedPath);
     }
+    this.rebuildLowerCaseKeys();
   }
 
   public async stat(normalizedPath: string): Promise<null | StatOriginal> {
@@ -306,6 +319,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     const meta = this.fileMeta.get(normalizedPath);
 
     this.textFiles.set(normalizedPath, data);
+    this.addLowerCaseKey(normalizedPath);
     this.fileMeta.set(normalizedPath, {
       ctime: options?.ctime ?? meta?.ctime ?? now,
       mtime: options?.mtime ?? now,
@@ -321,6 +335,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     const meta = this.fileMeta.get(normalizedPath);
 
     this.binaryFiles.set(normalizedPath, data);
+    this.addLowerCaseKey(normalizedPath);
     this.fileMeta.set(normalizedPath, {
       ctime: options?.ctime ?? meta?.ctime ?? now,
       mtime: options?.mtime ?? now,
@@ -330,10 +345,15 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     this.ensureParentDirs(normalizedPath);
   }
 
+  private addLowerCaseKey(path: string): void {
+    this.lowerCaseKeys.add(path.toLowerCase());
+  }
+
   private ensureParentDirs(path: string): void {
     let parent = getParentDir(path);
     while (parent !== '' && !this.directories.has(parent)) {
       this.directories.add(parent);
+      this.addLowerCaseKey(parent);
       parent = getParentDir(parent);
     }
     this.directories.add('');
@@ -352,6 +372,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
 
   private mkdirSync(normalizedPath: string): void {
     this.directories.add(normalizedPath);
+    this.addLowerCaseKey(normalizedPath);
     this.ensureParentDirs(normalizedPath);
   }
 
@@ -360,6 +381,19 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     if (value !== undefined) {
       map.set(newKey, value);
       map.delete(oldKey);
+    }
+  }
+
+  private rebuildLowerCaseKeys(): void {
+    this.lowerCaseKeys.clear();
+    for (const key of this.textFiles.keys()) {
+      this.lowerCaseKeys.add(key.toLowerCase());
+    }
+    for (const key of this.binaryFiles.keys()) {
+      this.lowerCaseKeys.add(key.toLowerCase());
+    }
+    for (const dir of this.directories) {
+      this.lowerCaseKeys.add(dir.toLowerCase());
     }
   }
 }
