@@ -14,7 +14,7 @@ import {
   join,
   resolve
 } from 'node:path/posix';
-import process from 'node:process';
+import process, { loadEnvFile } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import {
   inc,
@@ -274,6 +274,15 @@ async function updateVersion(versionUpdateType?: string): Promise<void> {
   await addGitTag(newVersion);
   await gitPush();
   await publishGitHubRelease(newVersion);
+  const envPath = resolvePathFromRoot('.env');
+  if (envPath && existsSync(envPath)) {
+    loadEnvFile(envPath);
+  }
+  const npmEnv = process.env as Partial<NpmEnv>;
+  await execFromRoot(['npm', 'config', 'set', `//registry.npmjs.org/:_authToken=${npmEnv.NPM_TOKEN ?? ''}`]);
+
+  const tag = isPreRelease(newVersion) ? 'beta' : 'latest';
+  await execFromRoot(['npm', 'publish', '--tag', tag]);
 }
 
 async function updateVersionInFiles(newVersion: string): Promise<void> {
@@ -310,6 +319,10 @@ interface EditJsonOptions {
 interface EditPackageJsonOptions {
   readonly cwd?: string;
   readonly shouldSkipIfMissing?: boolean;
+}
+
+interface NpmEnv {
+  NPM_TOKEN: string;
 }
 
 interface PackageLockJson extends Partial<PackageJson> {
