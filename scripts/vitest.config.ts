@@ -5,7 +5,7 @@ export const config = defineConfig({
     coverage: {
       include: ['src/**/*.ts'],
       provider: 'v8',
-      reporter: ['text', 'lcov', 'html'],
+      reporter: ['json-summary', 'text', 'lcov', 'html'],
       reportsDirectory: './coverage'
     },
     environment: 'jsdom',
