@@ -1,1 +1,1 @@
-export let activeWindow = window;
+export const activeWindow = window;

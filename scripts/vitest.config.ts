@@ -1,12 +1,6 @@
-import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-export const vitestConfig = defineConfig({
-  resolve: {
-    alias: {
-      obsidian: fileURLToPath(new URL('../src/obsidian/index.ts', import.meta.url))
-    }
-  },
+export const config = defineConfig({
   test: {
     coverage: {
       include: ['src/**/*.ts'],
@@ -18,6 +12,6 @@ export const vitestConfig = defineConfig({
     exclude: ['node_modules', 'dist'],
     globals: false,
     include: ['__tests__/**/*.test.ts'],
-    setupFiles: ['./src/globals/index.ts']
+    setupFiles: ['src/globals/index.ts']
   }
 });

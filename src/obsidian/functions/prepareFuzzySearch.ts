@@ -1,15 +1,15 @@
+import type { SearchResult as SearchResultOriginal } from 'obsidian';
+
 import { ensureNonNullable } from '../../internal/type-guards.ts';
 
 const CONSECUTIVE_MATCH_SCORE = 2;
 const WORD_BOUNDARY_SCORE = 3;
 const INITIAL_LAST_MATCH_INDEX = -2;
 
-// eslint-disable-next-line no-restricted-syntax -- Matches obsidian.d.ts signature.
-export function prepareFuzzySearch(query: string): (text: string) => { matches: [number, number][]; score: number } | null {
+export function prepareFuzzySearch(query: string): (text: string) => null | SearchResultOriginal {
   const lowerQuery = query.toLowerCase();
 
-  // eslint-disable-next-line no-restricted-syntax -- Matches obsidian.d.ts signature.
-  return (text: string): { matches: [number, number][]; score: number } | null => {
+  return (text: string): null | SearchResultOriginal => {
     const lowerText = text.toLowerCase();
     const matches: [number, number][] = [];
     let queryIndex = 0;

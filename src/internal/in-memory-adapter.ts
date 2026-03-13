@@ -1,7 +1,8 @@
 import type {
-  DataWriteOptions,
-  ListedFiles,
-  Stat
+  DataAdapter as DataAdapterOriginal,
+  DataWriteOptions as DataWriteOptionsOriginal,
+  ListedFiles as ListedFilesOriginal,
+  Stat as StatOriginal
 } from 'obsidian';
 
 import { noopAsync } from './noop.ts';
@@ -12,7 +13,7 @@ interface FileMeta {
   size: number;
 }
 
-export class InMemoryAdapter {
+export class InMemoryAdapter implements DataAdapterOriginal {
   public basePath = '/mock-vault';
   public insensitive = false;
 
@@ -25,7 +26,7 @@ export class InMemoryAdapter {
     // Do nothing.
   }
 
-  public async append(normalizedPath: string, data: string, _options?: DataWriteOptions): Promise<void> {
+  public async append(normalizedPath: string, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
     await noopAsync();
     const existing = this.textFiles.get(normalizedPath) ?? '';
     const newContent = existing + data;
@@ -34,9 +35,29 @@ export class InMemoryAdapter {
     const now = Date.now();
     const meta = this.fileMeta.get(normalizedPath);
     this.fileMeta.set(normalizedPath, {
-      ctime: meta?.ctime ?? now,
-      mtime: now,
+      ctime: options?.ctime ?? meta?.ctime ?? now,
+      mtime: options?.mtime ?? now,
       size: newContent.length
+    });
+
+    this.ensureParentDirs(normalizedPath);
+  }
+
+  public async appendBinary(normalizedPath: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
+    await noopAsync();
+    const binaryContent = this.binaryFiles.get(normalizedPath) ?? new ArrayBuffer(0);
+
+    const newContentArr = new Uint8Array(binaryContent.byteLength + data.byteLength);
+    newContentArr.set(new Uint8Array(binaryContent), 0);
+    newContentArr.set(new Uint8Array(data), binaryContent.byteLength);
+    this.binaryFiles.set(normalizedPath, newContentArr.buffer);
+
+    const now = Date.now();
+    const meta = this.fileMeta.get(normalizedPath);
+    this.fileMeta.set(normalizedPath, {
+      ctime: options?.ctime ?? meta?.ctime ?? now,
+      mtime: options?.mtime ?? now,
+      size: newContentArr.byteLength
     });
 
     this.ensureParentDirs(normalizedPath);
@@ -91,7 +112,7 @@ export class InMemoryAdapter {
     return `app://local/${normalizedPath}`;
   }
 
-  public async list(normalizedPath: string): Promise<ListedFiles> {
+  public async list(normalizedPath: string): Promise<ListedFilesOriginal> {
     await noopAsync();
     const files: string[] = [];
     const folders: string[] = [];
@@ -123,10 +144,10 @@ export class InMemoryAdapter {
     this.mkdirSync(normalizedPath);
   }
 
-  public async process(normalizedPath: string, fn: (data: string) => string, _options?: DataWriteOptions): Promise<string> {
+  public async process(normalizedPath: string, fn: (data: string) => string, options?: DataWriteOptionsOriginal): Promise<string> {
     const content = await this.read(normalizedPath);
     const result = fn(content);
-    await this.write(normalizedPath, result);
+    await this.write(normalizedPath, result, options);
     return result;
   }
 
@@ -246,7 +267,7 @@ export class InMemoryAdapter {
     }
   }
 
-  public async stat(normalizedPath: string): Promise<null | Stat> {
+  public async stat(normalizedPath: string): Promise<null | StatOriginal> {
     await noopAsync();
     if (this.directories.has(normalizedPath)) {
       return {
@@ -254,7 +275,7 @@ export class InMemoryAdapter {
         mtime: 0,
         size: 0,
         type: 'folder'
-      } as unknown as Stat;
+      } as StatOriginal;
     }
 
     const meta = this.fileMeta.get(normalizedPath);
@@ -267,7 +288,7 @@ export class InMemoryAdapter {
       mtime: meta.mtime,
       size: meta.size,
       type: 'file'
-    } as unknown as Stat;
+    } as StatOriginal;
   }
 
   public async trashLocal(normalizedPath: string): Promise<void> {
@@ -279,30 +300,30 @@ export class InMemoryAdapter {
     return true;
   }
 
-  public async write(normalizedPath: string, data: string, _options?: DataWriteOptions): Promise<void> {
+  public async write(normalizedPath: string, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
     await noopAsync();
     const now = Date.now();
     const meta = this.fileMeta.get(normalizedPath);
 
     this.textFiles.set(normalizedPath, data);
     this.fileMeta.set(normalizedPath, {
-      ctime: meta?.ctime ?? now,
-      mtime: now,
+      ctime: options?.ctime ?? meta?.ctime ?? now,
+      mtime: options?.mtime ?? now,
       size: data.length
     });
 
     this.ensureParentDirs(normalizedPath);
   }
 
-  public async writeBinary(normalizedPath: string, data: ArrayBuffer, _options?: DataWriteOptions): Promise<void> {
+  public async writeBinary(normalizedPath: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
     await noopAsync();
     const now = Date.now();
     const meta = this.fileMeta.get(normalizedPath);
 
     this.binaryFiles.set(normalizedPath, data);
     this.fileMeta.set(normalizedPath, {
-      ctime: meta?.ctime ?? now,
-      mtime: now,
+      ctime: options?.ctime ?? meta?.ctime ?? now,
+      mtime: options?.mtime ?? now,
       size: data.byteLength
     });
 

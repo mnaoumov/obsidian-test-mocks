@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { createMockApp } from '../../src/helpers/createMockApp.ts';
+import { App } from '../../src/obsidian/App.ts';
 
 const MICROTASK_FLUSH_COUNT = 5;
 const HEADING_COUNT_2 = 2;
@@ -23,7 +23,7 @@ async function flushMicrotasks(): Promise<void> {
 describe('MetadataCache', () => {
   describe('auto-parse on vault create', () => {
     it('should populate cache when a markdown file is created', async () => {
-      const app = await createMockApp();
+      const app = await App.createConfigured__();
       const file = await app.vault.create('note.md', '# Hello\n\nSome text with #tag1');
 
       // Wait for the async cache population
@@ -38,7 +38,7 @@ describe('MetadataCache', () => {
     });
 
     it('should not populate cache for non-markdown files', async () => {
-      const app = await createMockApp();
+      const app = await App.createConfigured__();
       const file = await app.vault.create('data.json', '{"key": "value"}');
 
       await flushMicrotasks();
@@ -50,7 +50,7 @@ describe('MetadataCache', () => {
 
   describe('auto-parse on vault modify', () => {
     it('should update cache when a markdown file is modified', async () => {
-      const app = await createMockApp();
+      const app = await App.createConfigured__();
       const file = await app.vault.create('note.md', '# Old Title');
       await flushMicrotasks();
 
@@ -66,7 +66,7 @@ describe('MetadataCache', () => {
 
   describe('changed event', () => {
     it('should fire changed event with file, content, and cache', async () => {
-      const app = await createMockApp();
+      const app = await App.createConfigured__();
       let eventFired = false;
       let receivedFile: unknown = null;
       let receivedContent: unknown = null;
@@ -91,7 +91,7 @@ describe('MetadataCache', () => {
 
   describe('_setCache', () => {
     it('should allow manual cache override', async () => {
-      const app = await createMockApp();
+      const app = await App.createConfigured__();
       const file = await app.vault.create('note.md', '# Auto');
       await flushMicrotasks();
 
@@ -107,7 +107,7 @@ describe('MetadataCache', () => {
 
   describe('frontmatter parsing', () => {
     it('should parse frontmatter on file creation', async () => {
-      const app = await createMockApp();
+      const app = await App.createConfigured__();
       const content = '---\ntitle: My Note\ntags: [a, b]\n---\n\nBody';
       const file = await app.vault.create('note.md', content);
       await flushMicrotasks();
@@ -121,7 +121,7 @@ describe('MetadataCache', () => {
 
   describe('links and embeds', () => {
     it('should parse wikilinks and embeds', async () => {
-      const app = await createMockApp();
+      const app = await App.createConfigured__();
       const content = 'See [[Page]] and ![[image.png]]';
       const file = await app.vault.create('note.md', content);
       await flushMicrotasks();

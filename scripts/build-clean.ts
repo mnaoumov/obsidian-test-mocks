@@ -1,4 +1,3 @@
-import { buildClean } from 'obsidian-dev-utils/ScriptUtils/build';
-import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
+import { rm } from 'node:fs/promises';
 
-await wrapCliTask(() => buildClean());
+await rm('dist', { force: true, recursive: true });

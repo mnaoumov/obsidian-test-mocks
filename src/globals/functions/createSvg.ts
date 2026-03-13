@@ -1,3 +1,5 @@
+import type { SvgElementInfo } from '../../internal/types.ts';
+
 export function createSvg<K extends keyof SVGElementTagNameMap>(
   tag: K,
   o?: string | SvgElementInfo,

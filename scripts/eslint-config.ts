@@ -1,6 +1,6 @@
-/* eslint-disable no-magic-numbers -- We disabled magic numbers because they are used all over the configs. */
 import type { Linter } from 'eslint';
 
+/* eslint-disable no-magic-numbers -- We disabled magic numbers because they are used all over the configs. */
 import commentsConfigs from '@eslint-community/eslint-plugin-eslint-comments/configs';
 import { includeIgnoreFile } from '@eslint/compat';
 import eslint from '@eslint/js';
@@ -8,24 +8,18 @@ import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import { flatConfigs as eslintPluginImportXFlatConfigs } from 'eslint-plugin-import-x';
-import eslintPluginModulesNewlines from 'eslint-plugin-modules-newlines';
 import { configs as perfectionistConfigs } from 'eslint-plugin-perfectionist';
 import { defineConfig } from 'eslint/config';
-import globals from 'globals';
-import { existsSync } from 'node:fs';
-import {
-  dirname,
-  join
-} from 'node:path/posix';
+import { join } from 'node:path/posix';
 // eslint-disable-next-line import-x/no-rename-default -- The default export name `_default` is too confusing.
 import tseslint from 'typescript-eslint';
 
-const scriptFiles = ['scripts/**/*.ts'];
+import { getRootFolder } from './helpers/exec.ts';
 
 const typeScriptFiles = [
-  ...scriptFiles,
+  '__tests__/**/*.ts',
   'src/**/*.ts',
-  '__tests__/**/*.ts'
+  'scripts/**/*.ts'
 ];
 
 export const config: Linter.Config[] = defineConfig(
@@ -35,7 +29,6 @@ export const config: Linter.Config[] = defineConfig(
   ...getStylisticConfigs(),
   ...getImportXConfigs(),
   ...getPerfectionistConfigs(),
-  ...getModulesNewlinesConfigs(),
   ...getEslintImportResolverTypescriptConfigs(),
   ...getEslintCommentsConfigs()
 );
@@ -97,7 +90,7 @@ function getEslintConfigs(): Linter.Config[] {
             ]
           }
         ],
-        'no-constructor-return': 'off',
+        'no-constructor-return': 'error',
         'no-div-regex': 'error',
         'no-else-return': [
           'error',
@@ -171,11 +164,11 @@ function getEslintConfigs(): Linter.Config[] {
           },
           {
             message: 'Do not use anonymous inline object types as type arguments. Define a named interface instead.',
-            selector: 'TSTypeParameterInstantiation > TSTypeLiteral'
+            selector: 'TSTypeParameterInstantiation TSTypeLiteral'
           },
           {
             message: 'Do not use anonymous inline object types in type annotations. Define a named interface instead.',
-            selector: 'TSTypeAnnotation > TSTypeLiteral'
+            selector: 'TSTypeAnnotation TSTypeLiteral'
           }
         ],
         'no-return-assign': 'error',
@@ -219,6 +212,24 @@ function getEslintConfigs(): Linter.Config[] {
         'unicode-bom': 'error',
         'vars-on-top': 'error',
         'yoda': 'error'
+      }
+    },
+    {
+      files: ['scripts/helpers/@types/markdownlint-cli2-config-schema.d.ts'],
+      rules: {
+        'no-restricted-syntax': 'off'
+      }
+    },
+    {
+      files: ['src/obsidian/**/*.ts'],
+      rules: {
+        'no-constructor-return': 'off'
+      }
+    },
+    {
+      files: ['scripts/**/*.ts'],
+      rules: {
+        'no-console': 'off'
       }
     }
   ]);
@@ -283,30 +294,15 @@ function getImportXConfigs(): Linter.Config[] {
             ]
           }
         ],
-        'import-x/no-unused-modules': 'error',
+        'import-x/no-unused-modules': 'off',
         'import-x/no-useless-path-segments': 'error',
         'import-x/no-webpack-loader-syntax': 'error'
       }
     },
     {
-      files: scriptFiles,
+      files: ['scripts/**/*.ts', 'src/script-utils/**/*.ts'],
       rules: {
         'import-x/no-nodejs-modules': 'off'
-      }
-    }
-  ]);
-}
-
-function getModulesNewlinesConfigs(): Linter.Config[] {
-  return defineConfig([
-    {
-      files: typeScriptFiles,
-      plugins: {
-        'modules-newlines': eslintPluginModulesNewlines
-      },
-      rules: {
-        'modules-newlines/export-declaration-newline': 'error',
-        'modules-newlines/import-declaration-newline': 'error'
       }
     }
   ]);
@@ -317,18 +313,6 @@ function getPerfectionistConfigs(): Linter.Config[] {
     extends: [perfectionistConfigs['recommended-alphabetical']],
     files: typeScriptFiles
   }]);
-}
-
-function getRootFolder(cwd?: string): null | string {
-  let currentFolder = toPosixPath(cwd ?? process.cwd());
-  while (currentFolder !== '.' && currentFolder !== '/') {
-    if (existsSync(join(currentFolder, 'package.json'))) {
-      return toPosixPath(currentFolder);
-    }
-    currentFolder = dirname(currentFolder);
-  }
-
-  return null;
 }
 
 function getStylisticConfigs(): Linter.Config[] {
@@ -394,9 +378,6 @@ function getTseslintConfigs(): Linter.Config[] {
       ],
       files: typeScriptFiles,
       languageOptions: {
-        globals: {
-          ...globals.node
-        },
         parserOptions: {
           ecmaFeatures: {
             jsx: true
@@ -430,12 +411,15 @@ function getTseslintConfigs(): Linter.Config[] {
         ],
         '@typescript-eslint/prefer-readonly': 'error'
       }
+    },
+    {
+      settings: {
+        react: {
+          version: 'detect'
+        }
+      }
     }
   ]);
-}
-
-function toPosixPath(path: string): string {
-  return path.replace(/\\/g, '/');
 }
 
 /* eslint-enable no-magic-numbers -- We disabled magic numbers because they are used all over the configs. */

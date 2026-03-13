@@ -1,4 +1,7 @@
-import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
-import { format } from 'obsidian-dev-utils/ScriptUtils/format';
+import process from 'node:process';
 
-await wrapCliTask(() => format());
+import { format } from './helpers/format.ts';
+
+const [, , ...paths] = process.argv;
+
+await format({ paths, rewrite: true });

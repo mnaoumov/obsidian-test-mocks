@@ -6,14 +6,14 @@ import { strictMock } from '../internal/strict-mock.ts';
 import { DateValue } from './DateValue.ts';
 
 export class RelativeDateValue extends DateValue {
-  public constructor(date: unknown, showTime?: boolean) {
+  public constructor(date: Date, showTime?: boolean) {
     super(date, showTime);
     const self = strictMock(this);
     self.constructor4__(date, showTime);
     return self;
   }
 
-  public static create2__(date: unknown, showTime?: boolean): RelativeDateValue {
+  public static create2__(date: Date, showTime?: boolean): RelativeDateValue {
     return new RelativeDateValue(date, showTime);
   }
 

@@ -1,19 +1,21 @@
 import relativeLinksRule from 'markdownlint-rule-relative-links';
 
-export const config = {
+import type { MarkdownlintCli2ConfigurationSchema } from './helpers/@types/markdownlint-cli2-config-schema.d.ts';
+
+export const config: MarkdownlintCli2ConfigurationSchema = {
   config: {
     'MD013': false,
     'MD024': {
-      // eslint-disable-next-line camelcase -- External markdownlint config key.
+      // eslint-disable-next-line camelcase -- That's how it is defined in the schema.
       siblings_only: true
     },
     'MD052': {
-      // eslint-disable-next-line camelcase -- External markdownlint config key.
+      // eslint-disable-next-line camelcase -- That's how it is defined in the schema.
       ignored_labels: [
         '!note',
         '!warning'
       ],
-      // eslint-disable-next-line camelcase -- External markdownlint config key.
+      // eslint-disable-next-line camelcase -- That's how it is defined in the schema.
       shortcut_syntax: true
     },
     'relative-links': true

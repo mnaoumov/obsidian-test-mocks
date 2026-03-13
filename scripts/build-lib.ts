@@ -4,7 +4,6 @@ import {
   statSync
 } from 'node:fs';
 import { join } from 'node:path';
-import { wrapCliTask } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
 
 function getEntryPoints(dir: string): string[] {
   const entries: string[] = [];
@@ -19,7 +18,7 @@ function getEntryPoints(dir: string): string[] {
   return entries;
 }
 
-await wrapCliTask(async () => {
+async function main(): Promise<void> {
   const entryPoints = getEntryPoints('src');
 
   const commonOptions = {
@@ -44,4 +43,6 @@ await wrapCliTask(async () => {
       outExtension: { '.js': '.cjs' }
     })
   ]);
-});
+}
+
+await main();

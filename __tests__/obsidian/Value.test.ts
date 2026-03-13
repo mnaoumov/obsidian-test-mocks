@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { createMockApp } from '../../src/helpers/createMockApp.ts';
+import { App } from '../../src/obsidian/App.ts';
 import { NullValue } from '../../src/obsidian/NullValue.ts';
 import { NumberValue } from '../../src/obsidian/NumberValue.ts';
 import { RenderContext } from '../../src/obsidian/RenderContext.ts';
@@ -103,7 +103,7 @@ describe('Value', () => {
 
   describe('renderTo', () => {
     it('should not throw', async () => {
-      const app = await createMockApp();
+      const app = await App.createConfigured__();
       const val = new StringValue('test');
       expect(() => {
         val.renderTo({} as HTMLElement, RenderContext.create__(app));

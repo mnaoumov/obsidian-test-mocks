@@ -1,5 +1,8 @@
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Matches obsidian.d.ts signature.
-export function iterateRefs(refs: unknown[], cb: (ref: unknown) => boolean | void): boolean {
+import type { Reference as ReferenceOriginal } from 'obsidian';
+
+import type { MaybeReturn } from '../../internal/types.ts';
+
+export function iterateRefs(refs: ReferenceOriginal[], cb: (ref: ReferenceOriginal) => MaybeReturn<boolean>): boolean {
   for (const ref of refs) {
     if (cb(ref) === true) {
       return true;
