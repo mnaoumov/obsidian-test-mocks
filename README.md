@@ -58,7 +58,7 @@ The `create__()` pattern makes all instance creation spyable:
 import { vi } from 'vitest';
 import { WorkspaceLeaf } from 'obsidian';
 
-const spy = vi.spyOn(WorkspaceLeaf, 'create__');
+const spy = vi.spyOn(WorkspaceLeaf, 'create2__');
 
 // ... code that creates leaves ...
 
@@ -67,24 +67,26 @@ expect(spy).toHaveBeenCalledTimes(2);
 
 ### Pre-configured App
 
-Use `createMockApp()` for a fully wired `App` instance. Parent folders are created automatically from file paths:
+Use `App.createConfigured__()` for a fully wired `App` instance. Parent folders are created automatically from file paths:
 
 ```typescript
-import { createMockApp } from 'obsidian-test-mocks/helpers';
+import { App } from 'obsidian';
 
-const app = await createMockApp({
-  files: [
-    { path: 'notes/daily/2024-01-01.md', content: '# New Year' },
-  ],
+const app = await App.createConfigured__({
+  files: {
+    'notes/daily/2024-01-01.md': '# New Year',
+  },
 });
 // folders "notes" and "notes/daily" are created automatically
 ```
 
-You can also create empty folders explicitly:
+Paths ending with `/` are treated as folders (content must be empty):
 
 ```typescript
-const app = await createMockApp({
-  folders: ['archive/2023'],
+const app = await App.createConfigured__({
+  files: {
+    'archive/2023/': '',
+  },
 });
 ```
 
@@ -159,9 +161,9 @@ Mock types and original obsidian types are structurally different — you cannot
 
 ```typescript
 import type { App as AppOriginal } from 'obsidian';
-import { createMockApp } from 'obsidian-test-mocks/helpers';
+import { App } from 'obsidian';
 
-const app = await createMockApp();
+const app = await App.createConfigured__();
 
 // Pass to code that expects the original obsidian type
 function pluginInit(app: AppOriginal): void { /* ... */ }
@@ -173,7 +175,7 @@ This is a zero-cost type cast at runtime — no wrapping, no cloning. The `__` s
 Because every mock is a [strict mock](#strict-mocks), passing the result to code that accesses internal members (not part of `obsidian.d.ts`) will throw a descriptive error unless you assign those members first:
 
 ```typescript
-const app = await createMockApp();
+const app = await App.createConfigured__();
 const original = app.asOriginalType__();
 
 // If pluginInit() accesses app.internalPlugins internally, this throws:
@@ -214,17 +216,19 @@ This package does **not** depend on [`obsidian-typings`](https://www.npmjs.com/p
 Use `asOriginalType__()` to bridge the gap when passing mocks to code that expects obsidian types:
 
 ```typescript
-import type { App } from 'obsidian';
+import type { App as AppOriginal } from 'obsidian';
+import { App } from 'obsidian';
 
-function myPluginHelper(app: App): void { /* ... */ }
+function myPluginHelper(app: AppOriginal): void { /* ... */ }
 
-const app = await createMockApp();
+const app = await App.createConfigured__();
 myPluginHelper(app.asOriginalType__());
 ```
 
 With `obsidian-typings` installed, the returned type includes all augmented properties, so you can assign internal members in a type-safe way:
 
 ```typescript
+const app = await App.createConfigured__();
 const original = app.asOriginalType__();
 
 // Type-safe with obsidian-typings — no casts needed
@@ -234,6 +238,7 @@ original.internalPlugins = { manifests: {} };
 Without `obsidian-typings`, you can still assign them via a `Record` cast:
 
 ```typescript
+const app = await App.createConfigured__();
 (app as unknown as Record<string, unknown>)['internalPlugins'] = { manifests: {} };
 ```
 
