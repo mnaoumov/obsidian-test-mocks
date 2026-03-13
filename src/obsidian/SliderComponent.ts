@@ -10,11 +10,11 @@ const DEFAULT_MAX = 100;
 export class SliderComponent extends ValueComponent<number> {
   public sliderEl: HTMLInputElement;
 
-  private _max = DEFAULT_MAX;
-  private _min = 0;
   private _onChange: ((value: number) => unknown) | null = null;
-  private _step: 'any' | number = 1;
-  private _value = 0;
+  private max = DEFAULT_MAX;
+  private min = 0;
+  private step: 'any' | number = 1;
+  private value = 0;
 
   public constructor(_containerEl: HTMLElement) {
     super();
@@ -38,11 +38,11 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public override getValue(): number {
-    return this._value;
+    return this.value;
   }
 
   public getValuePretty(): string {
-    return String(this._value);
+    return String(this.value);
   }
 
   public onChange(callback: (value: number) => unknown): this {
@@ -59,17 +59,17 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public setLimits(min: null | number, max: null | number, step: 'any' | number): this {
-    this._min = min ?? 0;
-    this._max = max ?? DEFAULT_MAX;
-    this._step = step;
-    this.sliderEl.setAttribute('min', String(this._min));
-    this.sliderEl.setAttribute('max', String(this._max));
-    this.sliderEl.setAttribute('step', String(this._step));
+    this.min = min ?? 0;
+    this.max = max ?? DEFAULT_MAX;
+    this.step = step;
+    this.sliderEl.setAttribute('min', String(this.min));
+    this.sliderEl.setAttribute('max', String(this.max));
+    this.sliderEl.setAttribute('step', String(this.step));
     return this;
   }
 
   public override setValue(value: number): this {
-    this._value = value;
+    this.value = value;
     this._onChange?.(value);
     return this;
   }

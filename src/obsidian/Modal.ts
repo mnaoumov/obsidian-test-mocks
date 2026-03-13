@@ -16,7 +16,7 @@ export class Modal {
   public shouldRestoreSelection = true;
   public titleEl: HTMLElement;
 
-  private _closeCallback: (() => unknown) | null = null;
+  private closeCallback: (() => unknown) | null = null;
 
   public constructor(app: App) {
     this.app = app;
@@ -40,7 +40,7 @@ export class Modal {
 
   public close(): void {
     this.onClose();
-    this._closeCallback?.();
+    this.closeCallback?.();
   }
 
   public constructor__(_app: App): void {
@@ -65,7 +65,7 @@ export class Modal {
   }
 
   public setCloseCallback(callback: () => unknown): this {
-    this._closeCallback = callback;
+    this.closeCallback = callback;
     return this;
   }
 

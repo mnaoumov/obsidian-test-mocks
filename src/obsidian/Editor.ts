@@ -16,16 +16,16 @@ import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export abstract class Editor {
-  private _focused = false;
-
-  private _redoStack: string[] = [];
-
-  private _scrollLeft = 0;
-  private _scrollTop = 0;
-  private readonly _undoStack: string[] = [];
   private anchor: EditorPositionOriginal = { ch: 0, line: 0 };
+
   private content = '';
+
+  private focused = false;
   private head: EditorPositionOriginal = { ch: 0, line: 0 };
+  private redoStack: string[] = [];
+  private scrollLeft = 0;
+  private scrollTop = 0;
+  private readonly undoStack: string[] = [];
   public constructor() {
     const self = strictMock(this);
     self.constructor__();
@@ -37,7 +37,7 @@ export abstract class Editor {
   }
 
   public blur(): void {
-    this._focused = false;
+    this.focused = false;
   }
 
   public constructor__(): void {
@@ -97,7 +97,7 @@ export abstract class Editor {
   }
 
   public focus(): void {
-    this._focused = true;
+    this.focused = true;
   }
 
   public getCursor(side?: 'anchor' | 'from' | 'head' | 'to'): EditorPositionOriginal {
@@ -128,7 +128,7 @@ export abstract class Editor {
   }
 
   public getScrollInfo(): CoordsLeftTop {
-    return { left: this._scrollLeft, top: this._scrollTop };
+    return { left: this.scrollLeft, top: this.scrollTop };
   }
 
   public getSelection(): string {
@@ -145,7 +145,7 @@ export abstract class Editor {
   }
 
   public hasFocus(): boolean {
-    return this._focused;
+    return this.focused;
   }
 
   public lastLine(): number {
@@ -206,9 +206,9 @@ export abstract class Editor {
   }
 
   public redo(): void {
-    const entry = this._redoStack.pop();
+    const entry = this.redoStack.pop();
     if (entry !== undefined) {
-      this._undoStack.push(this.content);
+      this.undoStack.push(this.content);
       this.content = entry;
       const endPos = this.offsetToPos(this.content.length);
       this.anchor = { ...endPos };
@@ -221,8 +221,8 @@ export abstract class Editor {
   }
 
   public replaceRange(replacement: string, from: EditorPositionOriginal, to?: EditorPositionOriginal, _origin?: string): void {
-    this._undoStack.push(this.content);
-    this._redoStack = [];
+    this.undoStack.push(this.content);
+    this.redoStack = [];
     const startOffset = this.posToOffset(from);
     const endOffset = to ? this.posToOffset(to) : startOffset;
     this.content = this.content.slice(0, startOffset) + replacement + this.content.slice(endOffset);
@@ -244,10 +244,10 @@ export abstract class Editor {
 
   public scrollTo(x?: null | number, y?: null | number): void {
     if (x !== null && x !== undefined) {
-      this._scrollLeft = x;
+      this.scrollLeft = x;
     }
     if (y !== null && y !== undefined) {
-      this._scrollTop = y;
+      this.scrollTop = y;
     }
   }
 
@@ -307,9 +307,9 @@ export abstract class Editor {
   }
 
   public undo(): void {
-    const entry = this._undoStack.pop();
+    const entry = this.undoStack.pop();
     if (entry !== undefined) {
-      this._redoStack.push(this.content);
+      this.redoStack.push(this.content);
       this.content = entry;
       const endPos = this.offsetToPos(this.content.length);
       this.anchor = { ...endPos };

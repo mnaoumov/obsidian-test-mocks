@@ -10,7 +10,7 @@ import { Scope } from './Scope.ts';
 export abstract class PopoverSuggest<T> {
   public app: App;
   public scope: Scope;
-  private _isOpen = false;
+  private isOpen = false;
 
   public constructor(app: App, scope?: Scope) {
     this.app = app;
@@ -25,7 +25,7 @@ export abstract class PopoverSuggest<T> {
   }
 
   public close(): void {
-    this._isOpen = false;
+    this.isOpen = false;
   }
 
   public constructor__(_app: App, _scope?: Scope): void {
@@ -33,11 +33,11 @@ export abstract class PopoverSuggest<T> {
   }
 
   public isOpen__(): boolean {
-    return this._isOpen;
+    return this.isOpen;
   }
 
   public open(): void {
-    this._isOpen = true;
+    this.isOpen = true;
   }
 
   public abstract renderSuggestion(value: T, el: HTMLElement): void;

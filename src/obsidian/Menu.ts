@@ -15,7 +15,7 @@ export class Menu extends Component {
   public dom__: HTMLElement;
   public items__: MenuItem[] = [];
 
-  private _onHideCallback: (() => unknown) | null = null;
+  private onHideCallback: (() => unknown) | null = null;
 
   protected constructor() {
     super();
@@ -49,7 +49,7 @@ export class Menu extends Component {
   }
 
   public close(): void {
-    this._onHideCallback?.();
+    this.onHideCallback?.();
   }
 
   public constructor2__(): void {
@@ -61,7 +61,7 @@ export class Menu extends Component {
   }
 
   public onHide(callback: () => unknown): void {
-    this._onHideCallback = callback;
+    this.onHideCallback = callback;
   }
 
   public setNoIcon(): this {

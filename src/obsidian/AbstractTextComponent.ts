@@ -9,7 +9,7 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   public inputEl: T;
 
   private _onChange?: (value: string) => unknown;
-  private _value = '';
+  private value = '';
 
   public constructor(inputEl: T) {
     super();
@@ -28,7 +28,7 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   }
 
   public override getValue(): string {
-    return this._value;
+    return this.value;
   }
 
   public onChange(callback: (value: string) => unknown): this {
@@ -37,7 +37,7 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   }
 
   public onChanged(): void {
-    this._onChange?.(this._value);
+    this._onChange?.(this.value);
   }
 
   public setPlaceholder(placeholder: string): this {
@@ -46,7 +46,7 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   }
 
   public override setValue(value: string): this {
-    this._value = value;
+    this.value = value;
     this.inputEl.value = value;
     this._onChange?.(value);
     return this;

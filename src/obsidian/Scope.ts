@@ -17,7 +17,7 @@ interface MockKeyScope {
 }
 
 export class Scope {
-  private readonly _keys: MockKeyScope[] = [];
+  private readonly keys: MockKeyScope[] = [];
 
   protected constructor(_parent?: Scope) {
     const self = strictMock(this);
@@ -39,14 +39,14 @@ export class Scope {
 
   public register(modifiers: ModifierOriginal[] | null, key: null | string, _func: KeymapEventListenerOriginal): KeymapEventHandlerOriginal {
     const handler = { key, modifiers: modifiers?.join(',') ?? null, scope: this } as unknown as KeymapEventHandlerOriginal;
-    this._keys.push(handler as unknown as MockKeyScope);
+    this.keys.push(handler as unknown as MockKeyScope);
     return handler;
   }
 
   public unregister(handler: KeymapEventHandlerOriginal): void {
-    const index = this._keys.indexOf(handler as unknown as MockKeyScope);
+    const index = this.keys.indexOf(handler as unknown as MockKeyScope);
     if (index !== -1) {
-      this._keys.splice(index, 1);
+      this.keys.splice(index, 1);
     }
   }
 }
