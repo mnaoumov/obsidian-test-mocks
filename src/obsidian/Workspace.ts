@@ -226,18 +226,32 @@ export class Workspace extends Events {
   }
 
   public async openLinkText(
-    _linktext: string,
-    _sourcePath: string,
-    _newLeaf?: boolean | PaneTypeOriginal,
+    linktext: string,
+    sourcePath: string,
+    newLeaf?: boolean | PaneTypeOriginal,
     _openViewState?: OpenViewStateOriginal
   ): Promise<void> {
-    await noopAsync();
+    const file = this.app.metadataCache.getFirstLinkpathDest(linktext, sourcePath);
+    if (!file) {
+      return;
+    }
+
+    const leaf = this.getLeaf(newLeaf);
+    await leaf.openFile(file);
+    this.setActiveLeaf(leaf);
   }
 
   public openPopoutLeaf(_data?: WorkspaceWindowInitDataOriginal): WorkspaceLeaf {
     const leaf = WorkspaceLeaf.create2__(this.app);
     this._leaves.push(leaf);
     return leaf;
+  }
+
+  public removeLeaf__(leaf: WorkspaceLeaf): void {
+    this._leaves = this._leaves.filter((l) => l !== leaf);
+    if (this.activeLeaf === leaf) {
+      this.activeLeaf = null;
+    }
   }
 
   public async revealLeaf(leaf: WorkspaceLeaf): Promise<void> {
