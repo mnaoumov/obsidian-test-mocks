@@ -1,7 +1,5 @@
 import type { SearchResultContainer as SearchResultContainerOriginal } from 'obsidian';
 
-import { noop } from '../../internal/noop.ts';
-
-export function sortSearchResults(_results: SearchResultContainerOriginal[]): void {
-  noop();
+export function sortSearchResults(results: SearchResultContainerOriginal[]): void {
+  results.sort((a, b) => b.match.score - a.match.score);
 }
