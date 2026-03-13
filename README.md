@@ -16,11 +16,10 @@ Peer dependencies: `obsidian`
 
 ## Entry Points
 
-| Import path                    | Description                                                              |
-| ------------------------------ | ------------------------------------------------------------------------ |
-| `obsidian-test-mocks/obsidian` | Mocks for every class/function in `obsidian.d.ts`                        |
-| `obsidian-test-mocks/globals`  | Prototype extensions (`HTMLElement`, `Document`, `Array`, `String`, etc.)|
-| `obsidian-test-mocks/helpers`  | Test helpers (`createMockApp`, etc.) -- not part of the Obsidian API     |
+| Import path                    | Description                                                               |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| `obsidian-test-mocks/obsidian` | Mocks for every class/function in `obsidian.d.ts`                         |
+| `obsidian-test-mocks/globals`  | Prototype extensions (`HTMLElement`, `Document`, `Array`, `String`, etc.) |
 
 ## Usage with Vitest
 
