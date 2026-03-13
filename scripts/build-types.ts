@@ -1,14 +1,18 @@
 import {
-  cpSync,
+  mkdirSync,
   readdirSync,
-  renameSync,
-  statSync
+  statSync,
+  unlinkSync
 } from 'node:fs';
 import {
   readFile,
   writeFile
 } from 'node:fs/promises';
-import { join } from 'node:path';
+import {
+  dirname,
+  join,
+  relative
+} from 'node:path';
 
 import { execFromRoot } from './helpers/exec.ts';
 
@@ -30,29 +34,34 @@ function collectFiles(dir: string, ext: string): string[] {
 
 async function main(): Promise<void> {
   await execFromRoot('tsc --project tsconfig.build.json');
-  await rewriteAndRenameDeclarations(ESM_DIR, '.d.mts');
-  cpSync(ESM_DIR, CJS_DIR, { filter: (src) => src.endsWith('.d.mts') || statSync(src).isDirectory(), recursive: true });
-  await rewriteAndRenameDeclarations(CJS_DIR, '.d.cts');
+
+  const dtsFiles = collectFiles(ESM_DIR, '.d.ts');
+
+  for (const filePath of dtsFiles) {
+    const normalized = toForwardSlash(filePath);
+    const content = await readFile(filePath, 'utf8');
+
+    const cjsPath = normalized.replace(ESM_DIR, CJS_DIR).replace(/\.d\.ts$/, '.d.cts');
+    mkdirSync(dirname(cjsPath), { recursive: true });
+    await writeFile(cjsPath, rewriteImportExtensions(content, '.d.cts'), 'utf8');
+
+    const esmPath = normalized.replace(/\.d\.ts$/, '.d.mts');
+    const relativeCjsPath = toForwardSlash(relative(dirname(esmPath), cjsPath));
+    await writeFile(esmPath, `export * from '${relativeCjsPath}' with { 'resolution-mode': 'import' };\n`, 'utf8');
+
+    unlinkSync(filePath);
+  }
 }
 
-async function rewriteAndRenameDeclarations(dir: string, targetExt: string): Promise<void> {
-  const dtsFiles = collectFiles(dir, '.d.ts');
-  const dmtsFiles = collectFiles(dir, '.d.mts');
-  const files = [...dtsFiles, ...dmtsFiles];
+function rewriteImportExtensions(content: string, targetExt: string): string {
+  return content.replace(
+    /(?<prefix>from\s+['"])(?<path>[^'"]*?)\.ts(?<quote>['"])/g,
+    `$<prefix>$<path>${targetExt}$<quote>`
+  );
+}
 
-  for (const filePath of files) {
-    const content = await readFile(filePath, 'utf8');
-    const rewritten = content.replace(
-      /(?<prefix>from\s+['"])(?<path>[^'"]*?)\.(?:d\.mts|d\.ts|ts)(?<quote>['"])/g,
-      `$<prefix>$<path>${targetExt}$<quote>`
-    );
-    await writeFile(filePath, rewritten, 'utf8');
-
-    if (!filePath.endsWith(targetExt)) {
-      const newPath = filePath.replace(/\.d\.[cm]?ts$/, targetExt);
-      renameSync(filePath, newPath);
-    }
-  }
+function toForwardSlash(p: string): string {
+  return p.replace(/\\/g, '/');
 }
 
 await main();
