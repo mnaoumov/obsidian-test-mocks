@@ -12,7 +12,7 @@ import {
 } from 'node:fs/promises';
 import {
   join,
-  resolve
+  resolve as resolvePosix
 } from 'node:path/posix';
 import process, { loadEnvFile } from 'node:process';
 import { createInterface } from 'node:readline/promises';
@@ -27,7 +27,8 @@ import {
 } from '../src/internal/type-guards.ts';
 import {
   execFromRoot,
-  getRootFolder
+  getRootFolder,
+  toPosixPath
 } from './helpers/exec.ts';
 
 const DEFAULT_PREID = 'beta';
@@ -327,6 +328,14 @@ interface NpmEnv {
 
 interface PackageLockJson extends Partial<PackageJson> {
   packages?: Record<string, PackageJson>;
+}
+
+export function resolve(...pathSegments: string[]): string {
+  const WINDOWS_POSIX_LIKE_PATH_REG_EXP = /[a-zA-Z]:\/[^:]*$/;
+  let path = resolvePosix(...pathSegments);
+  path = toPosixPath(path);
+  const match = WINDOWS_POSIX_LIKE_PATH_REG_EXP.exec(path);
+  return match?.[0] ?? path;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- It makes `editFn` strongly typed.

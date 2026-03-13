@@ -59,6 +59,9 @@ export function getRootFolder(cwd?: string): null | string {
   return null;
 }
 
+export function toPosixPath(path: string): string {
+  return path.replaceAll('\\', '/');
+}
 async function exec(command: string | string[], options?: ExecSimpleOptions): Promise<string>;
 async function exec(command: string | string[], options: ExecDetailedOptions): Promise<ExecResult>;
 async function exec(command: string | string[], options: ExecOption = {}): Promise<ExecResult | string> {
@@ -150,6 +153,7 @@ async function exec(command: string | string[], options: ExecOption = {}): Promi
     });
   });
 }
+
 function toCommandLine(args: string[]): string {
   return args
     .map((arg) => {
@@ -162,10 +166,6 @@ function toCommandLine(args: string[]): string {
       return arg;
     })
     .join(' ');
-}
-
-function toPosixPath(path: string): string {
-  return path.replaceAll('\\', '/');
 }
 
 function trimEnd(str: string, suffix: string, shouldValidate?: boolean): string {
