@@ -44,8 +44,56 @@ export abstract class Editor {
     noop();
   }
 
-  public exec(_command: EditorCommandNameOriginal): void {
-    noop();
+  public exec(command: EditorCommandNameOriginal): void {
+    const handlers: Record<EditorCommandNameOriginal, () => void> = {
+      deleteLine: () => {
+        this.execDeleteLine();
+      },
+      foldAll: noop,
+      goDown: () => {
+        this.execGoDown();
+      },
+      goEnd: () => {
+        this.execGoEnd();
+      },
+      goLeft: () => {
+        this.execGoLeft();
+      },
+      goRight: () => {
+        this.execGoRight();
+      },
+      goStart: () => {
+        this.setCursor({ ch: 0, line: 0 });
+      },
+      goUp: () => {
+        this.execGoUp();
+      },
+      goWordLeft: () => {
+        this.execGoWordLeft();
+      },
+      goWordRight: () => {
+        this.execGoWordRight();
+      },
+      indentLess: () => {
+        this.execIndent(false);
+      },
+      indentMore: () => {
+        this.execIndent(true);
+      },
+      newlineAndIndent: () => {
+        this.execNewlineAndIndent();
+      },
+      swapLineDown: () => {
+        this.execSwapLine(1);
+      },
+      swapLineUp: () => {
+        this.execSwapLine(-1);
+      },
+      toggleFold: noop,
+      unfoldAll: noop
+    };
+
+    handlers[command]();
   }
 
   public focus(): void {
@@ -294,6 +342,138 @@ export abstract class Editor {
       from: { ch: start, line: pos.line },
       to: { ch: end, line: pos.line }
     };
+  }
+
+  private execDeleteLine(): void {
+    const cursor = this.getCursor();
+    const lines = this.content.split('\n');
+    if (lines.length <= 1) {
+      this.setValue('');
+    } else if (cursor.line === lines.length - 1) {
+      const from: EditorPositionOriginal = { ch: (lines[cursor.line - 1]?.length ?? 0), line: cursor.line - 1 };
+      const to: EditorPositionOriginal = { ch: (lines[cursor.line]?.length ?? 0), line: cursor.line };
+      this.replaceRange('', from, to);
+    } else {
+      const from: EditorPositionOriginal = { ch: 0, line: cursor.line };
+      const to: EditorPositionOriginal = { ch: 0, line: cursor.line + 1 };
+      this.replaceRange('', from, to);
+    }
+  }
+
+  private execGoDown(): void {
+    const cursor = this.getCursor();
+    const lines = this.content.split('\n');
+    const lastLine = lines.length - 1;
+    const newLine = Math.min(lastLine, cursor.line + 1);
+    const lineLen = lines[newLine]?.length ?? 0;
+    this.setCursor({ ch: Math.min(cursor.ch, lineLen), line: newLine });
+  }
+
+  private execGoEnd(): void {
+    const lines = this.content.split('\n');
+    const lastLine = lines.length - 1;
+    this.setCursor({ ch: lines[lastLine]?.length ?? 0, line: lastLine });
+  }
+
+  private execGoLeft(): void {
+    const cursor = this.getCursor();
+    const lines = this.content.split('\n');
+    if (cursor.ch > 0) {
+      this.setCursor({ ch: cursor.ch - 1, line: cursor.line });
+    } else if (cursor.line > 0) {
+      const prevLineLen = lines[cursor.line - 1]?.length ?? 0;
+      this.setCursor({ ch: prevLineLen, line: cursor.line - 1 });
+    }
+  }
+
+  private execGoRight(): void {
+    const cursor = this.getCursor();
+    const lines = this.content.split('\n');
+    const currentLineLen = lines[cursor.line]?.length ?? 0;
+    if (cursor.ch < currentLineLen) {
+      this.setCursor({ ch: cursor.ch + 1, line: cursor.line });
+    } else if (cursor.line < lines.length - 1) {
+      this.setCursor({ ch: 0, line: cursor.line + 1 });
+    }
+  }
+
+  private execGoUp(): void {
+    const cursor = this.getCursor();
+    const lines = this.content.split('\n');
+    const newLine = Math.max(0, cursor.line - 1);
+    const lineLen = lines[newLine]?.length ?? 0;
+    this.setCursor({ ch: Math.min(cursor.ch, lineLen), line: newLine });
+  }
+
+  private execGoWordLeft(): void {
+    const offset = this.posToOffset(this.getCursor());
+    let pos = offset;
+    while (pos > 0 && /\s/.test(this.content[pos - 1] ?? '')) {
+      pos--;
+    }
+    while (pos > 0 && /\w/.test(this.content[pos - 1] ?? '')) {
+      pos--;
+    }
+    this.setCursor(this.offsetToPos(pos));
+  }
+
+  private execGoWordRight(): void {
+    const offset = this.posToOffset(this.getCursor());
+    let pos = offset;
+    if (pos < this.content.length && /\w/.test(this.content[pos] ?? '')) {
+      while (pos < this.content.length && /\w/.test(this.content[pos] ?? '')) {
+        pos++;
+      }
+    } else {
+      while (pos < this.content.length && /\W/.test(this.content[pos] ?? '')) {
+        pos++;
+      }
+      while (pos < this.content.length && /\w/.test(this.content[pos] ?? '')) {
+        pos++;
+      }
+    }
+    this.setCursor(this.offsetToPos(pos));
+  }
+
+  private execIndent(more: boolean): void {
+    const cursor = this.getCursor();
+    const from = this.getCursor('from');
+    const to = this.getCursor('to');
+    const startLine = this.somethingSelected() ? from.line : cursor.line;
+    const endLine = this.somethingSelected() ? to.line : cursor.line;
+    for (let i = endLine; i >= startLine; i--) {
+      if (more) {
+        this.replaceRange('\t', { ch: 0, line: i }, { ch: 0, line: i });
+      } else if (this.getLine(i).startsWith('\t')) {
+        this.replaceRange('', { ch: 0, line: i }, { ch: 1, line: i });
+      }
+    }
+  }
+
+  private execNewlineAndIndent(): void {
+    const cursor = this.getCursor();
+    const currentLine = this.content.split('\n')[cursor.line] ?? '';
+    const indent = /^[\t ]*/.exec(currentLine)?.[0] ?? '';
+    this.replaceRange(`\n${indent}`, cursor, cursor);
+  }
+
+  private execSwapLine(direction: -1 | 1): void {
+    const cursor = this.getCursor();
+    const lines = this.content.split('\n');
+    const targetLine = cursor.line + direction;
+    if (targetLine < 0 || targetLine >= lines.length) {
+      return;
+    }
+    const currentLine = lines[cursor.line] ?? '';
+    const otherLine = lines[targetLine] ?? '';
+    if (direction === -1) {
+      this.setLine(cursor.line - 1, currentLine);
+      this.setLine(cursor.line, otherLine);
+    } else {
+      this.setLine(cursor.line, otherLine);
+      this.setLine(cursor.line + 1, currentLine);
+    }
+    this.setCursor({ ch: cursor.ch, line: targetLine });
   }
 
   private getLines(): string[] {
