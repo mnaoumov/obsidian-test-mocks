@@ -185,9 +185,11 @@ export class Vault extends Events {
     const oldPath = file.path;
     await this.adapter.rename(oldPath, newPath);
 
-    // Remove old entry from fileMap__ and parent's children
+    // Remove old entry from maps and parent's children
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
     delete this.fileMap[oldPath];
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
+    delete this.fileMapLowerCase[oldPath.toLowerCase()];
     if (file.parent) {
       const idx = file.parent.children.indexOf(file);
       if (idx !== -1) {
@@ -224,6 +226,8 @@ export class Vault extends Events {
   private deleteVaultAbstractFile(file: TAbstractFile): void {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
     delete this.fileMap[file.path];
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
+    delete this.fileMapLowerCase[file.path.toLowerCase()];
     file.deleted__ = true;
     if (file.parent) {
       const idx = file.parent.children.indexOf(file);
