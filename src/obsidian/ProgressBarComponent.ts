@@ -8,7 +8,7 @@ import { ValueComponent } from './ValueComponent.ts';
 export class ProgressBarComponent extends ValueComponent<number> {
   public progressBar__: HTMLElement;
 
-  private _value = 0;
+  private value = 0;
 
   public constructor(_containerEl: HTMLElement) {
     super();
@@ -31,11 +31,11 @@ export class ProgressBarComponent extends ValueComponent<number> {
   }
 
   public override getValue(): number {
-    return this._value;
+    return this.value;
   }
 
   public override setValue(value: number): this {
-    this._value = value;
+    this.value = value;
     this.progressBar__.style.width = `${String(value)}%`;
     this.progressBar__.dataset['value'] = String(value);
     return this;

@@ -26,7 +26,7 @@ export class App {
   public vault: Vault;
   public workspace: Workspace;
 
-  private readonly _localStorage = new Map<string, unknown>();
+  private readonly localStorage = new Map<string, unknown>();
 
   protected constructor(adapter: DataAdapterOriginal, _appId: string) {
     this.vault = Vault.create2__(adapter);
@@ -94,11 +94,11 @@ export class App {
   }
 
   public loadLocalStorage(key: string): unknown {
-    return this._localStorage.get(key) ?? null;
+    return this.localStorage.get(key) ?? null;
   }
 
   public saveLocalStorage(key: string, data: unknown): void {
-    this._localStorage.set(key, data);
+    this.localStorage.set(key, data);
   }
 }
 

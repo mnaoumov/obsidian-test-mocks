@@ -27,16 +27,16 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public view: null | ViewOriginal = null;
 
   public get file__(): null | TFile {
-    return this._file__;
+    return this.file;
   }
 
-  private _ephemeralState: Record<string, unknown> = {};
-  private _file__: null | TFile = null;
-  private _group: null | string = null;
-  private _pinned = false;
-  private _viewState: ViewStateOriginal = { type: '' };
-
   private readonly app: App;
+  private ephemeralState: Record<string, unknown> = {};
+  private file: null | TFile = null;
+  private group: null | string = null;
+  private pinned = false;
+
+  private viewState: ViewStateOriginal = { type: '' };
 
   protected constructor(app: App, id?: string) {
     super(app.workspace, id);
@@ -71,11 +71,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public getEphemeralState(): Record<string, unknown> {
-    return { ...this._ephemeralState };
+    return { ...this.ephemeralState };
   }
 
   public getGroup__(): null | string {
-    return this._group;
+    return this.group;
   }
 
   public getIcon(): IconNameOriginal {
@@ -86,11 +86,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public getViewState(): ViewStateOriginal {
-    return { ...this._viewState };
+    return { ...this.viewState };
   }
 
   public isPinned__(): boolean {
-    return this._pinned;
+    return this.pinned;
   }
 
   public async loadIfDeferred(): Promise<void> {
@@ -105,35 +105,35 @@ export class WorkspaceLeaf extends WorkspaceItem {
 
   public async openFile(file: TFile, _openState?: OpenViewStateOriginal): Promise<void> {
     await noopAsync();
-    this._file__ = file;
+    this.file = file;
   }
 
   public setEphemeralState(state: Record<string, unknown>): void {
-    this._ephemeralState = { ...state };
+    this.ephemeralState = { ...state };
   }
 
   public setGroup(group: null | string): void {
-    this._group = group;
+    this.group = group;
   }
 
   public setGroupMember(other: WorkspaceLeaf): void {
-    this._group = other.getGroup__();
+    this.group = other.getGroup__();
   }
 
   public setPinned(pinned: boolean): void {
-    this._pinned = pinned;
+    this.pinned = pinned;
   }
 
   public async setViewState(viewState: ViewStateOriginal, eState?: Record<string, unknown>): Promise<void> {
     await noopAsync();
-    this._viewState = { ...viewState };
+    this.viewState = { ...viewState };
     if (eState) {
-      this._ephemeralState = { ...eState };
+      this.ephemeralState = { ...eState };
     }
     this.trigger('view-state-change');
   }
 
   public togglePinned(): void {
-    this._pinned = !this._pinned;
+    this.pinned = !this.pinned;
   }
 }

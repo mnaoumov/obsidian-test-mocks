@@ -12,7 +12,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
   public toggleEl: HTMLElement;
 
   private _onChange: ((value: boolean) => unknown) | null = null;
-  private _value = false;
+  private value = false;
 
   public constructor(_containerEl: HTMLElement) {
     super();
@@ -35,7 +35,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
   }
 
   public override getValue(): boolean {
-    return this._value;
+    return this.value;
   }
 
   public onChange(callback: (value: boolean) => unknown): this {
@@ -44,8 +44,8 @@ export class ToggleComponent extends ValueComponent<boolean> {
   }
 
   public onClick(): void {
-    this._value = !this._value;
-    this._onChange?.(this._value);
+    this.value = !this.value;
+    this._onChange?.(this.value);
   }
 
   public setTooltip(tooltip: string, _options?: TooltipOptionsOriginal): this {
@@ -54,7 +54,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
   }
 
   public override setValue(value: boolean): this {
-    this._value = value;
+    this.value = value;
     this._onChange?.(value);
     return this;
   }

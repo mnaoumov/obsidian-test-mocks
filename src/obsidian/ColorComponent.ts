@@ -29,7 +29,7 @@ export class ColorComponent extends ValueComponent<string> {
   public colorPickerEl__: HTMLInputElement;
 
   private _onChange?: (value: string) => unknown;
-  private _value = '';
+  private value = '';
 
   public constructor(containerEl: HTMLElement) {
     super();
@@ -53,7 +53,7 @@ export class ColorComponent extends ValueComponent<string> {
   }
 
   public override getValue(): string {
-    return this._value;
+    return this.value;
   }
 
   public getValueHsl(): HSLOriginal {
@@ -81,7 +81,7 @@ export class ColorComponent extends ValueComponent<string> {
   }
 
   public getValueRgb(): RGBOriginal {
-    const hex = this._value.replace('#', '');
+    const hex = this.value.replace('#', '');
     const r = parseInt(hex.slice(0, HEX_SLICE_R_END), HEX_RADIX) || 0;
     const g = parseInt(hex.slice(HEX_SLICE_R_END, HEX_SLICE_G_END), HEX_RADIX) || 0;
     const b = parseInt(hex.slice(HEX_SLICE_G_END, HEX_SLICE_B_END), HEX_RADIX) || 0;
@@ -94,7 +94,7 @@ export class ColorComponent extends ValueComponent<string> {
   }
 
   public override setValue(value: string): this {
-    this._value = value;
+    this.value = value;
     this.colorPickerEl__.value = value;
     this._onChange?.(value);
     return this;

@@ -26,9 +26,9 @@ export abstract class View extends Component {
   public navigation = true;
   public scope: null | ScopeOriginal = null;
 
-  private _ephemeralState: unknown = {};
+  private ephemeralState: unknown = {};
 
-  private _state: unknown = {};
+  private state: unknown = {};
 
   public constructor(leaf: WorkspaceLeaf) {
     super();
@@ -51,7 +51,7 @@ export abstract class View extends Component {
   public abstract getDisplayText(): string;
 
   public getEphemeralState(): Record<string, unknown> {
-    return this._ephemeralState as Record<string, unknown>;
+    return this.ephemeralState as Record<string, unknown>;
   }
 
   public getIcon(): IconNameOriginal {
@@ -59,7 +59,7 @@ export abstract class View extends Component {
   }
 
   public getState(): Record<string, unknown> {
-    return this._state as Record<string, unknown>;
+    return this.state as Record<string, unknown>;
   }
 
   public abstract getViewType(): string;
@@ -73,12 +73,12 @@ export abstract class View extends Component {
   }
 
   public setEphemeralState(state: unknown): void {
-    this._ephemeralState = state;
+    this.ephemeralState = state;
   }
 
   public async setState(state: unknown, _result: ViewStateResultOriginal): Promise<void> {
     await noopAsync();
-    this._state = state;
+    this.state = state;
   }
 
   protected async onClose(): Promise<void> {

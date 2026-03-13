@@ -24,10 +24,10 @@ export class MetadataCache extends Events {
     super();
     this.app__ = app;
     vault.on('create', (...data: unknown[]) => {
-      this._parseFileMetadata(data[0]);
+      this.parseFileMetadata(data[0]);
     });
     vault.on('modify', (...data: unknown[]) => {
-      this._parseFileMetadata(data[0]);
+      this.parseFileMetadata(data[0]);
     });
     const self = strictMock(this);
     self.constructor2__(app, vault);
@@ -83,7 +83,7 @@ export class MetadataCache extends Events {
     this.trigger('changed');
   }
 
-  private _parseFileMetadata(file: unknown): void {
+  private parseFileMetadata(file: unknown): void {
     if (!(file instanceof TFileClass) || file.extension !== 'md') {
       return;
     }

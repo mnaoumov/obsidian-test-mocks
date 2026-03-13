@@ -18,7 +18,7 @@ export class MarkdownEditView {
   public editor__: Editor;
   public hoverPopover: HoverPopoverOriginal | null = null;
 
-  private _scroll = 0;
+  private scroll = 0;
 
   public constructor(view: MarkdownView) {
     this.app = view.app;
@@ -33,7 +33,7 @@ export class MarkdownEditView {
   }
 
   public applyScroll(scroll: number): void {
-    this._scroll = scroll;
+    this.scroll = scroll;
   }
 
   public asOriginalType__(): MarkdownEditViewOriginal {
@@ -53,7 +53,7 @@ export class MarkdownEditView {
   }
 
   public getScroll(): number {
-    return this._scroll;
+    return this.scroll;
   }
 
   public getSelection(): string {

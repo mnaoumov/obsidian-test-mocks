@@ -14,11 +14,11 @@ class MockEditor extends Editor {}
 
 export class MarkdownView extends TextFileView {
   public editor: Editor;
-  private _currentModeScroll = 0;
+  private currentModeScroll = 0;
 
   public currentMode = {
     applyScroll: (scroll: number): void => {
-      this._currentModeScroll = scroll;
+      this.currentModeScroll = scroll;
     },
     clear: (): void => {
       this.editor.setValue('');
@@ -27,7 +27,7 @@ export class MarkdownView extends TextFileView {
       return this.editor.getValue();
     },
     getScroll: (): number => {
-      return this._currentModeScroll;
+      return this.currentModeScroll;
     },
     rerender: (): void => {
       noop();
@@ -39,10 +39,10 @@ export class MarkdownView extends TextFileView {
 
   public hoverPopover: HoverPopoverOriginal | null = null;
 
-  private _previewModeScroll = 0;
+  private previewModeScroll = 0;
   public previewMode = {
     applyScroll: (scroll: number): void => {
-      this._previewModeScroll = scroll;
+      this.previewModeScroll = scroll;
     },
     clear: (): void => {
       this.data = '';
@@ -52,7 +52,7 @@ export class MarkdownView extends TextFileView {
       return this.data;
     },
     getScroll: (): number => {
-      return this._previewModeScroll;
+      return this.previewModeScroll;
     },
     rerender: (): void => {
       noop();
@@ -62,7 +62,7 @@ export class MarkdownView extends TextFileView {
     }
   };
 
-  private readonly _mode: 'preview' | 'source' = 'source';
+  private readonly mode: 'preview' | 'source' = 'source';
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
@@ -94,7 +94,7 @@ export class MarkdownView extends TextFileView {
   }
 
   public getMode(): 'preview' | 'source' {
-    return this._mode;
+    return this.mode;
   }
 
   public getViewData(): string {

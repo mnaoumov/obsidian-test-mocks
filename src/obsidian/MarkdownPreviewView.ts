@@ -14,7 +14,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     return castTo<TFile>(null);
   }
 
-  private _data = '';
+  private data = '';
 
   public constructor(markdownView: MarkdownView) {
     super(markdownView.app, markdownView.containerEl);
@@ -37,7 +37,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public clear(): void {
-    this._data = '';
+    this.data = '';
   }
 
   public constructor4__(_markdownView: MarkdownView): void {
@@ -45,7 +45,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public get(): string {
-    return this._data;
+    return this.data;
   }
 
   public getScroll(): number {
@@ -57,6 +57,6 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public set(data: string, _clear: boolean): void {
-    this._data = data;
+    this.data = data;
   }
 }

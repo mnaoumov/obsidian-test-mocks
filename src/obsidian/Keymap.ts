@@ -12,7 +12,7 @@ import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export class Keymap {
-  private readonly _scopeStack: Scope[] = [];
+  private readonly scopeStack: Scope[] = [];
 
   protected constructor() {
     const self = strictMock(this);
@@ -41,13 +41,13 @@ export class Keymap {
   }
 
   public popScope(scope: Scope): void {
-    const index = this._scopeStack.indexOf(scope);
+    const index = this.scopeStack.indexOf(scope);
     if (index !== -1) {
-      this._scopeStack.splice(index, 1);
+      this.scopeStack.splice(index, 1);
     }
   }
 
   public pushScope(scope: Scope): void {
-    this._scopeStack.push(scope);
+    this.scopeStack.push(scope);
   }
 }
