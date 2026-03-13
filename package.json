@@ -40,16 +40,6 @@
         "types": "./dist/lib/cjs/globals/index.d.cts",
         "default": "./dist/lib/cjs/globals/index.cjs"
       }
-    },
-    "./helpers": {
-      "import": {
-        "types": "./dist/lib/esm/helpers/index.d.mts",
-        "default": "./dist/lib/esm/helpers/index.mjs"
-      },
-      "require": {
-        "types": "./dist/lib/cjs/helpers/index.d.cts",
-        "default": "./dist/lib/cjs/helpers/index.cjs"
-      }
     }
   },
   "files": [

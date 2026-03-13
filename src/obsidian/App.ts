@@ -4,7 +4,7 @@ import type {
   UserEvent as UserEventOriginal
 } from 'obsidian';
 
-import type { CreateConfiguredParams } from '../internal/mock-app.ts';
+import type { CreateConfiguredParams } from '../internal/create-configured-params.ts';
 
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
@@ -49,11 +49,23 @@ export class App {
     const app = App.create__(adapter, params.appId ?? '');
 
     const neededFolders = new Set<string>();
+    const fileEntries: [string, string][] = [];
 
-    for (const filePath of Object.keys(params.files ?? {})) {
-      const lastSlash = filePath.lastIndexOf('/');
-      if (lastSlash > 0) {
-        addFolderAndParents(neededFolders, filePath.slice(0, lastSlash));
+    for (const [path, content] of Object.entries(params.files ?? {})) {
+      if (path.endsWith('/')) {
+        if (content !== '') {
+          throw new Error(`Folder path "${path}" must have empty content`);
+        }
+
+        const folderPath = path.slice(0, -1);
+        addFolderAndParents(neededFolders, folderPath);
+      } else {
+        const lastSlash = path.lastIndexOf('/');
+        if (lastSlash > 0) {
+          addFolderAndParents(neededFolders, path.slice(0, lastSlash));
+        }
+
+        fileEntries.push([path, content]);
       }
     }
 
@@ -62,7 +74,7 @@ export class App {
       await app.vault.createFolder(folder);
     }
 
-    for (const [filePath, content] of Object.entries(params.files ?? {})) {
+    for (const [filePath, content] of fileEntries) {
       await app.vault.create(filePath, content);
     }
 
