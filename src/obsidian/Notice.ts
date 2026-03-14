@@ -17,7 +17,7 @@ export class Notice {
     this.noticeEl = createDiv();
     if (typeof message === 'string') {
       this.messageEl.textContent = message;
-    } else if (message instanceof DocumentFragment) {
+    } else {
       this.messageEl.appendChild(message.cloneNode(true));
     }
     (this as { duration__: number }).duration__ = duration ?? 0;

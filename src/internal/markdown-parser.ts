@@ -76,23 +76,21 @@ function addGapSections(
     const trimmed = block.trim();
     if (trimmed.length > 0) {
       const blockStart = content.indexOf(trimmed, offset);
-      if (blockStart >= 0) {
-        const blockEnd = blockStart + trimmed.length - 1;
-        let type = 'paragraph';
-        if (trimmed.startsWith('>')) {
-          type = 'blockquote';
-        } else if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
-          type = 'code';
-        } else if (/^(?:---|\*\*\*|___)\s*$/.test(trimmed)) {
-          type = 'thematicBreak';
-        }
-        sections.push({
-          id: undefined,
-          position: makePos(lineStarts, blockStart, blockEnd),
-          type
-        });
-        offset = blockEnd + 1;
+      const blockEnd = blockStart + trimmed.length - 1;
+      let type = 'paragraph';
+      if (trimmed.startsWith('>')) {
+        type = 'blockquote';
+      } else if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+        type = 'code';
+      } else if (/^(?:---|\*\*\*|___)\s*$/.test(trimmed)) {
+        type = 'thematicBreak';
       }
+      sections.push({
+        id: undefined,
+        position: makePos(lineStarts, blockStart, blockEnd),
+        type
+      });
+      offset = blockEnd + 1;
     }
     offset += block.length + 1; // +1 for the split separator
   }
@@ -161,7 +159,7 @@ function offsetToLoc(lineStarts: number[], offset: number): Loc {
       high = mid - 1;
     }
   }
-  const lineStart = lineStarts[low] ?? 0;
+  const lineStart = ensureNonNullable(lineStarts[low]);
   return { col: offset - lineStart, line: low, offset };
 }
 
@@ -372,13 +370,11 @@ function parseListItems(
 
       // Walk backwards through items to find parent with strictly less indent
       for (let i = items.length - 1; i >= 0; i--) {
-        const prevItem = items[i];
-        if (prevItem) {
-          const prevIndent = prevItem.position.start.col;
-          if (prevIndent < indentLen) {
-            parent = prevItem.position.start.line;
-            break;
-          }
+        const prevItem = ensureNonNullable(items[i]);
+        const prevIndent = prevItem.position.start.col;
+        if (prevIndent < indentLen) {
+          parent = prevItem.position.start.line;
+          break;
         }
       }
 

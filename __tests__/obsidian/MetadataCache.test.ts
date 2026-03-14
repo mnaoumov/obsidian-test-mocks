@@ -266,9 +266,11 @@ describe('MetadataCache', () => {
 
     it('should find file by f.name when basename does not match', async () => {
       const app = await App.createConfigured__();
+      await app.vault.create('folder/other.md', '');
       const file = await app.vault.create('folder/test.md', '');
       await flushMicrotasks();
-      // Linkpath = 'test.md' does not match basename ('test') but matches name ('test.md')
+      // Skips 'other.md' (neither basename nor name match),
+      // Then matches via f.name (basename is 'test', not 'test.md')
       const found = app.metadataCache.getFirstLinkpathDest('test.md', '');
       expect(found).toBe(file);
     });

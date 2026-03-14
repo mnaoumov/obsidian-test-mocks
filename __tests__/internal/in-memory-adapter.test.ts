@@ -714,20 +714,23 @@ describe('InMemoryAdapter', () => {
   });
 
   describe('rmdir() with binary files', () => {
-    it('should remove binary files in recursive delete', async () => {
+    it('should remove binary files in recursive delete and preserve others', async () => {
       const adapter = createAdapter();
       await adapter.writeBinary('dir/file.bin', Uint8Array.of(1).buffer);
+      await adapter.writeBinary('other/keep.bin', Uint8Array.of(0).buffer);
       await adapter.rmdir('dir', true);
 
       expect(await adapter.exists('dir/file.bin')).toBe(false);
+      expect(await adapter.exists('other/keep.bin')).toBe(true);
     });
   });
 
   describe('rename() directory with binary files', () => {
-    it('should move binary files inside a renamed directory', async () => {
+    it('should move binary files inside a renamed directory and preserve others', async () => {
       const adapter = createAdapter();
       await adapter.mkdir('src');
       await adapter.writeBinary('src/image.bin', Uint8Array.of(1).buffer);
+      await adapter.writeBinary('other/stay.bin', Uint8Array.of(0).buffer);
       await adapter.write('src/note.md', 'text');
       await adapter.rename('src', 'dest');
 
@@ -736,6 +739,7 @@ describe('InMemoryAdapter', () => {
       const result = new Uint8Array(await adapter.readBinary('dest/image.bin'));
       expect(Array.from(result)).toEqual([1]);
       expect(await adapter.read('dest/note.md')).toBe('text');
+      expect(await adapter.exists('other/stay.bin')).toBe(true);
     });
   });
 
