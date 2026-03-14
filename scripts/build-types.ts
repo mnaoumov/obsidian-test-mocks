@@ -51,12 +51,6 @@ function collectFiles(dir: string, ext: string): string[] {
   return result;
 }
 
-function convertToCtsTypeImports(content: string): string {
-  return content
-    .replace(/^import \{/gm, 'import type {')
-    .replace(/^export \* from/gm, 'export type * from');
-}
-
 function countBraces(line: string): number {
   let count = 0;
   for (const ch of line) {
@@ -193,26 +187,29 @@ async function generateObsidianTypeDeclarations(typeNames: string[], cjsIndexPat
   // Find which of those are referenced in the declarations.
   const referencedValues = findReferencedNames(declarations, valueNames, typeNames);
 
-  let header = '';
+  // Write obsidian-types files for both ESM and CJS.
+  // These only contain type/interface declarations, so import type from the index is correct.
+  const esmTypesPath = esmIndexPath.replace(/\.d\.mts$/, '.obsidian-types.d.mts');
+  const cjsTypesPath = cjsIndexPath.replace(/\.d\.cts$/, '.obsidian-types.d.cts');
+
+  let esmHeader = '';
+  let cjsHeader = '';
   if (referencedValues.length > 0) {
-    header = `import type { ${referencedValues.join(', ')} } from './index.d.cts';\n`;
+    esmHeader = `import type { ${referencedValues.join(', ')} } from './index.mjs';\n`;
+    cjsHeader = `import type { ${referencedValues.join(', ')} } from './index.cjs';\n`;
   }
 
-  const cjsTypesPath = cjsIndexPath.replace(/\.d\.cts$/, '.obsidian-types.d.cts');
-  await writeFile(cjsTypesPath, header + declarations, 'utf8');
-
-  const relativeCjsTypesPath = toForwardSlash(relative(dirname(esmIndexPath), cjsTypesPath));
-  const esmTypesPath = esmIndexPath.replace(/\.d\.mts$/, '.obsidian-types.d.mts');
-  await writeFile(esmTypesPath, `export type * from '${relativeCjsTypesPath}' with { 'resolution-mode': 'import' };\n`, 'utf8');
+  await writeFile(esmTypesPath, esmHeader + declarations, 'utf8');
+  await writeFile(cjsTypesPath, cjsHeader + declarations, 'utf8');
 
   // Append re-exports from the generated types file to the index files.
+  const esmIndex = await readFile(esmIndexPath, 'utf8');
+  const esmTypesRelative = toForwardSlash(relative(dirname(esmIndexPath), esmTypesPath));
+  await writeFile(esmIndexPath, `${ensureTrailingNewline(esmIndex)}export type * from './${esmTypesRelative}';\n`, 'utf8');
+
   const cjsIndex = await readFile(cjsIndexPath, 'utf8');
   const cjsTypesRelative = toForwardSlash(relative(dirname(cjsIndexPath), cjsTypesPath));
   await writeFile(cjsIndexPath, `${ensureTrailingNewline(cjsIndex)}export type * from './${cjsTypesRelative}';\n`, 'utf8');
-
-  const esmIndex = await readFile(esmIndexPath, 'utf8');
-  const esmTypesRelative = toForwardSlash(relative(dirname(esmIndexPath), esmTypesPath));
-  await writeFile(esmIndexPath, `${ensureTrailingNewline(esmIndex)}export type * from './${esmTypesRelative}' with { 'resolution-mode': 'import' };\n`, 'utf8');
 }
 
 async function main(): Promise<void> {
@@ -226,13 +223,15 @@ async function main(): Promise<void> {
 
     const { cleaned, typeNames } = extractObsidianReExportNames(content);
 
+    // Write .d.mts with .mjs import extensions (TypeScript resolves .mjs → .d.mts automatically,
+    // Avoiding TS2846 "declaration file imported without import type" errors).
+    const esmPath = normalized.replace(/\.d\.ts$/, '.d.mts');
+    await writeFile(esmPath, rewriteImportExtensions(cleaned, '.mjs'), 'utf8');
+
+    // Write .d.cts with .cjs import extensions (TypeScript resolves .cjs → .d.cts automatically).
     const cjsPath = normalized.replace(ESM_DIR, CJS_DIR).replace(/\.d\.ts$/, '.d.cts');
     mkdirSync(dirname(cjsPath), { recursive: true });
-    await writeFile(cjsPath, convertToCtsTypeImports(rewriteImportExtensions(cleaned, '.d.cts')), 'utf8');
-
-    const esmPath = normalized.replace(/\.d\.ts$/, '.d.mts');
-    const relativeCjsPath = toForwardSlash(relative(dirname(esmPath), cjsPath));
-    await writeFile(esmPath, `export type * from '${relativeCjsPath}' with { 'resolution-mode': 'import' };\n`, 'utf8');
+    await writeFile(cjsPath, rewriteImportExtensions(cleaned, '.cjs'), 'utf8');
 
     unlinkSync(filePath);
 
