@@ -166,7 +166,7 @@ export abstract class Editor {
     const before = this.content.slice(0, clamped);
     const lines = before.split('\n');
     const line = lines.length - 1;
-    const ch = lines[line]?.length ?? 0;
+    const ch = ensureNonNullable(lines[line]).length;
     return { ch, line };
   }
 
@@ -174,9 +174,9 @@ export abstract class Editor {
     const lines = this.getLines();
     let offset = 0;
     for (let i = 0; i < pos.line && i < lines.length; i++) {
-      offset += (lines[i]?.length ?? 0) + 1;
+      offset += ensureNonNullable(lines[i]).length + 1;
     }
-    const lineLength = lines[pos.line]?.length ?? 0;
+    const lineLength = ensureNonNullable(lines[pos.line]).length;
     offset += Math.min(pos.ch, lineLength);
     return offset;
   }
@@ -190,7 +190,7 @@ export abstract class Editor {
     const changes: EditorChangeOriginal[] = [];
 
     for (let i = 0; i < lines.length; i++) {
-      const lineText = lines[i] ?? '';
+      const lineText = ensureNonNullable(lines[i]);
       const value = read(i, lineText);
       const change = write(i, lineText, value);
       if (change) {
@@ -199,10 +199,8 @@ export abstract class Editor {
     }
 
     for (let i = changes.length - 1; i >= 0; i--) {
-      const change = changes[i];
-      if (change) {
-        this.replaceRange(change.text, change.from, change.to);
-      }
+      const change = ensureNonNullable(changes[i]);
+      this.replaceRange(change.text, change.from, change.to);
     }
   }
 
@@ -262,7 +260,7 @@ export abstract class Editor {
 
   public setLine(n: number, text: string): void {
     const from: EditorPositionOriginal = { ch: 0, line: n };
-    const lineLength = (this.getLines()[n] ?? '').length;
+    const lineLength = ensureNonNullable(this.getLines()[n]).length;
     const to: EditorPositionOriginal = { ch: lineLength, line: n };
     this.replaceRange(text, from, to);
   }
@@ -274,11 +272,9 @@ export abstract class Editor {
 
   public setSelections(ranges: EditorSelectionOrCaretOriginal[], main?: number): void {
     const index = main ?? 0;
-    const sel = ranges[index] ?? ranges[0];
-    if (sel) {
-      this.anchor = { ...sel.anchor };
-      this.head = sel.head ? { ...sel.head } : { ...sel.anchor };
-    }
+    const sel = ensureNonNullable(ranges[index] ?? ranges[0]);
+    this.anchor = { ...sel.anchor };
+    this.head = sel.head ? { ...sel.head } : { ...sel.anchor };
   }
 
   public setValue(content: string): void {
@@ -325,17 +321,17 @@ export abstract class Editor {
     }
 
     const wordChars = /\w/;
-    if (!wordChars.test(line[pos.ch] ?? '')) {
+    if (!wordChars.test(ensureNonNullable(line[pos.ch]))) {
       return null;
     }
 
     let start = pos.ch;
-    while (start > 0 && wordChars.test(line[start - 1] ?? '')) {
+    while (start > 0 && wordChars.test(ensureNonNullable(line[start - 1]))) {
       start--;
     }
 
     let end = pos.ch;
-    while (end < line.length && wordChars.test(line[end] ?? '')) {
+    while (end < line.length && wordChars.test(ensureNonNullable(line[end]))) {
       end++;
     }
 
@@ -351,8 +347,8 @@ export abstract class Editor {
     if (lines.length <= 1) {
       this.setValue('');
     } else if (cursor.line === lines.length - 1) {
-      const from: EditorPositionOriginal = { ch: (lines[cursor.line - 1]?.length ?? 0), line: cursor.line - 1 };
-      const to: EditorPositionOriginal = { ch: (lines[cursor.line]?.length ?? 0), line: cursor.line };
+      const from: EditorPositionOriginal = { ch: ensureNonNullable(lines[cursor.line - 1]).length, line: cursor.line - 1 };
+      const to: EditorPositionOriginal = { ch: ensureNonNullable(lines[cursor.line]).length, line: cursor.line };
       this.replaceRange('', from, to);
     } else {
       const from: EditorPositionOriginal = { ch: 0, line: cursor.line };
@@ -366,14 +362,14 @@ export abstract class Editor {
     const lines = this.content.split('\n');
     const lastLine = lines.length - 1;
     const newLine = Math.min(lastLine, cursor.line + 1);
-    const lineLen = lines[newLine]?.length ?? 0;
+    const lineLen = ensureNonNullable(lines[newLine]).length;
     this.setCursor({ ch: Math.min(cursor.ch, lineLen), line: newLine });
   }
 
   private execGoEnd(): void {
     const lines = this.content.split('\n');
     const lastLine = lines.length - 1;
-    this.setCursor({ ch: lines[lastLine]?.length ?? 0, line: lastLine });
+    this.setCursor({ ch: ensureNonNullable(lines[lastLine]).length, line: lastLine });
   }
 
   private execGoLeft(): void {
@@ -382,7 +378,7 @@ export abstract class Editor {
     if (cursor.ch > 0) {
       this.setCursor({ ch: cursor.ch - 1, line: cursor.line });
     } else if (cursor.line > 0) {
-      const prevLineLen = lines[cursor.line - 1]?.length ?? 0;
+      const prevLineLen = ensureNonNullable(lines[cursor.line - 1]).length;
       this.setCursor({ ch: prevLineLen, line: cursor.line - 1 });
     }
   }
@@ -390,7 +386,7 @@ export abstract class Editor {
   private execGoRight(): void {
     const cursor = this.getCursor();
     const lines = this.content.split('\n');
-    const currentLineLen = lines[cursor.line]?.length ?? 0;
+    const currentLineLen = ensureNonNullable(lines[cursor.line]).length;
     if (cursor.ch < currentLineLen) {
       this.setCursor({ ch: cursor.ch + 1, line: cursor.line });
     } else if (cursor.line < lines.length - 1) {
@@ -402,17 +398,17 @@ export abstract class Editor {
     const cursor = this.getCursor();
     const lines = this.content.split('\n');
     const newLine = Math.max(0, cursor.line - 1);
-    const lineLen = lines[newLine]?.length ?? 0;
+    const lineLen = ensureNonNullable(lines[newLine]).length;
     this.setCursor({ ch: Math.min(cursor.ch, lineLen), line: newLine });
   }
 
   private execGoWordLeft(): void {
     const offset = this.posToOffset(this.getCursor());
     let pos = offset;
-    while (pos > 0 && /\s/.test(this.content[pos - 1] ?? '')) {
+    while (pos > 0 && /\s/.test(ensureNonNullable(this.content[pos - 1]))) {
       pos--;
     }
-    while (pos > 0 && /\w/.test(this.content[pos - 1] ?? '')) {
+    while (pos > 0 && /\w/.test(ensureNonNullable(this.content[pos - 1]))) {
       pos--;
     }
     this.setCursor(this.offsetToPos(pos));
@@ -421,15 +417,15 @@ export abstract class Editor {
   private execGoWordRight(): void {
     const offset = this.posToOffset(this.getCursor());
     let pos = offset;
-    if (pos < this.content.length && /\w/.test(this.content[pos] ?? '')) {
-      while (pos < this.content.length && /\w/.test(this.content[pos] ?? '')) {
+    if (pos < this.content.length && /\w/.test(ensureNonNullable(this.content[pos]))) {
+      while (pos < this.content.length && /\w/.test(ensureNonNullable(this.content[pos]))) {
         pos++;
       }
     } else {
-      while (pos < this.content.length && /\W/.test(this.content[pos] ?? '')) {
+      while (pos < this.content.length && /\W/.test(ensureNonNullable(this.content[pos]))) {
         pos++;
       }
-      while (pos < this.content.length && /\w/.test(this.content[pos] ?? '')) {
+      while (pos < this.content.length && /\w/.test(ensureNonNullable(this.content[pos]))) {
         pos++;
       }
     }

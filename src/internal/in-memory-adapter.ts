@@ -191,8 +191,8 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   public async rename(normalizedPath: string, normalizedNewPath: string): Promise<void> {
     await noopAsync();
     if (this.directories.has(normalizedPath)) {
-      const oldPrefix = normalizedPath === '' ? '' : `${normalizedPath}/`;
-      const newPrefix = normalizedNewPath === '' ? '' : `${normalizedNewPath}/`;
+      const oldPrefix = `${normalizedPath}/`;
+      const newPrefix = `${normalizedNewPath}/`;
 
       const entriesToMove: [string, string][] = [];
 
@@ -257,7 +257,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   public async rmdir(normalizedPath: string, recursive: boolean): Promise<void> {
     await noopAsync();
     if (recursive) {
-      const prefix = normalizedPath === '' ? '' : `${normalizedPath}/`;
+      const prefix = `${normalizedPath}/`;
 
       for (const key of [...this.textFiles.keys()]) {
         if (key.startsWith(prefix)) {

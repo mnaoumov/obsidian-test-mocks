@@ -761,6 +761,59 @@ describe('InMemoryAdapter', () => {
     });
   });
 
+  describe('rename() directory with files in other directories', () => {
+    it('should not move files from other directories', async () => {
+      const adapter = createAdapter();
+      await adapter.mkdir('dir-a');
+      await adapter.write('dir-a/file.md', 'a-content');
+      await adapter.mkdir('dir-b');
+      await adapter.write('dir-b/other.md', 'b-content');
+      await adapter.rename('dir-a', 'dir-c');
+
+      expect(await adapter.exists('dir-c')).toBe(true);
+      expect(await adapter.read('dir-c/file.md')).toBe('a-content');
+      expect(await adapter.exists('dir-b/other.md')).toBe(true);
+      expect(await adapter.read('dir-b/other.md')).toBe('b-content');
+    });
+  });
+
+  describe('rmdir() recursive with files in other directories', () => {
+    it('should not remove files from other directories', async () => {
+      const adapter = createAdapter();
+      await adapter.write('dir-a/file.md', 'a-content');
+      await adapter.writeBinary('dir-a/data.bin', Uint8Array.of(1).buffer);
+      await adapter.write('dir-b/other.md', 'b-content');
+      await adapter.rmdir('dir-a', true);
+
+      expect(await adapter.exists('dir-a')).toBe(false);
+      expect(await adapter.exists('dir-a/file.md')).toBe(false);
+      expect(await adapter.exists('dir-a/data.bin')).toBe(false);
+      expect(await adapter.exists('dir-b/other.md')).toBe(true);
+      expect(await adapter.read('dir-b/other.md')).toBe('b-content');
+    });
+
+    it('should remove binary files in the directory', async () => {
+      const adapter = createAdapter();
+      await adapter.writeBinary('target/image.bin', Uint8Array.of(1, 0).buffer);
+      await adapter.writeBinary('target/data.bin', Uint8Array.of(0, 1).buffer);
+      await adapter.rmdir('target', true);
+
+      expect(await adapter.exists('target/image.bin')).toBe(false);
+      expect(await adapter.exists('target/data.bin')).toBe(false);
+      expect(await adapter.exists('target')).toBe(false);
+    });
+  });
+
+  describe('rmdir() non-recursive', () => {
+    it('should only remove the directory entry without touching files', async () => {
+      const adapter = createAdapter();
+      await adapter.mkdir('empty-dir');
+      expect(await adapter.exists('empty-dir')).toBe(true);
+      await adapter.rmdir('empty-dir', false);
+      expect(await adapter.exists('empty-dir')).toBe(false);
+    });
+  });
+
   describe('copy() binary file to new directory', () => {
     it('should copy binary file and create parent dirs', async () => {
       const adapter = createAdapter();

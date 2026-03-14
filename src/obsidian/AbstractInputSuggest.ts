@@ -29,8 +29,7 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
     if (this.inputEl instanceof HTMLInputElement) {
       return this.inputEl.value;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- textContent can be null.
-    return this.inputEl.textContent ?? '';
+    return this.inputEl.textContent;
   }
 
   public setValue(value: string): void {

@@ -92,8 +92,6 @@ export class MetadataCache extends Events {
       const cache = parseMarkdownContent(content);
       this.cache__.set(vaultFile.path, cache);
       this.trigger('changed', vaultFile, content, cache);
-    }).catch(() => {
-      // Silently ignore read errors during metadata parsing.
-    });
+    }).catch(console.error);
   }
 }

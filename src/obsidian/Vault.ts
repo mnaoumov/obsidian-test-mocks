@@ -242,15 +242,13 @@ export class Vault extends Events {
     this.fileMap[path] = file;
     this.fileMapLowerCase[path.toLowerCase()] = file;
     file.deleted__ = false;
-    if (path !== '/' && path !== '') {
-      const lastSlash = path.lastIndexOf('/');
-      const parentKey = lastSlash > 0 ? path.slice(0, lastSlash) : '/';
-      const parentFile = this.fileMap[parentKey];
-      if (parentFile instanceof TFolder) {
-        file.parent = parentFile;
-        if (!parentFile.children.includes(file)) {
-          parentFile.children.push(file);
-        }
+    const lastSlash = path.lastIndexOf('/');
+    const parentKey = lastSlash > 0 ? path.slice(0, lastSlash) : '/';
+    const parentFile = this.fileMap[parentKey];
+    if (parentFile instanceof TFolder) {
+      file.parent = parentFile;
+      if (!parentFile.children.includes(file)) {
+        parentFile.children.push(file);
       }
     }
   }

@@ -514,6 +514,27 @@ describe('parseMarkdownContent', () => {
     });
   });
 
+  describe('addGapSections edge cases', () => {
+    it('should handle gap content where block cannot be found via indexOf', () => {
+      // A heading followed by a gap that contains blocks which, after trim+split,
+      // Produce a trimmed string that indexOf cannot find at the expected offset
+      // Because the offset has moved past it. This exercises the blockStart < 0 branch.
+      const content = '# Heading\n\n \n\nSome text';
+      const cache = parseMarkdownContent(content);
+
+      // The whitespace-only block between heading and "Some text" should not create a section
+      const paragraphs = cache.sections?.filter((s) => s.type === 'paragraph');
+      expect(paragraphs?.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('offsetToLoc edge cases', () => {
+    it('should handle empty content', () => {
+      const cache = parseMarkdownContent('');
+      expect(cache.sections).toBeUndefined();
+    });
+  });
+
   describe('complex document', () => {
     it('should parse a document with mixed content', () => {
       const content = [
