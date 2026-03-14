@@ -8,7 +8,7 @@ import {
 import {
   delegatedOff,
   delegatedOn
-} from '../../src/internal/delegated-event-registry.ts';
+} from './delegated-event-registry.ts';
 
 describe('delegatedOn', () => {
   it('should register an event listener', () => {

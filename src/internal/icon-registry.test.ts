@@ -5,7 +5,7 @@ import {
   it
 } from 'vitest';
 
-import { iconRegistry } from '../../src/internal/icon-registry.ts';
+import { iconRegistry } from './icon-registry.ts';
 
 afterEach(() => {
   iconRegistry.clear();

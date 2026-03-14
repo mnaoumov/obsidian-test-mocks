@@ -4,8 +4,8 @@ import {
   it
 } from 'vitest';
 
-import { InMemoryAdapter } from '../../src/internal/in-memory-adapter.ts';
-import { FileSystemAdapter } from '../../src/obsidian/FileSystemAdapter.ts';
+import { FileSystemAdapter } from '../obsidian/FileSystemAdapter.ts';
+import { InMemoryAdapter } from './in-memory-adapter.ts';
 
 const TIMESTAMP_A = 1000;
 const TIMESTAMP_B = 2000;
