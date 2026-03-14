@@ -26,7 +26,7 @@ async function collectTsFiles(dir: string): Promise<TsFileEntry[]> {
     if ((await stat(full)).isDirectory()) {
       continue;
     }
-    if (entry.endsWith('.ts') && !entry.endsWith('.d.ts') && entry !== 'index.ts') {
+    if (entry.endsWith('.ts') && !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts') && entry !== 'index.ts') {
       results.push({ fullPath: full, name: entry });
     }
   }
