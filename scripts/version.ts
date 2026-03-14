@@ -105,9 +105,7 @@ async function getReleaseNotes(newVersion: string): Promise<string> {
   const content = await readFile(changelogPath, 'utf-8');
   const newVersionEscaped = newVersion.replace('.', '\\.');
   const match = new RegExp(`\n## ${newVersionEscaped}\n\n((.|\n)+?)\n\n##`).exec(content);
-  /* v8 ignore start -- v8 tracks optional chaining and ternary as separate branches; both paths are tested. */
   let releaseNotes = match?.[1] ? `${match[1]}\n\n` : '';
-  /* v8 ignore stop */
 
   const tags = (await execFromRoot('git tag --sort=-creatordate', { isQuiet: true })).split(/\r?\n/);
   const previousVersion = tags[1];
