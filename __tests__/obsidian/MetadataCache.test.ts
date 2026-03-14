@@ -3,7 +3,8 @@ import type { MetadataCache as MetadataCacheOriginal } from 'obsidian';
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
 import { App } from '../../src/obsidian/App.ts';
@@ -222,6 +223,26 @@ describe('MetadataCache', () => {
       app.vault.trigger('create', { path: 'fake.md' });
       await flushMicrotasks();
       expect(app.metadataCache.getCache('fake.md')).toBeNull();
+    });
+
+    it('should catch error when file is removed before parsing', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('will-remove.md', '# Title');
+      await flushMicrotasks();
+
+      // Remove the file from the adapter so cachedRead will fail
+      await app.vault.adapter.remove(file.path);
+
+      // Spy on console.error to verify the catch path is hit
+      // eslint-disable-next-line @typescript-eslint/no-empty-function -- Suppressing console.error output during test.
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // Trigger modify event which calls parseFileMetadata
+      app.vault.trigger('modify', file);
+      await flushMicrotasks();
+
+      expect(errorSpy).toHaveBeenCalled();
+      errorSpy.mockRestore();
     });
   });
 

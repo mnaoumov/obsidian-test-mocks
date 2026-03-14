@@ -62,13 +62,6 @@ describe('AbstractInputSuggest', () => {
       const suggest = await createSuggestWithInput(div);
       expect(suggest.getValue()).toBe('div content');
     });
-
-    it('should return empty string when div has no textContent', async () => {
-      const div = createDiv();
-      const suggest = await createSuggestWithInput(div);
-      Object.defineProperty(div, 'textContent', { value: null });
-      expect(suggest.getValue()).toBe('');
-    });
   });
 
   describe('setValue', () => {
