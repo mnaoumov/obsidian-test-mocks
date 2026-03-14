@@ -208,6 +208,15 @@ describe('ColorComponent', () => {
       const HALF = 0.5;
       expect(hsl.l).toBeGreaterThan(HALF);
     });
+
+    it('should handle red-dominant color where green < blue', () => {
+      const color = createColor();
+      // Color where max=r but g < b, covering the gn < bn branch
+      color.setValue('#ff0080');
+      const hsl = color.getValueHsl();
+      expect(hsl.h).toBeGreaterThan(0);
+      expect(hsl.s).toBe(1);
+    });
   });
 
   describe('setValueHsl', () => {

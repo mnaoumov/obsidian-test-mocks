@@ -517,6 +517,13 @@ describe('Workspace', () => {
       const app = await App.createConfigured__();
       expect(typeof app.workspace.requestSaveLayout).toBe('function');
     });
+
+    it('should not throw when called', async () => {
+      const app = await App.createConfigured__();
+      expect(() => {
+        app.workspace.requestSaveLayout();
+      }).not.toThrow();
+    });
   });
 
   describe('containerEl', () => {

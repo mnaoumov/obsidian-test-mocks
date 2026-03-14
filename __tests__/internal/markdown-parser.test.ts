@@ -18,6 +18,7 @@ const ROOT_PARENT_LINE = -2;
 const HEADING_OFFSET = 10;
 const COMPLEX_HEADING_COUNT = 2;
 const COMPLEX_LIST_ITEM_COUNT = 2;
+const NESTED_LIST_TOTAL_COUNT = 4;
 
 describe('parseMarkdownContent', () => {
   describe('empty document', () => {
@@ -440,6 +441,76 @@ describe('parseMarkdownContent', () => {
       expect(heading?.position.start.line).toBe(1);
       expect(heading?.position.start.col).toBe(0);
       expect(heading?.position.start.offset).toBe(HEADING_OFFSET);
+    });
+  });
+
+  describe('sections with tilde fenced code blocks in gaps', () => {
+    it('should detect tilde fenced code blocks as code sections', () => {
+      const content = '# Heading\n\n~~~\ncode here\n~~~';
+      const cache = parseMarkdownContent(content);
+      const codeSections = cache.sections?.filter((s) => s.type === 'code');
+      expect(codeSections?.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('list items in code blocks', () => {
+    it('should not parse list items inside code blocks', () => {
+      const content = '```\n- not a list\n```\n- real item';
+      const cache = parseMarkdownContent(content);
+      expect(cache.listItems).toHaveLength(1);
+    });
+  });
+
+  describe('embeds in code blocks', () => {
+    it('should not parse wiki embeds inside inline code', () => {
+      const content = '`![[not-embed]]` followed by\n![[real-embed.png]]';
+      const cache = parseMarkdownContent(content);
+      expect(cache.embeds).toHaveLength(1);
+      expect(cache.embeds?.[0]?.link).toBe('real-embed.png');
+    });
+  });
+
+  describe('links in inline code', () => {
+    it('should not parse wikilinks inside inline code', () => {
+      const content = '`[[not-a-link]]` and [[real-link]]';
+      const cache = parseMarkdownContent(content);
+      expect(cache.links).toHaveLength(1);
+      expect(cache.links?.[0]?.link).toBe('real-link');
+    });
+
+    it('should not parse markdown links inside inline code', () => {
+      const content = '`[text](url)` and [real](link)';
+      const cache = parseMarkdownContent(content);
+      expect(cache.links).toHaveLength(1);
+      expect(cache.links?.[0]?.link).toBe('link');
+    });
+  });
+
+  describe('markdown embeds in inline code', () => {
+    it('should not parse markdown embeds in inline code', () => {
+      const content = '`![alt](img.png)` and ![real](embed.png)';
+      const cache = parseMarkdownContent(content);
+      expect(cache.embeds).toHaveLength(1);
+      expect(cache.embeds?.[0]?.link).toBe('embed.png');
+    });
+  });
+
+  describe('frontmatter with empty YAML', () => {
+    it('should handle empty frontmatter gracefully', () => {
+      // Frontmatter regex requires at least one newline between delimiters
+      const content = '---\n\n---\nBody';
+      const cache = parseMarkdownContent(content);
+      expect(cache.frontmatter).toBeDefined();
+    });
+  });
+
+  describe('nested list items across separate groups', () => {
+    it('should correctly handle multiple separate list groups with nesting', () => {
+      const content = '- Parent\n  - Child\n\nText\n\n- Another parent\n  - Another child';
+      const cache = parseMarkdownContent(content);
+      expect(cache.listItems).toHaveLength(NESTED_LIST_TOTAL_COUNT);
+      const listSections = cache.sections?.filter((s) => s.type === 'list');
+      expect(listSections).toHaveLength(LIST_ITEM_COUNT_2);
     });
   });
 

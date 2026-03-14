@@ -107,4 +107,13 @@ describe('AbstractTextComponent', () => {
       expect(component.setPlaceholder('test')).toBe(component);
     });
   });
+
+  describe('constructor3__', () => {
+    it('should be callable without throwing', () => {
+      const component = createTextComponent();
+      expect(() => {
+        component.constructor3__(component.inputEl);
+      }).not.toThrow();
+    });
+  });
 });

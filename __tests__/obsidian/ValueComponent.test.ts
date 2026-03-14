@@ -14,4 +14,13 @@ describe('ValueComponent', () => {
       expect(result).toBe(comp);
     });
   });
+
+  describe('constructor2__', () => {
+    it('should be callable without throwing', () => {
+      const comp = ProgressBarComponent.create__(createDiv());
+      expect(() => {
+        comp.constructor2__();
+      }).not.toThrow();
+    });
+  });
 });

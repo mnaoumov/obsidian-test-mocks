@@ -24,7 +24,7 @@ const MANIFEST: PluginManifestOriginal = {
 };
 
 class ConcretePlugin extends Plugin {
-  public onload(): void {
+  public override onload(): void {
     // Noop
   }
 }
@@ -144,6 +144,15 @@ describe('Plugin', () => {
       expect(plugin.markdownCodeBlockProcessors__.get('mermaid')).toBe(handler);
       expect(typeof processor).toBe('function');
       expect(plugin.markdownPostProcessors__).toContain(processor);
+    });
+
+    it('should return a noop processor that does not throw when called', async () => {
+      const app = await App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      const processor = plugin.registerMarkdownCodeBlockProcessor('lang', vi.fn());
+      const result = processor(createDiv(), {} as never);
+      await Promise.resolve(result);
+      expect(result).toBeUndefined();
     });
   });
 

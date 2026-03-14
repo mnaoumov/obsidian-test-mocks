@@ -54,6 +54,16 @@ describe('TAbstractFile (via TFile)', () => {
       expect(file.asOriginalType__()).toBe(file);
     });
   });
+
+  describe('constructor__', () => {
+    it('should be callable without throwing', async () => {
+      const app = await App.createConfigured__();
+      const file = TFile.create__(app.vault, 'note.md');
+      expect(() => {
+        file.constructor__(app.vault, 'note.md');
+      }).not.toThrow();
+    });
+  });
 });
 
 describe('TFile', () => {

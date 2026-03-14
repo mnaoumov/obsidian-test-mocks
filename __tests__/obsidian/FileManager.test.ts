@@ -79,6 +79,12 @@ describe('FileManager', () => {
       const folder = app.fileManager.getNewFileParent('nonexistent/file.md');
       expect(folder.path).toBe('/');
     });
+
+    it('should return root when slash is at position 0', async () => {
+      const app = await createApp();
+      const folder = app.fileManager.getNewFileParent('/file.md');
+      expect(folder.path).toBe('/');
+    });
   });
 
   describe('processFrontMatter', () => {

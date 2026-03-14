@@ -41,4 +41,16 @@ describe('MarkdownRenderer', () => {
       expect(original).toBe(renderer);
     });
   });
+
+  describe('constructor3__', () => {
+    it('should be callable without throwing', async () => {
+      const app = await App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const mdView = MarkdownView.create2__(leaf);
+      const renderer = MarkdownPreviewView.create3__(mdView);
+      expect(() => {
+        renderer.constructor3__(app, createDiv());
+      }).not.toThrow();
+    });
+  });
 });

@@ -224,4 +224,23 @@ describe('MetadataCache', () => {
       expect(app.metadataCache.getCache('fake.md')).toBeNull();
     });
   });
+
+  describe('constructor2__', () => {
+    it('should be callable without throwing', async () => {
+      const app = await App.createConfigured__();
+      expect(() => {
+        app.metadataCache.constructor2__(app, app.vault);
+      }).not.toThrow();
+    });
+  });
+
+  describe('getFirstLinkpathDest by file name', () => {
+    it('should find file by its full name including extension', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('folder/report.txt', '');
+      await flushMicrotasks();
+      const found = app.metadataCache.getFirstLinkpathDest('report.txt', '');
+      expect(found).toBe(file);
+    });
+  });
 });
