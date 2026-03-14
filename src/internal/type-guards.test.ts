@@ -10,7 +10,7 @@ import {
   assertNonNullable,
   ensureGenericObject,
   ensureNonNullable
-} from '../../src/internal/type-guards.ts';
+} from './type-guards.ts';
 
 describe('assert', () => {
   it('should not throw when condition is true', () => {
