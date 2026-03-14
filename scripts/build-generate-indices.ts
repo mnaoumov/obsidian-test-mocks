@@ -7,6 +7,12 @@ import {
 import { join } from 'node:path';
 
 const EXPORT_PATTERN = /^export\s+(?:(?:abstract\s+)?class|(?:async\s+)?function|const|enum|interface|let|type|var)\s+(?<name>\w+)/gm;
+const OBSIDIAN_TYPE_ONLY_PATTERN = /^export\s+(?:interface|type)\s+(?<name>\w+)/gm;
+
+interface BarrelResult {
+  claimedNames: Set<string>;
+  content: string;
+}
 
 interface TsFileEntry {
   fullPath: string;
@@ -35,7 +41,7 @@ async function directoryExists(path: string): Promise<boolean> {
   }
 }
 
-async function generateBarrelIndex(dir: string): Promise<string> {
+async function generateBarrelIndexWithClaimedNames(dir: string): Promise<BarrelResult> {
   const claimedNames = new Set<string>();
   const lines: string[] = [];
 
@@ -81,7 +87,7 @@ async function generateBarrelIndex(dir: string): Promise<string> {
     }
   }
 
-  return `${lines.join('\n')}\n`;
+  return { claimedNames, content: `${lines.join('\n')}\n` };
 }
 
 async function generateGlobalsIndex(dir: string): Promise<string> {
@@ -140,6 +146,24 @@ async function generateGlobalsIndex(dir: string): Promise<string> {
   return lines.join('\n');
 }
 
+async function generateObsidianTypeReExports(claimedNames: Set<string>): Promise<string> {
+  const obsidianDts = await readFile('node_modules/obsidian/obsidian.d.ts', 'utf-8');
+  const typeNames: string[] = [];
+  let match: null | RegExpExecArray;
+  while ((match = OBSIDIAN_TYPE_ONLY_PATTERN.exec(obsidianDts)) !== null) {
+    const name = match.groups?.['name'];
+    if (name !== undefined && !claimedNames.has(name)) {
+      typeNames.push(name);
+    }
+  }
+  if (typeNames.length === 0) {
+    return '';
+  }
+  typeNames.sort();
+  const exports = typeNames.join(',\n  ');
+  return `export type {\n  ${exports},\n} from 'obsidian';\n`;
+}
+
 async function generateSubdirectoryBarrel(dir: string): Promise<void> {
   const files = await collectTsFiles(dir);
   const lines = files.map((file) => `export * from './${file.name}';`);
@@ -150,7 +174,9 @@ async function main(): Promise<void> {
   const globalsContent = await generateGlobalsIndex('src/globals');
   await writeFile(join('src/globals', 'index.ts'), globalsContent, 'utf-8');
 
-  const content = await generateBarrelIndex('src/obsidian');
+  const obsidianBarrel = await generateBarrelIndexWithClaimedNames('src/obsidian');
+  const typeReExports = await generateObsidianTypeReExports(obsidianBarrel.claimedNames);
+  const content = typeReExports + obsidianBarrel.content;
   await writeFile(join('src/obsidian', 'index.ts'), content, 'utf-8');
 }
 

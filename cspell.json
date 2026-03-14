@@ -3,6 +3,7 @@
   "ignorePaths": [
     ".husky",
     "coverage",
+    "dist",
     "patches",
     "scripts/helpers/@types/markdownlint-cli2-config-schema.d.ts",
     "tsconfig.tsbuildinfo"
@@ -22,6 +23,7 @@
     "linktext",
     "Linktext",
     "mnaoumov",
+    "Multitext",
     "mytag",
     "Naumov",
     "obsidianmd",

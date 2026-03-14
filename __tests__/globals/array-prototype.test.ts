@@ -28,12 +28,12 @@ describe('Array.prototype extensions', () => {
   describe('findLastIndex', () => {
     it('should return the last matching index', () => {
       const arr = ['a', 'b', 'a'];
-      const result = findLastIndex.call(arr, (v: string) => v === 'a');
+      const result = findLastIndex.call(arr, (v: unknown) => v === 'a');
       expect(result).toBe(arr.length - 1);
     });
 
     it('should return -1 when no element matches', () => {
-      const result = findLastIndex.call(['a', 'b'], (v: string) => v === 'z');
+      const result = findLastIndex.call(['a', 'b'], (v: unknown) => v === 'z');
       expect(result).toBe(-1);
     });
 
