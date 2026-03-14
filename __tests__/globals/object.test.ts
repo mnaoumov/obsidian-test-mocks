@@ -36,6 +36,7 @@ describe('Object extensions', () => {
         if (key === 'b') {
           return false;
         }
+        return true;
       });
       expect(result).toBe(false);
       expect(visited).toEqual(['a', 'b']);
@@ -45,7 +46,7 @@ describe('Object extensions', () => {
       const ctx = { multiplier: MULTIPLIER };
       let received = '';
       each({ a: 'val' }, function eachCallback(this: Record<string, unknown>, value) {
-        received = `${String(this.multiplier)}-${String(value)}`;
+        received = `${String(this['multiplier'])}-${String(value)}`;
       }, ctx);
       expect(received).toBe(`${String(MULTIPLIER)}-val`);
     });

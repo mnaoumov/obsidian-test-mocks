@@ -26,7 +26,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   private readonly lowerCaseKeys = new Set<string>(['']);
   private readonly textFiles = new Map<string, string>();
 
-  protected constructor(private readonly basePath: string) {
+  protected constructor(protected readonly basePath: string) {
     noop();
   }
 
