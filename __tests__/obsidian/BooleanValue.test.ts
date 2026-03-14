@@ -36,4 +36,25 @@ describe('BooleanValue', () => {
     const val = new BooleanValue(true);
     expect(String(val)).toBe('true');
   });
+
+  describe('create__', () => {
+    it('should create an instance via factory method', () => {
+      const val = BooleanValue.create__();
+      expect(val).toBeInstanceOf(BooleanValue);
+      expect(val.value__).toBe(false);
+    });
+
+    it('should create an instance with value via factory method', () => {
+      const val = BooleanValue.create__(true);
+      expect(val.value__).toBe(true);
+    });
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance', () => {
+      const val = BooleanValue.create__();
+      const original = val.asOriginalType__();
+      expect(original).toBe(val);
+    });
+  });
 });

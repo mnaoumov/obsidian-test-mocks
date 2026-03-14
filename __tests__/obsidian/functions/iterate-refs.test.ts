@@ -89,4 +89,11 @@ describe('iterateCacheRefs', () => {
     const result = iterateCacheRefs({ embeds, links }, () => true);
     expect(result).toBe(true);
   });
+
+  it('should throw when ref is missing position property', () => {
+    const links = [{ displayText: 'a', link: 'a', original: '[[a]]' }];
+    expect(() => {
+      iterateCacheRefs({ links: links as unknown as ReferenceCache[] }, () => undefined);
+    }).toThrow('Should be ReferenceCache, but position property is missing');
+  });
 });

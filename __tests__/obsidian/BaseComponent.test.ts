@@ -43,6 +43,15 @@ describe('BaseComponent', () => {
     });
   });
 
+  describe('constructor__', () => {
+    it('should be callable via spyOn', () => {
+      const spy = vi.spyOn(ButtonComponent.prototype, 'constructor__');
+      createComponent();
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
+  });
+
   describe('then', () => {
     it('should invoke the callback with the component', () => {
       const component = createComponent();

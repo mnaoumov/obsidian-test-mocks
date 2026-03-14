@@ -34,4 +34,19 @@ describe('ListValue', () => {
     const val = new ListValue([]);
     expect(String(val)).toBe('');
   });
+
+  describe('create__', () => {
+    it('should create an instance via factory method', () => {
+      const val = ListValue.create__([]);
+      expect(val).toBeInstanceOf(ListValue);
+    });
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance', () => {
+      const val = ListValue.create__([]);
+      const original = val.asOriginalType__();
+      expect(original).toBe(val);
+    });
+  });
 });

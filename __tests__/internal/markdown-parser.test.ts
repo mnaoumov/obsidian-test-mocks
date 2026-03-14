@@ -67,6 +67,21 @@ describe('parseMarkdownContent', () => {
 
       expect(cache.frontmatter).toBeDefined();
     });
+
+    it('should set empty frontmatter object when YAML parses to non-object', () => {
+      const content = '---\njust a string\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatter).toBeDefined();
+      expect(typeof cache.frontmatter).toBe('object');
+    });
+
+    it('should not parse content before frontmatter as body', () => {
+      const content = '---\nkey: value\n---\n';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatter?.['key']).toBe('value');
+    });
   });
 
   describe('headings', () => {
@@ -95,6 +110,22 @@ describe('parseMarkdownContent', () => {
 
       expect(cache.headings).toHaveLength(1);
       expect(cache.headings?.[0]?.heading).toBe('Real heading');
+    });
+
+    it('should not parse headings inside tilde fenced code blocks', () => {
+      const content = '~~~\n# Not a heading\n~~~\n# Real heading';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.headings).toHaveLength(1);
+      expect(cache.headings?.[0]?.heading).toBe('Real heading');
+    });
+
+    it('should not parse tags inside inline code', () => {
+      const content = '`#not-a-tag` followed by\n#real-tag';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.tags).toHaveLength(1);
+      expect(cache.tags?.[0]?.tag).toBe('#real-tag');
     });
   });
 
@@ -137,6 +168,22 @@ describe('parseMarkdownContent', () => {
       const cache = parseMarkdownContent(content);
 
       expect(cache.tags?.[0]?.position.start.col).toBe(TAG_COL_OFFSET);
+    });
+
+    it('should parse tags at the beginning of a line', () => {
+      const content = '#tag-at-start';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.tags).toHaveLength(1);
+      expect(cache.tags?.[0]?.tag).toBe('#tag-at-start');
+    });
+
+    it('should parse tags with underscores and hyphens', () => {
+      const content = '#tag_with-mixed';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.tags).toHaveLength(1);
+      expect(cache.tags?.[0]?.tag).toBe('#tag_with-mixed');
     });
   });
 
@@ -182,6 +229,21 @@ describe('parseMarkdownContent', () => {
       expect(cache.links).toHaveLength(1);
       expect(cache.links?.[0]?.link).toBe('real link');
     });
+
+    it('should not parse markdown links in code blocks', () => {
+      const content = '```\n[text](url)\n```\n[real](link)';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.links).toHaveLength(1);
+      expect(cache.links?.[0]?.link).toBe('link');
+    });
+
+    it('should set default displayText for wiki links without display', () => {
+      const content = '[[note]]';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.links?.[0]?.displayText).toBe('note');
+    });
   });
 
   describe('embeds', () => {
@@ -216,6 +278,29 @@ describe('parseMarkdownContent', () => {
         displayText: 'Alt text',
         link: 'image.png'
       });
+    });
+
+    it('should not parse wiki embeds in code blocks', () => {
+      const content = '```\n![[not-embed.png]]\n```\n![[real-embed.png]]';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.embeds).toHaveLength(1);
+      expect(cache.embeds?.[0]?.link).toBe('real-embed.png');
+    });
+
+    it('should not parse markdown embeds in code blocks', () => {
+      const content = '```\n![alt](not-embed.png)\n```\n![alt](real-embed.png)';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.embeds).toHaveLength(1);
+      expect(cache.embeds?.[0]?.link).toBe('real-embed.png');
+    });
+
+    it('should set default displayText to link for wiki embeds without display', () => {
+      const content = '![[note.md]]';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.embeds?.[0]?.displayText).toBe('note.md');
     });
   });
 
@@ -287,6 +372,62 @@ describe('parseMarkdownContent', () => {
 
       const listSections = cache.sections?.filter((s) => s.type === 'list');
       expect(listSections).toHaveLength(1);
+    });
+
+    it('should create blockquote sections', () => {
+      const content = '> This is a blockquote';
+      const cache = parseMarkdownContent(content);
+
+      const blockquoteSections = cache.sections?.filter((s) => s.type === 'blockquote');
+      expect(blockquoteSections?.length).toBeGreaterThan(0);
+    });
+
+    it('should create code sections for fenced code blocks in gaps', () => {
+      const content = '# Heading\n\n```\ncode\n```';
+      const cache = parseMarkdownContent(content);
+
+      const codeSections = cache.sections?.filter((s) => s.type === 'code');
+      expect(codeSections?.length).toBeGreaterThan(0);
+    });
+
+    it('should create thematicBreak sections', () => {
+      const content = '# Heading\n\n---';
+      const cache = parseMarkdownContent(content);
+
+      const thematicBreakSections = cache.sections?.filter((s) => s.type === 'thematicBreak');
+      expect(thematicBreakSections?.length).toBeGreaterThan(0);
+    });
+
+    it('should create thematicBreak sections for *** separator', () => {
+      const content = '# Heading\n\n***';
+      const cache = parseMarkdownContent(content);
+
+      const thematicBreakSections = cache.sections?.filter((s) => s.type === 'thematicBreak');
+      expect(thematicBreakSections?.length).toBeGreaterThan(0);
+    });
+
+    it('should create thematicBreak sections for ___ separator', () => {
+      const content = '# Heading\n\n___';
+      const cache = parseMarkdownContent(content);
+
+      const thematicBreakSections = cache.sections?.filter((s) => s.type === 'thematicBreak');
+      expect(thematicBreakSections?.length).toBeGreaterThan(0);
+    });
+
+    it('should handle trailing content after last section', () => {
+      const content = '# Heading\n\nTrailing paragraph';
+      const cache = parseMarkdownContent(content);
+
+      const paragraphs = cache.sections?.filter((s) => s.type === 'paragraph');
+      expect(paragraphs?.length).toBeGreaterThan(0);
+    });
+
+    it('should handle multiple list groups separated by blank lines', () => {
+      const content = '- List 1\n\nSome text\n\n- List 2';
+      const cache = parseMarkdownContent(content);
+
+      const listSections = cache.sections?.filter((s) => s.type === 'list');
+      expect(listSections).toHaveLength(LIST_ITEM_COUNT_2);
     });
   });
 

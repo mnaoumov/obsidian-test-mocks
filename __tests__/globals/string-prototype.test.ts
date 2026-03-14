@@ -40,5 +40,11 @@ describe('String.prototype extensions', () => {
       const result = format.call('{0} {0}', 'echo');
       expect(result).toBe('echo echo');
     });
+
+    it('should handle numeric index captured as number type', () => {
+      // Covers the typeof index === 'number' branch
+      const result = format.call('{0} {1} {2}', 'a', 'b', 'c');
+      expect(result).toBe('a b c');
+    });
   });
 });

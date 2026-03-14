@@ -20,6 +20,14 @@ describe('BasesViewConfig', () => {
     expect(config).toBeInstanceOf(BasesViewConfig);
   });
 
+  describe('asOriginalType__', () => {
+    it('should return the same instance', () => {
+      const config = BasesViewConfig.create__('', '', 'test');
+      const original = config.asOriginalType__();
+      expect(original).toBe(config);
+    });
+  });
+
   it('should store the name', () => {
     const config = BasesViewConfig.create__('', '', 'myView');
     expect(config.name).toBe('myView');

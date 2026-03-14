@@ -11,6 +11,7 @@ import {
   findAll,
   findAllSelf,
   getAttr,
+  getCssPropertyValue,
   getText,
   hasClass,
   isActiveElement,
@@ -250,6 +251,16 @@ describe('Element.prototype extensions', () => {
       frag.appendChild(document.createTextNode('fragment content'));
       setText.call(el, frag);
       expect(el.textContent).toBe('fragment content');
+    });
+  });
+
+  describe('getCssPropertyValue', () => {
+    it('should return the computed style property value', () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      const result = getCssPropertyValue.call(el, 'display');
+      expect(typeof result).toBe('string');
+      document.body.removeChild(el);
     });
   });
 

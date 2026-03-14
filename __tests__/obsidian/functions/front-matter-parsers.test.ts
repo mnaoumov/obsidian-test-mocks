@@ -75,6 +75,10 @@ describe('parseFrontMatterTags', () => {
     expect(parseFrontMatterTags({ tags: 'solo' })).toEqual(['#solo']);
   });
 
+  it('should preserve hash prefix for a single string tag', () => {
+    expect(parseFrontMatterTags({ tags: '#prefixed' })).toEqual(['#prefixed']);
+  });
+
   it('should use tag key as fallback', () => {
     expect(parseFrontMatterTags({ tag: 'fallback' })).toEqual(['#fallback']);
   });

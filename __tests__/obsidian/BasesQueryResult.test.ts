@@ -58,6 +58,14 @@ describe('BasesQueryResult', () => {
     expect(result.properties).toEqual(props);
   });
 
+  describe('asOriginalType__', () => {
+    it('should return the same instance', () => {
+      const result = createResult();
+      const original = result.asOriginalType__();
+      expect(original).toBe(result);
+    });
+  });
+
   it('should throw on getSummaryValue', () => {
     const result = createResult();
     expect(() => {

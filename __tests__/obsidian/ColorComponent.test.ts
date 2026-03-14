@@ -259,5 +259,29 @@ describe('ColorComponent', () => {
       // Light pinkish color
       expect(rgb.r).toBeGreaterThan(rgb.g);
     });
+
+    it('should handle hue in the blue-purple segment', () => {
+      const color = createColor();
+      // Purple: hue = 0.75 (270 degrees)
+      const PURPLE_HUE = 0.75;
+      const HALF = 0.5;
+      color.setValueHsl({ h: PURPLE_HUE, l: HALF, s: 1 });
+      const rgb = color.getValueRgb();
+      // Purple has high blue and red
+      const FULL_CHANNEL = 255;
+      expect(rgb.b).toBe(FULL_CHANNEL);
+    });
+
+    it('should handle hue in the yellow segment', () => {
+      const color = createColor();
+      // Yellow: hue = 1/6 (60 degrees)
+      const YELLOW_HUE = 0.1667;
+      const HALF = 0.5;
+      color.setValueHsl({ h: YELLOW_HUE, l: HALF, s: 1 });
+      const rgb = color.getValueRgb();
+      const FULL_CHANNEL = 255;
+      expect(rgb.r).toBe(FULL_CHANNEL);
+      expect(rgb.g).toBe(FULL_CHANNEL);
+    });
   });
 });
