@@ -247,6 +247,14 @@ describe('ColorComponent', () => {
       expect(color.setValueHsl({ h: 0, l: 0, s: 0 })).toBe(color);
     });
 
+    it('should handle HSL with low lightness', () => {
+      const color = createColor();
+      const LOW_LIGHT = 0.25;
+      color.setValueHsl({ h: 0, l: LOW_LIGHT, s: 1 });
+      const rgb = color.getValueRgb();
+      expect(rgb.r).toBeGreaterThan(0);
+    });
+
     it('should handle hue in different segments', () => {
       const color = createColor();
       // Cyan-ish: hue = 0.5 (180 degrees)

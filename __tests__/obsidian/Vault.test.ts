@@ -212,6 +212,20 @@ describe('Vault', () => {
       await app.vault.delete(file);
       expect(app.vault.getFileByPath('orphan.md')).toBeNull();
     });
+
+    it('should handle deleting a file already removed from parent children', async () => {
+      const app = await App.createConfigured__({ files: { 'folder/file.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('folder/file.md'));
+      const parent = ensureNonNullable(app.vault.getFolderByPath('folder'));
+      // Manually remove from parent.children so indexOf returns -1 in deleteVaultAbstractFile
+      const idx = parent.children.indexOf(file);
+      if (idx !== -1) {
+        parent.children.splice(idx, 1);
+      }
+      await app.vault.delete(file);
+      expect(app.vault.getFileByPath('folder/file.md')).toBeNull();
+      expect(parent.children).not.toContain(file);
+    });
   });
 
   describe('getAbstractFileByPath()', () => {
@@ -469,6 +483,19 @@ describe('Vault', () => {
       await app.vault.rename(file, 'renamed-root.md');
       expect(file.path).toBe('renamed-root.md');
       expect(file.name).toBe('renamed-root.md');
+    });
+
+    it('should handle rename when file is already removed from parent children', async () => {
+      const app = await App.createConfigured__({ files: { 'folder/file.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('folder/file.md'));
+      const parent = ensureNonNullable(app.vault.getFolderByPath('folder'));
+      // Manually remove from parent.children so indexOf returns -1
+      const idx = parent.children.indexOf(file);
+      if (idx !== -1) {
+        parent.children.splice(idx, 1);
+      }
+      await app.vault.rename(file, 'folder/renamed.md');
+      expect(file.path).toBe('folder/renamed.md');
     });
 
     it('should rename a TFolder and move its nested contents', async () => {
