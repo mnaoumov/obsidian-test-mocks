@@ -9,7 +9,7 @@ export const config = defineConfig({
       ],
       include: ['src/**/*.ts'],
       provider: 'v8',
-      reporter: ['json-summary', 'text', 'lcov', 'html'],
+      reporter: ['text', 'lcov', 'html'],
       reportsDirectory: './coverage'
     },
     environment: 'jsdom',
