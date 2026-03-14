@@ -454,6 +454,12 @@ describe('Editor core methods', () => {
       expect(editor.getCursor('to')).toEqual(pos(LINE_1, CH_5));
     });
 
+    it('should return head when side is head', () => {
+      const editor = createEditor('hello');
+      editor.setSelection(pos(LINE_1, CH_2), pos(LINE_1, CH_5));
+      expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_5));
+    });
+
     it('should return head by default', () => {
       const editor = createEditor('hello');
       editor.setSelection(pos(LINE_1, CH_2), pos(LINE_1, CH_5));
@@ -635,6 +641,17 @@ describe('Editor core methods', () => {
       editor.transaction({});
       // No changes, cursor stays
       expect(editor.getCursor()).toEqual(pos(LINE_1, CH_2));
+    });
+
+    it('should apply selections from transaction', () => {
+      const editor = createEditor('hello world');
+      editor.transaction({
+        selections: [
+          { anchor: pos(LINE_1, CH_2), head: pos(LINE_1, CH_5) }
+        ] as never
+      });
+      expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, CH_2));
+      expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_5));
     });
   });
 

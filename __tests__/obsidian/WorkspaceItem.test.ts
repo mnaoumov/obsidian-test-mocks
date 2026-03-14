@@ -32,4 +32,13 @@ describe('WorkspaceItem', () => {
       expect(root).toBe(item);
     });
   });
+
+  describe('constructor2__()', () => {
+    it('should be callable without throwing', () => {
+      const item = WorkspaceFloating.create2__();
+      expect(() => {
+        item.constructor2__();
+      }).not.toThrow();
+    });
+  });
 });

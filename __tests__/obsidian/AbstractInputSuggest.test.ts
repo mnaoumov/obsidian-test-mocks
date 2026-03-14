@@ -86,4 +86,15 @@ describe('AbstractInputSuggest', () => {
       expect(div.textContent).toBe('new content');
     });
   });
+
+  describe('constructor2__', () => {
+    it('should be callable without throwing', async () => {
+      const input = createEl('input');
+      const app = await App.createConfigured__();
+      const suggest = new ConcreteInputSuggest(app, input);
+      expect(() => {
+        suggest.constructor2__(app, input);
+      }).not.toThrow();
+    });
+  });
 });

@@ -7,7 +7,19 @@ import {
   vi
 } from 'vitest';
 
+import { BaseComponent } from '../../src/obsidian/BaseComponent.ts';
 import { ButtonComponent } from '../../src/obsidian/ButtonComponent.ts';
+
+// Minimal concrete subclass that does NOT override asOriginalType__.
+class MinimalComponent extends BaseComponent {
+  public constructor() {
+    super();
+  }
+
+  public static create(): MinimalComponent {
+    return new MinimalComponent();
+  }
+}
 
 // BaseComponent is abstract, so we test it through ButtonComponent (a concrete subclass).
 describe('BaseComponent', () => {
@@ -64,6 +76,14 @@ describe('BaseComponent', () => {
       const component = createComponent();
       // eslint-disable-next-line @typescript-eslint/no-empty-function -- Testing chaining with noop callback.
       expect(component.then(() => {})).toBe(component);
+    });
+  });
+
+  describe('BaseComponent.asOriginalType__', () => {
+    it('should return the same instance when not overridden', () => {
+      const component = MinimalComponent.create();
+      const original = component.asOriginalType__();
+      expect(original).toBe(component);
     });
   });
 });

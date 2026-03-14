@@ -117,4 +117,13 @@ describe('Value', () => {
       expect(val.asOriginalType__()).toBe(val);
     });
   });
+
+  describe('constructor__', () => {
+    it('should be callable without throwing', () => {
+      const val = new StringValue('test');
+      expect(() => {
+        val.constructor__();
+      }).not.toThrow();
+    });
+  });
 });

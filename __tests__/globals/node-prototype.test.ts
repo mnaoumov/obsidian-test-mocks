@@ -108,6 +108,25 @@ describe('Node.prototype extensions', () => {
       expect(span.tagName).toBe('SPAN');
       expect(parent.contains(span)).toBe(true);
     });
+
+    it('should accept a string class', () => {
+      const parent = document.createElement('div');
+      const span = createSpan.call(parent, 'span-class');
+      expect(span.className).toBe('span-class');
+    });
+
+    it('should accept DomElementInfo options', () => {
+      const parent = document.createElement('div');
+      const span = createSpan.call(parent, { cls: 'info-span' });
+      expect(span.className).toBe('info-span');
+    });
+
+    it('should invoke the callback', () => {
+      const parent = document.createElement('div');
+      const callback = vi.fn();
+      createSpan.call(parent, undefined, callback);
+      expect(callback).toHaveBeenCalledOnce();
+    });
   });
 
   describe('createSvg', () => {
@@ -128,6 +147,20 @@ describe('Node.prototype extensions', () => {
       const parent = document.createElement('div');
       const svg = createSvg.call(parent, 'svg', { cls: 'info-cls' });
       expect(svg.getAttribute('class')).toBe('info-cls');
+    });
+
+    it('should handle undefined options', () => {
+      const parent = document.createElement('div');
+      const svg = createSvg.call(parent, 'svg', undefined);
+      expect(svg.tagName).toBe('svg');
+      expect(parent.contains(svg)).toBe(true);
+    });
+
+    it('should invoke callback', () => {
+      const parent = document.createElement('div');
+      const callback = vi.fn();
+      createSvg.call(parent, 'svg', undefined, callback);
+      expect(callback).toHaveBeenCalledOnce();
     });
   });
 

@@ -204,6 +204,14 @@ describe('Vault', () => {
       await app.vault.delete(file);
       expect(parent.children).not.toContain(file);
     });
+
+    it('should handle deleting a file with no parent', async () => {
+      const app = await App.createConfigured__({ files: { 'orphan.md': 'data' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('orphan.md'));
+      file.parent = null;
+      await app.vault.delete(file);
+      expect(app.vault.getFileByPath('orphan.md')).toBeNull();
+    });
   });
 
   describe('getAbstractFileByPath()', () => {
@@ -439,6 +447,36 @@ describe('Vault', () => {
 
       expect(oldParent.children).not.toContain(file);
       expect(newParent.children).toContain(file);
+    });
+
+    it('should handle renaming a file with no parent', async () => {
+      const app = await App.createConfigured__({ files: { 'root-file.md': 'data' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('root-file.md'));
+      // Detach from parent to test null parent path
+      file.parent = null;
+      await app.vault.rename(file, 'renamed-root.md');
+      expect(file.path).toBe('renamed-root.md');
+      expect(file.name).toBe('renamed-root.md');
+    });
+
+    it('should rename a TFolder and move its nested contents', async () => {
+      const app = await App.createConfigured__({
+        files: {
+          'old-dir/sub/deep.md': 'deep-content'
+        }
+      });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('old-dir'));
+      await app.vault.rename(folder, 'new-dir');
+      expect(app.vault.getFolderByPath('old-dir')).toBeNull();
+      expect(app.vault.getFolderByPath('new-dir')).not.toBeNull();
+    });
+  });
+
+  describe('create() at root', () => {
+    it('should set parent to root folder for files at root level', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('root-file.md', 'content');
+      expect(file.parent).toBe(app.vault.getRoot());
     });
   });
 

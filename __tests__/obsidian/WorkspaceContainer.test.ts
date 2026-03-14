@@ -18,4 +18,14 @@ describe('WorkspaceContainer', () => {
       expect(original).toBe(container);
     });
   });
+
+  describe('constructor5__()', () => {
+    it('should be callable without throwing', async () => {
+      const app = await App.createConfigured__();
+      const container = WorkspaceRoot.create3__(app.workspace, 'vertical');
+      expect(() => {
+        container.constructor5__(app.workspace, 'vertical');
+      }).not.toThrow();
+    });
+  });
 });

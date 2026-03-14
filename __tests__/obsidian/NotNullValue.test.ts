@@ -17,4 +17,13 @@ describe('NotNullValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('constructor2__', () => {
+    it('should be callable without throwing', () => {
+      const val = ObjectValue.create__({});
+      expect(() => {
+        val.constructor2__();
+      }).not.toThrow();
+    });
+  });
 });

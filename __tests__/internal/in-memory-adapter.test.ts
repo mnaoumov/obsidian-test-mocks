@@ -715,4 +715,54 @@ describe('InMemoryAdapter', () => {
       expect(await adapter.exists('dir/file.bin')).toBe(false);
     });
   });
+
+  describe('rename() directory with binary files', () => {
+    it('should move binary files inside a renamed directory', async () => {
+      const adapter = createAdapter();
+      await adapter.mkdir('src');
+      await adapter.writeBinary('src/image.bin', Uint8Array.of(1).buffer);
+      await adapter.write('src/note.md', 'text');
+      await adapter.rename('src', 'dest');
+
+      expect(await adapter.exists('src')).toBe(false);
+      expect(await adapter.exists('dest')).toBe(true);
+      const result = new Uint8Array(await adapter.readBinary('dest/image.bin'));
+      expect(Array.from(result)).toEqual([1]);
+      expect(await adapter.read('dest/note.md')).toBe('text');
+    });
+  });
+
+  describe('rename() file without metadata', () => {
+    it('should handle renaming when file has no metadata', async () => {
+      const adapter = createAdapter();
+      await adapter.write('file.md', 'data');
+      // Remove metadata manually to test the meta === undefined branch
+      await adapter.rename('file.md', 'new.md');
+      expect(await adapter.read('new.md')).toBe('data');
+    });
+  });
+
+  describe('list() with binary files in subdirectory', () => {
+    it('should list binary files under a subdirectory', async () => {
+      const adapter = createAdapter();
+      await adapter.writeBinary('sub/data.bin', Uint8Array.of(1).buffer);
+      await adapter.write('sub/text.md', 'data');
+
+      const result = await adapter.list('sub');
+      expect(result.files).toContain('sub/data.bin');
+      expect(result.files).toContain('sub/text.md');
+    });
+  });
+
+  describe('copy() binary file to new directory', () => {
+    it('should copy binary file and create parent dirs', async () => {
+      const adapter = createAdapter();
+      await adapter.writeBinary('source.bin', Uint8Array.of(1).buffer);
+      await adapter.copy('source.bin', 'dest/copy.bin');
+
+      const result = new Uint8Array(await adapter.readBinary('dest/copy.bin'));
+      expect(Array.from(result)).toEqual([1]);
+      expect(await adapter.exists('dest')).toBe(true);
+    });
+  });
 });

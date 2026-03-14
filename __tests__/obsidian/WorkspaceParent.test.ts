@@ -16,4 +16,13 @@ describe('WorkspaceParent', () => {
       expect(original).toBe(parent);
     });
   });
+
+  describe('constructor3__()', () => {
+    it('should be callable without throwing', () => {
+      const parent = WorkspaceFloating.create2__();
+      expect(() => {
+        parent.constructor3__();
+      }).not.toThrow();
+    });
+  });
 });

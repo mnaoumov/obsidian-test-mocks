@@ -117,4 +117,20 @@ describe('View', () => {
       expect(view.navigation).toBe(true);
     });
   });
+
+  describe('onOpen', () => {
+    it('should resolve without error', async () => {
+      const view = await createView();
+      // Access protected method for coverage.
+      await expect((view as unknown as { onOpen(): Promise<void> }).onOpen()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('onClose', () => {
+    it('should resolve without error', async () => {
+      const view = await createView();
+      // Access protected method for coverage.
+      await expect((view as unknown as { onClose(): Promise<void> }).onClose()).resolves.toBeUndefined();
+    });
+  });
 });
