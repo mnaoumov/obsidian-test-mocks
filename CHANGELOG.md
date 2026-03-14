@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.0.4
+
+- test: add 100% test coverage
+- fix: generated types
+
 ## 1.0.3
 
 - refactor: remove unnecessary _ prefix from private fields
