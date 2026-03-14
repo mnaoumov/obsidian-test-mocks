@@ -1,3 +1,5 @@
+import { ensureNonNullable } from '../../internal/type-guards.ts';
+
 export function getLinkpath(linktext: string): string {
-  return linktext.split('#')[0] ?? '';
+  return ensureNonNullable(linktext.split('#')[0]);
 }

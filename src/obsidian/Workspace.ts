@@ -24,6 +24,7 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 import { debounce } from './functions/debounce.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -179,7 +180,7 @@ export class Workspace extends Events {
     if (this.leaves.length === 0) {
       return null;
     }
-    return this.leaves[this.leaves.length - 1] ?? null;
+    return ensureNonNullable(this.leaves[this.leaves.length - 1]);
   }
 
   public getRightLeaf(_split: boolean): null | WorkspaceLeaf {

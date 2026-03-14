@@ -1,4 +1,7 @@
-import type { TFolder as TFolderOriginal } from 'obsidian';
+import type {
+  TAbstractFile as TAbstractFileOriginal,
+  TFolder as TFolderOriginal
+} from 'obsidian';
 
 import {
   describe,
@@ -7,6 +10,7 @@ import {
 } from 'vitest';
 
 import { App } from '../../src/obsidian/App.ts';
+import { TAbstractFile } from '../../src/obsidian/TAbstractFile.ts';
 import { TFile } from '../../src/obsidian/TFile.ts';
 import { TFolder } from '../../src/obsidian/TFolder.ts';
 
@@ -52,6 +56,13 @@ describe('TAbstractFile (via TFile)', () => {
       const app = await App.createConfigured__();
       const file = TFile.create__(app.vault, 'note.md');
       expect(file.asOriginalType__()).toBe(file);
+    });
+
+    it('should work via TAbstractFile.prototype', async () => {
+      const app = await App.createConfigured__();
+      const file = TFile.create__(app.vault, 'note.md');
+      const original: TAbstractFileOriginal = TAbstractFile.prototype.asOriginalType__.call(file);
+      expect(original).toBe(file);
     });
   });
 

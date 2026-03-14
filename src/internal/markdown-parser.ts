@@ -13,6 +13,7 @@ import type {
 
 import { getFrontMatterInfo } from '../obsidian/functions/getFrontMatterInfo.ts';
 import { parseYaml } from '../obsidian/functions/parseYaml.ts';
+import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * Parses markdown content into a `CachedMetadata` object.
@@ -178,7 +179,7 @@ function parseEmbeds(
   let match = wikiRegex.exec(content);
   while (match) {
     if (!isInCodeZone(codeZones, match.index)) {
-      const link = match.groups?.['link'] ?? '';
+      const link = ensureNonNullable(match.groups?.['link']);
       const display = match.groups?.['display'];
       embeds.push({
         displayText: display ?? link,
@@ -196,8 +197,8 @@ function parseEmbeds(
   match = mdRegex.exec(content);
   while (match) {
     if (!isInCodeZone(codeZones, match.index)) {
-      const displayText = match.groups?.['alt'] ?? '';
-      const link = match.groups?.['url'] ?? '';
+      const displayText = ensureNonNullable(match.groups?.['alt']);
+      const link = ensureNonNullable(match.groups?.['url']);
       embeds.push({
         displayText,
         link,
@@ -253,8 +254,8 @@ function parseHeadings(
   let match = regex.exec(content);
   while (match) {
     if (!isInCodeZone(codeZones, match.index)) {
-      const hashes = match.groups?.['hashes'] ?? '';
-      const text = match.groups?.['text'] ?? '';
+      const hashes = ensureNonNullable(match.groups?.['hashes']);
+      const text = ensureNonNullable(match.groups?.['text']);
       const startOffset = match.index;
       const endOffset = match.index + match[0].length - 1;
       headings.push({
@@ -287,7 +288,7 @@ function parseLinks(
   let match = wikiRegex.exec(content);
   while (match) {
     if (!isInCodeZone(codeZones, match.index)) {
-      const link = match.groups?.['link'] ?? '';
+      const link = ensureNonNullable(match.groups?.['link']);
       const display = match.groups?.['display'];
       const entry: LinkCache = {
         displayText: display ?? link,
@@ -306,8 +307,8 @@ function parseLinks(
   match = mdRegex.exec(content);
   while (match) {
     if (!isInCodeZone(codeZones, match.index)) {
-      const displayText = match.groups?.['text'] ?? '';
-      const link = match.groups?.['url'] ?? '';
+      const displayText = ensureNonNullable(match.groups?.['text']);
+      const link = ensureNonNullable(match.groups?.['url']);
       links.push({
         displayText,
         link,
@@ -342,7 +343,7 @@ function parseListItems(
   let match = regex.exec(content);
   while (match) {
     if (!isInCodeZone(codeZones, match.index)) {
-      const indent = match.groups?.['indent'] ?? '';
+      const indent = ensureNonNullable(match.groups?.['indent']);
       const taskChar = match.groups?.['task'];
       const startOffset = match.index;
       const endOffset = match.index + match[0].length - 1;
@@ -440,7 +441,7 @@ function parseTags(
   let match = regex.exec(content);
   while (match) {
     const fullMatch = match[0];
-    const tagText = match.groups?.['tag'] ?? '';
+    const tagText = ensureNonNullable(match.groups?.['tag']);
     // The # character starts after any leading whitespace
     const hashOffset = match.index + fullMatch.indexOf('#');
     if (!isInCodeZone(codeZones, hashOffset)) {

@@ -14,6 +14,7 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { parseYaml } from './functions/parseYaml.ts';
 import { stringifyYaml } from './functions/stringifyYaml.ts';
 
@@ -71,7 +72,7 @@ export class FileManager {
 
     const fmMatch = /^---\r?\n(?<yaml>[\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(content);
     if (fmMatch) {
-      const yamlStr = fmMatch.groups?.['yaml'] ?? '';
+      const yamlStr = ensureNonNullable(fmMatch.groups?.['yaml']);
       const parsed = parseYaml(yamlStr);
       if (parsed && typeof parsed === 'object') {
         frontmatter = parsed as Record<string, unknown>;
