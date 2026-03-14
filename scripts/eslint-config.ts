@@ -17,7 +17,6 @@ import tseslint from 'typescript-eslint';
 import { getRootFolder } from './helpers/exec.ts';
 
 const typeScriptFiles = [
-  '__tests__/**/*.ts',
   'src/**/*.ts',
   'scripts/**/*.ts'
 ];

@@ -65,9 +65,10 @@ L9. **`strictMock` constructors with `constructor__()` hooks.** Every mock class
 ## Testing
 
 - The project aims for 100% test coverage.
+- Test files are co-located with source files: `src/obsidian/App.test.ts` tests `src/obsidian/App.ts`.
 - Vitest with explicit imports (globals: false) — always import `describe`, `it`, `expect`, etc. from `'vitest'`
 - Coverage provider: v8
 
 ## Code Conventions
 
-- Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`, `__tests__/`) follow the global kebab-case convention.
+- Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`) follow the global kebab-case convention.
