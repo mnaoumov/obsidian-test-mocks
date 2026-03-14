@@ -6,12 +6,24 @@ import {
   it
 } from 'vitest';
 
+import type { TFile } from '../../src/obsidian/TFile.ts';
+
 import { App } from '../../src/obsidian/App.ts';
 import { Component } from '../../src/obsidian/Component.ts';
 import { MarkdownPreviewView } from '../../src/obsidian/MarkdownPreviewView.ts';
 import { MarkdownRenderer } from '../../src/obsidian/MarkdownRenderer.ts';
 import { MarkdownView } from '../../src/obsidian/MarkdownView.ts';
 import { WorkspaceLeaf } from '../../src/obsidian/WorkspaceLeaf.ts';
+
+class ConcreteMarkdownRenderer extends MarkdownRenderer {
+  public get file(): TFile {
+    return {} as TFile;
+  }
+
+  public constructor(app: App, containerEl: HTMLElement) {
+    super(app, containerEl);
+  }
+}
 
 describe('MarkdownRenderer', () => {
   describe('render', () => {
@@ -37,6 +49,13 @@ describe('MarkdownRenderer', () => {
       const leaf = WorkspaceLeaf.create2__(app);
       const mdView = MarkdownView.create2__(leaf);
       const renderer = MarkdownPreviewView.create3__(mdView);
+      const original: MarkdownRendererOriginal = renderer.asOriginalType__();
+      expect(original).toBe(renderer);
+    });
+
+    it('should return the same instance via MarkdownRenderer base class', async () => {
+      const app = await App.createConfigured__();
+      const renderer = new ConcreteMarkdownRenderer(app, createDiv());
       const original: MarkdownRendererOriginal = renderer.asOriginalType__();
       expect(original).toBe(renderer);
     });

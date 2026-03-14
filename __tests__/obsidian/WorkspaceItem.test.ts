@@ -7,11 +7,24 @@ import {
 } from 'vitest';
 
 import { WorkspaceFloating } from '../../src/obsidian/WorkspaceFloating.ts';
+import { WorkspaceItem } from '../../src/obsidian/WorkspaceItem.ts';
+
+class BareWorkspaceItem extends WorkspaceItem {
+  public constructor() {
+    super();
+  }
+}
 
 describe('WorkspaceItem', () => {
   describe('asOriginalType__()', () => {
     it('should return the same instance typed as the original', () => {
       const item = WorkspaceFloating.create2__();
+      const original: WorkspaceItemOriginal = item.asOriginalType__();
+      expect(original).toBe(item);
+    });
+
+    it('should return the same instance via WorkspaceItem base class', () => {
+      const item = new BareWorkspaceItem();
       const original: WorkspaceItemOriginal = item.asOriginalType__();
       expect(original).toBe(item);
     });

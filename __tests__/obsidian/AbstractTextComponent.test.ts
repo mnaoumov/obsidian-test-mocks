@@ -1,3 +1,5 @@
+import type { AbstractTextComponent as AbstractTextComponentOriginal } from 'obsidian';
+
 import {
   describe,
   expect,
@@ -5,7 +7,11 @@ import {
   vi
 } from 'vitest';
 
+import { AbstractTextComponent } from '../../src/obsidian/AbstractTextComponent.ts';
 import { TextComponent } from '../../src/obsidian/TextComponent.ts';
+
+class BareTextComponent extends AbstractTextComponent<HTMLInputElement> {
+}
 
 // AbstractTextComponent is abstract, so we test it through TextComponent.
 describe('AbstractTextComponent', () => {
@@ -91,6 +97,12 @@ describe('AbstractTextComponent', () => {
     it('should return the same instance', () => {
       const component = createTextComponent();
       const original = component.asOriginalType__();
+      expect(original).toBe(component);
+    });
+
+    it('should return the same instance via AbstractTextComponent base class', () => {
+      const component = new BareTextComponent(createEl('input'));
+      const original: AbstractTextComponentOriginal<HTMLInputElement> = component.asOriginalType__();
       expect(original).toBe(component);
     });
   });

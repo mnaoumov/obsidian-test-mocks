@@ -1,3 +1,5 @@
+import type { ValueComponent as ValueComponentOriginal } from 'obsidian';
+
 import {
   describe,
   expect,
@@ -5,6 +7,21 @@ import {
 } from 'vitest';
 
 import { ProgressBarComponent } from '../../src/obsidian/ProgressBarComponent.ts';
+import { ValueComponent } from '../../src/obsidian/ValueComponent.ts';
+
+class BareValueComponent extends ValueComponent<string> {
+  public constructor() {
+    super();
+  }
+
+  public getValue(): string {
+    return '';
+  }
+
+  public setValue(_value: string): this {
+    return this;
+  }
+}
 
 describe('ValueComponent', () => {
   describe('registerOptionListener', () => {
@@ -21,6 +38,14 @@ describe('ValueComponent', () => {
       expect(() => {
         comp.constructor2__();
       }).not.toThrow();
+    });
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance via ValueComponent base class', () => {
+      const comp = new BareValueComponent();
+      const original: ValueComponentOriginal<string> = comp.asOriginalType__();
+      expect(original).toBe(comp);
     });
   });
 });

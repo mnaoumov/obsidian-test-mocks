@@ -754,6 +754,22 @@ describe('Editor core methods', () => {
       expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_3));
     });
   });
+
+  describe('getCursor with reversed selection triggers maxPos a > b branch', () => {
+    it('should return the correct "to" when selection is reversed', () => {
+      const editor = createEditor('hello\nworld');
+      // Set selection with head before anchor (reversed)
+      editor.setSelection(pos(LINE_2, CH_3), pos(LINE_1, CH_2));
+      // GetCursor('to') uses maxPos which should return anchor (line 1, ch 3)
+      expect(editor.getCursor('to')).toEqual(pos(LINE_2, CH_3));
+    });
+
+    it('should return the correct "to" on same line with reversed ch', () => {
+      const editor = createEditor('hello');
+      editor.setSelection(pos(LINE_1, CH_5), pos(LINE_1, CH_2));
+      expect(editor.getCursor('to')).toEqual(pos(LINE_1, CH_5));
+    });
+  });
 });
 
 // Line indices (0-based)

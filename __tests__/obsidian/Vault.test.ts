@@ -326,6 +326,18 @@ describe('Vault', () => {
       expect(root).toBeInstanceOf(TFolder);
       expect(root.path).toBe('/');
     });
+
+    it('should create a fallback root when fileMap has no root entry', async () => {
+      const app = await App.createConfigured__();
+      // Remove the root entry to trigger the fallback branch
+      const fileMap = (app.vault as unknown as { fileMap: Record<string, unknown> }).fileMap;
+      delete fileMap['/'];
+      const root = app.vault.getRoot();
+      expect(root).toBeInstanceOf(TFolder);
+      expect(root.path).toBe('/');
+      // It should also store the fallback in fileMap
+      expect(fileMap['/']).toBe(root);
+    });
   });
 
   describe('modify()', () => {
