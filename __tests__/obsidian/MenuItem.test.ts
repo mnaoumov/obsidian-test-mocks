@@ -93,6 +93,15 @@ describe('MenuItem', () => {
     });
   });
 
+  describe('constructor__', () => {
+    it('should not throw', () => {
+      const item = MenuItem.create__(null);
+      expect(() => {
+        item.constructor__(null);
+      }).not.toThrow();
+    });
+  });
+
   describe('asOriginalType__', () => {
     it('should return the same instance typed as the original', () => {
       const item = MenuItem.create__(null);

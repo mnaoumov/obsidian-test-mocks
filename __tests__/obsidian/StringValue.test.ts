@@ -1,3 +1,5 @@
+import type { StringValue as StringValueOriginal } from 'obsidian';
+
 import {
   describe,
   expect,
@@ -7,6 +9,11 @@ import {
 import { StringValue } from '../../src/obsidian/StringValue.ts';
 
 describe('StringValue', () => {
+  it('should create an instance via create__', () => {
+    const val = StringValue.create__();
+    expect(val).toBeInstanceOf(StringValue);
+  });
+
   it('should default to empty string', () => {
     const val = new StringValue();
     expect(val.value__).toBe('');
@@ -30,5 +37,13 @@ describe('StringValue', () => {
   it('should return the string for toString', () => {
     const val = new StringValue('hello');
     expect(String(val)).toBe('hello');
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance typed as the original', () => {
+      const val = StringValue.create__('test');
+      const original: StringValueOriginal = val.asOriginalType__();
+      expect(original).toBe(val);
+    });
   });
 });

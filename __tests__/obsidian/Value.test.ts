@@ -110,4 +110,11 @@ describe('Value', () => {
       }).not.toThrow();
     });
   });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance typed as the original', () => {
+      const val = new StringValue('test');
+      expect(val.asOriginalType__()).toBe(val);
+    });
+  });
 });

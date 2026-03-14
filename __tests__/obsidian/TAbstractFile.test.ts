@@ -1,3 +1,5 @@
+import type { TFolder as TFolderOriginal } from 'obsidian';
+
 import {
   describe,
   expect,
@@ -37,6 +39,12 @@ describe('TAbstractFile (via TFile)', () => {
     const app = await App.createConfigured__();
     const file = TFile.create__(app.vault, 'note.md');
     expect(file.parent).toBeNull();
+  });
+
+  it('should handle empty path by extracting empty name', async () => {
+    const app = await App.createConfigured__();
+    const file = TFile.create__(app.vault, '');
+    expect(file.name).toBe('');
   });
 
   describe('asOriginalType__', () => {
@@ -103,6 +111,15 @@ describe('TFolder', () => {
       const app = await App.createConfigured__();
       const folder = TFolder.create__(app.vault, 'subfolder');
       expect(folder.isRoot()).toBe(false);
+    });
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance typed as the original', async () => {
+      const app = await App.createConfigured__();
+      const folder = TFolder.create__(app.vault, 'my-folder');
+      const original: TFolderOriginal = folder.asOriginalType__();
+      expect(original).toBe(folder);
     });
   });
 });

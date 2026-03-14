@@ -1,3 +1,5 @@
+import type { Tasks as TasksOriginal } from 'obsidian';
+
 import {
   describe,
   expect,
@@ -48,5 +50,13 @@ describe('Tasks', () => {
     );
     await tasks.promise();
     expect(results).toEqual(['a', 'b']);
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance typed as the original', () => {
+      const tasks = Tasks.create__();
+      const original: TasksOriginal = tasks.asOriginalType__();
+      expect(original).toBe(tasks);
+    });
   });
 });

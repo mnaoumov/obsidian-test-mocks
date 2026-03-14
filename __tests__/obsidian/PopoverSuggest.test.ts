@@ -1,0 +1,73 @@
+import type { PopoverSuggest as PopoverSuggestOriginal } from 'obsidian';
+
+import {
+  describe,
+  expect,
+  it
+} from 'vitest';
+
+import { App } from '../../src/obsidian/App.ts';
+import { PopoverSuggest } from '../../src/obsidian/PopoverSuggest.ts';
+import { Scope } from '../../src/obsidian/Scope.ts';
+
+class ConcretePopoverSuggest extends PopoverSuggest<string> {
+  public getSuggestions(_query: unknown): string[] {
+    return [];
+  }
+
+  public renderSuggestion(_value: string, _el: HTMLElement): void {
+    // Noop
+  }
+
+  public selectSuggestion(_value: string, _evt: KeyboardEvent | MouseEvent): void {
+    // Noop
+  }
+}
+
+describe('PopoverSuggest', () => {
+  it('should create an instance with default scope', async () => {
+    const app = await App.createConfigured__();
+    const suggest = new ConcretePopoverSuggest(app);
+    expect(suggest.app).toBe(app);
+    expect(suggest.scope).toBeInstanceOf(Scope);
+  });
+
+  it('should accept a custom scope', async () => {
+    const app = await App.createConfigured__();
+    const scope = Scope.create__();
+    const suggest = new ConcretePopoverSuggest(app, scope);
+    expect(suggest.scope).toBe(scope);
+  });
+
+  describe('open / close / isOpen__', () => {
+    it('should start closed', async () => {
+      const app = await App.createConfigured__();
+      const suggest = new ConcretePopoverSuggest(app);
+      expect(suggest.isOpen__()).toBe(false);
+    });
+
+    it('should be open after open()', async () => {
+      const app = await App.createConfigured__();
+      const suggest = new ConcretePopoverSuggest(app);
+      suggest.open();
+      expect(suggest.isOpen__()).toBe(true);
+    });
+
+    it('should be closed after close()', async () => {
+      const app = await App.createConfigured__();
+      const suggest = new ConcretePopoverSuggest(app);
+      suggest.open();
+      suggest.close();
+      expect(suggest.isOpen__()).toBe(false);
+    });
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance typed as the original', async () => {
+      const app = await App.createConfigured__();
+      const suggest = new ConcretePopoverSuggest(app);
+      const original: PopoverSuggestOriginal<string> = suggest.asOriginalType__();
+      expect(original).toBe(suggest);
+    });
+  });
+});
