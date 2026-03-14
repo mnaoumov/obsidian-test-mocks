@@ -6,13 +6,30 @@ import {
   it
 } from 'vitest';
 
+import { NotNullValue } from '../../src/obsidian/NotNullValue.ts';
 import { ObjectValue } from '../../src/obsidian/ObjectValue.ts';
+
+class BareNotNullValue extends NotNullValue {
+  public isTruthy(): boolean {
+    return true;
+  }
+
+  public toString(): string {
+    return 'bare';
+  }
+}
 
 describe('NotNullValue', () => {
   describe('asOriginalType__', () => {
     it('should return the same instance typed as the original', () => {
       // ObjectValue extends NotNullValue, so we test via ObjectValue
       const val = ObjectValue.create__({});
+      const original: NotNullValueOriginal = val.asOriginalType__();
+      expect(original).toBe(val);
+    });
+
+    it('should return the same instance via NotNullValue base class', () => {
+      const val = new BareNotNullValue();
       const original: NotNullValueOriginal = val.asOriginalType__();
       expect(original).toBe(val);
     });

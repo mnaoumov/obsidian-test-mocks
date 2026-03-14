@@ -7,11 +7,24 @@ import {
 } from 'vitest';
 
 import { WorkspaceFloating } from '../../src/obsidian/WorkspaceFloating.ts';
+import { WorkspaceParent } from '../../src/obsidian/WorkspaceParent.ts';
+
+class BareWorkspaceParent extends WorkspaceParent {
+  public constructor() {
+    super();
+  }
+}
 
 describe('WorkspaceParent', () => {
   describe('asOriginalType__()', () => {
     it('should return the same instance typed as the original', () => {
       const parent = WorkspaceFloating.create2__();
+      const original: WorkspaceParentOriginal = parent.asOriginalType__();
+      expect(original).toBe(parent);
+    });
+
+    it('should return the same instance via WorkspaceParent base class', () => {
+      const parent = new BareWorkspaceParent();
       const original: WorkspaceParentOriginal = parent.asOriginalType__();
       expect(original).toBe(parent);
     });

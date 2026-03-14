@@ -36,6 +36,11 @@ describe('Node.prototype extensions', () => {
       const el = document.createElement('div');
       expect(constructorWin.call(el)).toBe(window);
     });
+
+    it('should fall back to document when ownerDocument is null', () => {
+      // Document nodes have null ownerDocument
+      expect(constructorWin.call(document)).toBe(window);
+    });
   });
 
   describe('createDiv', () => {
@@ -185,6 +190,11 @@ describe('Node.prototype extensions', () => {
       const el = document.createElement('div');
       expect(doc.call(el)).toBe(document);
     });
+
+    it('should fall back to document when ownerDocument is null', () => {
+      // Document nodes have null ownerDocument
+      expect(doc.call(document)).toBe(document);
+    });
   });
 
   describe('empty', () => {
@@ -260,6 +270,11 @@ describe('Node.prototype extensions', () => {
     it('should return window', () => {
       const el = document.createElement('div');
       expect(win.call(el)).toBe(window);
+    });
+
+    it('should fall back to document when ownerDocument is null', () => {
+      // Document nodes have null ownerDocument
+      expect(win.call(document)).toBe(window);
     });
   });
 });

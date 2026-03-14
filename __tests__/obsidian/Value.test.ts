@@ -1,3 +1,5 @@
+import type { Value as ValueOriginal } from 'obsidian';
+
 import {
   describe,
   expect,
@@ -10,6 +12,16 @@ import { NumberValue } from '../../src/obsidian/NumberValue.ts';
 import { RenderContext } from '../../src/obsidian/RenderContext.ts';
 import { StringValue } from '../../src/obsidian/StringValue.ts';
 import { Value } from '../../src/obsidian/Value.ts';
+
+class BareValue extends Value {
+  public isTruthy(): boolean {
+    return true;
+  }
+
+  public toString(): string {
+    return 'bare';
+  }
+}
 
 describe('Value', () => {
   describe('static equals', () => {
@@ -115,6 +127,12 @@ describe('Value', () => {
     it('should return the same instance typed as the original', () => {
       const val = new StringValue('test');
       expect(val.asOriginalType__()).toBe(val);
+    });
+
+    it('should return the same instance via Value base class', () => {
+      const val = new BareValue();
+      const original: ValueOriginal = val.asOriginalType__();
+      expect(original).toBe(val);
     });
   });
 
