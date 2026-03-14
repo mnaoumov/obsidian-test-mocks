@@ -22,7 +22,7 @@ import {
   setAttrs,
   setText,
   toggleClass
-} from '../../src/globals/Element.prototype.ts';
+} from './Element.prototype.ts';
 
 const ATTR_VALUE = '123';
 

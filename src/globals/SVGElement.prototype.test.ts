@@ -7,7 +7,7 @@ import {
 import {
   setCssProps,
   setCssStyles
-} from '../../src/globals/SVGElement.prototype.ts';
+} from './SVGElement.prototype.ts';
 
 describe('SVGElement.prototype extensions', () => {
   function createSvgElement(): SVGElement {

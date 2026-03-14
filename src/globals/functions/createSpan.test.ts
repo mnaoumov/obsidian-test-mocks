@@ -5,7 +5,7 @@ import {
   vi
 } from 'vitest';
 
-import { createSpan } from '../../../src/globals/functions/createSpan.ts';
+import { createSpan } from './createSpan.ts';
 
 describe('createSpan', () => {
   it('should create a span element', () => {

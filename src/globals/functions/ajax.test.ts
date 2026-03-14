@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { ajax } from '../../../src/globals/functions/ajax.ts';
+import { ajax } from './ajax.ts';
 
 describe('ajax', () => {
   it('should not throw when called with valid options', () => {

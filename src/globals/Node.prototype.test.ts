@@ -20,7 +20,7 @@ import {
   instanceOf,
   setChildrenInPlace,
   win
-} from '../../src/globals/Node.prototype.ts';
+} from './Node.prototype.ts';
 
 describe('Node.prototype extensions', () => {
   describe('appendText', () => {

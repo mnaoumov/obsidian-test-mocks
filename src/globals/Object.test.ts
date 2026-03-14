@@ -7,7 +7,7 @@ import {
 import {
   each,
   isEmpty
-} from '../../src/globals/Object.ts';
+} from './Object.ts';
 
 const MULTIPLIER = 10;
 

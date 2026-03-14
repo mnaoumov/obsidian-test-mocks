@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { ajaxPromise } from '../../../src/globals/functions/ajaxPromise.ts';
+import { ajaxPromise } from './ajaxPromise.ts';
 
 describe('ajaxPromise', () => {
   it('should resolve to undefined', async () => {

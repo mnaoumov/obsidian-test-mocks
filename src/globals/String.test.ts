@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { isString } from '../../src/globals/String.ts';
+import { isString } from './String.ts';
 
 describe('String.isString', () => {
   it('should return true for a string', () => {

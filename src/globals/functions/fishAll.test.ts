@@ -5,7 +5,7 @@ import {
   it
 } from 'vitest';
 
-import { fishAll } from '../../../src/globals/functions/fishAll.ts';
+import { fishAll } from './fishAll.ts';
 
 describe('fishAll', () => {
   afterEach(() => {

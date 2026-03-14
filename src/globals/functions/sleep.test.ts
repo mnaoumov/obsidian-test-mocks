@@ -5,7 +5,7 @@ import {
   vi
 } from 'vitest';
 
-import { sleep } from '../../../src/globals/functions/sleep.ts';
+import { sleep } from './sleep.ts';
 
 const DELAY_MS = 100;
 

@@ -7,7 +7,7 @@ import {
 import {
   clamp,
   square
-} from '../../src/globals/Math.ts';
+} from './Math.ts';
 
 const MIN = 0;
 const MAX = 10;

@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { nextFrame } from '../../../src/globals/functions/nextFrame.ts';
+import { nextFrame } from './nextFrame.ts';
 
 describe('nextFrame', () => {
   it('should resolve', async () => {
