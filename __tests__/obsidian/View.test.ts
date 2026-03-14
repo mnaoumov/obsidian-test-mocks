@@ -101,4 +101,20 @@ describe('View', () => {
       expect(original).toBe(view);
     });
   });
+
+  describe('constructor2__()', () => {
+    it('should be callable without throwing', async () => {
+      const view = await createView();
+      expect(() => {
+        view.constructor2__(view.leaf);
+      }).not.toThrow();
+    });
+  });
+
+  describe('navigation', () => {
+    it('should default to true', async () => {
+      const view = await createView();
+      expect(view.navigation).toBe(true);
+    });
+  });
 });
