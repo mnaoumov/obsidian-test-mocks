@@ -1,6 +1,7 @@
 import type { SvgElementInfo } from '../internal/types.ts';
 
 import { castTo } from '../internal/cast.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { createEl as createElGlobal } from './functions/createEl.ts';
 import { createSvg as createSvgGlobal } from './functions/createSvg.ts';
 
@@ -9,7 +10,7 @@ export function appendText(this: Node, val: string): void {
 }
 
 export function constructorWin(this: Node): Window {
-  return (this.ownerDocument ?? document).defaultView ?? window;
+  return ensureNonNullable((this.ownerDocument ?? document).defaultView);
 }
 
 export function createDiv(
@@ -90,5 +91,5 @@ export function setChildrenInPlace(this: Node, children: Node[]): void {
 }
 
 export function win(this: Node): Window {
-  return (this.ownerDocument ?? document).defaultView ?? window;
+  return ensureNonNullable((this.ownerDocument ?? document).defaultView);
 }

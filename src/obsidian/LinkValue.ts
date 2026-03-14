@@ -5,6 +5,7 @@ import type { App } from './App.ts';
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { StringValue } from './StringValue.ts';
 
 export class LinkValue extends StringValue {
@@ -24,7 +25,7 @@ export class LinkValue extends StringValue {
     if (!match) {
       return null;
     }
-    const inner = match.groups?.['inner'] ?? '';
+    const inner = ensureNonNullable(match.groups?.['inner']);
     const pipeIndex = inner.indexOf('|');
     const linkValue = LinkValue.create2__(app, pipeIndex >= 0 ? inner.slice(0, pipeIndex) : inner, sourcePath);
     return linkValue;

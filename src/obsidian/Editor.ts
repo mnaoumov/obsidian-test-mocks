@@ -14,6 +14,7 @@ import type { CoordsLeftTop } from '../internal/types.ts';
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 
 export abstract class Editor {
   private anchor: EditorPositionOriginal = { ch: 0, line: 0 };
@@ -452,8 +453,8 @@ export abstract class Editor {
 
   private execNewlineAndIndent(): void {
     const cursor = this.getCursor();
-    const currentLine = this.content.split('\n')[cursor.line] ?? '';
-    const indent = /^[\t ]*/.exec(currentLine)?.[0] ?? '';
+    const currentLine = ensureNonNullable(this.content.split('\n')[cursor.line]);
+    const indent = ensureNonNullable(/^[\t ]*/.exec(currentLine)?.[0]);
     this.replaceRange(`\n${indent}`, cursor, cursor);
   }
 
@@ -464,8 +465,8 @@ export abstract class Editor {
     if (targetLine < 0 || targetLine >= lines.length) {
       return;
     }
-    const currentLine = lines[cursor.line] ?? '';
-    const otherLine = lines[targetLine] ?? '';
+    const currentLine = ensureNonNullable(lines[cursor.line]);
+    const otherLine = ensureNonNullable(lines[targetLine]);
     if (direction === -1) {
       this.setLine(cursor.line - 1, currentLine);
       this.setLine(cursor.line, otherLine);

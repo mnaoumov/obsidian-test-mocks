@@ -9,6 +9,7 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
@@ -200,7 +201,7 @@ export class Vault extends Events {
     // Update the file's properties in place
     file.path = newPath;
     const parts = newPath.split('/');
-    file.name = parts[parts.length - 1] ?? '';
+    file.name = ensureNonNullable(parts[parts.length - 1]);
     if (file instanceof TFile) {
       const dotIndex = file.name.lastIndexOf('.');
       file.extension = dotIndex >= 0 ? file.name.slice(dotIndex + 1) : '';
