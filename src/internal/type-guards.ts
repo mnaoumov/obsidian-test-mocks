@@ -4,6 +4,12 @@ export type GenericObject = Record<string, unknown>;
 
 type NullableConstraint<T> = null extends T ? unknown : undefined extends T ? unknown : never;
 
+export function assert(condition: boolean, errorOrMessage: Error | string): asserts condition {
+  if (!condition) {
+    throw typeof errorOrMessage === 'string' ? new Error(errorOrMessage) : errorOrMessage;
+  }
+}
+
 export function assertGenericObject(_obj: object): asserts _obj is GenericObject {
   noop();
 }

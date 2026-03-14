@@ -13,7 +13,10 @@ import type {
 
 import { getFrontMatterInfo } from '../obsidian/functions/getFrontMatterInfo.ts';
 import { parseYaml } from '../obsidian/functions/parseYaml.ts';
-import { ensureNonNullable } from './type-guards.ts';
+import {
+  assert,
+  ensureNonNullable
+} from './type-guards.ts';
 
 /**
  * Parses markdown content into a `CachedMetadata` object.
@@ -76,6 +79,7 @@ function addGapSections(
     const trimmed = block.trim();
     if (trimmed.length > 0) {
       const blockStart = content.indexOf(trimmed, offset);
+      assert(blockStart >= 0, `Block not found in content at offset ${String(offset)}`);
       const blockEnd = blockStart + trimmed.length - 1;
       let type = 'paragraph';
       if (trimmed.startsWith('>')) {

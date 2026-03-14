@@ -5,11 +5,33 @@ import {
 } from 'vitest';
 
 import {
+  assert,
   assertGenericObject,
   assertNonNullable,
   ensureGenericObject,
   ensureNonNullable
 } from '../../src/internal/type-guards.ts';
+
+describe('assert', () => {
+  it('should not throw when condition is true', () => {
+    expect(() => {
+      assert(true, 'should not throw');
+    }).not.toThrow();
+  });
+
+  it('should throw when condition is false', () => {
+    expect(() => {
+      assert(false, 'expected failure');
+    }).toThrow('expected failure');
+  });
+
+  it('should throw the provided Error object', () => {
+    const error = new TypeError('custom error');
+    expect(() => {
+      assert(false, error);
+    }).toThrow(error);
+  });
+});
 
 describe('assertNonNullable', () => {
   it('should not throw for non-null value', () => {
