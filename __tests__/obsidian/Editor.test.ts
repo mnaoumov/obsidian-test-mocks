@@ -772,6 +772,63 @@ describe('Editor core methods', () => {
   });
 });
 
+describe('Editor.exec boundary conditions', () => {
+  describe('goLeft at start of empty content', () => {
+    it('should stay at position 0,0 on empty content', () => {
+      const editor = createEditor('');
+      editor.setCursor(pos(LINE_1, 0));
+
+      editor.exec('goLeft');
+
+      expect(editor.getCursor()).toEqual(pos(LINE_1, 0));
+    });
+  });
+
+  describe('goRight at end of content', () => {
+    it('should stay at end of single-line content', () => {
+      const editor = createEditor('ab');
+      editor.setCursor(pos(LINE_1, CH_2));
+
+      editor.exec('goRight');
+
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_2));
+    });
+  });
+
+  describe('goUp at line 0', () => {
+    it('should stay at line 0 on single-line content', () => {
+      const editor = createEditor('abc');
+      editor.setCursor(pos(LINE_1, CH_2));
+
+      editor.exec('goUp');
+
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_2));
+    });
+  });
+
+  describe('goWordLeft at position 0', () => {
+    it('should stay at position 0', () => {
+      const editor = createEditor('hello');
+      editor.setCursor(pos(LINE_1, 0));
+
+      editor.exec('goWordLeft');
+
+      expect(editor.getCursor()).toEqual(pos(LINE_1, 0));
+    });
+  });
+
+  describe('goWordRight at end of content starting on non-word character', () => {
+    it('should stay at end when starting on non-word character at end', () => {
+      const editor = createEditor('hello ');
+      editor.setCursor(pos(LINE_1, CH_5));
+
+      editor.exec('goWordRight');
+
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_6));
+    });
+  });
+});
+
 // Line indices (0-based)
 const LINE_1 = 0;
 const LINE_2 = 1;

@@ -242,5 +242,14 @@ describe('MetadataCache', () => {
       const found = app.metadataCache.getFirstLinkpathDest('report.txt', '');
       expect(found).toBe(file);
     });
+
+    it('should find file by f.name when basename does not match', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('folder/test.md', '');
+      await flushMicrotasks();
+      // Linkpath = 'test.md' does not match basename ('test') but matches name ('test.md')
+      const found = app.metadataCache.getFirstLinkpathDest('test.md', '');
+      expect(found).toBe(file);
+    });
   });
 });
