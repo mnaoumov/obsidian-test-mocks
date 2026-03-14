@@ -4,6 +4,7 @@ export const config = defineConfig({
   test: {
     coverage: {
       exclude: [
+        'src/**/*.test.ts',
         'src/**/index.ts',
         'src/internal/types.ts'
       ],
@@ -15,7 +16,7 @@ export const config = defineConfig({
     environment: 'jsdom',
     exclude: ['node_modules', 'dist'],
     globals: false,
-    include: ['__tests__/**/*.test.ts'],
+    include: ['src/**/*.test.ts'],
     setupFiles: ['src/globals/index.ts']
   }
 });
