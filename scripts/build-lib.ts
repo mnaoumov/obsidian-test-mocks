@@ -14,7 +14,7 @@ function getEntryPoints(dir: string): string[] {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       entries.push(...getEntryPoints(full));
-    } else if (entry.endsWith('.ts') && !entry.endsWith('.d.ts')) {
+    } else if (entry.endsWith('.ts') && !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts')) {
       entries.push(full);
     }
   }
