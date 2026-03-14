@@ -72,7 +72,3 @@ L9. **`strictMock` constructors with `constructor__()` hooks.** Every mock class
 ## Code Conventions
 
 - Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`, `__tests__/`) follow the global kebab-case convention.
-
-## Pending Tasks
-
-1. **Publish new version with declaration fixes.** The `.d.cts` declaration files have issues under `skipLibCheck: false` (missing `import type`, unresolved member names like `UserEvent` vs `UserEvent__`). Consumers using `skipLibCheck: false` with `paths` mapping to obsidian-test-mocks types will hit these errors. Fix the declarations and publish a patch.
