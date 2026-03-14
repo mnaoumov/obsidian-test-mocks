@@ -9,6 +9,7 @@ import {
   noop,
   noopAsync
 } from './noop.ts';
+import { ensureNonNullable } from './type-guards.ts';
 
 interface FileMeta {
   ctime: number;
@@ -244,11 +245,9 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       this.textFiles.delete(normalizedPath);
     }
 
-    const meta = this.fileMeta.get(normalizedPath);
-    if (meta !== undefined) {
-      this.fileMeta.set(normalizedNewPath, meta);
-      this.fileMeta.delete(normalizedPath);
-    }
+    const meta = ensureNonNullable(this.fileMeta.get(normalizedPath));
+    this.fileMeta.set(normalizedNewPath, meta);
+    this.fileMeta.delete(normalizedPath);
 
     this.ensureParentDirs(normalizedNewPath);
     this.rebuildLowerCaseKeys();
