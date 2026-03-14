@@ -21,16 +21,6 @@
   "author": "Michael Naumov",
   "type": "module",
   "exports": {
-    "./obsidian": {
-      "import": {
-        "types": "./dist/lib/esm/obsidian/index.d.mts",
-        "default": "./dist/lib/esm/obsidian/index.mjs"
-      },
-      "require": {
-        "types": "./dist/lib/cjs/obsidian/index.d.cts",
-        "default": "./dist/lib/cjs/obsidian/index.cjs"
-      }
-    },
     "./globals": {
       "import": {
         "types": "./dist/lib/esm/globals/index.d.mts",
@@ -39,6 +29,16 @@
       "require": {
         "types": "./dist/lib/cjs/globals/index.d.cts",
         "default": "./dist/lib/cjs/globals/index.cjs"
+      }
+    },
+    "./obsidian": {
+      "import": {
+        "types": "./dist/lib/esm/obsidian/index.d.mts",
+        "default": "./dist/lib/esm/obsidian/index.mjs"
+      },
+      "require": {
+        "types": "./dist/lib/cjs/obsidian/index.d.cts",
+        "default": "./dist/lib/cjs/obsidian/index.cjs"
       }
     }
   },

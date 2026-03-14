@@ -65,7 +65,6 @@ L9. **`strictMock` constructors with `constructor__()` hooks.** Every mock class
 ## Testing
 
 - The project aims for 100% test coverage.
-- Test files: `__tests__/[ModulePath].test.ts` (mirrors `src/` structure)
 - Vitest with explicit imports (globals: false) — always import `describe`, `it`, `expect`, etc. from `'vitest'`
 - Coverage provider: v8
 
