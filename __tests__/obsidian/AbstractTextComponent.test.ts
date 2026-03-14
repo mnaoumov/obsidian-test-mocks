@@ -87,6 +87,14 @@ describe('AbstractTextComponent', () => {
     });
   });
 
+  describe('asOriginalType__', () => {
+    it('should return the same instance', () => {
+      const component = createTextComponent();
+      const original = component.asOriginalType__();
+      expect(original).toBe(component);
+    });
+  });
+
   describe('setPlaceholder', () => {
     it('should set the placeholder on inputEl', () => {
       const component = createTextComponent();

@@ -40,4 +40,12 @@ describe('BasesEntryGroup', () => {
     const group = BasesEntryGroup.create__([], undefined);
     expect(group.key).toBeUndefined();
   });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance', () => {
+      const group = BasesEntryGroup.create__([], undefined);
+      const original = group.asOriginalType__();
+      expect(original).toBe(group);
+    });
+  });
 });

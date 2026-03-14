@@ -130,6 +130,17 @@ describe('FileManager', () => {
       expect(content).toContain('extra: value');
     });
 
+    it('should handle file with empty body by producing trailing newline', async () => {
+      const app = await createApp({ 'note.md': '---\ntitle: Only\n---' });
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      await app.fileManager.processFrontMatter(file, (fm) => {
+        fm['extra'] = 'value';
+      });
+      const content = await app.vault.read(file);
+      expect(content).toContain('extra: value');
+      expect(content).toMatch(/---\n$/);
+    });
+
     it('should handle YAML that parses to a non-object by using empty object', async () => {
       const app = await createApp({ 'note.md': '---\njust a string\n---\nBody' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));

@@ -50,6 +50,15 @@ describe('InMemoryAdapter', () => {
       expect(stat?.mtime).toBe(TIMESTAMP_B);
     });
 
+    it('should preserve existing ctime when not specified in options', async () => {
+      const adapter = createAdapter();
+      await adapter.append('log.txt', 'first', { ctime: TIMESTAMP_A, mtime: TIMESTAMP_B });
+      await adapter.append('log.txt', 'second');
+      const stat = await adapter.stat('log.txt');
+
+      expect(stat?.ctime).toBe(TIMESTAMP_A);
+    });
+
     it('should create parent directories', async () => {
       const adapter = createAdapter();
       await adapter.append('a/b/c.txt', 'data');
@@ -76,6 +85,32 @@ describe('InMemoryAdapter', () => {
 
       const result = new Uint8Array(await adapter.readBinary('data.bin'));
       expect(Array.from(result)).toEqual([1, 0]);
+    });
+
+    it('should respect ctime and mtime options', async () => {
+      const adapter = createAdapter();
+      await adapter.appendBinary('data.bin', Uint8Array.of(1).buffer, { ctime: TIMESTAMP_A, mtime: TIMESTAMP_B });
+      const stat = await adapter.stat('data.bin');
+
+      expect(stat?.ctime).toBe(TIMESTAMP_A);
+      expect(stat?.mtime).toBe(TIMESTAMP_B);
+    });
+
+    it('should preserve existing ctime when not specified in options', async () => {
+      const adapter = createAdapter();
+      await adapter.appendBinary('data.bin', Uint8Array.of(1).buffer, { ctime: TIMESTAMP_A, mtime: TIMESTAMP_B });
+      await adapter.appendBinary('data.bin', Uint8Array.of(0).buffer);
+      const stat = await adapter.stat('data.bin');
+
+      expect(stat?.ctime).toBe(TIMESTAMP_A);
+    });
+
+    it('should create parent directories', async () => {
+      const adapter = createAdapter();
+      await adapter.appendBinary('a/b/data.bin', Uint8Array.of(1).buffer);
+
+      expect(await adapter.exists('a')).toBe(true);
+      expect(await adapter.exists('a/b')).toBe(true);
     });
   });
 
@@ -466,6 +501,18 @@ describe('InMemoryAdapter', () => {
       expect(await adapter.read('new-dir/file.md')).toBe('data');
     });
 
+    it('should rename a directory with binary files', async () => {
+      const adapter = createAdapter();
+      await adapter.mkdir('old-dir');
+      await adapter.writeBinary('old-dir/data.bin', Uint8Array.of(1).buffer);
+      await adapter.rename('old-dir', 'new-dir');
+
+      expect(await adapter.exists('old-dir')).toBe(false);
+      expect(await adapter.exists('new-dir')).toBe(true);
+      const result = new Uint8Array(await adapter.readBinary('new-dir/data.bin'));
+      expect(Array.from(result)).toEqual([1]);
+    });
+
     it('should throw when renaming a non-existent file', async () => {
       const adapter = createAdapter();
 
@@ -618,12 +665,54 @@ describe('InMemoryAdapter', () => {
       expect(stat?.size).toBe(data.length);
     });
 
+    it('should respect ctime and mtime options', async () => {
+      const adapter = createAdapter();
+      await adapter.writeBinary('file.bin', Uint8Array.of(1).buffer, { ctime: TIMESTAMP_C, mtime: TIMESTAMP_D });
+      const stat = await adapter.stat('file.bin');
+
+      expect(stat?.ctime).toBe(TIMESTAMP_C);
+      expect(stat?.mtime).toBe(TIMESTAMP_D);
+    });
+
+    it('should preserve ctime on overwrite when not specified', async () => {
+      const adapter = createAdapter();
+      await adapter.writeBinary('file.bin', Uint8Array.of(1).buffer, { ctime: TIMESTAMP_A, mtime: TIMESTAMP_A });
+      await adapter.writeBinary('file.bin', Uint8Array.of(0).buffer);
+      const stat = await adapter.stat('file.bin');
+
+      expect(stat?.ctime).toBe(TIMESTAMP_A);
+    });
+
     it('should create parent directories', async () => {
       const adapter = createAdapter();
       await adapter.writeBinary('a/b/file.bin', new ArrayBuffer(0));
 
       expect(await adapter.exists('a')).toBe(true);
       expect(await adapter.exists('a/b')).toBe(true);
+    });
+  });
+
+  describe('list() with binary files at root', () => {
+    it('should not list files from subdirectories at root level', async () => {
+      const adapter = createAdapter();
+      await adapter.write('root.md', 'data');
+      await adapter.write('sub/nested.md', 'data');
+      await adapter.writeBinary('sub/nested.bin', new ArrayBuffer(0));
+
+      const result = await adapter.list('');
+      expect(result.files).toContain('root.md');
+      expect(result.files).not.toContain('sub/nested.md');
+      expect(result.files).not.toContain('sub/nested.bin');
+    });
+  });
+
+  describe('rmdir() with binary files', () => {
+    it('should remove binary files in recursive delete', async () => {
+      const adapter = createAdapter();
+      await adapter.writeBinary('dir/file.bin', Uint8Array.of(1).buffer);
+      await adapter.rmdir('dir', true);
+
+      expect(await adapter.exists('dir/file.bin')).toBe(false);
     });
   });
 });

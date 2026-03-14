@@ -43,4 +43,12 @@ describe('BasesEntry', () => {
     entry.setValue__('prop.name' as BasesPropertyId, null);
     expect(entry.getValue('prop.name' as BasesPropertyId)).toBeNull();
   });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance', () => {
+      const entry = BasesEntry.create__(undefined, mockFile);
+      const original = entry.asOriginalType__();
+      expect(original).toBe(entry);
+    });
+  });
 });

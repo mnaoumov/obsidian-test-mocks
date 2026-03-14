@@ -1,4 +1,7 @@
-import type { App as AppOriginal } from 'obsidian';
+import type {
+  App as AppOriginal,
+  DataAdapter
+} from 'obsidian';
 
 import {
   describe,
@@ -7,6 +10,7 @@ import {
 } from 'vitest';
 
 import { App } from '../../src/obsidian/App.ts';
+import { FileSystemAdapter } from '../../src/obsidian/FileSystemAdapter.ts';
 
 describe('App', () => {
   it('should create an instance via createConfigured__', async () => {
@@ -42,6 +46,63 @@ describe('App', () => {
         'folder/': 'non-empty'
       }
     })).rejects.toThrow('Folder path "folder/" must have empty content');
+  });
+
+  it('should create an instance via create__', () => {
+    const adapter = FileSystemAdapter.create__('/mock') as unknown as DataAdapter;
+    const app = App.create__(adapter, 'test-id');
+    expect(app).toBeInstanceOf(App);
+  });
+
+  it('should use provided adapter in createConfigured__', async () => {
+    const adapter = FileSystemAdapter.create__('/custom');
+    const app = await App.createConfigured__({ adapter });
+    expect(app).toBeInstanceOf(App);
+  });
+
+  it('should set insensitive on adapter when isAdapterCaseInsensitive is true', async () => {
+    const app = await App.createConfigured__({ isAdapterCaseInsensitive: true });
+    expect(app).toBeInstanceOf(App);
+  });
+
+  it('should create files with parent folders', async () => {
+    const app = await App.createConfigured__({
+      files: {
+        'deeply/nested/file.md': 'content'
+      }
+    });
+    expect(app.vault.getAbstractFileByPath('deeply')).not.toBeNull();
+    expect(app.vault.getAbstractFileByPath('deeply/nested')).not.toBeNull();
+    expect(app.vault.getFileByPath('deeply/nested/file.md')).not.toBeNull();
+  });
+
+  it('should create files at root level without parent folder', async () => {
+    const app = await App.createConfigured__({
+      files: {
+        'root-file.md': 'content'
+      }
+    });
+    expect(app.vault.getFileByPath('root-file.md')).not.toBeNull();
+  });
+
+  describe('isDarkMode', () => {
+    it('should return false', async () => {
+      const app = await App.createConfigured__();
+      expect(app.isDarkMode()).toBe(false);
+    });
+  });
+
+  describe('loadLocalStorage / saveLocalStorage', () => {
+    it('should return null for unset keys', async () => {
+      const app = await App.createConfigured__();
+      expect(app.loadLocalStorage('missing')).toBeNull();
+    });
+
+    it('should return saved values', async () => {
+      const app = await App.createConfigured__();
+      app.saveLocalStorage('key', 'value');
+      expect(app.loadLocalStorage('key')).toBe('value');
+    });
   });
 
   describe('asOriginalType__', () => {

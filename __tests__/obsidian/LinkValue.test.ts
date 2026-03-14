@@ -38,4 +38,19 @@ describe('LinkValue', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('create2__', () => {
+    it('should create an instance via factory method', () => {
+      const val = LinkValue.create2__(mockApp, 'note', '');
+      expect(val).toBeInstanceOf(LinkValue);
+    });
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance', () => {
+      const val = LinkValue.create2__(mockApp, 'note', '');
+      const original = val.asOriginalType__();
+      expect(original).toBe(val);
+    });
+  });
 });
