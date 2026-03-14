@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { isBoolean } from '../../../src/globals/functions/isBoolean.ts';
+import { isBoolean } from './isBoolean.ts';
 
 describe('isBoolean', () => {
   it('should return true for true', () => {

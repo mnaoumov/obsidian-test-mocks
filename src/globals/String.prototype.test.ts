@@ -7,7 +7,7 @@ import {
 import {
   contains,
   format
-} from '../../src/globals/String.prototype.ts';
+} from './String.prototype.ts';
 
 describe('String.prototype extensions', () => {
   describe('contains', () => {

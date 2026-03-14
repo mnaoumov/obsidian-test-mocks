@@ -25,7 +25,7 @@ import {
   toggle,
   toggleVisibility,
   trigger
-} from '../../src/globals/HTMLElement.prototype.ts';
+} from './HTMLElement.prototype.ts';
 
 describe('HTMLElement.prototype extensions', () => {
   afterEach(() => {

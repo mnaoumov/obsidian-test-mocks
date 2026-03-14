@@ -5,7 +5,7 @@ import {
   vi
 } from 'vitest';
 
-import { createFragment } from '../../../src/globals/functions/createFragment.ts';
+import { createFragment } from './createFragment.ts';
 
 describe('createFragment', () => {
   it('should return a DocumentFragment', () => {

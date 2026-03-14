@@ -7,7 +7,7 @@ import {
 import {
   find,
   findAll
-} from '../../src/globals/DocumentFragment.prototype.ts';
+} from './DocumentFragment.prototype.ts';
 
 describe('DocumentFragment.prototype extensions', () => {
   describe('find', () => {

@@ -12,7 +12,7 @@ import {
   remove,
   shuffle,
   unique
-} from '../../src/globals/Array.prototype.ts';
+} from './Array.prototype.ts';
 
 describe('Array.prototype extensions', () => {
   describe('contains', () => {

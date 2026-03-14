@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { combine } from '../../src/globals/Array.ts';
+import { combine } from './Array.ts';
 
 describe('Array.combine', () => {
   it('should flatten nested arrays into one', () => {

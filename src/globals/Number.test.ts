@@ -4,7 +4,7 @@ import {
   it
 } from 'vitest';
 
-import { isNumber } from '../../src/globals/Number.ts';
+import { isNumber } from './Number.ts';
 
 const VALID_NUMBER = 42;
 const NEGATIVE_DECIMAL = -3.14;

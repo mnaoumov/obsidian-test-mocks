@@ -5,7 +5,7 @@ import {
   vi
 } from 'vitest';
 
-import { createSvg } from '../../../src/globals/functions/createSvg.ts';
+import { createSvg } from './createSvg.ts';
 
 const VIEW_BOX = '0 0 100 100';
 const WIDTH = '50';

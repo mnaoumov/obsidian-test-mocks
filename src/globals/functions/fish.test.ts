@@ -5,7 +5,7 @@ import {
   it
 } from 'vitest';
 
-import { fish } from '../../../src/globals/functions/fish.ts';
+import { fish } from './fish.ts';
 
 describe('fish', () => {
   afterEach(() => {

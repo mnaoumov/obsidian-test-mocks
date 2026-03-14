@@ -5,7 +5,7 @@ import {
   vi
 } from 'vitest';
 
-import { createEl } from '../../../src/globals/functions/createEl.ts';
+import { createEl } from './createEl.ts';
 
 describe('createEl', () => {
   it('should create an element with the given tag', () => {

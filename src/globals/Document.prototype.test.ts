@@ -9,7 +9,7 @@ import {
 import {
   off,
   on
-} from '../../src/globals/Document.prototype.ts';
+} from './Document.prototype.ts';
 
 describe('Document.prototype extensions', () => {
   afterEach(() => {
