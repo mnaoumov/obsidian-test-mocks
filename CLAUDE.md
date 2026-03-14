@@ -72,3 +72,22 @@ L9. **`strictMock` constructors with `constructor__()` hooks.** Every mock class
 ## Code Conventions
 
 - Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`) follow the global kebab-case convention.
+
+## Pending Tasks
+
+1. **Fix `.d.cts` declaration issues for `skipLibCheck: false` consumers.**
+   - Duplicate identifiers (e.g., `changeCallback` in DropdownComponent)
+   - Modifier mismatches (e.g., `_` in Events, `app` in FileManager must have identical modifiers)
+   - `asOriginalType__`/`constructor2__` type conflicts in PluginSettingTab vs SettingTab
+   - Consumers using `skipLibCheck: false` with `paths` mapping hit 13+ errors
+
+2. **Fix declaration conflicts with `obsidian-typings`.**
+   When both `obsidian-test-mocks` and `obsidian-typings` are installed, `constructorN__` signatures conflict (e.g., `constructor3__(leaf, pluginInstance)` vs `constructor3__(_leaf): void`). This causes 90+ errors with `skipLibCheck: false`. The `obsidian-typings` augmentations add `constructorN__` with different signatures than `obsidian-test-mocks` declares.
+
+3. **Expose mock-only properties in type declarations.**
+   Consumers currently need `as unknown as` casts to access these mock-only properties. They should be exposed in the `.d.cts` types:
+   - `TAbstractFile.deleted__` (boolean)
+   - `TAbstractFile.parent` (already in obsidian.d.ts but needs writable access)
+   - `TFolder.children` (already in obsidian.d.ts but needs writable access)
+   - `Vault.fileMap__` (Record of path to TAbstractFile)
+   - `SettingGroup.listEl__` (HTMLElement)
