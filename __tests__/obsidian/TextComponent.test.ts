@@ -61,6 +61,14 @@ describe('TextComponent', () => {
     });
   });
 
+  describe('addEventListener wrapper', () => {
+    it('should not track non-function handlers', () => {
+      const component = TextComponent.create__(createDiv());
+      component.inputEl.addEventListener('click', { handleEvent: vi.fn() });
+      expect(component.eventListeners__['click']).toBeUndefined();
+    });
+  });
+
   describe('asOriginalType__', () => {
     it('should return the same instance typed as the original', () => {
       const component = TextComponent.create__(createDiv());

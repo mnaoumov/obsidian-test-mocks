@@ -1,3 +1,5 @@
+import type { NumberValue as NumberValueOriginal } from 'obsidian';
+
 import {
   describe,
   expect,
@@ -9,6 +11,11 @@ import { NumberValue } from '../../src/obsidian/NumberValue.ts';
 const TEST_NUMBER = 7;
 
 describe('NumberValue', () => {
+  it('should create an instance via create__', () => {
+    const val = NumberValue.create__();
+    expect(val).toBeInstanceOf(NumberValue);
+  });
+
   it('should default to 0', () => {
     const val = new NumberValue();
     expect(val.value__).toBe(0);
@@ -32,5 +39,13 @@ describe('NumberValue', () => {
   it('should convert to string', () => {
     const val = new NumberValue(TEST_NUMBER);
     expect(String(val)).toBe(String(TEST_NUMBER));
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance typed as the original', () => {
+      const val = NumberValue.create__();
+      const original: NumberValueOriginal = val.asOriginalType__();
+      expect(original).toBe(val);
+    });
   });
 });

@@ -1,3 +1,5 @@
+import type { MetadataCache as MetadataCacheOriginal } from 'obsidian';
+
 import {
   describe,
   expect,
@@ -131,6 +133,95 @@ describe('MetadataCache', () => {
       expect(cache?.links?.[0]?.link).toBe('Page');
       expect(cache?.embeds).toHaveLength(1);
       expect(cache?.embeds?.[0]?.link).toBe('image.png');
+    });
+  });
+
+  describe('fileToLinktext', () => {
+    it('should return file name by default', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('note.md', '');
+      await flushMicrotasks();
+      expect(app.metadataCache.fileToLinktext(file, '')).toBe('note.md');
+    });
+
+    it('should return basename when omitMdExtension is true for md files', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('note.md', '');
+      await flushMicrotasks();
+      expect(app.metadataCache.fileToLinktext(file, '', true)).toBe('note');
+    });
+
+    it('should return file name when omitMdExtension is true for non-md files', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('data.json', '{}');
+      await flushMicrotasks();
+      expect(app.metadataCache.fileToLinktext(file, '', true)).toBe('data.json');
+    });
+  });
+
+  describe('getFirstLinkpathDest', () => {
+    it('should find file by exact path', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('note.md', '');
+      await flushMicrotasks();
+      const found = app.metadataCache.getFirstLinkpathDest('note.md', '');
+      expect(found).toBe(file);
+    });
+
+    it('should find file by path with .md appended', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('note.md', '');
+      await flushMicrotasks();
+      const found = app.metadataCache.getFirstLinkpathDest('note', '');
+      expect(found).toBe(file);
+    });
+
+    it('should find file by basename', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('folder/note.md', '');
+      await flushMicrotasks();
+      const found = app.metadataCache.getFirstLinkpathDest('note', '');
+      expect(found).toBe(file);
+    });
+
+    it('should return null when file is not found', async () => {
+      const app = await App.createConfigured__();
+      const found = app.metadataCache.getFirstLinkpathDest('nonexistent', '');
+      expect(found).toBeNull();
+    });
+  });
+
+  describe('getCache', () => {
+    it('should return null for unknown path', async () => {
+      const app = await App.createConfigured__();
+      expect(app.metadataCache.getCache('unknown.md')).toBeNull();
+    });
+  });
+
+  describe('getFileCache', () => {
+    it('should return null for file with no cache', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.create('data.txt', 'hello');
+      await flushMicrotasks();
+      expect(app.metadataCache.getFileCache(file)).toBeNull();
+    });
+  });
+
+  describe('asOriginalType__', () => {
+    it('should return the same instance typed as the original', async () => {
+      const app = await App.createConfigured__();
+      const original: MetadataCacheOriginal = app.metadataCache.asOriginalType__();
+      expect(original).toBe(app.metadataCache);
+    });
+  });
+
+  describe('parseFileMetadata', () => {
+    it('should not parse non-TFile objects', async () => {
+      const app = await App.createConfigured__();
+      // Trigger the vault create event with a non-TFile object
+      app.vault.trigger('create', { path: 'fake.md' });
+      await flushMicrotasks();
+      expect(app.metadataCache.getCache('fake.md')).toBeNull();
     });
   });
 });

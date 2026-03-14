@@ -74,6 +74,14 @@ describe('MarkdownPreviewView', () => {
     });
   });
 
+  describe('file', () => {
+    it('should return a value from the getter', async () => {
+      const view = await createPreviewView();
+      // The getter returns castTo<TFile>(null), so it returns null typed as TFile
+      expect(view.file).toBeDefined();
+    });
+  });
+
   describe('asOriginalType__', () => {
     it('should return the same instance typed as the original', async () => {
       const view = await createPreviewView();
