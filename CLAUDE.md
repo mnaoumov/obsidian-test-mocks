@@ -50,12 +50,12 @@ L9. **`strictMock` constructors with `constructor__()` hooks.** Every mock class
 
 ### Internal Modules
 
-- `Cast.ts` — `castTo<T>()` utility for unsafe type bridging
-- `DelegatedEventRegistry.ts` — WeakMap-based on/off event delegation shared by `Document.prototype` and `HTMLElement.prototype`
-- `IconRegistry.ts` — shared `Map<string, string>` for icon storage (addIcon, removeIcon, getIcon, etc.)
-- `InMemoryAdapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
-- `Types.ts` — inlined type shapes (from obsidian-typings) to avoid augmentation side effects
-- `TypeGuards.ts` — `ensureNonNullable()` and similar guards
+- `cast.ts` — `castTo<T>()` utility for unsafe type bridging
+- `delegated-event-registry.ts` — WeakMap-based on/off event delegation shared by `Document.prototype` and `HTMLElement.prototype`
+- `icon-registry.ts` — shared `Map<string, string>` for icon storage (addIcon, removeIcon, getIcon, etc.)
+- `in-memory-adapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
+- `types.ts` — inlined type shapes (from obsidian-typings) to avoid augmentation side effects
+- `type-guards.ts` — `assert()`, `ensureNonNullable()`, and similar guards
 
 ## TypeScript
 
