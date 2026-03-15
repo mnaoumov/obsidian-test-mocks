@@ -16,24 +16,24 @@ class BareWorkspaceItem extends WorkspaceItem {
 }
 
 describe('WorkspaceItem', () => {
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType2__()', () => {
     it('should return the same instance typed as the original', () => {
       const item = WorkspaceFloating.create2__();
-      const original: WorkspaceItemOriginal = item.asOriginalType__();
+      const original: WorkspaceItemOriginal = item.asOriginalType2__();
       expect(original).toBe(item);
     });
 
     it('should return the same instance via WorkspaceItem base class', () => {
       const item = new BareWorkspaceItem();
-      const original: WorkspaceItemOriginal = item.asOriginalType__();
+      const original: WorkspaceItemOriginal = item.asOriginalType2__();
       expect(original).toBe(item);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', () => {
       const item = WorkspaceFloating.create2__();
-      const mock = WorkspaceItem.fromOriginalType__(item.asOriginalType__());
+      const mock = WorkspaceItem.fromOriginalType2__(item.asOriginalType2__());
       expect(mock).toBe(item);
     });
   });

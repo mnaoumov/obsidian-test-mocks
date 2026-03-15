@@ -13,11 +13,11 @@ export abstract class ValueComponent<T> extends BaseComponent {
     return self;
   }
 
-  public static override fromOriginalType__<T>(value: ValueComponentOriginal<T>): ValueComponent<T> {
+  public static fromOriginalType2__<T>(value: ValueComponentOriginal<T>): ValueComponent<T> {
     return castTo<ValueComponent<T>>(value);
   }
 
-  public override asOriginalType__(): ValueComponentOriginal<T> {
+  public asOriginalType2__(): ValueComponentOriginal<T> {
     return castTo<ValueComponentOriginal<T>>(this);
   }
 

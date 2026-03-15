@@ -69,18 +69,18 @@ describe('TextComponent', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType4__', () => {
     it('should return the same instance typed as the original', () => {
       const component = TextComponent.create__(createDiv());
-      const original: TextComponentOriginal = component.asOriginalType__();
+      const original: TextComponentOriginal = component.asOriginalType4__();
       expect(original).toBe(component);
     });
   });
 
-  describe('fromOriginalType3__', () => {
+  describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
       const component = TextComponent.create__(createDiv());
-      const mock = TextComponent.fromOriginalType3__(component.asOriginalType__());
+      const mock = TextComponent.fromOriginalType4__(component.asOriginalType4__());
       expect(mock).toBe(component);
     });
   });

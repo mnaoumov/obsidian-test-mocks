@@ -36,7 +36,7 @@ export class Vault extends Events {
     return new Vault(adapter);
   }
 
-  public static override fromOriginalType__(value: VaultOriginal): Vault {
+  public static fromOriginalType2__(value: VaultOriginal): Vault {
     return castTo<Vault>(value);
   }
 
@@ -54,7 +54,7 @@ export class Vault extends Events {
     this.trigger('modify', file);
   }
 
-  public override asOriginalType__(): VaultOriginal {
+  public asOriginalType2__(): VaultOriginal {
     return castTo<VaultOriginal>(this);
   }
 

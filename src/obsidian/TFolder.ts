@@ -21,11 +21,11 @@ export class TFolder extends TAbstractFile {
     return new TFolder(vault, path);
   }
 
-  public static override fromOriginalType__(value: TFolderOriginal): TFolder {
+  public static fromOriginalType2__(value: TFolderOriginal): TFolder {
     return castTo<TFolder>(value);
   }
 
-  public override asOriginalType__(): TFolderOriginal {
+  public asOriginalType2__(): TFolderOriginal {
     return castTo<TFolderOriginal>(this);
   }
 

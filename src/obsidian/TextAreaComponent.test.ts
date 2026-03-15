@@ -19,18 +19,18 @@ describe('TextAreaComponent', () => {
     expect(component.inputEl.tagName.toLowerCase()).toBe('textarea');
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType4__', () => {
     it('should return the same instance typed as the original', () => {
       const component = TextAreaComponent.create__(createDiv());
-      const original: TextAreaComponentOriginal = component.asOriginalType__();
+      const original: TextAreaComponentOriginal = component.asOriginalType4__();
       expect(original).toBe(component);
     });
   });
 
-  describe('fromOriginalType3__', () => {
+  describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
       const component = TextAreaComponent.create__(createDiv());
-      const mock = TextAreaComponent.fromOriginalType3__(component.asOriginalType__());
+      const mock = TextAreaComponent.fromOriginalType4__(component.asOriginalType4__());
       expect(mock).toBe(component);
     });
   });

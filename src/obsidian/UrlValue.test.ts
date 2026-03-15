@@ -29,18 +29,18 @@ describe('UrlValue', () => {
     expect(val.isTruthy()).toBe(true);
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType5__', () => {
     it('should return the same instance typed as the original', () => {
       const val = UrlValue.create2__('https://example.com');
-      const original: UrlValueOriginal = val.asOriginalType__();
+      const original: UrlValueOriginal = val.asOriginalType5__();
       expect(original).toBe(val);
     });
   });
 
-  describe('fromOriginalType3__', () => {
+  describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', () => {
       const val = UrlValue.create2__('https://example.com');
-      const mock = UrlValue.fromOriginalType3__(val.asOriginalType__());
+      const mock = UrlValue.fromOriginalType5__(val.asOriginalType5__());
       expect(mock).toBe(val);
     });
   });

@@ -47,20 +47,20 @@ describe('WorkspaceSidedock', () => {
     });
   });
 
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType5__()', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const sidedock = WorkspaceSidedock.create3__(app.workspace, 'vertical', 'left');
-      const original: WorkspaceSidedockOriginal = sidedock.asOriginalType__();
+      const original: WorkspaceSidedockOriginal = sidedock.asOriginalType5__();
       expect(original).toBe(sidedock);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const sidedock = WorkspaceSidedock.create3__(app.workspace, 'vertical', 'left');
-      const mock = WorkspaceSidedock.fromOriginalType__(sidedock.asOriginalType__());
+      const mock = WorkspaceSidedock.fromOriginalType5__(sidedock.asOriginalType5__());
       expect(mock).toBe(sidedock);
     });
   });

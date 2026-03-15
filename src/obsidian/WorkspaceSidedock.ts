@@ -21,11 +21,11 @@ export class WorkspaceSidedock extends WorkspaceSplit {
     return new WorkspaceSidedock(workspace, direction, side, id);
   }
 
-  public static override fromOriginalType__(value: WorkspaceSidedockOriginal): WorkspaceSidedock {
+  public static fromOriginalType5__(value: WorkspaceSidedockOriginal): WorkspaceSidedock {
     return castTo<WorkspaceSidedock>(value);
   }
 
-  public override asOriginalType__(): WorkspaceSidedockOriginal {
+  public asOriginalType5__(): WorkspaceSidedockOriginal {
     return castTo<WorkspaceSidedockOriginal>(this);
   }
 

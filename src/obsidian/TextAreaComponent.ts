@@ -17,11 +17,11 @@ export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement
     return new TextAreaComponent(containerEl);
   }
 
-  public static fromOriginalType3__(value: TextAreaComponentOriginal): TextAreaComponent {
+  public static fromOriginalType4__(value: TextAreaComponentOriginal): TextAreaComponent {
     return castTo<TextAreaComponent>(value);
   }
 
-  public override asOriginalType__(): TextAreaComponentOriginal {
+  public asOriginalType4__(): TextAreaComponentOriginal {
     return castTo<TextAreaComponentOriginal>(this);
   }
 

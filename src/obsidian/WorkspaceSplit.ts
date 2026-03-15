@@ -21,11 +21,11 @@ export class WorkspaceSplit extends WorkspaceParent {
     return new WorkspaceSplit(workspace, direction, id);
   }
 
-  public static override fromOriginalType__(value: WorkspaceSplitOriginal): WorkspaceSplit {
+  public static fromOriginalType4__(value: WorkspaceSplitOriginal): WorkspaceSplit {
     return castTo<WorkspaceSplit>(value);
   }
 
-  public override asOriginalType__(): WorkspaceSplitOriginal {
+  public asOriginalType4__(): WorkspaceSplitOriginal {
     return castTo<WorkspaceSplitOriginal>(this);
   }
 

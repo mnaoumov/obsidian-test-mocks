@@ -22,11 +22,11 @@ export class WorkspaceTabs extends WorkspaceParent {
     return new WorkspaceTabs(workspace, id);
   }
 
-  public static override fromOriginalType__(value: WorkspaceTabsOriginal): WorkspaceTabs {
+  public static fromOriginalType4__(value: WorkspaceTabsOriginal): WorkspaceTabs {
     return castTo<WorkspaceTabs>(value);
   }
 
-  public override asOriginalType__(): WorkspaceTabsOriginal {
+  public asOriginalType4__(): WorkspaceTabsOriginal {
     return castTo<WorkspaceTabsOriginal>(this);
   }
 

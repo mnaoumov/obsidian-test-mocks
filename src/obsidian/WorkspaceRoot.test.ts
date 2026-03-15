@@ -32,20 +32,20 @@ describe('WorkspaceRoot', () => {
     });
   });
 
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType6__()', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const root = WorkspaceRoot.create3__(app.workspace, 'vertical');
-      const original: WorkspaceRootOriginal = root.asOriginalType__();
+      const original: WorkspaceRootOriginal = root.asOriginalType6__();
       expect(original).toBe(root);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType6__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const root = WorkspaceRoot.create3__(app.workspace, 'vertical');
-      const mock = WorkspaceRoot.fromOriginalType__(root.asOriginalType__());
+      const mock = WorkspaceRoot.fromOriginalType6__(root.asOriginalType6__());
       expect(mock).toBe(root);
     });
   });

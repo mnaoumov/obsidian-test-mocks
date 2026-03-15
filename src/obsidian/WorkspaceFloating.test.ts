@@ -14,18 +14,18 @@ describe('WorkspaceFloating', () => {
     expect(floating).toBeInstanceOf(WorkspaceFloating);
   });
 
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType4__()', () => {
     it('should return the same instance typed as the original', () => {
       const floating = WorkspaceFloating.create2__();
-      const original: WorkspaceFloatingOriginal = floating.asOriginalType__();
+      const original: WorkspaceFloatingOriginal = floating.asOriginalType4__();
       expect(original).toBe(floating);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
       const floating = WorkspaceFloating.create2__();
-      const mock = WorkspaceFloating.fromOriginalType__(floating.asOriginalType__());
+      const mock = WorkspaceFloating.fromOriginalType4__(floating.asOriginalType4__());
       expect(mock).toBe(floating);
     });
   });

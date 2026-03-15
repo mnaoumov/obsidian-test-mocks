@@ -29,11 +29,11 @@ export class SliderComponent extends ValueComponent<number> {
     return new SliderComponent(containerEl);
   }
 
-  public static fromOriginalType2__(value: SliderComponentOriginal): SliderComponent {
+  public static fromOriginalType3__(value: SliderComponentOriginal): SliderComponent {
     return castTo<SliderComponent>(value);
   }
 
-  public override asOriginalType__(): SliderComponentOriginal {
+  public asOriginalType3__(): SliderComponentOriginal {
     return castTo<SliderComponentOriginal>(this);
   }
 

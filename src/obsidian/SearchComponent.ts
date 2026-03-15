@@ -21,11 +21,11 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     return new SearchComponent(containerEl);
   }
 
-  public static fromOriginalType3__(value: SearchComponentOriginal): SearchComponent {
+  public static fromOriginalType4__(value: SearchComponentOriginal): SearchComponent {
     return castTo<SearchComponent>(value);
   }
 
-  public override asOriginalType__(): SearchComponentOriginal {
+  public asOriginalType4__(): SearchComponentOriginal {
     return castTo<SearchComponentOriginal>(this);
   }
 

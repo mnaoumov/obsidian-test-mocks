@@ -19,11 +19,11 @@ export class WorkspaceFloating extends WorkspaceParent {
     return new WorkspaceFloating();
   }
 
-  public static override fromOriginalType__(value: WorkspaceFloatingOriginal): WorkspaceFloating {
+  public static fromOriginalType4__(value: WorkspaceFloatingOriginal): WorkspaceFloating {
     return castTo<WorkspaceFloating>(value);
   }
 
-  public override asOriginalType__(): WorkspaceFloatingOriginal {
+  public asOriginalType4__(): WorkspaceFloatingOriginal {
     return castTo<WorkspaceFloatingOriginal>(this);
   }
 

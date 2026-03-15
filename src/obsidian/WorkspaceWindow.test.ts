@@ -32,20 +32,20 @@ describe('WorkspaceWindow', () => {
     });
   });
 
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType6__()', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const win = WorkspaceWindow.create3__(app.workspace);
-      const original: WorkspaceWindowOriginal = win.asOriginalType__();
+      const original: WorkspaceWindowOriginal = win.asOriginalType6__();
       expect(original).toBe(win);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType6__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const win = WorkspaceWindow.create3__(app.workspace);
-      const mock = WorkspaceWindow.fromOriginalType__(win.asOriginalType__());
+      const mock = WorkspaceWindow.fromOriginalType6__(win.asOriginalType6__());
       expect(mock).toBe(win);
     });
   });

@@ -17,11 +17,11 @@ export class StringValue extends PrimitiveValue<string> {
     return new StringValue(value);
   }
 
-  public static fromOriginalType2__(value: StringValueOriginal): StringValue {
+  public static fromOriginalType4__(value: StringValueOriginal): StringValue {
     return castTo<StringValue>(value);
   }
 
-  public override asOriginalType__(): StringValueOriginal {
+  public asOriginalType4__(): StringValueOriginal {
     return castTo<StringValueOriginal>(this);
   }
 

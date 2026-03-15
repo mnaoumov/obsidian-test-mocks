@@ -32,20 +32,20 @@ describe('WorkspaceLeaf', () => {
     });
   });
 
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType3__()', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      const original: WorkspaceLeafOriginal = leaf.asOriginalType__();
+      const original: WorkspaceLeafOriginal = leaf.asOriginalType3__();
       expect(original).toBe(leaf);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      const mock = WorkspaceLeaf.fromOriginalType__(leaf.asOriginalType__());
+      const mock = WorkspaceLeaf.fromOriginalType3__(leaf.asOriginalType3__());
       expect(mock).toBe(leaf);
     });
   });

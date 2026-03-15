@@ -51,11 +51,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
     return new WorkspaceLeaf(app, id);
   }
 
-  public static override fromOriginalType__(value: WorkspaceLeafOriginal): WorkspaceLeaf {
+  public static fromOriginalType3__(value: WorkspaceLeafOriginal): WorkspaceLeaf {
     return castTo<WorkspaceLeaf>(value);
   }
 
-  public override asOriginalType__(): WorkspaceLeafOriginal {
+  public asOriginalType3__(): WorkspaceLeafOriginal {
     return castTo<WorkspaceLeafOriginal>(this);
   }
 
