@@ -93,24 +93,24 @@ describe('AbstractTextComponent', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType3__', () => {
     it('should return the same instance', () => {
       const component = createTextComponent();
-      const original = component.asOriginalType__();
+      const original = component.asOriginalType3__();
       expect(original).toBe(component);
     });
 
     it('should return the same instance via AbstractTextComponent base class', () => {
       const component = new BareTextComponent(createEl('input'));
-      const original: AbstractTextComponentOriginal<HTMLInputElement> = component.asOriginalType__();
+      const original: AbstractTextComponentOriginal<HTMLInputElement> = component.asOriginalType3__();
       expect(original).toBe(component);
     });
   });
 
-  describe('fromOriginalType2__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
       const component = createTextComponent();
-      const mock = AbstractTextComponent.fromOriginalType2__(component.asOriginalType__());
+      const mock = AbstractTextComponent.fromOriginalType3__(component.asOriginalType3__());
       expect(mock).toBe(component);
     });
   });

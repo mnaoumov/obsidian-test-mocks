@@ -26,11 +26,11 @@ export abstract class FileView extends ItemView {
     return self;
   }
 
-  public static override fromOriginalType__(value: FileViewOriginal): FileView {
+  public static fromOriginalType4__(value: FileViewOriginal): FileView {
     return castTo<FileView>(value);
   }
 
-  public override asOriginalType__(): FileViewOriginal {
+  public asOriginalType4__(): FileViewOriginal {
     return castTo<FileViewOriginal>(this);
   }
 

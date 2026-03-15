@@ -22,7 +22,7 @@ export class DropdownComponent extends ValueComponent<string> {
     return new DropdownComponent(containerEl);
   }
 
-  public static fromOriginalType2__(value: DropdownComponentOriginal): DropdownComponent {
+  public static fromOriginalType3__(value: DropdownComponentOriginal): DropdownComponent {
     return castTo<DropdownComponent>(value);
   }
 
@@ -41,7 +41,7 @@ export class DropdownComponent extends ValueComponent<string> {
     return this;
   }
 
-  public override asOriginalType__(): DropdownComponentOriginal {
+  public asOriginalType3__(): DropdownComponentOriginal {
     return castTo<DropdownComponentOriginal>(this);
   }
 

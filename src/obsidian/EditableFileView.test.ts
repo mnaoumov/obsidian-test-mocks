@@ -34,18 +34,18 @@ describe('EditableFileView', () => {
     expect(() => record['nonExistentProperty']).toThrow();
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType5__', () => {
     it('should return the same instance typed as the original obsidian type', async () => {
       const view = await createEditableFileView();
-      const original: EditableFileViewOriginal = view.asOriginalType__();
+      const original: EditableFileViewOriginal = view.asOriginalType5__();
       expect(original).toBe(view);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const view = await createEditableFileView();
-      const mock = EditableFileView.fromOriginalType__(view.asOriginalType__());
+      const mock = EditableFileView.fromOriginalType5__(view.asOriginalType5__());
       expect(mock).toBe(view);
     });
   });

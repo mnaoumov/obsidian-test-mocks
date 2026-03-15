@@ -20,7 +20,7 @@ export abstract class ItemView extends View {
     return self;
   }
 
-  public static override fromOriginalType__(value: ItemViewOriginal): ItemView {
+  public static fromOriginalType3__(value: ItemViewOriginal): ItemView {
     return castTo<ItemView>(value);
   }
 
@@ -28,7 +28,7 @@ export abstract class ItemView extends View {
     return createDiv();
   }
 
-  public override asOriginalType__(): ItemViewOriginal {
+  public asOriginalType3__(): ItemViewOriginal {
     return castTo<ItemViewOriginal>(this);
   }
 

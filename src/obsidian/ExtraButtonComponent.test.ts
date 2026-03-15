@@ -28,18 +28,18 @@ describe('ExtraButtonComponent', () => {
     );
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original obsidian type', () => {
       const button = createExtraButton();
-      const original: ExtraButtonComponentOriginal = button.asOriginalType__();
+      const original: ExtraButtonComponentOriginal = button.asOriginalType2__();
       expect(original).toBe(button);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', () => {
       const button = createExtraButton();
-      const mock = ExtraButtonComponent.fromOriginalType__(button.asOriginalType__());
+      const mock = ExtraButtonComponent.fromOriginalType2__(button.asOriginalType2__());
       expect(mock).toBe(button);
     });
   });

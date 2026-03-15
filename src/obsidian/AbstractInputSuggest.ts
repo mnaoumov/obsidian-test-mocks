@@ -17,11 +17,11 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
     return self;
   }
 
-  public static override fromOriginalType__<T>(value: AbstractInputSuggestOriginal<T>): AbstractInputSuggest<T> {
+  public static fromOriginalType2__<T>(value: AbstractInputSuggestOriginal<T>): AbstractInputSuggest<T> {
     return castTo<AbstractInputSuggest<T>>(value);
   }
 
-  public override asOriginalType__(): AbstractInputSuggestOriginal<T> {
+  public asOriginalType2__(): AbstractInputSuggestOriginal<T> {
     return castTo<AbstractInputSuggestOriginal<T>>(this);
   }
 

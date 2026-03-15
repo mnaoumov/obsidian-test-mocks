@@ -44,11 +44,11 @@ export class ColorComponent extends ValueComponent<string> {
     return new ColorComponent(containerEl);
   }
 
-  public static fromOriginalType2__(value: ColorComponentOriginal): ColorComponent {
+  public static fromOriginalType3__(value: ColorComponentOriginal): ColorComponent {
     return castTo<ColorComponent>(value);
   }
 
-  public override asOriginalType__(): ColorComponentOriginal {
+  public asOriginalType3__(): ColorComponentOriginal {
     return castTo<ColorComponentOriginal>(this);
   }
 

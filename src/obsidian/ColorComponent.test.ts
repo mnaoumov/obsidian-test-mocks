@@ -39,18 +39,18 @@ describe('ColorComponent', () => {
     );
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType3__', () => {
     it('should return the same instance typed as the original obsidian type', () => {
       const color = createColor();
-      const original: ColorComponentOriginal = color.asOriginalType__();
+      const original: ColorComponentOriginal = color.asOriginalType3__();
       expect(original).toBe(color);
     });
   });
 
-  describe('fromOriginalType2__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
       const color = createColor();
-      const mock = ColorComponent.fromOriginalType2__(color.asOriginalType__());
+      const mock = ColorComponent.fromOriginalType3__(color.asOriginalType3__());
       expect(mock).toBe(color);
     });
   });

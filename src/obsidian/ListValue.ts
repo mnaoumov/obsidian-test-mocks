@@ -23,11 +23,11 @@ export class ListValue extends NotNullValue {
     return new ListValue(value);
   }
 
-  public static override fromOriginalType__(value: ListValueOriginal): ListValue {
+  public static fromOriginalType3__(value: ListValueOriginal): ListValue {
     return castTo<ListValue>(value);
   }
 
-  public override asOriginalType__(): ListValueOriginal {
+  public asOriginalType3__(): ListValueOriginal {
     return castTo<ListValueOriginal>(this);
   }
 

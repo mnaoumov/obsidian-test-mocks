@@ -31,11 +31,11 @@ export class HoverPopover extends Component {
     return null;
   }
 
-  public static override fromOriginalType__(value: HoverPopoverOriginal): HoverPopover {
+  public static fromOriginalType2__(value: HoverPopoverOriginal): HoverPopover {
     return castTo<HoverPopover>(value);
   }
 
-  public override asOriginalType__(): HoverPopoverOriginal {
+  public asOriginalType2__(): HoverPopoverOriginal {
     return castTo<HoverPopoverOriginal>(this);
   }
 

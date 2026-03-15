@@ -19,11 +19,11 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
     return self;
   }
 
-  public static fromOriginalType2__<T extends HTMLInputElement | HTMLTextAreaElement>(value: AbstractTextComponentOriginal<T>): AbstractTextComponent<T> {
+  public static fromOriginalType3__<T extends HTMLInputElement | HTMLTextAreaElement>(value: AbstractTextComponentOriginal<T>): AbstractTextComponent<T> {
     return castTo<AbstractTextComponent<T>>(value);
   }
 
-  public override asOriginalType__(): AbstractTextComponentOriginal<T> {
+  public asOriginalType3__(): AbstractTextComponentOriginal<T> {
     return castTo<AbstractTextComponentOriginal<T>>(this);
   }
 

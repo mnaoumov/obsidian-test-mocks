@@ -43,18 +43,18 @@ describe('HoverPopover', () => {
     expect(popover.state).toBe(0);
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original obsidian type', () => {
       const popover = createPopover();
-      const original: HoverPopoverOriginal = popover.asOriginalType__();
+      const original: HoverPopoverOriginal = popover.asOriginalType2__();
       expect(original).toBe(popover);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', () => {
       const popover = createPopover();
-      const mock = HoverPopover.fromOriginalType__(popover.asOriginalType__());
+      const mock = HoverPopover.fromOriginalType2__(popover.asOriginalType2__());
       expect(mock).toBe(popover);
     });
   });

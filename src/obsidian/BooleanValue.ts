@@ -17,11 +17,11 @@ export class BooleanValue extends PrimitiveValue<boolean> {
     return new BooleanValue(value);
   }
 
-  public static fromOriginalType2__(value: BooleanValueOriginal): BooleanValue {
+  public static fromOriginalType4__(value: BooleanValueOriginal): BooleanValue {
     return castTo<BooleanValue>(value);
   }
 
-  public override asOriginalType__(): BooleanValueOriginal {
+  public asOriginalType4__(): BooleanValueOriginal {
     return castTo<BooleanValueOriginal>(this);
   }
 

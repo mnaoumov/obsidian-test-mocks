@@ -28,11 +28,11 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
     return self;
   }
 
-  public static override fromOriginalType__<T>(value: EditorSuggestOriginal<T>): EditorSuggest<T> {
+  public static fromOriginalType2__<T>(value: EditorSuggestOriginal<T>): EditorSuggest<T> {
     return castTo<EditorSuggest<T>>(value);
   }
 
-  public override asOriginalType__(): EditorSuggestOriginal<T> {
+  public asOriginalType2__(): EditorSuggestOriginal<T> {
     return castTo<EditorSuggestOriginal<T>>(this);
   }
 

@@ -50,18 +50,18 @@ describe('BooleanValue', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType4__', () => {
     it('should return the same instance', () => {
       const val = BooleanValue.create__();
-      const original = val.asOriginalType__();
+      const original = val.asOriginalType4__();
       expect(original).toBe(val);
     });
   });
 
-  describe('fromOriginalType2__', () => {
+  describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
       const val = BooleanValue.create__();
-      const mock = BooleanValue.fromOriginalType2__(val.asOriginalType__());
+      const mock = BooleanValue.fromOriginalType4__(val.asOriginalType4__());
       expect(mock).toBe(val);
     });
   });
