@@ -68,18 +68,18 @@ describe('ToggleComponent', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType3__', () => {
     it('should return the same instance typed as the original', () => {
       const toggle = ToggleComponent.create__(createDiv());
-      const original: ToggleComponentOriginal = toggle.asOriginalType__();
+      const original: ToggleComponentOriginal = toggle.asOriginalType3__();
       expect(original).toBe(toggle);
     });
   });
 
-  describe('fromOriginalType2__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
       const toggle = ToggleComponent.create__(createDiv());
-      const mock = ToggleComponent.fromOriginalType2__(toggle.asOriginalType__());
+      const mock = ToggleComponent.fromOriginalType3__(toggle.asOriginalType3__());
       expect(mock).toBe(toggle);
     });
   });

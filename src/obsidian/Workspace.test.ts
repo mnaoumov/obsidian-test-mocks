@@ -15,18 +15,18 @@ import { WorkspaceWindow } from './WorkspaceWindow.ts';
 const EXPECTED_LEAF_COUNT = 2;
 
 describe('Workspace', () => {
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType2__()', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
-      const original: WorkspaceOriginal = app.workspace.asOriginalType__();
+      const original: WorkspaceOriginal = app.workspace.asOriginalType2__();
       expect(original).toBe(app.workspace);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
-      const mock = Workspace.fromOriginalType__(app.workspace.asOriginalType__());
+      const mock = Workspace.fromOriginalType2__(app.workspace.asOriginalType2__());
       expect(mock).toBe(app.workspace);
     });
   });
@@ -51,7 +51,7 @@ describe('Workspace', () => {
   describe('createLeafInParent()', () => {
     it('should create a new leaf', async () => {
       const app = await App.createConfigured__();
-      const newLeaf = app.workspace.createLeafInParent(app.workspace.rootSplit.asOriginalType__(), 0);
+      const newLeaf = app.workspace.createLeafInParent(app.workspace.rootSplit.asOriginalType2__(), 0);
       expect(newLeaf).toBeInstanceOf(WorkspaceLeaf);
     });
   });

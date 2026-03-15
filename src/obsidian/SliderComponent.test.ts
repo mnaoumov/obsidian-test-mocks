@@ -101,18 +101,18 @@ describe('SliderComponent', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType3__', () => {
     it('should return the same instance typed as the original', () => {
       const slider = SliderComponent.create__(createDiv());
-      const original: SliderComponentOriginal = slider.asOriginalType__();
+      const original: SliderComponentOriginal = slider.asOriginalType3__();
       expect(original).toBe(slider);
     });
   });
 
-  describe('fromOriginalType2__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
       const slider = SliderComponent.create__(createDiv());
-      const mock = SliderComponent.fromOriginalType2__(slider.asOriginalType__());
+      const mock = SliderComponent.fromOriginalType3__(slider.asOriginalType3__());
       expect(mock).toBe(slider);
     });
   });

@@ -15,11 +15,11 @@ export abstract class WorkspaceParent extends WorkspaceItem {
     return self;
   }
 
-  public static override fromOriginalType__(value: WorkspaceParentOriginal): WorkspaceParent {
+  public static fromOriginalType3__(value: WorkspaceParentOriginal): WorkspaceParent {
     return castTo<WorkspaceParent>(value);
   }
 
-  public override asOriginalType__(): WorkspaceParentOriginal {
+  public asOriginalType3__(): WorkspaceParentOriginal {
     return castTo<WorkspaceParentOriginal>(this);
   }
 

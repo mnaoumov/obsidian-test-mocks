@@ -19,18 +19,18 @@ const BINARY_SIZE_LARGE = 8;
 const EXPECTED_FILE_COUNT = 2;
 
 describe('Vault', () => {
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType2__()', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
-      const original: VaultOriginal = app.vault.asOriginalType__();
+      const original: VaultOriginal = app.vault.asOriginalType2__();
       expect(original).toBe(app.vault);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
-      const mock = Vault.fromOriginalType__(app.vault.asOriginalType__());
+      const mock = Vault.fromOriginalType2__(app.vault.asOriginalType2__());
       expect(mock).toBe(app.vault);
     });
   });

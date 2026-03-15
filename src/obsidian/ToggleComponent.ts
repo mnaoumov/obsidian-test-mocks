@@ -26,11 +26,11 @@ export class ToggleComponent extends ValueComponent<boolean> {
     return new ToggleComponent(containerEl);
   }
 
-  public static fromOriginalType2__(value: ToggleComponentOriginal): ToggleComponent {
+  public static fromOriginalType3__(value: ToggleComponentOriginal): ToggleComponent {
     return castTo<ToggleComponent>(value);
   }
 
-  public override asOriginalType__(): ToggleComponentOriginal {
+  public asOriginalType3__(): ToggleComponentOriginal {
     return castTo<ToggleComponentOriginal>(this);
   }
 

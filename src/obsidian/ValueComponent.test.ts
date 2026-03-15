@@ -41,18 +41,18 @@ describe('ValueComponent', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance via ValueComponent base class', () => {
       const comp = new BareValueComponent();
-      const original: ValueComponentOriginal<string> = comp.asOriginalType__();
+      const original: ValueComponentOriginal<string> = comp.asOriginalType2__();
       expect(original).toBe(comp);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', () => {
       const comp = new BareValueComponent();
-      const mock = ValueComponent.fromOriginalType__(comp.asOriginalType__());
+      const mock = ValueComponent.fromOriginalType2__(comp.asOriginalType2__());
       expect(mock).toBe(comp);
     });
   });

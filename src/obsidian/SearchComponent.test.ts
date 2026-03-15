@@ -33,18 +33,18 @@ describe('SearchComponent', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType4__', () => {
     it('should return the same instance typed as the original', () => {
       const search = SearchComponent.create__(createDiv());
-      const original: SearchComponentOriginal = search.asOriginalType__();
+      const original: SearchComponentOriginal = search.asOriginalType4__();
       expect(original).toBe(search);
     });
   });
 
-  describe('fromOriginalType3__', () => {
+  describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
       const search = SearchComponent.create__(createDiv());
-      const mock = SearchComponent.fromOriginalType3__(search.asOriginalType__());
+      const mock = SearchComponent.fromOriginalType4__(search.asOriginalType4__());
       expect(mock).toBe(search);
     });
   });

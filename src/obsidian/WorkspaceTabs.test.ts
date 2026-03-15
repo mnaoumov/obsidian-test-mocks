@@ -16,20 +16,20 @@ describe('WorkspaceTabs', () => {
     expect(tabs).toBeInstanceOf(WorkspaceTabs);
   });
 
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType4__()', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const tabs = WorkspaceTabs.create2__(app.workspace);
-      const original: WorkspaceTabsOriginal = tabs.asOriginalType__();
+      const original: WorkspaceTabsOriginal = tabs.asOriginalType4__();
       expect(original).toBe(tabs);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const tabs = WorkspaceTabs.create2__(app.workspace);
-      const mock = WorkspaceTabs.fromOriginalType__(tabs.asOriginalType__());
+      const mock = WorkspaceTabs.fromOriginalType4__(tabs.asOriginalType4__());
       expect(mock).toBe(tabs);
     });
   });

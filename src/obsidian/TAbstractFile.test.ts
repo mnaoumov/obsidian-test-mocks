@@ -1,7 +1,4 @@
-import type {
-  TAbstractFile as TAbstractFileOriginal,
-  TFolder as TFolderOriginal
-} from 'obsidian';
+import type { TAbstractFile as TAbstractFileOriginal } from 'obsidian';
 
 import {
   describe,
@@ -148,7 +145,7 @@ describe('TFolder', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const folder = TFolder.create__(app.vault, 'my-folder');
-      const original: TFolderOriginal = folder.asOriginalType__();
+      const original: TAbstractFileOriginal = folder.asOriginalType__();
       expect(original).toBe(folder);
     });
   });

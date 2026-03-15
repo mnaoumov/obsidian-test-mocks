@@ -22,27 +22,27 @@ class BareWorkspaceContainer extends WorkspaceContainer {
 }
 
 describe('WorkspaceContainer', () => {
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType5__()', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const container = WorkspaceRoot.create3__(app.workspace, 'vertical');
-      const original: WorkspaceContainerOriginal = container.asOriginalType__();
+      const original: WorkspaceContainerOriginal = container.asOriginalType5__();
       expect(original).toBe(container);
     });
 
     it('should return the same instance via WorkspaceContainer base class', async () => {
       const app = await App.createConfigured__();
       const container = new BareWorkspaceContainer(app.workspace);
-      const original: WorkspaceContainerOriginal = container.asOriginalType__();
+      const original: WorkspaceContainerOriginal = container.asOriginalType5__();
       expect(original).toBe(container);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const container = WorkspaceRoot.create3__(app.workspace, 'vertical');
-      const mock = WorkspaceContainer.fromOriginalType__(container.asOriginalType__());
+      const mock = WorkspaceContainer.fromOriginalType5__(container.asOriginalType5__());
       expect(mock).toBe(container);
     });
   });

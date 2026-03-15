@@ -82,20 +82,20 @@ describe('SuggestModal', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);
-      const original: SuggestModalOriginal<string> = modal.asOriginalType__();
+      const original: SuggestModalOriginal<string> = modal.asOriginalType2__();
       expect(original).toBe(modal);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);
-      const mock = SuggestModal.fromOriginalType__(modal.asOriginalType__());
+      const mock = SuggestModal.fromOriginalType2__(modal.asOriginalType2__());
       expect(mock).toBe(modal);
     });
   });

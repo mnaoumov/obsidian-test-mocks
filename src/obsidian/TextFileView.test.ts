@@ -84,22 +84,22 @@ describe('TextFileView', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType6__', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const view = new ConcreteTextFileView(leaf);
-      const original: TextFileViewOriginal = view.asOriginalType__();
+      const original: TextFileViewOriginal = view.asOriginalType6__();
       expect(original).toBe(view);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType6__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const view = new ConcreteTextFileView(leaf);
-      const mock = TextFileView.fromOriginalType__(view.asOriginalType__());
+      const mock = TextFileView.fromOriginalType6__(view.asOriginalType6__());
       expect(mock).toBe(view);
     });
   });

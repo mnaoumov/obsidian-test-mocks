@@ -42,18 +42,18 @@ describe('WorkspaceMobileDrawer', () => {
     });
   });
 
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType4__()', () => {
     it('should return the same instance typed as the original', () => {
       const drawer = WorkspaceMobileDrawer.create2__();
-      const original: WorkspaceMobileDrawerOriginal = drawer.asOriginalType__();
+      const original: WorkspaceMobileDrawerOriginal = drawer.asOriginalType4__();
       expect(original).toBe(drawer);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
       const drawer = WorkspaceMobileDrawer.create2__();
-      const mock = WorkspaceMobileDrawer.fromOriginalType__(drawer.asOriginalType__());
+      const mock = WorkspaceMobileDrawer.fromOriginalType4__(drawer.asOriginalType4__());
       expect(mock).toBe(drawer);
     });
   });

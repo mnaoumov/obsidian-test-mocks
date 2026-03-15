@@ -94,19 +94,19 @@ describe('View', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', async () => {
       const view = await createView();
-      const original: ViewOriginal = view.asOriginalType__();
+      const original: ViewOriginal = view.asOriginalType2__();
       expect(original).toBe(view);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const { View } = await import('./View.ts');
       const view = await createView();
-      const mock = View.fromOriginalType__(view.asOriginalType__());
+      const mock = View.fromOriginalType2__(view.asOriginalType2__());
       expect(mock).toBe(view);
     });
   });

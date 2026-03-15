@@ -16,24 +16,24 @@ class BareWorkspaceParent extends WorkspaceParent {
 }
 
 describe('WorkspaceParent', () => {
-  describe('asOriginalType__()', () => {
+  describe('asOriginalType3__()', () => {
     it('should return the same instance typed as the original', () => {
       const parent = WorkspaceFloating.create2__();
-      const original: WorkspaceParentOriginal = parent.asOriginalType__();
+      const original: WorkspaceParentOriginal = parent.asOriginalType3__();
       expect(original).toBe(parent);
     });
 
     it('should return the same instance via WorkspaceParent base class', () => {
       const parent = new BareWorkspaceParent();
-      const original: WorkspaceParentOriginal = parent.asOriginalType__();
+      const original: WorkspaceParentOriginal = parent.asOriginalType3__();
       expect(original).toBe(parent);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
       const parent = WorkspaceFloating.create2__();
-      const mock = WorkspaceParent.fromOriginalType__(parent.asOriginalType__());
+      const mock = WorkspaceParent.fromOriginalType3__(parent.asOriginalType3__());
       expect(mock).toBe(parent);
     });
   });

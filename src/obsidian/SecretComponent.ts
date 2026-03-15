@@ -21,11 +21,11 @@ export class SecretComponent extends BaseComponent {
     return new SecretComponent(app, containerEl);
   }
 
-  public static fromOriginalType3__(value: SecretComponentOriginal): SecretComponent {
+  public static fromOriginalType2__(value: SecretComponentOriginal): SecretComponent {
     return castTo<SecretComponent>(value);
   }
 
-  public override asOriginalType__(): SecretComponentOriginal {
+  public asOriginalType2__(): SecretComponentOriginal {
     return castTo<SecretComponentOriginal>(this);
   }
 

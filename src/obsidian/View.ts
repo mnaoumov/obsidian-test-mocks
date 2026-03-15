@@ -40,11 +40,11 @@ export abstract class View extends Component {
     return self;
   }
 
-  public static override fromOriginalType__(value: ViewOriginal): View {
+  public static fromOriginalType2__(value: ViewOriginal): View {
     return castTo<View>(value);
   }
 
-  public override asOriginalType__(): ViewOriginal {
+  public asOriginalType2__(): ViewOriginal {
     return castTo<ViewOriginal>(this);
   }
 
