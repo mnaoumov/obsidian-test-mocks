@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.0.6
+
+- refactor: stop re-exporting non-mocked types
+
 ## 1.0.5
 
 - fix: batching for too many files
