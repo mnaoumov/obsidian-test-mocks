@@ -17,6 +17,10 @@ export class UrlValue extends StringValue {
     return new UrlValue(value, display);
   }
 
+  public static fromOriginalType3__(value: UrlValueOriginal): UrlValue {
+    return castTo<UrlValue>(value);
+  }
+
   public override asOriginalType__(): UrlValueOriginal {
     return castTo<UrlValueOriginal>(this);
   }

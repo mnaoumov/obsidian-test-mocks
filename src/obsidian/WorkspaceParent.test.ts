@@ -30,6 +30,14 @@ describe('WorkspaceParent', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const parent = WorkspaceFloating.create2__();
+      const mock = WorkspaceParent.fromOriginalType__(parent.asOriginalType__());
+      expect(mock).toBe(parent);
+    });
+  });
+
   describe('constructor3__()', () => {
     it('should be callable without throwing', () => {
       const parent = WorkspaceFloating.create2__();

@@ -75,4 +75,12 @@ describe('ToggleComponent', () => {
       expect(original).toBe(toggle);
     });
   });
+
+  describe('fromOriginalType2__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const toggle = ToggleComponent.create__(createDiv());
+      const mock = ToggleComponent.fromOriginalType2__(toggle.asOriginalType__());
+      expect(mock).toBe(toggle);
+    });
+  });
 });

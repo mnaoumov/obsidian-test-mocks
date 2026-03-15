@@ -27,6 +27,10 @@ export class WorkspaceWindow extends WorkspaceContainer {
     return new WorkspaceWindow(workspace, id, size);
   }
 
+  public static override fromOriginalType__(value: WorkspaceWindowOriginal): WorkspaceWindow {
+    return castTo<WorkspaceWindow>(value);
+  }
+
   public override asOriginalType__(): WorkspaceWindowOriginal {
     return castTo<WorkspaceWindowOriginal>(this);
   }

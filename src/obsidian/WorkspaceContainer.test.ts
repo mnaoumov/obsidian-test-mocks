@@ -38,6 +38,15 @@ describe('WorkspaceContainer', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const container = WorkspaceRoot.create3__(app.workspace, 'vertical');
+      const mock = WorkspaceContainer.fromOriginalType__(container.asOriginalType__());
+      expect(mock).toBe(container);
+    });
+  });
+
   describe('constructor5__()', () => {
     it('should be callable without throwing', async () => {
       const app = await App.createConfigured__();

@@ -49,4 +49,12 @@ describe('WorkspaceMobileDrawer', () => {
       expect(original).toBe(drawer);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const drawer = WorkspaceMobileDrawer.create2__();
+      const mock = WorkspaceMobileDrawer.fromOriginalType__(drawer.asOriginalType__());
+      expect(mock).toBe(drawer);
+    });
+  });
 });

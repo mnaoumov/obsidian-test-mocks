@@ -72,6 +72,10 @@ export class Workspace extends Events {
     return new Workspace(app, containerEl);
   }
 
+  public static override fromOriginalType__(value: WorkspaceOriginal): Workspace {
+    return castTo<Workspace>(value);
+  }
+
   public override asOriginalType__(): WorkspaceOriginal {
     return castTo<WorkspaceOriginal>(this);
   }

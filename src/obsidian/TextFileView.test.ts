@@ -93,4 +93,14 @@ describe('TextFileView', () => {
       expect(original).toBe(view);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const view = new ConcreteTextFileView(leaf);
+      const mock = TextFileView.fromOriginalType__(view.asOriginalType__());
+      expect(mock).toBe(view);
+    });
+  });
 });

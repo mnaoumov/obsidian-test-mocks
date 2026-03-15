@@ -36,6 +36,10 @@ export class Vault extends Events {
     return new Vault(adapter);
   }
 
+  public static override fromOriginalType__(value: VaultOriginal): Vault {
+    return castTo<Vault>(value);
+  }
+
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {
     for (const child of folder.children) {
       cb(child);

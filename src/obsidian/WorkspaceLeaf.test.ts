@@ -41,6 +41,15 @@ describe('WorkspaceLeaf', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const mock = WorkspaceLeaf.fromOriginalType__(leaf.asOriginalType__());
+      expect(mock).toBe(leaf);
+    });
+  });
+
   describe('detach()', () => {
     it('should remove the leaf from workspace leaves', async () => {
       const app = await App.createConfigured__();

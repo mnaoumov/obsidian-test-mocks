@@ -30,6 +30,14 @@ describe('WorkspaceItem', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const item = WorkspaceFloating.create2__();
+      const mock = WorkspaceItem.fromOriginalType__(item.asOriginalType__());
+      expect(mock).toBe(item);
+    });
+  });
+
   describe('getContainer()', () => {
     it('should return the instance cast as WorkspaceContainer', () => {
       const item = WorkspaceFloating.create2__();

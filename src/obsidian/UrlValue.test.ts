@@ -36,4 +36,12 @@ describe('UrlValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = UrlValue.create2__('https://example.com');
+      const mock = UrlValue.fromOriginalType3__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
 });

@@ -59,4 +59,12 @@ describe('Tasks', () => {
       expect(original).toBe(tasks);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const tasks = Tasks.create__();
+      const mock = Tasks.fromOriginalType__(tasks.asOriginalType__());
+      expect(mock).toBe(tasks);
+    });
+  });
 });

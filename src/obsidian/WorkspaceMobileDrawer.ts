@@ -19,6 +19,10 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
     return new WorkspaceMobileDrawer();
   }
 
+  public static override fromOriginalType__(value: WorkspaceMobileDrawerOriginal): WorkspaceMobileDrawer {
+    return castTo<WorkspaceMobileDrawer>(value);
+  }
+
   public override asOriginalType__(): WorkspaceMobileDrawerOriginal {
     return castTo<WorkspaceMobileDrawerOriginal>(this);
   }

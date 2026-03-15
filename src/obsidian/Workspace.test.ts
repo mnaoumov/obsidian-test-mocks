@@ -8,6 +8,7 @@ import {
 } from 'vitest';
 
 import { App } from './App.ts';
+import { Workspace } from './Workspace.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 import { WorkspaceWindow } from './WorkspaceWindow.ts';
 
@@ -19,6 +20,14 @@ describe('Workspace', () => {
       const app = await App.createConfigured__();
       const original: WorkspaceOriginal = app.workspace.asOriginalType__();
       expect(original).toBe(app.workspace);
+    });
+  });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const mock = Workspace.fromOriginalType__(app.workspace.asOriginalType__());
+      expect(mock).toBe(app.workspace);
     });
   });
 

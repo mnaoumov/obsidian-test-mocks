@@ -66,6 +66,15 @@ describe('TAbstractFile (via TFile)', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const file = TFile.create__(app.vault, 'note.md');
+      const mock = TAbstractFile.fromOriginalType__(file.asOriginalType__());
+      expect(mock).toBe(file);
+    });
+  });
+
   describe('constructor__', () => {
     it('should be callable without throwing', async () => {
       const app = await App.createConfigured__();

@@ -48,4 +48,12 @@ describe('ValueComponent', () => {
       expect(original).toBe(comp);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const comp = new BareValueComponent();
+      const mock = ValueComponent.fromOriginalType__(comp.asOriginalType__());
+      expect(mock).toBe(comp);
+    });
+  });
 });

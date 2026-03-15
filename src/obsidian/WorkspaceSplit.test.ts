@@ -24,4 +24,13 @@ describe('WorkspaceSplit', () => {
       expect(original).toBe(split);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const split = WorkspaceSplit.create2__(app.workspace, 'vertical');
+      const mock = WorkspaceSplit.fromOriginalType__(split.asOriginalType__());
+      expect(mock).toBe(split);
+    });
+  });
 });

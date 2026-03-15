@@ -17,6 +17,10 @@ export class Tasks {
     return new Tasks();
   }
 
+  public static fromOriginalType__(value: TasksOriginal): Tasks {
+    return castTo<Tasks>(value);
+  }
+
   public add(callback: () => Promise<unknown>): void {
     this.promises.push(callback());
   }

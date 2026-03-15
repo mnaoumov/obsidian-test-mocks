@@ -136,6 +136,14 @@ describe('Value', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = new StringValue('test');
+      const mock = Value.fromOriginalType__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
+
   describe('constructor__', () => {
     it('should be callable without throwing', () => {
       const val = new StringValue('test');

@@ -18,6 +18,10 @@ export abstract class WorkspaceContainer extends WorkspaceSplit {
     return self;
   }
 
+  public static override fromOriginalType__(value: WorkspaceContainerOriginal): WorkspaceContainer {
+    return castTo<WorkspaceContainer>(value);
+  }
+
   public override asOriginalType__(): WorkspaceContainerOriginal {
     return castTo<WorkspaceContainerOriginal>(this);
   }

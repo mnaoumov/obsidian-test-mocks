@@ -102,6 +102,15 @@ describe('View', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const { View } = await import('./View.ts');
+      const view = await createView();
+      const mock = View.fromOriginalType__(view.asOriginalType__());
+      expect(mock).toBe(view);
+    });
+  });
+
   describe('constructor2__()', () => {
     it('should be callable without throwing', async () => {
       const view = await createView();

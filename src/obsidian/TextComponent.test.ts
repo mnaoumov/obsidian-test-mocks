@@ -76,4 +76,12 @@ describe('TextComponent', () => {
       expect(original).toBe(component);
     });
   });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const component = TextComponent.create__(createDiv());
+      const mock = TextComponent.fromOriginalType3__(component.asOriginalType__());
+      expect(mock).toBe(component);
+    });
+  });
 });

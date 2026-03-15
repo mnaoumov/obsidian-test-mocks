@@ -29,6 +29,10 @@ export class TFile extends TAbstractFile {
     return new TFile(vault, path);
   }
 
+  public static override fromOriginalType__(value: TFileOriginal): TFile {
+    return castTo<TFile>(value);
+  }
+
   public override asOriginalType__(): TFileOriginal {
     return castTo<TFileOriginal>(this);
   }
