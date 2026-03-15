@@ -24,4 +24,13 @@ describe('MenuSeparator', () => {
       expect(original).toBe(sep);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const menu = Menu.create2__();
+      const sep = MenuSeparator.create__(menu);
+      const mock = MenuSeparator.fromOriginalType__(sep.asOriginalType__());
+      expect(mock).toBe(sep);
+    });
+  });
 });

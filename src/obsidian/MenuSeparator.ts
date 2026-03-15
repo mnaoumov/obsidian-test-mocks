@@ -17,6 +17,10 @@ export class MenuSeparator {
     return new MenuSeparator(menu);
   }
 
+  public static fromOriginalType__(value: MenuSeparatorOriginal): MenuSeparator {
+    return castTo<MenuSeparator>(value);
+  }
+
   public asOriginalType__(): MenuSeparatorOriginal {
     return castTo<MenuSeparatorOriginal>(this);
   }

@@ -17,6 +17,10 @@ export class HTMLValue extends StringValue {
     return new HTMLValue(value);
   }
 
+  public static fromOriginalType3__(value: HTMLValueOriginal): HTMLValue {
+    return castTo<HTMLValue>(value);
+  }
+
   public override asOriginalType__(): HTMLValueOriginal {
     return castTo<HTMLValueOriginal>(this);
   }

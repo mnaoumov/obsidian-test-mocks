@@ -28,6 +28,10 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     return new MarkdownPreviewView(markdownView);
   }
 
+  public static override fromOriginalType__(value: MarkdownPreviewViewOriginal): MarkdownPreviewView {
+    return castTo<MarkdownPreviewView>(value);
+  }
+
   public applyScroll(_scroll: number): void {
     noop();
   }

@@ -42,6 +42,14 @@ describe('DropdownComponent', () => {
     });
   });
 
+  describe('fromOriginalType2__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const dropdown = createDropdown();
+      const mock = DropdownComponent.fromOriginalType2__(dropdown.asOriginalType__());
+      expect(mock).toBe(dropdown);
+    });
+  });
+
   describe('addOption', () => {
     it('should add an option to selectEl', () => {
       const dropdown = createDropdown();

@@ -53,4 +53,12 @@ describe('LinkValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = LinkValue.create2__(mockApp, 'note', '');
+      const mock = LinkValue.fromOriginalType3__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
 });

@@ -107,4 +107,12 @@ describe('Modal', () => {
       expect(original).toBe(modal);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const modal = Modal.create__(app);
+      const mock = Modal.fromOriginalType__(modal.asOriginalType__());
+      expect(mock).toBe(modal);
+    });
+  });
 });

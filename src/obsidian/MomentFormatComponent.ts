@@ -21,6 +21,10 @@ export class MomentFormatComponent extends TextComponent {
     return new MomentFormatComponent(containerEl);
   }
 
+  public static fromOriginalType4__(value: MomentFormatComponentOriginal): MomentFormatComponent {
+    return castTo<MomentFormatComponent>(value);
+  }
+
   public override asOriginalType__(): MomentFormatComponentOriginal {
     return castTo<MomentFormatComponentOriginal>(this);
   }

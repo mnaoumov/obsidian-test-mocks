@@ -38,6 +38,10 @@ export class MetadataCache extends Events {
     return new MetadataCache(app, vault);
   }
 
+  public static override fromOriginalType__(value: MetadataCacheOriginal): MetadataCache {
+    return castTo<MetadataCache>(value);
+  }
+
   public override asOriginalType__(): MetadataCacheOriginal {
     return castTo<MetadataCacheOriginal>(this);
   }

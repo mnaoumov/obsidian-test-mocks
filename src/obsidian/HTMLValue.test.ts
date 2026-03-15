@@ -31,4 +31,12 @@ describe('HTMLValue', () => {
       expect(original).toBe(value);
     });
   });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const value = HTMLValue.create2__();
+      const mock = HTMLValue.fromOriginalType3__(value.asOriginalType__());
+      expect(mock).toBe(value);
+    });
+  });
 });

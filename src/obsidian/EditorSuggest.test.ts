@@ -13,6 +13,7 @@ import {
   it
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { EditorSuggest } from './EditorSuggest.ts';
 
@@ -30,11 +31,11 @@ class ConcreteEditorSuggest extends EditorSuggest<string> {
   }
 
   public override renderSuggestion(_value: string, _el: HTMLElement): void {
-    // Intentionally empty for testing.
+    noop();
   }
 
   public override selectSuggestion(_value: string, _evt: KeyboardEvent | MouseEvent): void {
-    // Intentionally empty for testing.
+    noop();
   }
 }
 
@@ -60,6 +61,14 @@ describe('EditorSuggest', () => {
       const suggest = await createSuggest();
       const original: EditorSuggestOriginal<string> = suggest.asOriginalType__();
       expect(original).toBe(suggest);
+    });
+  });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const suggest = await createSuggest();
+      const mock = EditorSuggest.fromOriginalType__(suggest.asOriginalType__());
+      expect(mock).toBe(suggest);
     });
   });
 

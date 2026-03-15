@@ -31,6 +31,14 @@ describe('Events', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const events = Events.create__();
+      const mock = Events.fromOriginalType__(events.asOriginalType__());
+      expect(mock).toBe(events);
+    });
+  });
+
   describe('on', () => {
     it('should register a callback and return an event ref', () => {
       const events = Events.create__();

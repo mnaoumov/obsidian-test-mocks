@@ -8,6 +8,7 @@ import {
 } from 'vitest';
 
 import { App } from './App.ts';
+import { MetadataCache } from './MetadataCache.ts';
 
 const MICROTASK_FLUSH_COUNT = 5;
 const HEADING_COUNT_2 = 2;
@@ -213,6 +214,14 @@ describe('MetadataCache', () => {
       const app = await App.createConfigured__();
       const original: MetadataCacheOriginal = app.metadataCache.asOriginalType__();
       expect(original).toBe(app.metadataCache);
+    });
+  });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const mock = MetadataCache.fromOriginalType__(app.metadataCache.asOriginalType__());
+      expect(mock).toBe(app.metadataCache);
     });
   });
 

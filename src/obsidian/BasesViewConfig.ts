@@ -30,6 +30,10 @@ export class BasesViewConfig {
     return new BasesViewConfig(query, type, name);
   }
 
+  public static fromOriginalType__(value: BasesViewConfigOriginal): BasesViewConfig {
+    return castTo<BasesViewConfig>(value);
+  }
+
   public asOriginalType__(): BasesViewConfigOriginal {
     return castTo<BasesViewConfigOriginal>(this);
   }

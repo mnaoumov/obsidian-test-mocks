@@ -33,6 +33,10 @@ export class DurationValue extends NotNullValue {
     return new DurationValue(years, months, days, hours, minutes, seconds, milliseconds);
   }
 
+  public static override fromOriginalType__(value: DurationValueOriginal): DurationValue {
+    return castTo<DurationValue>(value);
+  }
+
   public override asOriginalType__(): DurationValueOriginal {
     return castTo<DurationValueOriginal>(this);
   }

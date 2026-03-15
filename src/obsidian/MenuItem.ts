@@ -28,6 +28,10 @@ export class MenuItem {
     return new MenuItem(menu);
   }
 
+  public static fromOriginalType__(value: MenuItemOriginal): MenuItem {
+    return castTo<MenuItem>(value);
+  }
+
   public asOriginalType__(): MenuItemOriginal {
     return castTo<MenuItemOriginal>(this);
   }

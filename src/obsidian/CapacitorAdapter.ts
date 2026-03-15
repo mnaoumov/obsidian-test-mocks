@@ -17,6 +17,10 @@ export class CapacitorAdapter extends InMemoryAdapter {
     return new CapacitorAdapter(basePath, fs);
   }
 
+  public static fromOriginalType__(value: CapacitorAdapterOriginal): CapacitorAdapter {
+    return castTo<CapacitorAdapter>(value);
+  }
+
   public asOriginalType__(): CapacitorAdapterOriginal {
     return castTo<CapacitorAdapterOriginal>(this);
   }

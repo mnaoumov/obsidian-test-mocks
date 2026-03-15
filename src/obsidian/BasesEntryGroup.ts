@@ -27,6 +27,10 @@ export class BasesEntryGroup {
     return new BasesEntryGroup(entries, key);
   }
 
+  public static fromOriginalType__(value: BasesEntryGroupOriginal): BasesEntryGroup {
+    return castTo<BasesEntryGroup>(value);
+  }
+
   public asOriginalType__(): BasesEntryGroupOriginal {
     return castTo<BasesEntryGroupOriginal>(this);
   }

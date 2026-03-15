@@ -17,6 +17,10 @@ export class IconValue extends StringValue {
     return new IconValue(value);
   }
 
+  public static fromOriginalType3__(value: IconValueOriginal): IconValue {
+    return castTo<IconValue>(value);
+  }
+
   public override asOriginalType__(): IconValueOriginal {
     return castTo<IconValueOriginal>(this);
   }

@@ -24,6 +24,10 @@ export class Keymap {
     return new Keymap();
   }
 
+  public static fromOriginalType__(value: KeymapOriginal): Keymap {
+    return castTo<Keymap>(value);
+  }
+
   public static isModEvent(_evt?: null | UserEventOriginal): boolean | PaneTypeOriginal {
     return false;
   }

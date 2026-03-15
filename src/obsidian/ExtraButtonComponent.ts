@@ -21,6 +21,10 @@ export class ExtraButtonComponent extends BaseComponent {
     return new ExtraButtonComponent(containerEl);
   }
 
+  public static override fromOriginalType__(value: ExtraButtonComponentOriginal): ExtraButtonComponent {
+    return castTo<ExtraButtonComponent>(value);
+  }
+
   public override asOriginalType__(): ExtraButtonComponentOriginal {
     return castTo<ExtraButtonComponentOriginal>(this);
   }

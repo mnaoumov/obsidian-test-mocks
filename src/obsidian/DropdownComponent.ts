@@ -22,6 +22,10 @@ export class DropdownComponent extends ValueComponent<string> {
     return new DropdownComponent(containerEl);
   }
 
+  public static fromOriginalType2__(value: DropdownComponentOriginal): DropdownComponent {
+    return castTo<DropdownComponent>(value);
+  }
+
   public addOption(value: string, display: string): this {
     const option = createEl('option');
     option.value = value;

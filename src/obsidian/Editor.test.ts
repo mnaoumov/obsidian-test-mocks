@@ -358,6 +358,14 @@ describe('Editor core methods', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const editor = createEditor();
+      const mock = Editor.fromOriginalType__(editor.asOriginalType__());
+      expect(mock).toBe(editor);
+    });
+  });
+
   describe('focus / blur / hasFocus', () => {
     it('should track focus state', () => {
       const editor = createEditor();

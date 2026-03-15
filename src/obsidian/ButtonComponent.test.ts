@@ -42,6 +42,14 @@ describe('ButtonComponent', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const button = createButton();
+      const mock = ButtonComponent.fromOriginalType__(button.asOriginalType__());
+      expect(mock).toBe(button);
+    });
+  });
+
   describe('setButtonText', () => {
     it('should set button text content', () => {
       const button = createButton();

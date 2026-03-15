@@ -26,6 +26,10 @@ export class BasesEntry implements FormulaContextOriginal {
     return new BasesEntry(ctx, file);
   }
 
+  public static fromOriginalType__(value: BasesEntryOriginal): BasesEntry {
+    return castTo<BasesEntry>(value);
+  }
+
   public asOriginalType__(): BasesEntryOriginal {
     return castTo<BasesEntryOriginal>(this);
   }

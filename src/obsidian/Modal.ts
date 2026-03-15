@@ -34,6 +34,10 @@ export class Modal {
     return new Modal(app);
   }
 
+  public static fromOriginalType__(value: ModalOriginal): Modal {
+    return castTo<Modal>(value);
+  }
+
   public asOriginalType__(): ModalOriginal {
     return castTo<ModalOriginal>(this);
   }

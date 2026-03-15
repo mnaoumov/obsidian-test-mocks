@@ -59,4 +59,12 @@ describe('MomentFormatComponent', () => {
       expect(original).toBe(comp);
     });
   });
+
+  describe('fromOriginalType4__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const comp = MomentFormatComponent.create2__(createDiv());
+      const mock = MomentFormatComponent.fromOriginalType4__(comp.asOriginalType__());
+      expect(mock).toBe(comp);
+    });
+  });
 });

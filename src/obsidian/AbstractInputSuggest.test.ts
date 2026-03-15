@@ -4,6 +4,7 @@ import {
   it
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { AbstractInputSuggest } from './AbstractInputSuggest.ts';
 import { App } from './App.ts';
 
@@ -13,11 +14,11 @@ class ConcreteInputSuggest extends AbstractInputSuggest<string> {
   }
 
   public override renderSuggestion(_value: string, _el: HTMLElement): void {
-    // Intentionally empty for testing.
+    noop();
   }
 
   public override selectSuggestion(_value: string, _evt: KeyboardEvent | MouseEvent): void {
-    // Intentionally empty for testing.
+    noop();
   }
 }
 
@@ -45,6 +46,15 @@ describe('AbstractInputSuggest', () => {
       const suggest = await createSuggestWithInput(input);
       const original = suggest.asOriginalType__();
       expect(original).toBe(suggest);
+    });
+  });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const input = createEl('input');
+      const suggest = await createSuggestWithInput(input);
+      const mock = AbstractInputSuggest.fromOriginalType__(suggest.asOriginalType__());
+      expect(mock).toBe(suggest);
     });
   });
 
