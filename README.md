@@ -174,6 +174,25 @@ pluginInit(app.asOriginalType__());
 
 This is a zero-cost type cast at runtime — no wrapping, no cloning. The `__` suffix signals it is not part of the real Obsidian API.
 
+### Reverse Bridging with `fromOriginalType__()`
+
+The inverse of `asOriginalType__()`. Every mock class provides a static `fromOriginalType__()` method that accepts a real-typed obsidian object and returns it typed as the mock class:
+
+```typescript
+import type { App as AppOriginal } from 'obsidian';
+import { App, Vault } from 'obsidian';
+
+const app: AppOriginal = (await App.createConfigured__()).asOriginalType__();
+
+// Convert back to mock type when you need mock-specific APIs
+const mockVault = Vault.fromOriginalType__(app.vault);
+mockVault.setVaultAbstractFile__('path', file);
+```
+
+This eliminates the need for maintaining dual variables (`mockApp` / `app`). Keep the real `App` type throughout your test and convert to the mock type only when calling mock-specific APIs.
+
+Some subclasses use numbered variants (`fromOriginalType2__()`, `fromOriginalType3__()`, etc.) to avoid TypeScript static-side conflicts in generic class hierarchies — the same convention as `create__()` / `create2__()`.
+
 Because every mock is a [strict mock](#strict-mocks), passing the result to code that accesses internal members (not part of `obsidian.d.ts`) will throw a descriptive error unless you assign those members first:
 
 ```typescript
