@@ -107,6 +107,14 @@ describe('AbstractTextComponent', () => {
     });
   });
 
+  describe('fromOriginalType2__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const component = createTextComponent();
+      const mock = AbstractTextComponent.fromOriginalType2__(component.asOriginalType__());
+      expect(mock).toBe(component);
+    });
+  });
+
   describe('setPlaceholder', () => {
     it('should set the placeholder on inputEl', () => {
       const component = createTextComponent();

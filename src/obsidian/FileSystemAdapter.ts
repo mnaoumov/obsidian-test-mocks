@@ -17,6 +17,10 @@ export class FileSystemAdapter extends InMemoryAdapter {
     return new FileSystemAdapter(basePath);
   }
 
+  public static fromOriginalType__(value: FileSystemAdapterOriginal): FileSystemAdapter {
+    return castTo<FileSystemAdapter>(value);
+  }
+
   public asOriginalType__(): FileSystemAdapterOriginal {
     return castTo<FileSystemAdapterOriginal>(this);
   }

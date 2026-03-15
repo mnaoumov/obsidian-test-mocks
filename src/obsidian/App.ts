@@ -90,6 +90,10 @@ export class App {
     return app;
   }
 
+  public static fromOriginalType__(value: AppOriginal): App {
+    return castTo<App>(value);
+  }
+
   public asOriginalType__(): AppOriginal {
     return castTo<AppOriginal>(this);
   }

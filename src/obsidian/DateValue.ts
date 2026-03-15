@@ -17,6 +17,10 @@ export class DateValue extends NotNullValue {
     return new DateValue(date, showTime);
   }
 
+  public static override fromOriginalType__(value: DateValueOriginal): DateValue {
+    return castTo<DateValue>(value);
+  }
+
   public override asOriginalType__(): DateValueOriginal {
     return castTo<DateValueOriginal>(this);
   }

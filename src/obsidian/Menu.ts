@@ -33,6 +33,10 @@ export class Menu extends Component {
     return Menu.create2__();
   }
 
+  public static override fromOriginalType__(value: MenuOriginal): Menu {
+    return castTo<Menu>(value);
+  }
+
   public addItem(cb: (item: MenuItemOriginal) => unknown): this {
     const item = MenuItem.create__(this);
     this.items__.push(item);

@@ -41,4 +41,12 @@ describe('EditableFileView', () => {
       expect(original).toBe(view);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const view = await createEditableFileView();
+      const mock = EditableFileView.fromOriginalType__(view.asOriginalType__());
+      expect(mock).toBe(view);
+    });
+  });
 });

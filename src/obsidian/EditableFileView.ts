@@ -14,11 +14,13 @@ export abstract class EditableFileView extends FileView {
     return self;
   }
 
+  public static override fromOriginalType__(value: EditableFileViewOriginal): EditableFileView {
+    return castTo<EditableFileView>(value);
+  }
+
   public override asOriginalType__(): EditableFileViewOriginal {
     return castTo<EditableFileViewOriginal>(this);
   }
-
-  // Intentionally empty, obsidian.d.ts doesn't have any members to mock.
 
   public constructor5__(_leaf: WorkspaceLeaf): void {
     noop();

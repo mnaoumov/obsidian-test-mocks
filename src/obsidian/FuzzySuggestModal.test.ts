@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { FuzzySuggestModal } from './FuzzySuggestModal.ts';
 
@@ -20,7 +21,7 @@ class ConcreteFuzzySuggestModal extends FuzzySuggestModal<string> {
   }
 
   public override onChooseItem(_item: string, _evt: KeyboardEvent | MouseEvent): void {
-    // Intentionally empty for testing.
+    noop();
   }
 }
 
@@ -55,6 +56,14 @@ describe('FuzzySuggestModal', () => {
       const modal = await createModal();
       const original: FuzzySuggestModalOriginal<string> = modal.asOriginalType__();
       expect(original).toBe(modal);
+    });
+  });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const modal = await createModal();
+      const mock = FuzzySuggestModal.fromOriginalType__(modal.asOriginalType__());
+      expect(mock).toBe(modal);
     });
   });
 

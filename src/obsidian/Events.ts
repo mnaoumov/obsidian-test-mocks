@@ -22,6 +22,10 @@ export class Events {
     return new Events();
   }
 
+  public static fromOriginalType__(value: EventsOriginal): Events {
+    return castTo<Events>(value);
+  }
+
   public asOriginalType__(): EventsOriginal {
     return castTo<EventsOriginal>(this);
   }

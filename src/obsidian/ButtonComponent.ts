@@ -24,6 +24,10 @@ export class ButtonComponent extends BaseComponent {
     return new ButtonComponent(containerEl);
   }
 
+  public static override fromOriginalType__(value: ButtonComponentOriginal): ButtonComponent {
+    return castTo<ButtonComponent>(value);
+  }
+
   public override asOriginalType__(): ButtonComponentOriginal {
     return castTo<ButtonComponentOriginal>(this);
   }

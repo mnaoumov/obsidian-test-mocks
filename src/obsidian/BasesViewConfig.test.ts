@@ -28,6 +28,14 @@ describe('BasesViewConfig', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const config = BasesViewConfig.create__('', '', 'test');
+      const mock = BasesViewConfig.fromOriginalType__(config.asOriginalType__());
+      expect(mock).toBe(config);
+    });
+  });
+
   it('should store the name', () => {
     const config = BasesViewConfig.create__('', '', 'myView');
     expect(config.name).toBe('myView');

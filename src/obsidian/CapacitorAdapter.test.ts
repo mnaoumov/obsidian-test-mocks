@@ -34,6 +34,14 @@ describe('CapacitorAdapter', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const adapter = createAdapter();
+      const mock = CapacitorAdapter.fromOriginalType__(adapter.asOriginalType__());
+      expect(mock).toBe(adapter);
+    });
+  });
+
   describe('getFullPath', () => {
     it('should return base path joined with normalized path', () => {
       const adapter = createAdapter();

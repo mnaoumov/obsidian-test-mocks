@@ -51,4 +51,12 @@ describe('BasesEntry', () => {
       expect(original).toBe(entry);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const entry = BasesEntry.create__(undefined, mockFile);
+      const mock = BasesEntry.fromOriginalType__(entry.asOriginalType__());
+      expect(mock).toBe(entry);
+    });
+  });
 });

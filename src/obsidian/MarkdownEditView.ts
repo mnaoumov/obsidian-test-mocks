@@ -32,6 +32,10 @@ export class MarkdownEditView {
     return new MarkdownEditView(view);
   }
 
+  public static fromOriginalType__(value: MarkdownEditViewOriginal): MarkdownEditView {
+    return castTo<MarkdownEditView>(value);
+  }
+
   public applyScroll(scroll: number): void {
     this.scroll = scroll;
   }

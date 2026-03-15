@@ -33,6 +33,10 @@ export abstract class Editor {
     return self;
   }
 
+  public static fromOriginalType__(value: EditorOriginal): Editor {
+    return castTo<Editor>(value);
+  }
+
   public asOriginalType__(): EditorOriginal {
     return castTo<EditorOriginal>(this);
   }

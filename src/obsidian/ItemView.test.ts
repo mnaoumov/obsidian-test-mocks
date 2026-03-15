@@ -54,4 +54,12 @@ describe('ItemView', () => {
       expect(original).toBe(view);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const view = await createItemView();
+      const mock = ItemView.fromOriginalType__(view.asOriginalType__());
+      expect(mock).toBe(view);
+    });
+  });
 });

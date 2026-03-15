@@ -24,6 +24,10 @@ export class Component {
     return new Component();
   }
 
+  public static fromOriginalType__(value: ComponentOriginal): Component {
+    return castTo<Component>(value);
+  }
+
   public addChild<T extends Component>(component: T): T {
     this.children__.push(component);
     if (this.loaded__) {

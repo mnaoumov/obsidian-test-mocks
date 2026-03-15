@@ -39,6 +39,10 @@ export class BasesQueryResult {
     return new BasesQueryResult(app, config, allProperties, data);
   }
 
+  public static fromOriginalType__(value: BasesQueryResultOriginal): BasesQueryResult {
+    return castTo<BasesQueryResult>(value);
+  }
+
   public asOriginalType__(): BasesQueryResultOriginal {
     return castTo<BasesQueryResultOriginal>(this);
   }

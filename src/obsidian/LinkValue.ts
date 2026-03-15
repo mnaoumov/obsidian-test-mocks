@@ -20,6 +20,10 @@ export class LinkValue extends StringValue {
     return new LinkValue(app, value, sourcePath, display);
   }
 
+  public static fromOriginalType3__(value: LinkValueOriginal): LinkValue {
+    return castTo<LinkValue>(value);
+  }
+
   public static parseFromString(app: App, input: string, sourcePath: string): LinkValue | null {
     const match = /^\[\[(?<inner>[^\]]+)\]\]$/.exec(input);
     if (!match) {

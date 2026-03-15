@@ -47,6 +47,14 @@ describe('ColorComponent', () => {
     });
   });
 
+  describe('fromOriginalType2__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const color = createColor();
+      const mock = ColorComponent.fromOriginalType2__(color.asOriginalType__());
+      expect(mock).toBe(color);
+    });
+  });
+
   describe('getValue', () => {
     it('should return empty string initially', () => {
       const color = createColor();

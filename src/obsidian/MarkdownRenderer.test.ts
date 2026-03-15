@@ -61,6 +61,17 @@ describe('MarkdownRenderer', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const mdView = MarkdownView.create2__(leaf);
+      const renderer = MarkdownPreviewView.create3__(mdView);
+      const mock = MarkdownRenderer.fromOriginalType__(renderer.asOriginalType__());
+      expect(mock).toBe(renderer);
+    });
+  });
+
   describe('constructor3__', () => {
     it('should be callable without throwing', async () => {
       const app = await App.createConfigured__();

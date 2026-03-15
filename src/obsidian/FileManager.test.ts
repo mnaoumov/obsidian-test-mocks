@@ -9,6 +9,7 @@ import {
 
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
+import { FileManager } from './FileManager.ts';
 
 describe('FileManager', () => {
   async function createApp(files?: Record<string, string>): Promise<App> {
@@ -20,6 +21,14 @@ describe('FileManager', () => {
       const app = await createApp();
       const original: FileManagerOriginal = app.fileManager.asOriginalType__();
       expect(original).toBe(app.fileManager);
+    });
+  });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await createApp();
+      const mock = FileManager.fromOriginalType__(app.fileManager.asOriginalType__());
+      expect(mock).toBe(app.fileManager);
     });
   });
 

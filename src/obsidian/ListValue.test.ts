@@ -49,4 +49,12 @@ describe('ListValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = ListValue.create__([]);
+      const mock = ListValue.fromOriginalType__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
 });

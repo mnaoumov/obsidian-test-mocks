@@ -128,4 +128,12 @@ describe('App', () => {
       expect(record['customProperty']).toBe(mockValue);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const mock = App.fromOriginalType__(app.asOriginalType__());
+      expect(mock).toBe(app);
+    });
+  });
 });

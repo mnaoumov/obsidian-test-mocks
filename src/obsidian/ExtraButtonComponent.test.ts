@@ -36,6 +36,14 @@ describe('ExtraButtonComponent', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const button = createExtraButton();
+      const mock = ExtraButtonComponent.fromOriginalType__(button.asOriginalType__());
+      expect(mock).toBe(button);
+    });
+  });
+
   describe('setIcon', () => {
     it('should set data-icon attribute on extraSettingsEl', () => {
       const button = createExtraButton();

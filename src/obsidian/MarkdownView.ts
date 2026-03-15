@@ -76,6 +76,10 @@ export class MarkdownView extends TextFileView {
     return new MarkdownView(leaf);
   }
 
+  public static override fromOriginalType__(value: MarkdownViewOriginal): MarkdownView {
+    return castTo<MarkdownView>(value);
+  }
+
   public override asOriginalType__(): MarkdownViewOriginal {
     return castTo<MarkdownViewOriginal>(this);
   }

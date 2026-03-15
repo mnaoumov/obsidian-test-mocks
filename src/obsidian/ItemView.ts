@@ -20,6 +20,10 @@ export abstract class ItemView extends View {
     return self;
   }
 
+  public static override fromOriginalType__(value: ItemViewOriginal): ItemView {
+    return castTo<ItemView>(value);
+  }
+
   public addAction(_icon: IconNameOriginal, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
     return createDiv();
   }

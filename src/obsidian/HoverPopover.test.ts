@@ -51,6 +51,14 @@ describe('HoverPopover', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const popover = createPopover();
+      const mock = HoverPopover.fromOriginalType__(popover.asOriginalType__());
+      expect(mock).toBe(popover);
+    });
+  });
+
   describe('forLeaf__', () => {
     it('should return null', () => {
       const result = HoverPopover.forLeaf__({} as never);

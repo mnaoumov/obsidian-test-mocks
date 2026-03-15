@@ -17,6 +17,10 @@ export class ImageValue extends StringValue {
     return new ImageValue(value);
   }
 
+  public static fromOriginalType3__(value: ImageValueOriginal): ImageValue {
+    return castTo<ImageValue>(value);
+  }
+
   public override asOriginalType__(): ImageValueOriginal {
     return castTo<ImageValueOriginal>(this);
   }

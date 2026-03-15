@@ -34,6 +34,14 @@ describe('FileSystemAdapter', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const adapter = createAdapter();
+      const mock = FileSystemAdapter.fromOriginalType__(adapter.asOriginalType__());
+      expect(mock).toBe(adapter);
+    });
+  });
+
   describe('getBasePath', () => {
     it('should return the base path', () => {
       const adapter = createAdapter();

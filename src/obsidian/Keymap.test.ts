@@ -60,4 +60,12 @@ describe('Keymap', () => {
       expect(original).toBe(keymap);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const keymap = Keymap.create__();
+      const mock = Keymap.fromOriginalType__(keymap.asOriginalType__());
+      expect(mock).toBe(keymap);
+    });
+  });
 });

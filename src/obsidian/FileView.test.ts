@@ -43,6 +43,14 @@ describe('FileView', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const view = await createFileView();
+      const mock = FileView.fromOriginalType__(view.asOriginalType__());
+      expect(mock).toBe(view);
+    });
+  });
+
   describe('allowNoFile', () => {
     it('should default to false', async () => {
       const view = await createFileView();

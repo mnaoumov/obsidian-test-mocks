@@ -115,4 +115,12 @@ describe('Menu', () => {
       expect(original).toBe(menu);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const menu = Menu.create2__();
+      const mock = Menu.fromOriginalType__(menu.asOriginalType__());
+      expect(mock).toBe(menu);
+    });
+  });
 });

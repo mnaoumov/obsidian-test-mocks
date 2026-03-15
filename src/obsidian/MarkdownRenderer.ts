@@ -27,6 +27,10 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
     return self;
   }
 
+  public static override fromOriginalType__(value: MarkdownRendererOriginal): MarkdownRenderer {
+    return castTo<MarkdownRenderer>(value);
+  }
+
   public static async render(_app: App, _markdown: string, _el: HTMLElement, _sourcePath: string, _component: Component): Promise<void> {
     await noopAsync();
   }

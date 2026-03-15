@@ -28,4 +28,12 @@ describe('MarkdownRenderChild', () => {
       expect(original).toBe(child);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const child = MarkdownRenderChild.create2__(createDiv());
+      const mock = MarkdownRenderChild.fromOriginalType__(child.asOriginalType__());
+      expect(mock).toBe(child);
+    });
+  });
 });

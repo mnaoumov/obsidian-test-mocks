@@ -21,6 +21,10 @@ export abstract class FuzzySuggestModal<T> extends Modal {
     return self;
   }
 
+  public static override fromOriginalType__<T>(value: FuzzySuggestModalOriginal<T>): FuzzySuggestModal<T> {
+    return castTo<FuzzySuggestModal<T>>(value);
+  }
+
   public override asOriginalType__(): FuzzySuggestModalOriginal<T> {
     return castTo<FuzzySuggestModalOriginal<T>>(this);
   }

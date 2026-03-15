@@ -16,6 +16,10 @@ export class MarkdownPreviewRenderer {
     return self;
   }
 
+  public static fromOriginalType__(value: MarkdownPreviewRendererOriginal): MarkdownPreviewRenderer {
+    return castTo<MarkdownPreviewRenderer>(value);
+  }
+
   public static registerPostProcessor(postProcessor: MarkdownPostProcessorOriginal, _sortOrder?: number): void {
     MarkdownPreviewRenderer._postProcessors.push(postProcessor);
   }

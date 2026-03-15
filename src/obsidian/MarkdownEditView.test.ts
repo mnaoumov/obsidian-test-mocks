@@ -69,4 +69,12 @@ describe('MarkdownEditView', () => {
       expect(original).toBe(editView);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const editView = await createEditView();
+      const mock = MarkdownEditView.fromOriginalType__(editView.asOriginalType__());
+      expect(mock).toBe(editView);
+    });
+  });
 });

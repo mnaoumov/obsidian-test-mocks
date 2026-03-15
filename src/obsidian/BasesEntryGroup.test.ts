@@ -48,4 +48,12 @@ describe('BasesEntryGroup', () => {
       expect(original).toBe(group);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const group = BasesEntryGroup.create__([], undefined);
+      const mock = BasesEntryGroup.fromOriginalType__(group.asOriginalType__());
+      expect(mock).toBe(group);
+    });
+  });
 });

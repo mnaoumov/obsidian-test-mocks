@@ -26,4 +26,12 @@ describe('ImageValue', () => {
       expect(original).toBe(value);
     });
   });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const value = ImageValue.create2__();
+      const mock = ImageValue.fromOriginalType3__(value.asOriginalType__());
+      expect(mock).toBe(value);
+    });
+  });
 });

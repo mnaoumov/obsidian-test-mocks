@@ -57,4 +57,12 @@ describe('BooleanValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('fromOriginalType2__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = BooleanValue.create__();
+      const mock = BooleanValue.fromOriginalType2__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
 });

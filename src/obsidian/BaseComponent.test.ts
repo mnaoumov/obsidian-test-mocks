@@ -35,6 +35,14 @@ describe('BaseComponent', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const component = createComponent();
+      const mock = BaseComponent.fromOriginalType__(component.asOriginalType__());
+      expect(mock).toBe(component);
+    });
+  });
+
   describe('disabled', () => {
     it('should default to false', () => {
       const component = createComponent();

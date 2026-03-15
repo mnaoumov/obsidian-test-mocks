@@ -13,6 +13,10 @@ export abstract class BaseComponent {
     return self;
   }
 
+  public static fromOriginalType__(value: BaseComponentOriginal): BaseComponent {
+    return castTo<BaseComponent>(value);
+  }
+
   public asOriginalType__(): BaseComponentOriginal {
     return castTo<BaseComponentOriginal>(this);
   }

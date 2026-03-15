@@ -53,4 +53,12 @@ describe('MarkdownPreviewRenderer', () => {
       expect(original).toBe(renderer);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const renderer = new MarkdownPreviewRenderer(null, createDiv(), createDiv(), null);
+      const mock = MarkdownPreviewRenderer.fromOriginalType__(renderer.asOriginalType__());
+      expect(mock).toBe(renderer);
+    });
+  });
 });

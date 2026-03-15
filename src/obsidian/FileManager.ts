@@ -29,6 +29,10 @@ export class FileManager {
     return new FileManager(app);
   }
 
+  public static fromOriginalType__(value: FileManagerOriginal): FileManager {
+    return castTo<FileManager>(value);
+  }
+
   public asOriginalType__(): FileManagerOriginal {
     return castTo<FileManagerOriginal>(this);
   }

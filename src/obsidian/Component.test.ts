@@ -31,6 +31,14 @@ describe('Component', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const component = Component.create__();
+      const mock = Component.fromOriginalType__(component.asOriginalType__());
+      expect(mock).toBe(component);
+    });
+  });
+
   describe('load', () => {
     it('should set loaded__ to true', () => {
       const component = Component.create__();

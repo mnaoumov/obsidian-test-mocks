@@ -11,7 +11,9 @@ import { BasesView } from './BasesView.ts';
 import { QueryController } from './QueryController.ts';
 
 class ConcreteBasesView extends BasesView {
-  // Intentionally empty for testing.
+  public constructor(controller: QueryController) {
+    super(controller);
+  }
 }
 
 describe('BasesView', () => {
@@ -37,6 +39,14 @@ describe('BasesView', () => {
       const view = await createBasesView();
       const original: BasesViewOriginal = view.asOriginalType__();
       expect(original).toBe(view);
+    });
+  });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const view = await createBasesView();
+      const mock = BasesView.fromOriginalType__(view.asOriginalType__());
+      expect(mock).toBe(view);
     });
   });
 });

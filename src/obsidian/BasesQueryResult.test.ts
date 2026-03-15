@@ -66,6 +66,14 @@ describe('BasesQueryResult', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const result = createResult();
+      const mock = BasesQueryResult.fromOriginalType__(result.asOriginalType__());
+      expect(mock).toBe(result);
+    });
+  });
+
   it('should throw on getSummaryValue', () => {
     const result = createResult();
     expect(() => {
