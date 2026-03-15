@@ -18,6 +18,10 @@ export abstract class WorkspaceItem extends Events {
     return self;
   }
 
+  public static override fromOriginalType__(value: WorkspaceItemOriginal): WorkspaceItem {
+    return castTo<WorkspaceItem>(value);
+  }
+
   public override asOriginalType__(): WorkspaceItemOriginal {
     return castTo<WorkspaceItemOriginal>(this);
   }

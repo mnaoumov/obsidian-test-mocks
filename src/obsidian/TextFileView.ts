@@ -21,6 +21,10 @@ export abstract class TextFileView extends EditableFileView {
     return self;
   }
 
+  public static override fromOriginalType__(value: TextFileViewOriginal): TextFileView {
+    return castTo<TextFileView>(value);
+  }
+
   public override asOriginalType__(): TextFileViewOriginal {
     return castTo<TextFileViewOriginal>(this);
   }

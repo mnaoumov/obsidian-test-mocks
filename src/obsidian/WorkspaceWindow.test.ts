@@ -40,4 +40,13 @@ describe('WorkspaceWindow', () => {
       expect(original).toBe(win);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const win = WorkspaceWindow.create3__(app.workspace);
+      const mock = WorkspaceWindow.fromOriginalType__(win.asOriginalType__());
+      expect(mock).toBe(win);
+    });
+  });
 });

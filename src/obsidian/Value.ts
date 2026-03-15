@@ -22,6 +22,10 @@ export abstract class Value {
     return a.equals(b);
   }
 
+  public static fromOriginalType__(value: ValueOriginal): Value {
+    return castTo<Value>(value);
+  }
+
   public static looseEquals(a: null | Value, b: null | Value): boolean {
     if (a === null || b === null) {
       return a === b;

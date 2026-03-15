@@ -25,6 +25,10 @@ export abstract class TAbstractFile {
     return self;
   }
 
+  public static fromOriginalType__(value: TAbstractFileOriginal): TAbstractFile {
+    return castTo<TAbstractFile>(value);
+  }
+
   public asOriginalType__(): TAbstractFileOriginal {
     return castTo<TAbstractFileOriginal>(this);
   }

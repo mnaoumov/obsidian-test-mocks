@@ -29,6 +29,10 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     return new TextComponent(containerEl);
   }
 
+  public static fromOriginalType3__(value: TextComponentOriginal): TextComponent {
+    return castTo<TextComponent>(value);
+  }
+
   public override asOriginalType__(): TextComponentOriginal {
     return castTo<TextComponentOriginal>(this);
   }

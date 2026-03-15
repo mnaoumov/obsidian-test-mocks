@@ -17,6 +17,10 @@ export class TagValue extends StringValue {
     return new TagValue(value);
   }
 
+  public static fromOriginalType3__(value: TagValueOriginal): TagValue {
+    return castTo<TagValue>(value);
+  }
+
   public override asOriginalType__(): TagValueOriginal {
     return castTo<TagValueOriginal>(this);
   }

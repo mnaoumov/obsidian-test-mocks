@@ -22,6 +22,10 @@ export class WorkspaceTabs extends WorkspaceParent {
     return new WorkspaceTabs(workspace, id);
   }
 
+  public static override fromOriginalType__(value: WorkspaceTabsOriginal): WorkspaceTabs {
+    return castTo<WorkspaceTabs>(value);
+  }
+
   public override asOriginalType__(): WorkspaceTabsOriginal {
     return castTo<WorkspaceTabsOriginal>(this);
   }

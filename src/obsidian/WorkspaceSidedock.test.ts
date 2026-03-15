@@ -55,4 +55,13 @@ describe('WorkspaceSidedock', () => {
       expect(original).toBe(sidedock);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const sidedock = WorkspaceSidedock.create3__(app.workspace, 'vertical', 'left');
+      const mock = WorkspaceSidedock.fromOriginalType__(sidedock.asOriginalType__());
+      expect(mock).toBe(sidedock);
+    });
+  });
 });

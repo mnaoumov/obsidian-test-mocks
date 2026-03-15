@@ -21,4 +21,12 @@ describe('WorkspaceFloating', () => {
       expect(original).toBe(floating);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const floating = WorkspaceFloating.create2__();
+      const mock = WorkspaceFloating.fromOriginalType__(floating.asOriginalType__());
+      expect(mock).toBe(floating);
+    });
+  });
 });

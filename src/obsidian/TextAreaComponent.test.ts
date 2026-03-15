@@ -26,4 +26,12 @@ describe('TextAreaComponent', () => {
       expect(original).toBe(component);
     });
   });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const component = TextAreaComponent.create__(createDiv());
+      const mock = TextAreaComponent.fromOriginalType3__(component.asOriginalType__());
+      expect(mock).toBe(component);
+    });
+  });
 });

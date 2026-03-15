@@ -27,6 +27,14 @@ describe('Vault', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const mock = Vault.fromOriginalType__(app.vault.asOriginalType__());
+      expect(mock).toBe(app.vault);
+    });
+  });
+
   describe('configDir', () => {
     it('should default to .obsidian', async () => {
       const app = await App.createConfigured__();

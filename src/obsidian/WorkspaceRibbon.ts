@@ -7,7 +7,6 @@ import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
 export class WorkspaceRibbon {
-  // Intentionally has no additional members, obsidian.d.ts doesn't have any members to mock.
   protected constructor(_workspace: Workspace, _side: string) {
     const self = strictMock(this);
     self.constructor__(_workspace, _side);
@@ -16,6 +15,10 @@ export class WorkspaceRibbon {
 
   public static create__(workspace: Workspace, side: string): WorkspaceRibbon {
     return new WorkspaceRibbon(workspace, side);
+  }
+
+  public static fromOriginalType__(value: WorkspaceRibbonOriginal): WorkspaceRibbon {
+    return castTo<WorkspaceRibbon>(value);
   }
 
   public asOriginalType__(): WorkspaceRibbonOriginal {

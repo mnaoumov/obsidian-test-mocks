@@ -27,6 +27,10 @@ export class WorkspaceRoot extends WorkspaceContainer {
     return new WorkspaceRoot(workspace, direction, id);
   }
 
+  public static override fromOriginalType__(value: WorkspaceRootOriginal): WorkspaceRoot {
+    return castTo<WorkspaceRoot>(value);
+  }
+
   public override asOriginalType__(): WorkspaceRootOriginal {
     return castTo<WorkspaceRootOriginal>(this);
   }

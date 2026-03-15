@@ -24,4 +24,13 @@ describe('WorkspaceRibbon', () => {
       expect(original).toBe(ribbon);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const ribbon = WorkspaceRibbon.create__(app.workspace, 'left');
+      const mock = WorkspaceRibbon.fromOriginalType__(ribbon.asOriginalType__());
+      expect(mock).toBe(ribbon);
+    });
+  });
 });

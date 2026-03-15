@@ -36,4 +36,12 @@ describe('TagValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = TagValue.create2__('#tag');
+      const mock = TagValue.fromOriginalType3__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
 });
