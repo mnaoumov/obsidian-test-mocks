@@ -49,18 +49,18 @@ describe('ProgressBarComponent', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType3__', () => {
     it('should return the same instance typed as the original', () => {
       const comp = ProgressBarComponent.create__(createDiv());
-      const original: ProgressBarComponentOriginal = comp.asOriginalType__();
+      const original: ProgressBarComponentOriginal = comp.asOriginalType3__();
       expect(original).toBe(comp);
     });
   });
 
-  describe('fromOriginalType2__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
       const comp = ProgressBarComponent.create__(createDiv());
-      const mock = ProgressBarComponent.fromOriginalType2__(comp.asOriginalType__());
+      const mock = ProgressBarComponent.fromOriginalType3__(comp.asOriginalType3__());
       expect(mock).toBe(comp);
     });
   });

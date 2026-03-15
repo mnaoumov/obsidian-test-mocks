@@ -8,7 +8,7 @@ import {
 
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
-// Minimal subclass that does NOT override asOriginalType__.
+// Minimal subclass that does NOT override asOriginalType3__.
 class MinimalPrimitiveValue extends PrimitiveValue<number> {
   public constructor(value: number) {
     super(value);
@@ -16,18 +16,18 @@ class MinimalPrimitiveValue extends PrimitiveValue<number> {
 }
 
 describe('PrimitiveValue', () => {
-  describe('asOriginalType__', () => {
+  describe('asOriginalType3__', () => {
     it('should return the same instance typed as the original', () => {
       const val = new MinimalPrimitiveValue(0);
-      const original: PrimitiveValueOriginal<number> = val.asOriginalType__();
+      const original: PrimitiveValueOriginal<number> = val.asOriginalType3__();
       expect(original).toBe(val);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
       const val = new MinimalPrimitiveValue(0);
-      const mock = PrimitiveValue.fromOriginalType__(val.asOriginalType__());
+      const mock = PrimitiveValue.fromOriginalType3__(val.asOriginalType3__());
       expect(mock).toBe(val);
     });
   });

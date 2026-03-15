@@ -82,18 +82,18 @@ describe('MarkdownPreviewView', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType4__', () => {
     it('should return the same instance typed as the original', async () => {
       const view = await createPreviewView();
-      const original: MarkdownPreviewViewOriginal = view.asOriginalType__();
+      const original: MarkdownPreviewViewOriginal = view.asOriginalType4__();
       expect(original).toBe(view);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const view = await createPreviewView();
-      const mock = MarkdownPreviewView.fromOriginalType__(view.asOriginalType__());
+      const mock = MarkdownPreviewView.fromOriginalType4__(view.asOriginalType4__());
       expect(mock).toBe(view);
     });
   });

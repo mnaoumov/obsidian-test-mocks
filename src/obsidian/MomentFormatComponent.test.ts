@@ -52,18 +52,18 @@ describe('MomentFormatComponent', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType5__', () => {
     it('should return the same instance typed as the original', () => {
       const comp = MomentFormatComponent.create2__(createDiv());
-      const original: MomentFormatComponentOriginal = comp.asOriginalType__();
+      const original: MomentFormatComponentOriginal = comp.asOriginalType5__();
       expect(original).toBe(comp);
     });
   });
 
-  describe('fromOriginalType4__', () => {
+  describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', () => {
       const comp = MomentFormatComponent.create2__(createDiv());
-      const mock = MomentFormatComponent.fromOriginalType4__(comp.asOriginalType__());
+      const mock = MomentFormatComponent.fromOriginalType5__(comp.asOriginalType5__());
       expect(mock).toBe(comp);
     });
   });

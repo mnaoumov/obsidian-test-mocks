@@ -19,11 +19,11 @@ export abstract class PluginSettingTab extends SettingTab {
     return self;
   }
 
-  public static override fromOriginalType__(value: PluginSettingTabOriginal): PluginSettingTab {
+  public static fromOriginalType2__(value: PluginSettingTabOriginal): PluginSettingTab {
     return castTo<PluginSettingTab>(value);
   }
 
-  public override asOriginalType__(): PluginSettingTabOriginal {
+  public asOriginalType2__(): PluginSettingTabOriginal {
     return castTo<PluginSettingTabOriginal>(this);
   }
 

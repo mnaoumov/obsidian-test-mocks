@@ -24,18 +24,18 @@ describe('RelativeDateValue', () => {
     expect(val.isTruthy()).toBe(true);
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType4__', () => {
     it('should return the same instance typed as the original', () => {
       const val = RelativeDateValue.create2__(new Date());
-      const original: RelativeDateValueOriginal = val.asOriginalType__();
+      const original: RelativeDateValueOriginal = val.asOriginalType4__();
       expect(original).toBe(val);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
       const val = RelativeDateValue.create2__(new Date());
-      const mock = RelativeDateValue.fromOriginalType__(val.asOriginalType__());
+      const mock = RelativeDateValue.fromOriginalType4__(val.asOriginalType4__());
       expect(mock).toBe(val);
     });
   });

@@ -108,18 +108,18 @@ describe('Menu', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', () => {
       const menu = Menu.create2__();
-      const original: MenuOriginal = menu.asOriginalType__();
+      const original: MenuOriginal = menu.asOriginalType2__();
       expect(original).toBe(menu);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', () => {
       const menu = Menu.create2__();
-      const mock = Menu.fromOriginalType__(menu.asOriginalType__());
+      const mock = Menu.fromOriginalType2__(menu.asOriginalType2__());
       expect(mock).toBe(menu);
     });
   });

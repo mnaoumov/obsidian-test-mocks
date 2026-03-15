@@ -21,18 +21,18 @@ describe('MarkdownRenderChild', () => {
     expect(child.containerEl).toBe(el);
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', () => {
       const child = MarkdownRenderChild.create2__(createDiv());
-      const original: MarkdownRenderChildOriginal = child.asOriginalType__();
+      const original: MarkdownRenderChildOriginal = child.asOriginalType2__();
       expect(original).toBe(child);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', () => {
       const child = MarkdownRenderChild.create2__(createDiv());
-      const mock = MarkdownRenderChild.fromOriginalType__(child.asOriginalType__());
+      const mock = MarkdownRenderChild.fromOriginalType2__(child.asOriginalType2__());
       expect(mock).toBe(child);
     });
   });

@@ -22,20 +22,20 @@ describe('QueryController', () => {
     expect(ctrl).toBeInstanceOf(QueryController);
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const ctrl = QueryController.create2__(app, null, createDiv());
-      const original: QueryControllerOriginal = ctrl.asOriginalType__();
+      const original: QueryControllerOriginal = ctrl.asOriginalType2__();
       expect(original).toBe(ctrl);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const ctrl = QueryController.create2__(app, null, createDiv());
-      const mock = QueryController.fromOriginalType__(ctrl.asOriginalType__());
+      const mock = QueryController.fromOriginalType2__(ctrl.asOriginalType2__());
       expect(mock).toBe(ctrl);
     });
   });

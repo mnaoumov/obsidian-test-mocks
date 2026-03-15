@@ -28,7 +28,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     return new MarkdownPreviewView(markdownView);
   }
 
-  public static override fromOriginalType__(value: MarkdownPreviewViewOriginal): MarkdownPreviewView {
+  public static fromOriginalType4__(value: MarkdownPreviewViewOriginal): MarkdownPreviewView {
     return castTo<MarkdownPreviewView>(value);
   }
 
@@ -36,7 +36,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     noop();
   }
 
-  public override asOriginalType__(): MarkdownPreviewViewOriginal {
+  public asOriginalType4__(): MarkdownPreviewViewOriginal {
     return castTo<MarkdownPreviewViewOriginal>(this);
   }
 

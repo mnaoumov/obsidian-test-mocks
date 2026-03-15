@@ -20,11 +20,11 @@ export class MarkdownRenderChild extends Component {
     return new MarkdownRenderChild(containerEl);
   }
 
-  public static override fromOriginalType__(value: MarkdownRenderChildOriginal): MarkdownRenderChild {
+  public static fromOriginalType2__(value: MarkdownRenderChildOriginal): MarkdownRenderChild {
     return castTo<MarkdownRenderChild>(value);
   }
 
-  public override asOriginalType__(): MarkdownRenderChildOriginal {
+  public asOriginalType2__(): MarkdownRenderChildOriginal {
     return castTo<MarkdownRenderChildOriginal>(this);
   }
 

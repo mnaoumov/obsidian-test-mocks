@@ -177,20 +177,20 @@ describe('Plugin', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
-      const original: PluginOriginal = plugin.asOriginalType__();
+      const original: PluginOriginal = plugin.asOriginalType2__();
       expect(original).toBe(plugin);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
-      const mock = Plugin.fromOriginalType__(plugin.asOriginalType__());
+      const mock = Plugin.fromOriginalType2__(plugin.asOriginalType2__());
       expect(mock).toBe(plugin);
     });
   });

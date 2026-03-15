@@ -42,7 +42,7 @@ export abstract class Plugin extends Component {
     return self;
   }
 
-  public static override fromOriginalType__(value: PluginOriginal): Plugin {
+  public static fromOriginalType2__(value: PluginOriginal): Plugin {
     return castTo<Plugin>(value);
   }
 
@@ -67,7 +67,7 @@ export abstract class Plugin extends Component {
     return el;
   }
 
-  public override asOriginalType__(): PluginOriginal {
+  public asOriginalType2__(): PluginOriginal {
     return castTo<PluginOriginal>(this);
   }
 
