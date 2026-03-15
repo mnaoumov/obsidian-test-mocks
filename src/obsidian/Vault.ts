@@ -65,7 +65,7 @@ export class Vault extends Events {
   public async copy(file: TFile, newPath: string): Promise<TFile> {
     await this.adapter.copy(file.path, newPath);
     const newFile = TFile.create__(this, newPath);
-    this.setVaultAbstractFile(newPath, newFile);
+    this.setVaultAbstractFile__(newPath, newFile);
     this.trigger('create', newFile);
     return newFile;
   }
@@ -73,7 +73,7 @@ export class Vault extends Events {
   public async create(path: string, data: string, options?: DataWriteOptionsOriginal): Promise<TFile> {
     await this.adapter.write(path, data, options);
     const file = TFile.create__(this, path);
-    this.setVaultAbstractFile(path, file);
+    this.setVaultAbstractFile__(path, file);
     this.trigger('create', file);
     return file;
   }
@@ -81,7 +81,7 @@ export class Vault extends Events {
   public async createBinary(path: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<TFile> {
     await this.adapter.writeBinary(path, data, options);
     const file = TFile.create__(this, path);
-    this.setVaultAbstractFile(path, file);
+    this.setVaultAbstractFile__(path, file);
     this.trigger('create', file);
     return file;
   }
@@ -89,7 +89,7 @@ export class Vault extends Events {
   public async createFolder(path: string): Promise<TFolder> {
     await this.adapter.mkdir(path);
     const folder = TFolder.create__(this, path);
-    this.setVaultAbstractFile(path, folder);
+    this.setVaultAbstractFile__(path, folder);
     this.trigger('create', folder);
     return folder;
   }
@@ -100,8 +100,26 @@ export class Vault extends Events {
     } else {
       await this.adapter.remove(file.path);
     }
-    this.deleteVaultAbstractFile(file);
+    this.deleteVaultAbstractFile__(file.path);
     this.trigger('delete', file);
+  }
+
+  public deleteVaultAbstractFile__(path: string): void {
+    const file = this.fileMap[path];
+    if (!file) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
+    delete this.fileMap[path];
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
+    delete this.fileMapLowerCase[path.toLowerCase()];
+    file.deleted__ = true;
+    if (file.parent) {
+      const idx = file.parent.children.indexOf(file);
+      if (idx !== -1) {
+        file.parent.children.splice(idx, 1);
+      }
+    }
   }
 
   public getAbstractFileByPath(path: string): null | TAbstractFile {
@@ -208,37 +226,13 @@ export class Vault extends Events {
       file.basename = dotIndex >= 0 ? file.name.slice(0, dotIndex) : file.name;
     }
 
-    // Re-register in fileMap__ with new path and attach to new parent
-    this.setVaultAbstractFile(newPath, file);
+    // Re-register with new path and attach to new parent
+    this.setVaultAbstractFile__(newPath, file);
 
     this.trigger('rename', file, oldPath);
   }
 
-  public async trash(file: TAbstractFile, _system: boolean): Promise<void> {
-    if (file instanceof TFolder) {
-      await this.adapter.rmdir(file.path, true);
-    } else {
-      await this.adapter.remove(file.path);
-    }
-    this.deleteVaultAbstractFile(file);
-    this.trigger('delete', file);
-  }
-
-  private deleteVaultAbstractFile(file: TAbstractFile): void {
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-    delete this.fileMap[file.path];
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-    delete this.fileMapLowerCase[file.path.toLowerCase()];
-    file.deleted__ = true;
-    if (file.parent) {
-      const idx = file.parent.children.indexOf(file);
-      if (idx !== -1) {
-        file.parent.children.splice(idx, 1);
-      }
-    }
-  }
-
-  private setVaultAbstractFile(path: string, file: TAbstractFile): void {
+  public setVaultAbstractFile__(path: string, file: TAbstractFile): void {
     this.fileMap[path] = file;
     this.fileMapLowerCase[path.toLowerCase()] = file;
     file.deleted__ = false;
@@ -251,5 +245,15 @@ export class Vault extends Events {
         parentFile.children.push(file);
       }
     }
+  }
+
+  public async trash(file: TAbstractFile, _system: boolean): Promise<void> {
+    if (file instanceof TFolder) {
+      await this.adapter.rmdir(file.path, true);
+    } else {
+      await this.adapter.remove(file.path);
+    }
+    this.deleteVaultAbstractFile__(file.path);
+    this.trigger('delete', file);
   }
 }
