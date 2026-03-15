@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.0.7
+
+- fix: expose proper type
+- feat: expose setVaultAbstractFile__and deleteVaultAbstractFile__ on Vault
+
 ## 1.0.6
 
 - refactor: stop re-exporting non-mocked types
