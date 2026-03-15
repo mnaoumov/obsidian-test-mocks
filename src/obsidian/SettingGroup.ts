@@ -13,7 +13,7 @@ import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
 
 export class SettingGroup {
-  public listEl__: HTMLElement;
+  public listEl__: HTMLDivElement;
 
   public constructor(containerEl: HTMLElement) {
     this.listEl__ = createDiv();
