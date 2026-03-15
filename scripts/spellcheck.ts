@@ -10,7 +10,7 @@ async function spellcheck(paths: string[] = []): Promise<void> {
     paths = ['.'];
   }
 
-  await execFromRoot(['npx', 'cspell', ...paths, '--no-progress', '--no-must-find-files']);
+  await execFromRoot(['npx', 'cspell', '--no-progress', '--no-must-find-files', { batchedArgs: paths }]);
 }
 
 await main();

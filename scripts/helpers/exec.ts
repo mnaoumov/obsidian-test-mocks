@@ -6,6 +6,12 @@ import {
 } from 'node:path/posix';
 import process from 'node:process';
 
+export type CommandPart = ExecArg | string;
+
+export interface ExecArg {
+  batchedArgs: string[];
+}
+
 interface ExecDetailedOptions extends ExecOption {
   withDetails: true;
 }
@@ -24,13 +30,16 @@ interface ExecResult {
   exitCode: null | number;
   exitSignal: NodeJS.Signals | null;
   stderr: string;
+  stdout: string;
 }
+
 interface ExecSimpleOptions extends ExecOption {
   withDetails?: false;
 }
-export async function execFromRoot(command: string | string[], options?: ExecSimpleOptions): Promise<string>;
-export function execFromRoot(command: string | string[], options: ExecDetailedOptions): Promise<ExecResult>;
-export function execFromRoot(command: string | string[], options: ExecOption = {}): Promise<ExecResult | string> {
+
+export async function execFromRoot(command: CommandPart[] | string, options?: ExecSimpleOptions): Promise<string>;
+export function execFromRoot(command: CommandPart[] | string, options: ExecDetailedOptions): Promise<ExecResult>;
+export function execFromRoot(command: CommandPart[] | string, options: ExecOption = {}): Promise<ExecResult | string> {
   let root = getRootFolder(options.cwd);
 
   if (!root) {
@@ -47,6 +56,7 @@ export function execFromRoot(command: string | string[], options: ExecOption = {
 
   return exec(command, { ...options, cwd: root, shouldIncludeDetails: false });
 }
+
 export function getRootFolder(cwd?: string): null | string {
   let currentFolder = toPosixPath(cwd ?? process.cwd());
   while (currentFolder !== '.' && currentFolder !== '/') {
@@ -62,9 +72,33 @@ export function getRootFolder(cwd?: string): null | string {
 export function toPosixPath(path: string): string {
   return path.replaceAll('\\', '/');
 }
-async function exec(command: string | string[], options?: ExecSimpleOptions): Promise<string>;
-async function exec(command: string | string[], options: ExecDetailedOptions): Promise<ExecResult>;
-async function exec(command: string | string[], options: ExecOption = {}): Promise<ExecResult | string> {
+
+async function exec(command: CommandPart[] | string, options?: ExecSimpleOptions): Promise<string>;
+async function exec(command: CommandPart[] | string, options: ExecDetailedOptions): Promise<ExecResult>;
+async function exec(command: CommandPart[] | string, options: ExecOption = {}): Promise<ExecResult | string> {
+  if (Array.isArray(command)) {
+    const batchResult = handleBatchedCommand(command, options);
+    if (batchResult) {
+      return batchResult;
+    }
+    command = toCommandLine(command.filter((part): part is string => typeof part === 'string'));
+  }
+
+  const maxCommandLength = getMaxCommandLength();
+  if (command.length > maxCommandLength) {
+    return Promise.reject(
+      new Error(
+        `Command line is too long (${String(command.length)} chars, max ${
+          String(maxCommandLength)
+        } on ${process.platform}). Consider using ExecArg with batchedArgs.`
+      )
+    );
+  }
+
+  return execString(command, options);
+}
+
+function execString(command: string, options: ExecOption = {}): Promise<ExecResult | string> {
   const {
     cwd = process.cwd(),
     isQuiet: quiet = false,
@@ -72,9 +106,6 @@ async function exec(command: string | string[], options: ExecOption = {}): Promi
     shouldIncludeDetails: withDetails = false,
     stdin = ''
   } = options;
-  if (Array.isArray(command)) {
-    command = toCommandLine(command);
-  }
 
   return new Promise((resolve, reject) => {
     const child = spawn(command, [], {
@@ -152,6 +183,85 @@ async function exec(command: string | string[], options: ExecOption = {}): Promi
       } as ExecResult);
     });
   });
+}
+
+async function executeBatches(baseCommand: string, batches: string[][], options: ExecOption): Promise<ExecResult | string> {
+  const results: string[] = [];
+
+  for (const batch of batches) {
+    const batchCommand = `${baseCommand} ${batch.join(' ')}`;
+    const result = await execString(batchCommand, options);
+    if (typeof result === 'string') {
+      results.push(result);
+    }
+  }
+
+  if (options.shouldIncludeDetails) {
+    return { exitCode: 0, exitSignal: null, stderr: '', stdout: results.join('\n') };
+  }
+
+  return results.join('\n');
+}
+
+function getMaxCommandLength(): number {
+  const WINDOWS_MAX_COMMAND_LENGTH = 8191;
+  const UNIX_MAX_COMMAND_LENGTH = 131072;
+  return process.platform === 'win32' ? WINDOWS_MAX_COMMAND_LENGTH : UNIX_MAX_COMMAND_LENGTH;
+}
+
+function handleBatchedCommand(parts: CommandPart[], options: ExecOption): Promise<ExecResult | string> | undefined {
+  const execArgs = parts.filter(isExecArg);
+  if (execArgs.length === 0) {
+    return undefined;
+  }
+  if (execArgs.length > 1) {
+    return Promise.reject(new Error('Only one ExecArg with batchedArgs is allowed per command'));
+  }
+
+  const execArg = execArgs[0];
+  if (!execArg) {
+    return undefined;
+  }
+
+  const staticParts = parts.filter((part): part is string => typeof part === 'string');
+  const baseCommand = toCommandLine(staticParts);
+  const maxCommandLength = getMaxCommandLength();
+
+  const fullCommand = `${baseCommand} ${execArg.batchedArgs.join(' ')}`;
+  if (fullCommand.length <= maxCommandLength) {
+    return execString(fullCommand, options);
+  }
+
+  const batches: string[][] = [];
+  let currentBatch: string[] = [];
+
+  for (const arg of execArg.batchedArgs) {
+    const tentative = `${baseCommand} ${[...currentBatch, arg].join(' ')}`;
+    if (tentative.length > maxCommandLength) {
+      if (currentBatch.length === 0) {
+        return Promise.reject(
+          new Error(
+            `Cannot split command into batches: a single argument (${String(arg.length)} chars) plus the base command (${
+              String(baseCommand.length)
+            } chars) exceeds the max command length (${String(maxCommandLength)}).`
+          )
+        );
+      }
+      batches.push(currentBatch);
+      currentBatch = [arg];
+    } else {
+      currentBatch.push(arg);
+    }
+  }
+  if (currentBatch.length > 0) {
+    batches.push(currentBatch);
+  }
+
+  return executeBatches(baseCommand, batches, options);
+}
+
+function isExecArg(part: CommandPart): part is ExecArg {
+  return typeof part === 'object' && 'batchedArgs' in part;
 }
 
 function toCommandLine(args: string[]): string {

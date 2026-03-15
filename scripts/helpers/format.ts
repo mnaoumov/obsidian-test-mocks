@@ -18,5 +18,5 @@ export async function format(params?: FormatParams): Promise<void> {
 
   const command = rewrite ? 'fmt' : 'check';
   const targets = paths?.length ? paths : ['**/*'];
-  await execFromRoot(['npx', 'dprint', command, '--config', join(rootFolder, 'dprint.json'), ...targets]);
+  await execFromRoot(['npx', 'dprint', command, '--config', join(rootFolder, 'dprint.json'), { batchedArgs: targets }]);
 }

@@ -10,7 +10,7 @@ interface LintParams {
 export async function lint(params?: LintParams): Promise<void> {
   const { paths, shouldFix = false } = params ?? {};
   const targets = paths?.length ? paths : ['.'];
-  await execFromRoot(['npx', 'markdownlint-cli2', ...(shouldFix ? ['--fix'] : []), ...targets]);
+  await execFromRoot(['npx', 'markdownlint-cli2', ...(shouldFix ? ['--fix'] : []), { batchedArgs: targets }]);
 
   const mdFiles = paths?.length
     ? paths
@@ -24,7 +24,6 @@ export async function lint(params?: LintParams): Promise<void> {
   await execFromRoot([
     'npx',
     'linkinator',
-    ...mdFiles,
     '--retry',
     '--retry-errors',
     '--retry-errors-count',
@@ -34,7 +33,8 @@ export async function lint(params?: LintParams): Promise<void> {
     '--url-rewrite-search',
     'https://www\\.npmjs\\.com/package/',
     '--url-rewrite-replace',
-    'https://registry.npmjs.org/'
+    'https://registry.npmjs.org/',
+    { batchedArgs: mdFiles }
   ]);
 }
 
