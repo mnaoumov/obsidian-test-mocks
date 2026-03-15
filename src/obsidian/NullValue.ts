@@ -17,6 +17,10 @@ export class NullValue extends Value {
     return new NullValue();
   }
 
+  public static override fromOriginalType__(value: NullValueOriginal): NullValue {
+    return castTo<NullValue>(value);
+  }
+
   public override asOriginalType__(): NullValueOriginal {
     return castTo<NullValueOriginal>(this);
   }

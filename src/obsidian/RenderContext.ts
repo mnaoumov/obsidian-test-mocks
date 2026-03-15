@@ -22,6 +22,10 @@ export class RenderContext {
     return new RenderContext(app);
   }
 
+  public static fromOriginalType__(value: RenderContextOriginal): RenderContext {
+    return castTo<RenderContext>(value);
+  }
+
   public asOriginalType__(): RenderContextOriginal {
     return castTo<RenderContextOriginal>(this);
   }

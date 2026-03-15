@@ -29,6 +29,10 @@ export class Scope {
     return new Scope(parent);
   }
 
+  public static fromOriginalType__(value: ScopeOriginal): Scope {
+    return castTo<Scope>(value);
+  }
+
   public asOriginalType__(): ScopeOriginal {
     return castTo<ScopeOriginal>(this);
   }

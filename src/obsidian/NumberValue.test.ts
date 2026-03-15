@@ -48,4 +48,12 @@ describe('NumberValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('fromOriginalType2__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = NumberValue.create__();
+      const mock = NumberValue.fromOriginalType2__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
 });

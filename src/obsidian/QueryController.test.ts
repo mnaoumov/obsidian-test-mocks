@@ -30,4 +30,13 @@ describe('QueryController', () => {
       expect(original).toBe(ctrl);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const ctrl = QueryController.create2__(app, null, createDiv());
+      const mock = QueryController.fromOriginalType__(ctrl.asOriginalType__());
+      expect(mock).toBe(ctrl);
+    });
+  });
 });

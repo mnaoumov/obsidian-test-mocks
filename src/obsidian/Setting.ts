@@ -59,6 +59,10 @@ export class Setting {
     return new Setting(containerEl);
   }
 
+  public static fromOriginalType__(value: SettingOriginal): Setting {
+    return castTo<Setting>(value);
+  }
+
   public addButton(cb: (component: ButtonComponentOriginal) => unknown): this {
     const comp = MockButtonComponent.create__(this.controlEl);
     this.components.push(castTo<BaseComponent>(comp));

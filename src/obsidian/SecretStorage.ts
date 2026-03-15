@@ -19,6 +19,10 @@ export class SecretStorage {
     return new SecretStorage(app);
   }
 
+  public static fromOriginalType__(value: SecretStorageOriginal): SecretStorage {
+    return castTo<SecretStorage>(value);
+  }
+
   public asOriginalType__(): SecretStorageOriginal {
     return castTo<SecretStorageOriginal>(this);
   }

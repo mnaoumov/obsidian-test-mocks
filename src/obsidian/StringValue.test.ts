@@ -46,4 +46,12 @@ describe('StringValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('fromOriginalType2__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = StringValue.create__('test');
+      const mock = StringValue.fromOriginalType2__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
 });

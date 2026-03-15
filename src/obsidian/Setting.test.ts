@@ -226,4 +226,12 @@ describe('Setting', () => {
       expect(original).toBe(setting);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const setting = Setting.create__(createDiv());
+      const mock = Setting.fromOriginalType__(setting.asOriginalType__());
+      expect(mock).toBe(setting);
+    });
+  });
 });

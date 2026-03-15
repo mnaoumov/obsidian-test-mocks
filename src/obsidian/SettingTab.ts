@@ -23,6 +23,10 @@ export abstract class SettingTab {
     return self;
   }
 
+  public static fromOriginalType__(value: SettingTabOriginal): SettingTab {
+    return castTo<SettingTab>(value);
+  }
+
   public asOriginalType__(): SettingTabOriginal {
     return castTo<SettingTabOriginal>(this);
   }

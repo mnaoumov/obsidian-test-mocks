@@ -40,4 +40,12 @@ describe('SearchComponent', () => {
       expect(original).toBe(search);
     });
   });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const search = SearchComponent.create__(createDiv());
+      const mock = SearchComponent.fromOriginalType3__(search.asOriginalType__());
+      expect(mock).toBe(search);
+    });
+  });
 });
