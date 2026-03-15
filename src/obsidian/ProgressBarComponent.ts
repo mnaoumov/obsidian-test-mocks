@@ -22,11 +22,11 @@ export class ProgressBarComponent extends ValueComponent<number> {
     return new ProgressBarComponent(containerEl);
   }
 
-  public static fromOriginalType2__(value: ProgressBarComponentOriginal): ProgressBarComponent {
+  public static fromOriginalType3__(value: ProgressBarComponentOriginal): ProgressBarComponent {
     return castTo<ProgressBarComponent>(value);
   }
 
-  public override asOriginalType__(): ProgressBarComponentOriginal {
+  public asOriginalType3__(): ProgressBarComponentOriginal {
     return castTo<ProgressBarComponentOriginal>(this);
   }
 

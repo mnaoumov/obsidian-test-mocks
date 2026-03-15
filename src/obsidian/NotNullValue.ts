@@ -13,11 +13,11 @@ export abstract class NotNullValue extends Value {
     return self;
   }
 
-  public static override fromOriginalType__(value: NotNullValueOriginal): NotNullValue {
+  public static fromOriginalType2__(value: NotNullValueOriginal): NotNullValue {
     return castTo<NotNullValue>(value);
   }
 
-  public override asOriginalType__(): NotNullValueOriginal {
+  public asOriginalType2__(): NotNullValueOriginal {
     return castTo<NotNullValueOriginal>(this);
   }
 

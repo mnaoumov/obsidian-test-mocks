@@ -33,7 +33,7 @@ export class Menu extends Component {
     return Menu.create2__();
   }
 
-  public static override fromOriginalType__(value: MenuOriginal): Menu {
+  public static fromOriginalType2__(value: MenuOriginal): Menu {
     return castTo<Menu>(value);
   }
 
@@ -48,7 +48,7 @@ export class Menu extends Component {
     return this;
   }
 
-  public override asOriginalType__(): MenuOriginal {
+  public asOriginalType2__(): MenuOriginal {
     return castTo<MenuOriginal>(this);
   }
 

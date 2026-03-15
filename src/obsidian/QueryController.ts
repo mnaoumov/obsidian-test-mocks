@@ -20,11 +20,11 @@ export class QueryController extends Component {
     return new QueryController(app, plugin, viewHeaderEl, currentFile);
   }
 
-  public static override fromOriginalType__(value: QueryControllerOriginal): QueryController {
+  public static fromOriginalType2__(value: QueryControllerOriginal): QueryController {
     return castTo<QueryController>(value);
   }
 
-  public override asOriginalType__(): QueryControllerOriginal {
+  public asOriginalType2__(): QueryControllerOriginal {
     return castTo<QueryControllerOriginal>(this);
   }
 

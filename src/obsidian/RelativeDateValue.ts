@@ -17,11 +17,11 @@ export class RelativeDateValue extends DateValue {
     return new RelativeDateValue(date, showTime);
   }
 
-  public static override fromOriginalType__(value: RelativeDateValueOriginal): RelativeDateValue {
+  public static fromOriginalType4__(value: RelativeDateValueOriginal): RelativeDateValue {
     return castTo<RelativeDateValue>(value);
   }
 
-  public override asOriginalType__(): RelativeDateValueOriginal {
+  public asOriginalType4__(): RelativeDateValueOriginal {
     return castTo<RelativeDateValueOriginal>(this);
   }
 

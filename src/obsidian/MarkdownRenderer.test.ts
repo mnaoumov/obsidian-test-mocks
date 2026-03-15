@@ -43,31 +43,31 @@ describe('MarkdownRenderer', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType3__', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const mdView = MarkdownView.create2__(leaf);
       const renderer = MarkdownPreviewView.create3__(mdView);
-      const original: MarkdownRendererOriginal = renderer.asOriginalType__();
+      const original: MarkdownRendererOriginal = renderer.asOriginalType3__();
       expect(original).toBe(renderer);
     });
 
     it('should return the same instance via MarkdownRenderer base class', async () => {
       const app = await App.createConfigured__();
       const renderer = new ConcreteMarkdownRenderer(app, createDiv());
-      const original: MarkdownRendererOriginal = renderer.asOriginalType__();
+      const original: MarkdownRendererOriginal = renderer.asOriginalType3__();
       expect(original).toBe(renderer);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const mdView = MarkdownView.create2__(leaf);
       const renderer = MarkdownPreviewView.create3__(mdView);
-      const mock = MarkdownRenderer.fromOriginalType__(renderer.asOriginalType__());
+      const mock = MarkdownRenderer.fromOriginalType3__(renderer.asOriginalType3__());
       expect(mock).toBe(renderer);
     });
   });

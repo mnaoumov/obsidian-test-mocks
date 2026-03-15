@@ -17,11 +17,11 @@ export class NullValue extends Value {
     return new NullValue();
   }
 
-  public static override fromOriginalType__(value: NullValueOriginal): NullValue {
+  public static fromOriginalType2__(value: NullValueOriginal): NullValue {
     return castTo<NullValue>(value);
   }
 
-  public override asOriginalType__(): NullValueOriginal {
+  public asOriginalType2__(): NullValueOriginal {
     return castTo<NullValueOriginal>(this);
   }
 

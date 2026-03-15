@@ -20,25 +20,25 @@ class BareNotNullValue extends NotNullValue {
 }
 
 describe('NotNullValue', () => {
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', () => {
       // ObjectValue extends NotNullValue, so we test via ObjectValue
       const val = ObjectValue.create__({});
-      const original: NotNullValueOriginal = val.asOriginalType__();
+      const original: NotNullValueOriginal = val.asOriginalType2__();
       expect(original).toBe(val);
     });
 
     it('should return the same instance via NotNullValue base class', () => {
       const val = new BareNotNullValue();
-      const original: NotNullValueOriginal = val.asOriginalType__();
+      const original: NotNullValueOriginal = val.asOriginalType2__();
       expect(original).toBe(val);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', () => {
       const val = ObjectValue.create__({});
-      const mock = NotNullValue.fromOriginalType__(val.asOriginalType__());
+      const mock = NotNullValue.fromOriginalType2__(val.asOriginalType2__());
       expect(mock).toBe(val);
     });
   });

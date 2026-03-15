@@ -27,7 +27,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
     return self;
   }
 
-  public static override fromOriginalType__(value: MarkdownRendererOriginal): MarkdownRenderer {
+  public static fromOriginalType3__(value: MarkdownRendererOriginal): MarkdownRenderer {
     return castTo<MarkdownRenderer>(value);
   }
 
@@ -39,7 +39,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
     await noopAsync();
   }
 
-  public override asOriginalType__(): MarkdownRendererOriginal {
+  public asOriginalType3__(): MarkdownRendererOriginal {
     return castTo<MarkdownRendererOriginal>(this);
   }
 

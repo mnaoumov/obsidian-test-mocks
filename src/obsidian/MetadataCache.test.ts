@@ -209,18 +209,18 @@ describe('MetadataCache', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
-      const original: MetadataCacheOriginal = app.metadataCache.asOriginalType__();
+      const original: MetadataCacheOriginal = app.metadataCache.asOriginalType2__();
       expect(original).toBe(app.metadataCache);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
-      const mock = MetadataCache.fromOriginalType__(app.metadataCache.asOriginalType__());
+      const mock = MetadataCache.fromOriginalType2__(app.metadataCache.asOriginalType2__());
       expect(mock).toBe(app.metadataCache);
     });
   });

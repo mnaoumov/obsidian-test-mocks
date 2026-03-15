@@ -17,11 +17,11 @@ export class RegExpValue extends NotNullValue {
     return new RegExpValue(regexp);
   }
 
-  public static override fromOriginalType__(value: RegExpValueOriginal): RegExpValue {
+  public static fromOriginalType3__(value: RegExpValueOriginal): RegExpValue {
     return castTo<RegExpValue>(value);
   }
 
-  public override asOriginalType__(): RegExpValueOriginal {
+  public asOriginalType3__(): RegExpValueOriginal {
     return castTo<RegExpValueOriginal>(this);
   }
 

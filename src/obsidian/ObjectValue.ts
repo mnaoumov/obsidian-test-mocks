@@ -17,11 +17,11 @@ export class ObjectValue extends NotNullValue {
     return new ObjectValue(data);
   }
 
-  public static override fromOriginalType__(value: ObjectValueOriginal): ObjectValue {
+  public static fromOriginalType3__(value: ObjectValueOriginal): ObjectValue {
     return castTo<ObjectValue>(value);
   }
 
-  public override asOriginalType__(): ObjectValueOriginal {
+  public asOriginalType3__(): ObjectValueOriginal {
     return castTo<ObjectValueOriginal>(this);
   }
 

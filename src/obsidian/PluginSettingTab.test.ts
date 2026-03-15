@@ -38,22 +38,22 @@ describe('PluginSettingTab', () => {
     expect(tab.app).toBe(app);
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', async () => {
       const app = await App.createConfigured__();
       const plugin = { app } as never;
       const tab = new ConcretePluginSettingTab(app, plugin);
-      const original: PluginSettingTabOriginal = tab.asOriginalType__();
+      const original: PluginSettingTabOriginal = tab.asOriginalType2__();
       expect(original).toBe(tab);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const app = await App.createConfigured__();
       const plugin = { app } as never;
       const tab = new ConcretePluginSettingTab(app, plugin);
-      const mock = PluginSettingTab.fromOriginalType__(tab.asOriginalType__());
+      const mock = PluginSettingTab.fromOriginalType2__(tab.asOriginalType2__());
       expect(mock).toBe(tab);
     });
   });
