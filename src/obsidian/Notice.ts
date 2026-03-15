@@ -30,6 +30,10 @@ export class Notice {
     return new Notice(message, duration);
   }
 
+  public static fromOriginalType__(value: NoticeOriginal): Notice {
+    return castTo<Notice>(value);
+  }
+
   public asOriginalType__(): NoticeOriginal {
     return castTo<NoticeOriginal>(this);
   }

@@ -87,4 +87,12 @@ describe('SettingGroup', () => {
       expect(original).toBe(group);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const group = SettingGroup.create__(createDiv());
+      const mock = SettingGroup.fromOriginalType__(group.asOriginalType__());
+      expect(mock).toBe(group);
+    });
+  });
 });

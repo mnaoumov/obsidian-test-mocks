@@ -60,4 +60,13 @@ describe('SecretComponent', () => {
       expect(original).toBe(comp);
     });
   });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const comp = SecretComponent.create__(app, createDiv());
+      const mock = SecretComponent.fromOriginalType3__(comp.asOriginalType__());
+      expect(mock).toBe(comp);
+    });
+  });
 });

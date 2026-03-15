@@ -20,6 +20,10 @@ export abstract class PopoverSuggest<T> {
     return self;
   }
 
+  public static fromOriginalType__<T>(value: PopoverSuggestOriginal<T>): PopoverSuggest<T> {
+    return castTo<PopoverSuggest<T>>(value);
+  }
+
   public asOriginalType__(): PopoverSuggestOriginal<T> {
     return castTo<PopoverSuggestOriginal<T>>(this);
   }

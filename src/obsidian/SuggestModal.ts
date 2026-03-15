@@ -28,6 +28,10 @@ export abstract class SuggestModal<T> extends Modal {
     return self;
   }
 
+  public static override fromOriginalType__<T>(value: SuggestModalOriginal<T>): SuggestModal<T> {
+    return castTo<SuggestModal<T>>(value);
+  }
+
   public override asOriginalType__(): SuggestModalOriginal<T> {
     return castTo<SuggestModalOriginal<T>>(this);
   }

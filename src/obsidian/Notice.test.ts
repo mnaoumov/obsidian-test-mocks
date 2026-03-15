@@ -77,4 +77,12 @@ describe('Notice', () => {
       expect(original).toBe(notice);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const notice = Notice.create__('msg');
+      const mock = Notice.fromOriginalType__(notice.asOriginalType__());
+      expect(mock).toBe(notice);
+    });
+  });
 });

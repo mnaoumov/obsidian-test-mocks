@@ -13,11 +13,13 @@ export abstract class NotNullValue extends Value {
     return self;
   }
 
+  public static override fromOriginalType__(value: NotNullValueOriginal): NotNullValue {
+    return castTo<NotNullValue>(value);
+  }
+
   public override asOriginalType__(): NotNullValueOriginal {
     return castTo<NotNullValueOriginal>(this);
   }
-
-  // Intentionally empty, obsidian.d.ts doesn't have any members to mock.
 
   public constructor2__(): void {
     noop();

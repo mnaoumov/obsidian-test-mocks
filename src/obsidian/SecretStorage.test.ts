@@ -55,4 +55,13 @@ describe('SecretStorage', () => {
       expect(original).toBe(storage);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const storage = SecretStorage.create__(app);
+      const mock = SecretStorage.fromOriginalType__(storage.asOriginalType__());
+      expect(mock).toBe(storage);
+    });
+  });
 });

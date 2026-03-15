@@ -31,4 +31,12 @@ describe('RelativeDateValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = RelativeDateValue.create2__(new Date());
+      const mock = RelativeDateValue.fromOriginalType__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
 });

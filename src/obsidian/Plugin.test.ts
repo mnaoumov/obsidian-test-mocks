@@ -185,4 +185,13 @@ describe('Plugin', () => {
       expect(original).toBe(plugin);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      const mock = Plugin.fromOriginalType__(plugin.asOriginalType__());
+      expect(mock).toBe(plugin);
+    });
+  });
 });

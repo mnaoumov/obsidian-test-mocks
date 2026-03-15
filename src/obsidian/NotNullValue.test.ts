@@ -35,6 +35,14 @@ describe('NotNullValue', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = ObjectValue.create__({});
+      const mock = NotNullValue.fromOriginalType__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
+
   describe('constructor2__', () => {
     it('should be callable without throwing', () => {
       const val = ObjectValue.create__({});

@@ -17,6 +17,10 @@ export class NumberValue extends PrimitiveValue<number> {
     return new NumberValue(value);
   }
 
+  public static fromOriginalType2__(value: NumberValueOriginal): NumberValue {
+    return castTo<NumberValue>(value);
+  }
+
   public override asOriginalType__(): NumberValueOriginal {
     return castTo<NumberValueOriginal>(this);
   }

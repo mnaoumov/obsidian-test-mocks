@@ -62,4 +62,12 @@ describe('Scope', () => {
       expect(original).toBe(scope);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const scope = Scope.create__();
+      const mock = Scope.fromOriginalType__(scope.asOriginalType__());
+      expect(mock).toBe(scope);
+    });
+  });
 });

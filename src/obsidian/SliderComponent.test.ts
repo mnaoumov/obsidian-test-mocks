@@ -108,4 +108,12 @@ describe('SliderComponent', () => {
       expect(original).toBe(slider);
     });
   });
+
+  describe('fromOriginalType2__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const slider = SliderComponent.create__(createDiv());
+      const mock = SliderComponent.fromOriginalType2__(slider.asOriginalType__());
+      expect(mock).toBe(slider);
+    });
+  });
 });

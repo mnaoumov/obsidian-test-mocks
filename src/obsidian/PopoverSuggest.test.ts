@@ -70,4 +70,13 @@ describe('PopoverSuggest', () => {
       expect(original).toBe(suggest);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const suggest = new ConcretePopoverSuggest(app);
+      const mock = PopoverSuggest.fromOriginalType__(suggest.asOriginalType__());
+      expect(mock).toBe(suggest);
+    });
+  });
 });

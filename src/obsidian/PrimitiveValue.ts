@@ -16,6 +16,10 @@ export abstract class PrimitiveValue<T> extends NotNullValue {
     return self;
   }
 
+  public static override fromOriginalType__<T>(value: PrimitiveValueOriginal<T>): PrimitiveValue<T> {
+    return castTo<PrimitiveValue<T>>(value);
+  }
+
   public override asOriginalType__(): PrimitiveValueOriginal<T> {
     return castTo<PrimitiveValueOriginal<T>>(this);
   }

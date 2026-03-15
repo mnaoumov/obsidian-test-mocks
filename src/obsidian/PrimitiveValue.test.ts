@@ -24,6 +24,14 @@ describe('PrimitiveValue', () => {
     });
   });
 
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = new MinimalPrimitiveValue(0);
+      const mock = PrimitiveValue.fromOriginalType__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
+
   describe('constructor3__', () => {
     it('should be callable without throwing', () => {
       const val = new MinimalPrimitiveValue(0);

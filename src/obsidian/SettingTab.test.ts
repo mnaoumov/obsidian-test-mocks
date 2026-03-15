@@ -54,4 +54,13 @@ describe('SettingTab', () => {
       expect(original).toBe(tab);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const tab = new ConcreteSettingTab(app);
+      const mock = SettingTab.fromOriginalType__(tab.asOriginalType__());
+      expect(mock).toBe(tab);
+    });
+  });
 });

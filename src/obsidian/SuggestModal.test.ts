@@ -90,4 +90,13 @@ describe('SuggestModal', () => {
       expect(original).toBe(modal);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const modal = new ConcreteSuggestModal(app);
+      const mock = SuggestModal.fromOriginalType__(modal.asOriginalType__());
+      expect(mock).toBe(modal);
+    });
+  });
 });

@@ -42,6 +42,10 @@ export abstract class Plugin extends Component {
     return self;
   }
 
+  public static override fromOriginalType__(value: PluginOriginal): Plugin {
+    return castTo<Plugin>(value);
+  }
+
   public addCommand(command: CommandOriginal): CommandOriginal {
     this.commands.set(command.id, command);
     return command;

@@ -47,4 +47,14 @@ describe('PluginSettingTab', () => {
       expect(original).toBe(tab);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', async () => {
+      const app = await App.createConfigured__();
+      const plugin = { app } as never;
+      const tab = new ConcretePluginSettingTab(app, plugin);
+      const mock = PluginSettingTab.fromOriginalType__(tab.asOriginalType__());
+      expect(mock).toBe(tab);
+    });
+  });
 });

@@ -31,4 +31,12 @@ describe('NullValue', () => {
       expect(original).toBe(val);
     });
   });
+
+  describe('fromOriginalType__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const val = NullValue.create__();
+      const mock = NullValue.fromOriginalType__(val.asOriginalType__());
+      expect(mock).toBe(val);
+    });
+  });
 });

@@ -27,6 +27,10 @@ export class SettingGroup {
     return new SettingGroup(containerEl);
   }
 
+  public static fromOriginalType__(value: SettingGroupOriginal): SettingGroup {
+    return castTo<SettingGroup>(value);
+  }
+
   public addClass(cls: string): this {
     this.listEl__.classList.add(cls);
     return this;

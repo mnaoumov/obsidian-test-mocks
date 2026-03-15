@@ -56,4 +56,12 @@ describe('ProgressBarComponent', () => {
       expect(original).toBe(comp);
     });
   });
+
+  describe('fromOriginalType2__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const comp = ProgressBarComponent.create__(createDiv());
+      const mock = ProgressBarComponent.fromOriginalType2__(comp.asOriginalType__());
+      expect(mock).toBe(comp);
+    });
+  });
 });
