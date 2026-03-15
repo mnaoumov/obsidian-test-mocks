@@ -544,6 +544,80 @@ describe('Vault', () => {
     });
   });
 
+  describe('setVaultAbstractFile__()', () => {
+    it('should add a file to the vault and set deleted__ to false', async () => {
+      const app = await App.createConfigured__();
+      const file = TFile.create__(app.vault, 'manual.md');
+      app.vault.setVaultAbstractFile__('manual.md', file);
+      expect(app.vault.getFileByPath('manual.md')).toBe(file);
+      expect(file.deleted__).toBe(false);
+    });
+
+    it('should link the file to its parent folder', async () => {
+      const app = await App.createConfigured__();
+      await app.vault.createFolder('parent');
+      const file = TFile.create__(app.vault, 'parent/child.md');
+      app.vault.setVaultAbstractFile__('parent/child.md', file);
+      const parent = ensureNonNullable(app.vault.getFolderByPath('parent'));
+      expect(parent.children).toContain(file);
+      expect(file.parent).toBe(parent);
+    });
+
+    it('should be findable via case-insensitive lookup', async () => {
+      const app = await App.createConfigured__();
+      const file = TFile.create__(app.vault, 'CamelCase.md');
+      app.vault.setVaultAbstractFile__('CamelCase.md', file);
+      expect(app.vault.getAbstractFileByPathInsensitive__('camelcase.md')).toBe(file);
+    });
+
+    it('should not duplicate children when called twice for the same file', async () => {
+      const app = await App.createConfigured__();
+      const file = TFile.create__(app.vault, 'dup.md');
+      app.vault.setVaultAbstractFile__('dup.md', file);
+      app.vault.setVaultAbstractFile__('dup.md', file);
+      const root = app.vault.getRoot();
+      const count = root.children.filter((c) => c === file).length;
+      expect(count).toBe(1);
+    });
+  });
+
+  describe('deleteVaultAbstractFile__()', () => {
+    it('should remove a file from the vault by path', async () => {
+      const app = await App.createConfigured__({ files: { 'note.md': 'content' } });
+      app.vault.deleteVaultAbstractFile__('note.md');
+      expect(app.vault.getFileByPath('note.md')).toBeNull();
+    });
+
+    it('should set deleted__ to true on the removed file', async () => {
+      const app = await App.createConfigured__({ files: { 'note.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      app.vault.deleteVaultAbstractFile__('note.md');
+      expect(file.deleted__).toBe(true);
+    });
+
+    it('should remove the file from its parent children', async () => {
+      const app = await App.createConfigured__({ files: { 'folder/file.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('folder/file.md'));
+      const parent = ensureNonNullable(app.vault.getFolderByPath('folder'));
+      expect(parent.children).toContain(file);
+      app.vault.deleteVaultAbstractFile__('folder/file.md');
+      expect(parent.children).not.toContain(file);
+    });
+
+    it('should remove the file from case-insensitive lookup', async () => {
+      const app = await App.createConfigured__({ files: { 'Note.md': 'content' } });
+      app.vault.deleteVaultAbstractFile__('Note.md');
+      expect(app.vault.getAbstractFileByPathInsensitive__('note.md')).toBeNull();
+    });
+
+    it('should be a no-op for a non-existent path', async () => {
+      const app = await App.createConfigured__();
+      expect(() => {
+        app.vault.deleteVaultAbstractFile__('missing.md');
+      }).not.toThrow();
+    });
+  });
+
   describe('getAbstractFileByPathInsensitive__()', () => {
     it('should find a file with exact case', async () => {
       const app = await App.createConfigured__({ files: { 'Notes/File.md': 'content' } });
