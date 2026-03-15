@@ -20,7 +20,7 @@ export class LinkValue extends StringValue {
     return new LinkValue(app, value, sourcePath, display);
   }
 
-  public static fromOriginalType3__(value: LinkValueOriginal): LinkValue {
+  public static fromOriginalType5__(value: LinkValueOriginal): LinkValue {
     return castTo<LinkValue>(value);
   }
 
@@ -35,7 +35,7 @@ export class LinkValue extends StringValue {
     return linkValue;
   }
 
-  public override asOriginalType__(): LinkValueOriginal {
+  public asOriginalType5__(): LinkValueOriginal {
     return castTo<LinkValueOriginal>(this);
   }
 

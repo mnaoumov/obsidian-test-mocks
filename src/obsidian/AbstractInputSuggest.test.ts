@@ -40,20 +40,20 @@ describe('AbstractInputSuggest', () => {
     expect(suggest).toBeInstanceOf(AbstractInputSuggest);
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance', async () => {
       const input = createEl('input');
       const suggest = await createSuggestWithInput(input);
-      const original = suggest.asOriginalType__();
+      const original = suggest.asOriginalType2__();
       expect(original).toBe(suggest);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const input = createEl('input');
       const suggest = await createSuggestWithInput(input);
-      const mock = AbstractInputSuggest.fromOriginalType__(suggest.asOriginalType__());
+      const mock = AbstractInputSuggest.fromOriginalType2__(suggest.asOriginalType2__());
       expect(mock).toBe(suggest);
     });
   });

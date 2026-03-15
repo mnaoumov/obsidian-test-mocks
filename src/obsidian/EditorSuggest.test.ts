@@ -56,18 +56,18 @@ describe('EditorSuggest', () => {
     expect(() => record['nonExistentProperty']).toThrow();
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original obsidian type', async () => {
       const suggest = await createSuggest();
-      const original: EditorSuggestOriginal<string> = suggest.asOriginalType__();
+      const original: EditorSuggestOriginal<string> = suggest.asOriginalType2__();
       expect(original).toBe(suggest);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const suggest = await createSuggest();
-      const mock = EditorSuggest.fromOriginalType__(suggest.asOriginalType__());
+      const mock = EditorSuggest.fromOriginalType2__(suggest.asOriginalType2__());
       expect(mock).toBe(suggest);
     });
   });

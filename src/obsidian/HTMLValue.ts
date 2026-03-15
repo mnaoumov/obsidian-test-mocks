@@ -17,11 +17,11 @@ export class HTMLValue extends StringValue {
     return new HTMLValue(value);
   }
 
-  public static fromOriginalType3__(value: HTMLValueOriginal): HTMLValue {
+  public static fromOriginalType5__(value: HTMLValueOriginal): HTMLValue {
     return castTo<HTMLValue>(value);
   }
 
-  public override asOriginalType__(): HTMLValueOriginal {
+  public asOriginalType5__(): HTMLValueOriginal {
     return castTo<HTMLValueOriginal>(this);
   }
 

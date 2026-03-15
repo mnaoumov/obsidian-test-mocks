@@ -51,18 +51,18 @@ describe('FuzzySuggestModal', () => {
     expect(modal.inputEl).toBeInstanceOf(HTMLInputElement);
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original obsidian type', async () => {
       const modal = await createModal();
-      const original: FuzzySuggestModalOriginal<string> = modal.asOriginalType__();
+      const original: FuzzySuggestModalOriginal<string> = modal.asOriginalType2__();
       expect(original).toBe(modal);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const modal = await createModal();
-      const mock = FuzzySuggestModal.fromOriginalType__(modal.asOriginalType__());
+      const mock = FuzzySuggestModal.fromOriginalType2__(modal.asOriginalType2__());
       expect(mock).toBe(modal);
     });
   });

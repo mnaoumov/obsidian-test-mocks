@@ -19,18 +19,18 @@ describe('ImageValue', () => {
     expect(value.value__).toBe('');
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType5__', () => {
     it('should return the same instance typed as the original', () => {
       const value = ImageValue.create2__();
-      const original: ImageValueOriginal = value.asOriginalType__();
+      const original: ImageValueOriginal = value.asOriginalType5__();
       expect(original).toBe(value);
     });
   });
 
-  describe('fromOriginalType3__', () => {
+  describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', () => {
       const value = ImageValue.create2__();
-      const mock = ImageValue.fromOriginalType3__(value.asOriginalType__());
+      const mock = ImageValue.fromOriginalType5__(value.asOriginalType5__());
       expect(mock).toBe(value);
     });
   });

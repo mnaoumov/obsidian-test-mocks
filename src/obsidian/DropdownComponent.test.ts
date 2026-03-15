@@ -34,18 +34,18 @@ describe('DropdownComponent', () => {
     );
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType3__', () => {
     it('should return the same instance typed as the original obsidian type', () => {
       const dropdown = createDropdown();
-      const original: DropdownComponentOriginal = dropdown.asOriginalType__();
+      const original: DropdownComponentOriginal = dropdown.asOriginalType3__();
       expect(original).toBe(dropdown);
     });
   });
 
-  describe('fromOriginalType2__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
       const dropdown = createDropdown();
-      const mock = DropdownComponent.fromOriginalType2__(dropdown.asOriginalType__());
+      const mock = DropdownComponent.fromOriginalType3__(dropdown.asOriginalType3__());
       expect(mock).toBe(dropdown);
     });
   });

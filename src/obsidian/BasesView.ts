@@ -15,11 +15,11 @@ export abstract class BasesView extends Component {
     return self;
   }
 
-  public static override fromOriginalType__(value: BasesViewOriginal): BasesView {
+  public static fromOriginalType2__(value: BasesViewOriginal): BasesView {
     return castTo<BasesView>(value);
   }
 
-  public override asOriginalType__(): BasesViewOriginal {
+  public asOriginalType2__(): BasesViewOriginal {
     return castTo<BasesViewOriginal>(this);
   }
 

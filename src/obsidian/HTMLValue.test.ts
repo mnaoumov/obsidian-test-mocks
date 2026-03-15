@@ -24,18 +24,18 @@ describe('HTMLValue', () => {
     expect(value.value__).toBe('<b>bold</b>');
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType5__', () => {
     it('should return the same instance typed as the original', () => {
       const value = HTMLValue.create2__();
-      const original: HTMLValueOriginal = value.asOriginalType__();
+      const original: HTMLValueOriginal = value.asOriginalType5__();
       expect(original).toBe(value);
     });
   });
 
-  describe('fromOriginalType3__', () => {
+  describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', () => {
       const value = HTMLValue.create2__();
-      const mock = HTMLValue.fromOriginalType3__(value.asOriginalType__());
+      const mock = HTMLValue.fromOriginalType5__(value.asOriginalType5__());
       expect(mock).toBe(value);
     });
   });

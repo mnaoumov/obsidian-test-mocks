@@ -24,18 +24,18 @@ describe('DurationValue', () => {
     });
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType3__', () => {
     it('should return the same instance', () => {
       const val = DurationValue.create__(0, 0, 0, 0, 0, 0, 0);
-      const original = val.asOriginalType__();
+      const original = val.asOriginalType3__();
       expect(original).toBe(val);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
       const val = DurationValue.create__(0, 0, 0, 0, 0, 0, 0);
-      const mock = DurationValue.fromOriginalType__(val.asOriginalType__());
+      const mock = DurationValue.fromOriginalType3__(val.asOriginalType3__());
       expect(mock).toBe(val);
     });
   });

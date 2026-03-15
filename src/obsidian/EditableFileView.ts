@@ -14,11 +14,11 @@ export abstract class EditableFileView extends FileView {
     return self;
   }
 
-  public static override fromOriginalType__(value: EditableFileViewOriginal): EditableFileView {
+  public static fromOriginalType5__(value: EditableFileViewOriginal): EditableFileView {
     return castTo<EditableFileView>(value);
   }
 
-  public override asOriginalType__(): EditableFileViewOriginal {
+  public asOriginalType5__(): EditableFileViewOriginal {
     return castTo<EditableFileViewOriginal>(this);
   }
 

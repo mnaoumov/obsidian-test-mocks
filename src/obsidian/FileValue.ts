@@ -20,11 +20,11 @@ export class FileValue extends NotNullValue {
     return new FileValue(app, file);
   }
 
-  public static override fromOriginalType__(value: FileValueOriginal): FileValue {
+  public static fromOriginalType3__(value: FileValueOriginal): FileValue {
     return castTo<FileValue>(value);
   }
 
-  public override asOriginalType__(): FileValueOriginal {
+  public asOriginalType3__(): FileValueOriginal {
     return castTo<FileValueOriginal>(this);
   }
 

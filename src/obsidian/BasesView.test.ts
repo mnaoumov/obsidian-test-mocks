@@ -34,18 +34,18 @@ describe('BasesView', () => {
     expect(() => record['nonExistentProperty']).toThrow();
   });
 
-  describe('asOriginalType__', () => {
+  describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original obsidian type', async () => {
       const view = await createBasesView();
-      const original: BasesViewOriginal = view.asOriginalType__();
+      const original: BasesViewOriginal = view.asOriginalType2__();
       expect(original).toBe(view);
     });
   });
 
-  describe('fromOriginalType__', () => {
+  describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
       const view = await createBasesView();
-      const mock = BasesView.fromOriginalType__(view.asOriginalType__());
+      const mock = BasesView.fromOriginalType2__(view.asOriginalType2__());
       expect(mock).toBe(view);
     });
   });
