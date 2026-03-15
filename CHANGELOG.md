@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.0.5
+
+- fix: batching for too many files
+- fix: generated types
+- docs: update README
+
 ## 1.0.4
 
 - test: add 100% test coverage
