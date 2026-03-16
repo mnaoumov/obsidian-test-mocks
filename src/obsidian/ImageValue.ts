@@ -1,16 +1,16 @@
 import type { ImageValue as ImageValueOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 export class ImageValue extends StringValue {
   public constructor(value = '') {
     super(value);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor5__(value);
     return self;
   }
@@ -20,11 +20,11 @@ export class ImageValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: ImageValueOriginal): ImageValue {
-    return createMockOfUnsafe<ImageValue>(value);
+    return bridgeType<ImageValue>(value);
   }
 
   public asOriginalType5__(): ImageValueOriginal {
-    return createMockOfUnsafe<ImageValueOriginal>(this);
+    return bridgeType<ImageValueOriginal>(this);
   }
 
   public constructor5__(_value: string): void {

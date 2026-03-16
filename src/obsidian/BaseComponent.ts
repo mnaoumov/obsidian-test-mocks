@@ -1,26 +1,26 @@
 import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export abstract class BaseComponent {
   public disabled = false;
 
   protected constructor() {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
 
   public static fromOriginalType__(value: BaseComponentOriginal): BaseComponent {
-    return createMockOfUnsafe<BaseComponent>(value);
+    return bridgeType<BaseComponent>(value);
   }
 
   public asOriginalType__(): BaseComponentOriginal {
-    return createMockOfUnsafe<BaseComponentOriginal>(this);
+    return bridgeType<BaseComponentOriginal>(this);
   }
 
   public constructor__(): void {

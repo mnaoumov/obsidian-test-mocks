@@ -5,11 +5,11 @@ import type {
 
 import type { App } from './App.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class FuzzySuggestModal<T> extends Modal {
@@ -18,17 +18,17 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   public constructor(app: App) {
     super(app);
     this.inputEl = createEl('input');
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(app);
     return self;
   }
 
   public static fromOriginalType2__<T>(value: FuzzySuggestModalOriginal<T>): FuzzySuggestModal<T> {
-    return createMockOfUnsafe<FuzzySuggestModal<T>>(value);
+    return bridgeType<FuzzySuggestModal<T>>(value);
   }
 
   public asOriginalType2__(): FuzzySuggestModalOriginal<T> {
-    return createMockOfUnsafe<FuzzySuggestModalOriginal<T>>(this);
+    return bridgeType<FuzzySuggestModalOriginal<T>>(this);
   }
 
   public constructor2__(_app: App): void {

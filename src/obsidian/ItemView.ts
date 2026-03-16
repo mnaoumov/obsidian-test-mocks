@@ -3,11 +3,11 @@ import type {
   ItemView as ItemViewOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -17,13 +17,13 @@ export abstract class ItemView extends View {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.contentEl = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(leaf);
     return self;
   }
 
   public static fromOriginalType3__(value: ItemViewOriginal): ItemView {
-    return createMockOfUnsafe<ItemView>(value);
+    return bridgeType<ItemView>(value);
   }
 
   public addAction(_icon: IconNameOriginal, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
@@ -31,7 +31,7 @@ export abstract class ItemView extends View {
   }
 
   public asOriginalType3__(): ItemViewOriginal {
-    return createMockOfUnsafe<ItemViewOriginal>(this);
+    return bridgeType<ItemViewOriginal>(this);
   }
 
   public constructor3__(_leaf: WorkspaceLeaf): void {

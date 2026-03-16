@@ -3,17 +3,17 @@ import type { FileValue as FileValueOriginal } from 'obsidian';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class FileValue extends NotNullValue {
   public constructor(app: App, file: TFile) {
     super();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(app, file);
     return self;
   }
@@ -23,11 +23,11 @@ export class FileValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: FileValueOriginal): FileValue {
-    return createMockOfUnsafe<FileValue>(value);
+    return bridgeType<FileValue>(value);
   }
 
   public asOriginalType3__(): FileValueOriginal {
-    return createMockOfUnsafe<FileValueOriginal>(this);
+    return bridgeType<FileValueOriginal>(this);
   }
 
   public constructor3__(_app: App, _file: TFile): void {

@@ -11,11 +11,11 @@ import type {
 
 import type { CoordsLeftTop } from '../internal/types.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
 export abstract class Editor {
@@ -30,17 +30,17 @@ export abstract class Editor {
   private scrollTop = 0;
   private readonly undoStack: string[] = [];
   public constructor() {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
 
   public static fromOriginalType__(value: EditorOriginal): Editor {
-    return createMockOfUnsafe<Editor>(value);
+    return bridgeType<Editor>(value);
   }
 
   public asOriginalType__(): EditorOriginal {
-    return createMockOfUnsafe<EditorOriginal>(this);
+    return bridgeType<EditorOriginal>(this);
   }
 
   public blur(): void {

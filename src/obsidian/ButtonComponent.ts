@@ -3,11 +3,11 @@ import type {
   TooltipOptions as TooltipOptionsOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
@@ -17,7 +17,7 @@ export class ButtonComponent extends BaseComponent {
   public constructor(containerEl: HTMLElement) {
     super();
     this.buttonEl = containerEl.createEl('button');
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(containerEl);
     return self;
   }
@@ -27,11 +27,11 @@ export class ButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ButtonComponentOriginal): ButtonComponent {
-    return createMockOfUnsafe<ButtonComponent>(value);
+    return bridgeType<ButtonComponent>(value);
   }
 
   public asOriginalType2__(): ButtonComponentOriginal {
-    return createMockOfUnsafe<ButtonComponentOriginal>(this);
+    return bridgeType<ButtonComponentOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

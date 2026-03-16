@@ -3,11 +3,11 @@ import type {
   EventRef as EventRefOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export class Component {
   public children__: Component[] = [];
@@ -17,7 +17,7 @@ export class Component {
   public loaded__ = false;
 
   public constructor() {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
@@ -27,7 +27,7 @@ export class Component {
   }
 
   public static fromOriginalType__(value: ComponentOriginal): Component {
-    return createMockOfUnsafe<Component>(value);
+    return bridgeType<Component>(value);
   }
 
   public addChild<T extends Component>(component: T): T {
@@ -39,7 +39,7 @@ export class Component {
   }
 
   public asOriginalType__(): ComponentOriginal {
-    return createMockOfUnsafe<ComponentOriginal>(this);
+    return bridgeType<ComponentOriginal>(this);
   }
 
   public constructor__(): void {

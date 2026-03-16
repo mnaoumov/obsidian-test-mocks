@@ -1,16 +1,16 @@
 import type { FileSystemAdapter as FileSystemAdapterOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export class FileSystemAdapter extends InMemoryAdapter {
   protected constructor(basePath: string) {
     super(basePath);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(basePath);
     return self;
   }
@@ -20,11 +20,11 @@ export class FileSystemAdapter extends InMemoryAdapter {
   }
 
   public static fromOriginalType__(value: FileSystemAdapterOriginal): FileSystemAdapter {
-    return createMockOfUnsafe<FileSystemAdapter>(value);
+    return bridgeType<FileSystemAdapter>(value);
   }
 
   public asOriginalType__(): FileSystemAdapterOriginal {
-    return createMockOfUnsafe<FileSystemAdapterOriginal>(this);
+    return bridgeType<FileSystemAdapterOriginal>(this);
   }
 
   public constructor__(_basePath: string): void {

@@ -9,20 +9,20 @@ import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
 import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
-import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { parseYaml } from './functions/parseYaml.ts';
 import { stringifyYaml } from './functions/stringifyYaml.ts';
 
 export class FileManager {
   protected constructor(private readonly app: App) {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(app);
     return self;
   }
@@ -32,11 +32,11 @@ export class FileManager {
   }
 
   public static fromOriginalType__(value: FileManagerOriginal): FileManager {
-    return createMockOfUnsafe<FileManager>(value);
+    return bridgeType<FileManager>(value);
   }
 
   public asOriginalType__(): FileManagerOriginal {
-    return createMockOfUnsafe<FileManagerOriginal>(this);
+    return bridgeType<FileManagerOriginal>(this);
   }
 
   public constructor__(_app: App): void {

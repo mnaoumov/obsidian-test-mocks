@@ -1,10 +1,10 @@
 import type { DropdownComponent as DropdownComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class DropdownComponent extends ValueComponent<string> {
@@ -15,7 +15,7 @@ export class DropdownComponent extends ValueComponent<string> {
   public constructor(containerEl: HTMLElement) {
     super();
     this.selectEl = containerEl.createEl('select');
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(containerEl);
     return self;
   }
@@ -25,7 +25,7 @@ export class DropdownComponent extends ValueComponent<string> {
   }
 
   public static fromOriginalType3__(value: DropdownComponentOriginal): DropdownComponent {
-    return createMockOfUnsafe<DropdownComponent>(value);
+    return bridgeType<DropdownComponent>(value);
   }
 
   public addOption(value: string, display: string): this {
@@ -44,7 +44,7 @@ export class DropdownComponent extends ValueComponent<string> {
   }
 
   public asOriginalType3__(): DropdownComponentOriginal {
-    return createMockOfUnsafe<DropdownComponentOriginal>(this);
+    return bridgeType<DropdownComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

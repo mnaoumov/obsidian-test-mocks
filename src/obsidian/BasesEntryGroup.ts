@@ -5,11 +5,11 @@ import type {
 
 import type { BasesEntry } from './BasesEntry.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export class BasesEntryGroup {
   public entries: BasesEntry[];
@@ -20,7 +20,7 @@ export class BasesEntryGroup {
     if (key !== undefined) {
       this.key = key as ValueOriginal;
     }
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(entries, key);
     return self;
   }
@@ -30,11 +30,11 @@ export class BasesEntryGroup {
   }
 
   public static fromOriginalType__(value: BasesEntryGroupOriginal): BasesEntryGroup {
-    return createMockOfUnsafe<BasesEntryGroup>(value);
+    return bridgeType<BasesEntryGroup>(value);
   }
 
   public asOriginalType__(): BasesEntryGroupOriginal {
-    return createMockOfUnsafe<BasesEntryGroupOriginal>(this);
+    return bridgeType<BasesEntryGroupOriginal>(this);
   }
 
   public constructor__(_entries: BasesEntry[], _key: unknown): void {

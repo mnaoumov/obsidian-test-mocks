@@ -1,10 +1,10 @@
 import type { DurationValue as DurationValueOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DurationValue extends NotNullValue {
@@ -18,7 +18,7 @@ export class DurationValue extends NotNullValue {
     milliseconds: number
   ) {
     super();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(years, months, days, hours, minutes, seconds, milliseconds);
     return self;
   }
@@ -36,11 +36,11 @@ export class DurationValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: DurationValueOriginal): DurationValue {
-    return createMockOfUnsafe<DurationValue>(value);
+    return bridgeType<DurationValue>(value);
   }
 
   public asOriginalType3__(): DurationValueOriginal {
-    return createMockOfUnsafe<DurationValueOriginal>(this);
+    return bridgeType<DurationValueOriginal>(this);
   }
 
   public constructor3__(
