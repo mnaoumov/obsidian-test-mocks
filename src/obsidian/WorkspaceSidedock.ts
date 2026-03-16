@@ -2,7 +2,7 @@ import type { WorkspaceSidedock as WorkspaceSidedockOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
@@ -22,11 +22,11 @@ export class WorkspaceSidedock extends WorkspaceSplit {
   }
 
   public static fromOriginalType5__(value: WorkspaceSidedockOriginal): WorkspaceSidedock {
-    return castTo<WorkspaceSidedock>(value);
+    return createMockOfUnsafe<WorkspaceSidedock>(value);
   }
 
   public asOriginalType5__(): WorkspaceSidedockOriginal {
-    return castTo<WorkspaceSidedockOriginal>(this);
+    return createMockOfUnsafe<WorkspaceSidedockOriginal>(this);
   }
 
   public collapse(): void {

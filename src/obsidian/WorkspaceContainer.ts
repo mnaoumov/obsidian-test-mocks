@@ -2,7 +2,7 @@ import type { WorkspaceContainer as WorkspaceContainerOriginal } from 'obsidian'
 
 import type { Workspace } from './Workspace.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
@@ -19,11 +19,11 @@ export abstract class WorkspaceContainer extends WorkspaceSplit {
   }
 
   public static fromOriginalType5__(value: WorkspaceContainerOriginal): WorkspaceContainer {
-    return castTo<WorkspaceContainer>(value);
+    return createMockOfUnsafe<WorkspaceContainer>(value);
   }
 
   public asOriginalType5__(): WorkspaceContainerOriginal {
-    return castTo<WorkspaceContainerOriginal>(this);
+    return createMockOfUnsafe<WorkspaceContainerOriginal>(this);
   }
 
   public constructor5__(_workspace: Workspace, _direction: string, _id?: string): void {

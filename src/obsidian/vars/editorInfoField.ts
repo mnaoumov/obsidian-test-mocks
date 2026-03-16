@@ -5,12 +5,12 @@ import type {
 
 import { StateField } from '@codemirror/state';
 
-import { castTo } from '../../internal/cast.ts';
+import { createMockOfUnsafe } from '../../internal/create-mock-of.ts';
 
 export const editorInfoField: StateField<MarkdownFileInfoOriginal> = StateField.define({
   create(): MarkdownFileInfoOriginal {
     return {
-      app: castTo<AppOriginal>(null),
+      app: createMockOfUnsafe<AppOriginal>({}),
       file: null,
       hoverPopover: null
     };

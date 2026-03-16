@@ -1,6 +1,6 @@
 import type { WorkspaceFloating as WorkspaceFloatingOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
@@ -20,11 +20,11 @@ export class WorkspaceFloating extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceFloatingOriginal): WorkspaceFloating {
-    return castTo<WorkspaceFloating>(value);
+    return createMockOfUnsafe<WorkspaceFloating>(value);
   }
 
   public asOriginalType4__(): WorkspaceFloatingOriginal {
-    return castTo<WorkspaceFloatingOriginal>(this);
+    return createMockOfUnsafe<WorkspaceFloatingOriginal>(this);
   }
 
   public constructor4__(): void {

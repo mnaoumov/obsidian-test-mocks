@@ -3,7 +3,7 @@ import type { TAbstractFile as TAbstractFileOriginal } from 'obsidian';
 import type { TFolder } from './TFolder.ts';
 import type { Vault } from './Vault.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
@@ -26,11 +26,11 @@ export abstract class TAbstractFile {
   }
 
   public static fromOriginalType__(value: TAbstractFileOriginal): TAbstractFile {
-    return castTo<TAbstractFile>(value);
+    return createMockOfUnsafe<TAbstractFile>(value);
   }
 
   public asOriginalType__(): TAbstractFileOriginal {
-    return castTo<TAbstractFileOriginal>(this);
+    return createMockOfUnsafe<TAbstractFileOriginal>(this);
   }
 
   public constructor__(_vault: Vault, _path: string): void {

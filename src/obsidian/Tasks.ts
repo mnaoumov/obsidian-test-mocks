@@ -1,6 +1,6 @@
 import type { Tasks as TasksOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -18,7 +18,7 @@ export class Tasks {
   }
 
   public static fromOriginalType__(value: TasksOriginal): Tasks {
-    return castTo<Tasks>(value);
+    return createMockOfUnsafe<Tasks>(value);
   }
 
   public add(callback: () => Promise<unknown>): void {
@@ -30,7 +30,7 @@ export class Tasks {
   }
 
   public asOriginalType__(): TasksOriginal {
-    return castTo<TasksOriginal>(this);
+    return createMockOfUnsafe<TasksOriginal>(this);
   }
 
   public constructor__(): void {

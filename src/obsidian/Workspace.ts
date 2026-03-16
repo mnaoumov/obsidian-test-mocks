@@ -18,7 +18,7 @@ import type {
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -73,11 +73,11 @@ export class Workspace extends Events {
   }
 
   public static fromOriginalType2__(value: WorkspaceOriginal): Workspace {
-    return castTo<Workspace>(value);
+    return createMockOfUnsafe<Workspace>(value);
   }
 
   public asOriginalType2__(): WorkspaceOriginal {
-    return castTo<WorkspaceOriginal>(this);
+    return createMockOfUnsafe<WorkspaceOriginal>(this);
   }
 
   public async changeLayout(_workspace: unknown): Promise<void> {

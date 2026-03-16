@@ -1,10 +1,10 @@
-import { castTo } from '../../internal/cast.ts';
+import { ensureGenericObject } from '../../internal/type-guards.ts';
 
 export function parseFrontMatterTags(frontmatter: unknown): null | string[] {
   if (!frontmatter) {
     return null;
   }
-  const fm = castTo<Record<string, unknown>>(frontmatter);
+  const fm = ensureGenericObject(frontmatter);
   const raw = fm['tags'] ?? fm['tag'] ?? null;
   if (typeof raw === 'string') {
     return [raw.startsWith('#') ? raw : `#${raw}`];

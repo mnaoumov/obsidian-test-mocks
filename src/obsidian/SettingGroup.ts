@@ -5,11 +5,11 @@ import type {
   Setting as SettingOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
-import { ExtraButtonComponent as MockExtraButtonComponent } from './ExtraButtonComponent.ts';
-import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
+import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
+import { SearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
 
 export class SettingGroup {
@@ -28,7 +28,7 @@ export class SettingGroup {
   }
 
   public static fromOriginalType__(value: SettingGroupOriginal): SettingGroup {
-    return castTo<SettingGroup>(value);
+    return createMockOfUnsafe<SettingGroup>(value);
   }
 
   public addClass(cls: string): this {
@@ -37,25 +37,25 @@ export class SettingGroup {
   }
 
   public addExtraButton(cb: (component: ExtraButtonComponentOriginal) => unknown): this {
-    const comp = MockExtraButtonComponent.create__(this.listEl__);
-    cb(castTo<ExtraButtonComponentOriginal>(comp));
+    const comp = ExtraButtonComponent.create__(this.listEl__);
+    cb(comp.asOriginalType2__());
     return this;
   }
 
   public addSearch(cb: (component: SearchComponentOriginal) => unknown): this {
-    const comp = MockSearchComponent.create__(this.listEl__);
-    cb(castTo<SearchComponentOriginal>(comp));
+    const comp = SearchComponent.create__(this.listEl__);
+    cb(comp.asOriginalType4__());
     return this;
   }
 
   public addSetting(cb: (setting: SettingOriginal) => void): this {
     const setting = Setting.create__(this.listEl__);
-    cb(castTo<SettingOriginal>(setting));
+    cb(setting.asOriginalType__());
     return this;
   }
 
   public asOriginalType__(): SettingGroupOriginal {
-    return castTo<SettingGroupOriginal>(this);
+    return createMockOfUnsafe<SettingGroupOriginal>(this);
   }
 
   public constructor__(_containerEl: HTMLElement): void {

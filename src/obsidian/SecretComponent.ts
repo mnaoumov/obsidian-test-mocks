@@ -2,7 +2,7 @@ import type { SecretComponent as SecretComponentOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
@@ -22,11 +22,11 @@ export class SecretComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: SecretComponentOriginal): SecretComponent {
-    return castTo<SecretComponent>(value);
+    return createMockOfUnsafe<SecretComponent>(value);
   }
 
   public asOriginalType2__(): SecretComponentOriginal {
-    return castTo<SecretComponentOriginal>(this);
+    return createMockOfUnsafe<SecretComponentOriginal>(this);
   }
 
   public constructor2__(_app: App, _containerEl: HTMLElement): void {

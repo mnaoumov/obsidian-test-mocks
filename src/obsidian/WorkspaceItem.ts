@@ -5,7 +5,7 @@ import type {
 
 import type { Workspace } from './Workspace.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Events } from './Events.ts';
@@ -19,11 +19,11 @@ export abstract class WorkspaceItem extends Events {
   }
 
   public static fromOriginalType2__(value: WorkspaceItemOriginal): WorkspaceItem {
-    return castTo<WorkspaceItem>(value);
+    return createMockOfUnsafe<WorkspaceItem>(value);
   }
 
   public asOriginalType2__(): WorkspaceItemOriginal {
-    return castTo<WorkspaceItemOriginal>(this);
+    return createMockOfUnsafe<WorkspaceItemOriginal>(this);
   }
 
   public constructor2__(_workspace?: Workspace, _id?: string): void {
@@ -31,7 +31,7 @@ export abstract class WorkspaceItem extends Events {
   }
 
   public getContainer(): WorkspaceContainerOriginal {
-    return castTo<WorkspaceContainerOriginal>(this);
+    return createMockOfUnsafe<WorkspaceContainerOriginal>(this);
   }
 
   public getRoot(): this {

@@ -10,7 +10,7 @@ import type {
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -52,11 +52,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public static fromOriginalType3__(value: WorkspaceLeafOriginal): WorkspaceLeaf {
-    return castTo<WorkspaceLeaf>(value);
+    return createMockOfUnsafe<WorkspaceLeaf>(value);
   }
 
   public asOriginalType3__(): WorkspaceLeafOriginal {
-    return castTo<WorkspaceLeafOriginal>(this);
+    return createMockOfUnsafe<WorkspaceLeafOriginal>(this);
   }
 
   public constructor3__(_app: App, _id?: string): void {

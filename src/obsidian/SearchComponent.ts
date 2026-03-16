@@ -1,6 +1,6 @@
 import type { SearchComponent as SearchComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
@@ -22,11 +22,11 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public static fromOriginalType4__(value: SearchComponentOriginal): SearchComponent {
-    return castTo<SearchComponent>(value);
+    return createMockOfUnsafe<SearchComponent>(value);
   }
 
   public asOriginalType4__(): SearchComponentOriginal {
-    return castTo<SearchComponentOriginal>(this);
+    return createMockOfUnsafe<SearchComponentOriginal>(this);
   }
 
   public constructor4__(_containerEl: HTMLElement): void {

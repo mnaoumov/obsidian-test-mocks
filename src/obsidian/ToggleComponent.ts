@@ -3,7 +3,7 @@ import type {
   TooltipOptions as TooltipOptionsOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -27,11 +27,11 @@ export class ToggleComponent extends ValueComponent<boolean> {
   }
 
   public static fromOriginalType3__(value: ToggleComponentOriginal): ToggleComponent {
-    return castTo<ToggleComponent>(value);
+    return createMockOfUnsafe<ToggleComponent>(value);
   }
 
   public asOriginalType3__(): ToggleComponentOriginal {
-    return castTo<ToggleComponentOriginal>(this);
+    return createMockOfUnsafe<ToggleComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {
