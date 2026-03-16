@@ -7,8 +7,6 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceSplit extends WorkspaceParent {
-  declare public parent: WorkspaceParent;
-
   protected constructor(_workspace: Workspace, _direction: string, _id?: string) {
     super(_workspace, _id);
     const self = strictProxy(this);

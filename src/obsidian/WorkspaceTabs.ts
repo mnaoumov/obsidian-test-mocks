@@ -1,14 +1,16 @@
-import type { WorkspaceTabs as WorkspaceTabsOriginal } from 'obsidian';
+import type {
+  WorkspaceSplit as WorkspaceSplitOriginal,
+  WorkspaceTabs as WorkspaceTabsOriginal
+} from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
-import type { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceTabs extends WorkspaceParent {
-  declare public parent: WorkspaceSplit;
+  public override parent: WorkspaceSplitOriginal = strictProxy<WorkspaceSplitOriginal>({});
 
   protected constructor(_workspace: Workspace, _id?: string) {
     super(_workspace, _id);

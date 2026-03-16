@@ -25,7 +25,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public hoverPopover: HoverPopoverOriginal | null = null;
   public id__: string;
   public readonly isDeferred = false;
-  declare public parent: WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal;
+  public override parent: WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal = strictProxy<WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal>({});
   public view: null | ViewOriginal = null;
 
   public get file__(): null | TFile {

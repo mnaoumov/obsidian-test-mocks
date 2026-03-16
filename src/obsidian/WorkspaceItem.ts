@@ -11,7 +11,7 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {
-  declare public parent: WorkspaceParentOriginal;
+  public parent: WorkspaceParentOriginal = strictProxy<WorkspaceParentOriginal>({});
 
   protected constructor(workspace?: Workspace, id?: string) {
     super();
