@@ -13,7 +13,6 @@ import type { QueryController } from './QueryController.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export class BasesQueryResult {
   public data: BasesEntry[] = [];
@@ -30,7 +29,7 @@ export class BasesQueryResult {
   private _properties: BasesPropertyIdOriginal[] = [];
 
   protected constructor(app: App, config: BasesViewConfig, allProperties: BasesPropertyOriginal[], data: BasesEntry[]) {
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(app, config, allProperties, data);
     return self;
   }

@@ -2,7 +2,6 @@ import type { AbstractTextComponent as AbstractTextComponentOriginal } from 'obs
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTextAreaElement> extends ValueComponent<string> {
@@ -14,7 +13,7 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   public constructor(inputEl: T) {
     super();
     this.inputEl = inputEl;
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(inputEl);
     return self;
   }

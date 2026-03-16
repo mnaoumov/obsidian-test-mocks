@@ -2,7 +2,6 @@ import type { DurationValue as DurationValueOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DurationValue extends NotNullValue {
@@ -16,7 +15,7 @@ export class DurationValue extends NotNullValue {
     milliseconds: number
   ) {
     super();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(years, months, days, hours, minutes, seconds, milliseconds);
     return self;
   }

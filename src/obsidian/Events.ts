@@ -7,13 +7,12 @@ import type { EventsEntry } from '../internal/types.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
   public constructor() {
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__();
     return self;
   }

@@ -2,13 +2,12 @@ import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export abstract class BaseComponent {
   public disabled = false;
 
   protected constructor() {
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__();
     return self;
   }

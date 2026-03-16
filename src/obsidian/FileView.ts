@@ -10,7 +10,6 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -21,7 +20,7 @@ export abstract class FileView extends ItemView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor4__(leaf);
     return self;
   }

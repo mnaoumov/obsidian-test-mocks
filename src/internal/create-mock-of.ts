@@ -32,10 +32,12 @@ export function createMockOf<T>(partial: PartialDeep<T>): T {
 }
 
 /**
- * Untyped version for internal type bridging (asOriginalType / fromOriginalType).
- * Accepts any value without type constraints.
+ * Version for internal use. Accepts full objects (inferring T) or unknown values
+ * (for type bridging in asOriginalType / fromOriginalType).
  */
+export function createMockOfUnsafe<T extends object>(value: T): T;
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T provides return type inference at call sites.
+export function createMockOfUnsafe<T>(value: unknown): T;
 export function createMockOfUnsafe<T>(value: unknown): T {
   if (!isObjectLike(value)) {
     return value as T;

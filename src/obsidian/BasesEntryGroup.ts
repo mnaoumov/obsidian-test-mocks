@@ -7,7 +7,6 @@ import type { BasesEntry } from './BasesEntry.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export class BasesEntryGroup {
   public entries: BasesEntry[];
@@ -18,7 +17,7 @@ export class BasesEntryGroup {
     if (key !== undefined) {
       this.key = key as ValueOriginal;
     }
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(entries, key);
     return self;
   }

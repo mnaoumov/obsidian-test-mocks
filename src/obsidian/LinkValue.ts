@@ -4,14 +4,13 @@ import type { App } from './App.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { StringValue } from './StringValue.ts';
 
 export class LinkValue extends StringValue {
   public constructor(app: App, value: string, sourcePath: string, display?: null | string) {
     super(value);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor5__(app, value, sourcePath, display);
     return self;
   }

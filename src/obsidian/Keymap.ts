@@ -9,13 +9,12 @@ import type { Scope } from './Scope.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export class Keymap {
   private readonly scopeStack: Scope[] = [];
 
   protected constructor() {
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__();
     return self;
   }

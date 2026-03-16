@@ -12,7 +12,6 @@ import type { App } from './App.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 const DEFAULT_LIMIT = 100;
@@ -23,7 +22,7 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public constructor(app: App) {
     super(app);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(app);
     return self;
   }

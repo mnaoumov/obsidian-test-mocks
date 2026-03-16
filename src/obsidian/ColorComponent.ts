@@ -6,7 +6,6 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 /* eslint-disable no-magic-numbers -- Color conversion constants. */
@@ -35,7 +34,7 @@ export class ColorComponent extends ValueComponent<string> {
     super();
     this.colorPickerEl__ = containerEl.createEl('input');
     this.colorPickerEl__.type = 'color';
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(containerEl);
     return self;
   }
