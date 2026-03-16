@@ -7,15 +7,15 @@ import type { EventsEntry } from '../internal/types.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
   public constructor() {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__();
     return self;
   }
@@ -25,11 +25,11 @@ export class Events {
   }
 
   public static fromOriginalType__(value: EventsOriginal): Events {
-    return bridgeType<Events>(value);
+    return mergePrototype(Events, value);
   }
 
   public asOriginalType__(): EventsOriginal {
-    return bridgeType<EventsOriginal>(this);
+    return strictProxyForce<EventsOriginal>(this);
   }
 
   public constructor__(): void {

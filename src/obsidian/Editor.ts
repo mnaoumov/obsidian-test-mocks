@@ -13,8 +13,8 @@ import type { CoordsLeftTop } from '../internal/types.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
@@ -30,17 +30,17 @@ export abstract class Editor {
   private scrollTop = 0;
   private readonly undoStack: string[] = [];
   public constructor() {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__();
     return self;
   }
 
   public static fromOriginalType__(value: EditorOriginal): Editor {
-    return bridgeType<Editor>(value);
+    return mergePrototype(Editor, value);
   }
 
   public asOriginalType__(): EditorOriginal {
-    return bridgeType<EditorOriginal>(this);
+    return strictProxyForce<EditorOriginal>(this);
   }
 
   public blur(): void {

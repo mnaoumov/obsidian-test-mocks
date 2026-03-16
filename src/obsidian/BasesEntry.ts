@@ -9,8 +9,8 @@ import type { TFile } from './TFile.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class BasesEntry implements FormulaContextOriginal {
@@ -19,7 +19,7 @@ export class BasesEntry implements FormulaContextOriginal {
 
   protected constructor(_ctx: unknown, file: TFile) {
     this.file = file;
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(_ctx, file);
     return self;
   }
@@ -29,11 +29,11 @@ export class BasesEntry implements FormulaContextOriginal {
   }
 
   public static fromOriginalType__(value: BasesEntryOriginal): BasesEntry {
-    return bridgeType<BasesEntry>(value);
+    return mergePrototype(BasesEntry, value);
   }
 
   public asOriginalType__(): BasesEntryOriginal {
-    return bridgeType<BasesEntryOriginal>(this);
+    return strictProxyForce<BasesEntryOriginal>(this);
   }
 
   public constructor__(_ctx: unknown, _file: TFile): void {

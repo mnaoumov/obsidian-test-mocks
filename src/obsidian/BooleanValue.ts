@@ -2,15 +2,15 @@ import type { BooleanValue as BooleanValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class BooleanValue extends PrimitiveValue<boolean> {
   public constructor(value = false) {
     super(value);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__(value);
     return self;
   }
@@ -20,11 +20,11 @@ export class BooleanValue extends PrimitiveValue<boolean> {
   }
 
   public static fromOriginalType4__(value: BooleanValueOriginal): BooleanValue {
-    return bridgeType<BooleanValue>(value);
+    return mergePrototype(BooleanValue, value);
   }
 
   public asOriginalType4__(): BooleanValueOriginal {
-    return bridgeType<BooleanValueOriginal>(this);
+    return strictProxyForce<BooleanValueOriginal>(this);
   }
 
   public constructor4__(_value = false): void {

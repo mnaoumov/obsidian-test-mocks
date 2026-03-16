@@ -6,6 +6,7 @@ import {
 } from 'vitest';
 
 import { strictProxy } from './strict-proxy.ts';
+import { ensureGenericObject } from './type-guards.ts';
 
 interface DeepNested {
   flag: boolean;
@@ -93,5 +94,29 @@ describe('strictProxy', () => {
     const mock = strictProxy<MockTarget>({ name: 'test' });
     const result = await Promise.resolve(mock);
     expect(result.name).toBe('test');
+  });
+});
+
+describe('strictProxy', () => {
+  it('should wrap a class instance and throw on unmocked property', () => {
+    class MyClass {
+      public name = 'test';
+    }
+    const instance = new MyClass();
+    const proxied = strictProxy(instance);
+    expect(proxied.name).toBe('test');
+    expect(() => {
+      ensureGenericObject(proxied)['missing']?.toString();
+    }).toThrow('Property "missing" is not mocked in MyClass');
+  });
+
+  it('should be idempotent', () => {
+    class MyClass {
+      public value = 1;
+    }
+    const instance = new MyClass();
+    const first = strictProxy(instance);
+    const second = strictProxy(first);
+    expect(second).toBe(first);
   });
 });

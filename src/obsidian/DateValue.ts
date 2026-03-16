@@ -2,15 +2,15 @@ import type { DateValue as DateValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DateValue extends NotNullValue {
   public constructor(private readonly date: Date, private readonly showTime?: boolean) {
     super();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(date, showTime);
     return self;
   }
@@ -20,11 +20,11 @@ export class DateValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: DateValueOriginal): DateValue {
-    return bridgeType<DateValue>(value);
+    return mergePrototype(DateValue, value);
   }
 
   public asOriginalType3__(): DateValueOriginal {
-    return bridgeType<DateValueOriginal>(this);
+    return strictProxyForce<DateValueOriginal>(this);
   }
 
   public constructor3__(_date: unknown, _showTime?: boolean): void {

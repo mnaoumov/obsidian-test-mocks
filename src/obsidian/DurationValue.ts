@@ -2,8 +2,8 @@ import type { DurationValue as DurationValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
@@ -18,7 +18,7 @@ export class DurationValue extends NotNullValue {
     milliseconds: number
   ) {
     super();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(years, months, days, hours, minutes, seconds, milliseconds);
     return self;
   }
@@ -36,11 +36,11 @@ export class DurationValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: DurationValueOriginal): DurationValue {
-    return bridgeType<DurationValue>(value);
+    return mergePrototype(DurationValue, value);
   }
 
   public asOriginalType3__(): DurationValueOriginal {
-    return bridgeType<DurationValueOriginal>(this);
+    return strictProxyForce<DurationValueOriginal>(this);
   }
 
   public constructor3__(
