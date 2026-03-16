@@ -4,7 +4,7 @@ import type {
   MenuPositionDef as MenuPositionDefOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
@@ -34,13 +34,13 @@ export class Menu extends Component {
   }
 
   public static fromOriginalType2__(value: MenuOriginal): Menu {
-    return castTo<Menu>(value);
+    return createMockOfUnsafe<Menu>(value);
   }
 
   public addItem(cb: (item: MenuItemOriginal) => unknown): this {
     const item = MenuItem.create__(this);
     this.items__.push(item);
-    cb(castTo<MenuItemOriginal>(item));
+    cb(item.asOriginalType__());
     return this;
   }
 
@@ -49,7 +49,7 @@ export class Menu extends Component {
   }
 
   public asOriginalType2__(): MenuOriginal {
-    return castTo<MenuOriginal>(this);
+    return createMockOfUnsafe<MenuOriginal>(this);
   }
 
   public close(): void {

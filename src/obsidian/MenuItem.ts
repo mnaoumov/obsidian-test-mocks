@@ -3,7 +3,7 @@ import type {
   MenuItem as MenuItemOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 // eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
@@ -29,11 +29,11 @@ export class MenuItem {
   }
 
   public static fromOriginalType__(value: MenuItemOriginal): MenuItem {
-    return castTo<MenuItem>(value);
+    return createMockOfUnsafe<MenuItem>(value);
   }
 
   public asOriginalType__(): MenuItemOriginal {
-    return castTo<MenuItemOriginal>(this);
+    return createMockOfUnsafe<MenuItemOriginal>(this);
   }
 
   public constructor__(_menu: unknown): void {

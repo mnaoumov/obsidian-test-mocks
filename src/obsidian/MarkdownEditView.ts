@@ -5,7 +5,7 @@ import type {
 
 import type { MarkdownView } from './MarkdownView.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { App } from './App.ts';
@@ -33,7 +33,7 @@ export class MarkdownEditView {
   }
 
   public static fromOriginalType__(value: MarkdownEditViewOriginal): MarkdownEditView {
-    return castTo<MarkdownEditView>(value);
+    return createMockOfUnsafe<MarkdownEditView>(value);
   }
 
   public applyScroll(scroll: number): void {
@@ -41,7 +41,7 @@ export class MarkdownEditView {
   }
 
   public asOriginalType__(): MarkdownEditViewOriginal {
-    return castTo<MarkdownEditViewOriginal>(this);
+    return createMockOfUnsafe<MarkdownEditViewOriginal>(this);
   }
 
   public clear(): void {

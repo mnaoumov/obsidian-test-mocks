@@ -1,6 +1,6 @@
 import type { PrimitiveValue as PrimitiveValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
@@ -17,11 +17,11 @@ export abstract class PrimitiveValue<T> extends NotNullValue {
   }
 
   public static fromOriginalType3__<T>(value: PrimitiveValueOriginal<T>): PrimitiveValue<T> {
-    return castTo<PrimitiveValue<T>>(value);
+    return createMockOfUnsafe<PrimitiveValue<T>>(value);
   }
 
   public asOriginalType3__(): PrimitiveValueOriginal<T> {
-    return castTo<PrimitiveValueOriginal<T>>(this);
+    return createMockOfUnsafe<PrimitiveValueOriginal<T>>(this);
   }
 
   public constructor3__(_value: T): void {

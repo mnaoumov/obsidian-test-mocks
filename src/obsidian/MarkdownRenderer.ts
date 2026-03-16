@@ -4,7 +4,7 @@ import type { Component } from './Component.ts';
 import type { HoverPopover } from './HoverPopover.ts';
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -28,7 +28,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   }
 
   public static fromOriginalType3__(value: MarkdownRendererOriginal): MarkdownRenderer {
-    return castTo<MarkdownRenderer>(value);
+    return createMockOfUnsafe<MarkdownRenderer>(value);
   }
 
   public static async render(_app: App, _markdown: string, _el: HTMLElement, _sourcePath: string, _component: Component): Promise<void> {
@@ -40,7 +40,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   }
 
   public asOriginalType3__(): MarkdownRendererOriginal {
-    return castTo<MarkdownRendererOriginal>(this);
+    return createMockOfUnsafe<MarkdownRendererOriginal>(this);
   }
 
   public constructor3__(_app: App, _containerEl: HTMLElement, _supportWorker?: boolean): void {

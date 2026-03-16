@@ -3,7 +3,7 @@ import type {
   MarkdownPreviewRenderer as MarkdownPreviewRendererOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -17,7 +17,7 @@ export class MarkdownPreviewRenderer {
   }
 
   public static fromOriginalType__(value: MarkdownPreviewRendererOriginal): MarkdownPreviewRenderer {
-    return castTo<MarkdownPreviewRenderer>(value);
+    return createMockOfUnsafe<MarkdownPreviewRenderer>(value);
   }
 
   public static registerPostProcessor(postProcessor: MarkdownPostProcessorOriginal, _sortOrder?: number): void {
@@ -29,7 +29,7 @@ export class MarkdownPreviewRenderer {
   }
 
   public asOriginalType__(): MarkdownPreviewRendererOriginal {
-    return castTo<MarkdownPreviewRendererOriginal>(this);
+    return createMockOfUnsafe<MarkdownPreviewRendererOriginal>(this);
   }
 
   public constructor__(_owner: unknown, _containerEl: HTMLElement, _parentEl: HTMLElement, _workerPath: unknown, _observeInsertion?: boolean): void {

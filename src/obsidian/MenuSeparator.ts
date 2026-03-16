@@ -2,7 +2,7 @@ import type { MenuSeparator as MenuSeparatorOriginal } from 'obsidian';
 
 import type { Menu } from './Menu.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -18,11 +18,11 @@ export class MenuSeparator {
   }
 
   public static fromOriginalType__(value: MenuSeparatorOriginal): MenuSeparator {
-    return castTo<MenuSeparator>(value);
+    return createMockOfUnsafe<MenuSeparator>(value);
   }
 
   public asOriginalType__(): MenuSeparatorOriginal {
-    return castTo<MenuSeparatorOriginal>(this);
+    return createMockOfUnsafe<MenuSeparatorOriginal>(this);
   }
 
   public constructor__(_menu: Menu): void {

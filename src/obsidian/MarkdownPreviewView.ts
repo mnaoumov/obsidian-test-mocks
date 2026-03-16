@@ -3,22 +3,25 @@ import type { MarkdownPreviewView as MarkdownPreviewViewOriginal } from 'obsidia
 import type { MarkdownView } from './MarkdownView.ts';
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
 export class MarkdownPreviewView extends MarkdownRenderer {
   public override containerEl: HTMLElement;
   public get file(): TFile {
-    return castTo<TFile>(null);
+    return ensureNonNullable(this.markdownView.file);
   }
 
   private data = '';
+  private readonly markdownView: MarkdownView;
 
   public constructor(markdownView: MarkdownView) {
     super(markdownView.app, markdownView.containerEl);
     this.containerEl = markdownView.containerEl;
+    this.markdownView = markdownView;
     const self = strictMock(this);
     self.constructor4__(markdownView);
     return self;
@@ -29,7 +32,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public static fromOriginalType4__(value: MarkdownPreviewViewOriginal): MarkdownPreviewView {
-    return castTo<MarkdownPreviewView>(value);
+    return createMockOfUnsafe<MarkdownPreviewView>(value);
   }
 
   public applyScroll(_scroll: number): void {
@@ -37,7 +40,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public asOriginalType4__(): MarkdownPreviewViewOriginal {
-    return castTo<MarkdownPreviewViewOriginal>(this);
+    return createMockOfUnsafe<MarkdownPreviewViewOriginal>(this);
   }
 
   public clear(): void {

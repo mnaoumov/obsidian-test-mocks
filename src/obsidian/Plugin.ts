@@ -11,7 +11,7 @@ import type {
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -43,7 +43,7 @@ export abstract class Plugin extends Component {
   }
 
   public static fromOriginalType2__(value: PluginOriginal): Plugin {
-    return castTo<Plugin>(value);
+    return createMockOfUnsafe<Plugin>(value);
   }
 
   public addCommand(command: CommandOriginal): CommandOriginal {
@@ -68,7 +68,7 @@ export abstract class Plugin extends Component {
   }
 
   public asOriginalType2__(): PluginOriginal {
-    return castTo<PluginOriginal>(this);
+    return createMockOfUnsafe<PluginOriginal>(this);
   }
 
   public constructor2__(_app: App, _manifest: PluginManifestOriginal): void {

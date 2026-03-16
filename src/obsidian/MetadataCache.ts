@@ -7,7 +7,7 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { parseMarkdownContent } from '../internal/markdown-parser.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
@@ -39,11 +39,11 @@ export class MetadataCache extends Events {
   }
 
   public static fromOriginalType2__(value: MetadataCacheOriginal): MetadataCache {
-    return castTo<MetadataCache>(value);
+    return createMockOfUnsafe<MetadataCache>(value);
   }
 
   public asOriginalType2__(): MetadataCacheOriginal {
-    return castTo<MetadataCacheOriginal>(this);
+    return createMockOfUnsafe<MetadataCacheOriginal>(this);
   }
 
   public constructor2__(_app: App, _vault: Vault): void {

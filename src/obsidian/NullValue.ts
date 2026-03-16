@@ -1,6 +1,6 @@
 import type { NullValue as NullValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Value } from './Value.ts';
@@ -18,11 +18,11 @@ export class NullValue extends Value {
   }
 
   public static fromOriginalType2__(value: NullValueOriginal): NullValue {
-    return castTo<NullValue>(value);
+    return createMockOfUnsafe<NullValue>(value);
   }
 
   public asOriginalType2__(): NullValueOriginal {
-    return castTo<NullValueOriginal>(this);
+    return createMockOfUnsafe<NullValueOriginal>(this);
   }
 
   public constructor2__(): void {
