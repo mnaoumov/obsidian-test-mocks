@@ -23,8 +23,8 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
@@ -65,7 +65,7 @@ export class Workspace extends Events {
     this.rightRibbon = WorkspaceRibbon.create__(this, 'right');
     this.rightSplit = WorkspaceSidedock.create3__(this, 'vertical', 'right');
     this.rootSplit = WorkspaceRoot.create3__(this, 'vertical');
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(app, containerEl);
     return self;
   }
@@ -75,11 +75,11 @@ export class Workspace extends Events {
   }
 
   public static fromOriginalType2__(value: WorkspaceOriginal): Workspace {
-    return bridgeType<Workspace>(value);
+    return mergePrototype(Workspace, value);
   }
 
   public asOriginalType2__(): WorkspaceOriginal {
-    return bridgeType<WorkspaceOriginal>(this);
+    return strictProxyForce<WorkspaceOriginal>(this);
   }
 
   public async changeLayout(_workspace: unknown): Promise<void> {

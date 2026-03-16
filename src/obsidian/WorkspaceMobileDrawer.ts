@@ -2,17 +2,18 @@ import type { WorkspaceMobileDrawer as WorkspaceMobileDrawerOriginal } from 'obs
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceMobileDrawer extends WorkspaceParent {
   public collapsed = false;
+  declare public parent: WorkspaceParent;
 
   protected constructor() {
     super();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__();
     return self;
   }
@@ -22,11 +23,11 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceMobileDrawerOriginal): WorkspaceMobileDrawer {
-    return bridgeType<WorkspaceMobileDrawer>(value);
+    return mergePrototype(WorkspaceMobileDrawer, value);
   }
 
   public asOriginalType4__(): WorkspaceMobileDrawerOriginal {
-    return bridgeType<WorkspaceMobileDrawerOriginal>(this);
+    return strictProxyForce<WorkspaceMobileDrawerOriginal>(this);
   }
 
   public collapse(): void {

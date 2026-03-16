@@ -4,7 +4,9 @@ import type {
   OpenViewState as OpenViewStateOriginal,
   View as ViewOriginal,
   ViewState as ViewStateOriginal,
-  WorkspaceLeaf as WorkspaceLeafOriginal
+  WorkspaceLeaf as WorkspaceLeafOriginal,
+  WorkspaceMobileDrawer as WorkspaceMobileDrawerOriginal,
+  WorkspaceTabs as WorkspaceTabsOriginal
 } from 'obsidian';
 
 import type { App } from './App.ts';
@@ -15,8 +17,8 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
@@ -26,6 +28,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public hoverPopover: HoverPopoverOriginal | null = null;
   public id__: string;
   public readonly isDeferred = false;
+  declare public parent: WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal;
   public view: null | ViewOriginal = null;
 
   public get file__(): null | TFile {
@@ -44,7 +47,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     super(app.workspace, id);
     this.app = app;
     this.id__ = id ?? String(nextLeafId++);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(app, id);
     return self;
   }
@@ -54,11 +57,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public static fromOriginalType3__(value: WorkspaceLeafOriginal): WorkspaceLeaf {
-    return bridgeType<WorkspaceLeaf>(value);
+    return mergePrototype(WorkspaceLeaf, value);
   }
 
   public asOriginalType3__(): WorkspaceLeafOriginal {
-    return bridgeType<WorkspaceLeafOriginal>(this);
+    return strictProxyForce<WorkspaceLeafOriginal>(this);
   }
 
   public constructor3__(_app: App, _id?: string): void {

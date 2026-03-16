@@ -101,6 +101,26 @@ describe('Vault', () => {
     });
   });
 
+  describe('appendBinary()', () => {
+    it('should append binary data to a file', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.createBinary('data.bin', Uint8Array.of(1, BINARY_SIZE_SMALL).buffer);
+      const APPEND_MARKER = 3;
+      await app.vault.appendBinary(file, Uint8Array.of(APPEND_MARKER, BINARY_SIZE_MEDIUM).buffer);
+      const result = new Uint8Array(await app.vault.readBinary(file));
+      expect(Array.from(result)).toEqual([1, BINARY_SIZE_SMALL, APPEND_MARKER, BINARY_SIZE_MEDIUM]);
+    });
+
+    it('should trigger modify event', async () => {
+      const app = await App.createConfigured__();
+      const file = await app.vault.createBinary('data.bin', new ArrayBuffer(BINARY_SIZE_SMALL));
+      const handler = vi.fn();
+      app.vault.on('modify', handler);
+      await app.vault.appendBinary(file, new ArrayBuffer(BINARY_SIZE_SMALL));
+      expect(handler).toHaveBeenCalledWith(file);
+    });
+  });
+
   describe('cachedRead()', () => {
     it('should read file content', async () => {
       const app = await App.createConfigured__({ files: { 'note.md': 'cached content' } });

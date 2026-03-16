@@ -2,8 +2,8 @@ import type { TextComponent as TextComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
@@ -22,7 +22,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       }
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__(_containerEl);
     return self;
   }
@@ -32,11 +32,11 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public static fromOriginalType4__(value: TextComponentOriginal): TextComponent {
-    return bridgeType<TextComponent>(value);
+    return mergePrototype(TextComponent, value);
   }
 
   public asOriginalType4__(): TextComponentOriginal {
-    return bridgeType<TextComponentOriginal>(this);
+    return strictProxyForce<TextComponentOriginal>(this);
   }
 
   public constructor4__(_containerEl: HTMLElement): void {

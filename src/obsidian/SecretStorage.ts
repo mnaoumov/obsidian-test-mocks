@@ -4,15 +4,15 @@ import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class SecretStorage {
   private readonly store = new Map<string, string>();
 
   protected constructor(_app: App) {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(_app);
     return self;
   }
@@ -22,11 +22,11 @@ export class SecretStorage {
   }
 
   public static fromOriginalType__(value: SecretStorageOriginal): SecretStorage {
-    return bridgeType<SecretStorage>(value);
+    return mergePrototype(SecretStorage, value);
   }
 
   public asOriginalType__(): SecretStorageOriginal {
-    return bridgeType<SecretStorageOriginal>(this);
+    return strictProxyForce<SecretStorageOriginal>(this);
   }
 
   public constructor__(_app: App): void {

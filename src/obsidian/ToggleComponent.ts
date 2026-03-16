@@ -5,8 +5,8 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -19,7 +19,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.toggleEl = createDiv();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(_containerEl);
     return self;
   }
@@ -29,11 +29,11 @@ export class ToggleComponent extends ValueComponent<boolean> {
   }
 
   public static fromOriginalType3__(value: ToggleComponentOriginal): ToggleComponent {
-    return bridgeType<ToggleComponent>(value);
+    return mergePrototype(ToggleComponent, value);
   }
 
   public asOriginalType3__(): ToggleComponentOriginal {
-    return bridgeType<ToggleComponentOriginal>(this);
+    return strictProxyForce<ToggleComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

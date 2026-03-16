@@ -5,8 +5,8 @@ import type { Plugin } from './Plugin.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { SettingTab } from './SettingTab.ts';
 
@@ -16,17 +16,17 @@ export abstract class PluginSettingTab extends SettingTab {
   public constructor(app: App, plugin: Plugin) {
     super(app);
     this.plugin = plugin;
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(app, plugin);
     return self;
   }
 
   public static fromOriginalType2__(value: PluginSettingTabOriginal): PluginSettingTab {
-    return bridgeType<PluginSettingTab>(value);
+    return mergePrototype(PluginSettingTab, value);
   }
 
   public asOriginalType2__(): PluginSettingTabOriginal {
-    return bridgeType<PluginSettingTabOriginal>(this);
+    return strictProxyForce<PluginSettingTabOriginal>(this);
   }
 
   public constructor2__(_app: App, _plugin: Plugin): void {

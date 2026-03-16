@@ -7,15 +7,15 @@ import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class RenderContext {
   public hoverPopover: HoverPopoverOriginal | null = null;
 
   protected constructor(_app: App) {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(_app);
     return self;
   }
@@ -25,11 +25,11 @@ export class RenderContext {
   }
 
   public static fromOriginalType__(value: RenderContextOriginal): RenderContext {
-    return bridgeType<RenderContext>(value);
+    return mergePrototype(RenderContext, value);
   }
 
   public asOriginalType__(): RenderContextOriginal {
-    return bridgeType<RenderContextOriginal>(this);
+    return strictProxyForce<RenderContextOriginal>(this);
   }
 
   public constructor__(_app: App): void {

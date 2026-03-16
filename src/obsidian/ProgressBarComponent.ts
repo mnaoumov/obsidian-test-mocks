@@ -2,8 +2,8 @@ import type { ProgressBarComponent as ProgressBarComponentOriginal } from 'obsid
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -15,7 +15,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.progressBar__ = createDiv();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(_containerEl);
     return self;
   }
@@ -25,11 +25,11 @@ export class ProgressBarComponent extends ValueComponent<number> {
   }
 
   public static fromOriginalType3__(value: ProgressBarComponentOriginal): ProgressBarComponent {
-    return bridgeType<ProgressBarComponent>(value);
+    return mergePrototype(ProgressBarComponent, value);
   }
 
   public asOriginalType3__(): ProgressBarComponentOriginal {
-    return bridgeType<ProgressBarComponentOriginal>(this);
+    return strictProxyForce<ProgressBarComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

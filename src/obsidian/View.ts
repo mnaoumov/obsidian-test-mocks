@@ -11,8 +11,8 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
@@ -36,17 +36,17 @@ export abstract class View extends Component {
     this.app = App.create__(FileSystemAdapter.create__('/mock-vault').asOriginalType__(), '');
     this.containerEl = createDiv();
     this.leaf = leaf;
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(leaf);
     return self;
   }
 
   public static fromOriginalType2__(value: ViewOriginal): View {
-    return bridgeType<View>(value);
+    return mergePrototype(View, value);
   }
 
   public asOriginalType2__(): ViewOriginal {
-    return bridgeType<ViewOriginal>(this);
+    return strictProxyForce<ViewOriginal>(this);
   }
 
   public constructor2__(_leaf: WorkspaceLeaf): void {

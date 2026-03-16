@@ -7,15 +7,15 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class Scope {
   private readonly handlers: KeymapEventHandlerOriginal[] = [];
 
   protected constructor(_parent?: Scope) {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(_parent);
     return self;
   }
@@ -25,11 +25,11 @@ export class Scope {
   }
 
   public static fromOriginalType__(value: ScopeOriginal): Scope {
-    return bridgeType<Scope>(value);
+    return mergePrototype(Scope, value);
   }
 
   public asOriginalType__(): ScopeOriginal {
-    return bridgeType<ScopeOriginal>(this);
+    return strictProxyForce<ScopeOriginal>(this);
   }
 
   public constructor__(_parent?: Scope): void {

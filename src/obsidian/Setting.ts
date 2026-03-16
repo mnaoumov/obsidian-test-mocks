@@ -18,8 +18,8 @@ import type { BaseComponent } from './BaseComponent.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ButtonComponent } from './ButtonComponent.ts';
 import { ColorComponent } from './ColorComponent.ts';
@@ -52,7 +52,7 @@ export class Setting {
     this.infoEl.appendChild(this.descEl);
     this.settingEl.appendChild(this.controlEl);
     containerEl.appendChild(this.settingEl);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(containerEl);
     return self;
   }
@@ -62,7 +62,7 @@ export class Setting {
   }
 
   public static fromOriginalType__(value: SettingOriginal): Setting {
-    return bridgeType<Setting>(value);
+    return mergePrototype(Setting, value);
   }
 
   public addButton(cb: (component: ButtonComponentOriginal) => unknown): this {
@@ -149,7 +149,7 @@ export class Setting {
   }
 
   public asOriginalType__(): SettingOriginal {
-    return bridgeType<SettingOriginal>(this);
+    return strictProxyForce<SettingOriginal>(this);
   }
 
   public clear(): this {
