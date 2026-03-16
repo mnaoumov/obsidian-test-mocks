@@ -5,27 +5,27 @@ import type {
 
 import type { Workspace } from './Workspace.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {
   protected constructor(workspace?: Workspace, id?: string) {
     super();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(workspace, id);
     return self;
   }
 
   public static fromOriginalType2__(value: WorkspaceItemOriginal): WorkspaceItem {
-    return createMockOfUnsafe<WorkspaceItem>(value);
+    return bridgeType<WorkspaceItem>(value);
   }
 
   public asOriginalType2__(): WorkspaceItemOriginal {
-    return createMockOfUnsafe<WorkspaceItemOriginal>(this);
+    return bridgeType<WorkspaceItemOriginal>(this);
   }
 
   public constructor2__(_workspace?: Workspace, _id?: string): void {
@@ -33,7 +33,7 @@ export abstract class WorkspaceItem extends Events {
   }
 
   public getContainer(): WorkspaceContainerOriginal {
-    return createMockOfUnsafe<WorkspaceContainerOriginal>(this);
+    return bridgeType<WorkspaceContainerOriginal>(this);
   }
 
   public getRoot(): this {

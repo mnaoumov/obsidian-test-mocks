@@ -2,11 +2,11 @@ import type { SecretComponent as SecretComponentOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class SecretComponent extends BaseComponent {
@@ -14,7 +14,7 @@ export class SecretComponent extends BaseComponent {
 
   public constructor(_app: App, _containerEl: HTMLElement) {
     super();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(_app, _containerEl);
     return self;
   }
@@ -24,11 +24,11 @@ export class SecretComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: SecretComponentOriginal): SecretComponent {
-    return createMockOfUnsafe<SecretComponent>(value);
+    return bridgeType<SecretComponent>(value);
   }
 
   public asOriginalType2__(): SecretComponentOriginal {
-    return createMockOfUnsafe<SecretComponentOriginal>(this);
+    return bridgeType<SecretComponentOriginal>(this);
   }
 
   public constructor2__(_app: App, _containerEl: HTMLElement): void {

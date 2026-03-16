@@ -3,11 +3,11 @@ import type { WorkspaceTabs as WorkspaceTabsOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 import type { WorkspaceSplit } from './WorkspaceSplit.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceTabs extends WorkspaceParent {
@@ -15,7 +15,7 @@ export class WorkspaceTabs extends WorkspaceParent {
 
   protected constructor(_workspace: Workspace, _id?: string) {
     super(_workspace, _id);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor4__(_workspace, _id);
     return self;
   }
@@ -25,11 +25,11 @@ export class WorkspaceTabs extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceTabsOriginal): WorkspaceTabs {
-    return createMockOfUnsafe<WorkspaceTabs>(value);
+    return bridgeType<WorkspaceTabs>(value);
   }
 
   public asOriginalType4__(): WorkspaceTabsOriginal {
-    return createMockOfUnsafe<WorkspaceTabsOriginal>(this);
+    return bridgeType<WorkspaceTabsOriginal>(this);
   }
 
   public constructor4__(_workspace: Workspace, _id?: string): void {

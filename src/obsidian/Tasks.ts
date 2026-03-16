@@ -1,16 +1,16 @@
 import type { Tasks as TasksOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export class Tasks {
   private readonly promises: Promise<unknown>[] = [];
 
   protected constructor() {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
@@ -20,7 +20,7 @@ export class Tasks {
   }
 
   public static fromOriginalType__(value: TasksOriginal): Tasks {
-    return createMockOfUnsafe<Tasks>(value);
+    return bridgeType<Tasks>(value);
   }
 
   public add(callback: () => Promise<unknown>): void {
@@ -32,7 +32,7 @@ export class Tasks {
   }
 
   public asOriginalType__(): TasksOriginal {
-    return createMockOfUnsafe<TasksOriginal>(this);
+    return bridgeType<TasksOriginal>(this);
   }
 
   public constructor__(): void {

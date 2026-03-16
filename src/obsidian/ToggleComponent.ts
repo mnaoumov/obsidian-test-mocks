@@ -3,11 +3,11 @@ import type {
   TooltipOptions as TooltipOptionsOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ToggleComponent extends ValueComponent<boolean> {
@@ -19,7 +19,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.toggleEl = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(_containerEl);
     return self;
   }
@@ -29,11 +29,11 @@ export class ToggleComponent extends ValueComponent<boolean> {
   }
 
   public static fromOriginalType3__(value: ToggleComponentOriginal): ToggleComponent {
-    return createMockOfUnsafe<ToggleComponent>(value);
+    return bridgeType<ToggleComponent>(value);
   }
 
   public asOriginalType3__(): ToggleComponentOriginal {
-    return createMockOfUnsafe<ToggleComponentOriginal>(this);
+    return bridgeType<ToggleComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

@@ -5,12 +5,12 @@ import type {
 
 import { StateField } from '@codemirror/state';
 
-import { createMockOfUnsafe } from '../../internal/create-mock-of.ts';
+import { bridgeType } from '../../internal/strict-proxy.ts';
 
 export const editorInfoField: StateField<MarkdownFileInfoOriginal> = StateField.define({
   create(): MarkdownFileInfoOriginal {
     return {
-      app: createMockOfUnsafe<AppOriginal>({}),
+      app: bridgeType<AppOriginal>({}),
       file: null,
       hoverPopover: null
     };

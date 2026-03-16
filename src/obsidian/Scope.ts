@@ -5,17 +5,17 @@ import type {
   Scope as ScopeOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export class Scope {
   private readonly handlers: KeymapEventHandlerOriginal[] = [];
 
   protected constructor(_parent?: Scope) {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(_parent);
     return self;
   }
@@ -25,11 +25,11 @@ export class Scope {
   }
 
   public static fromOriginalType__(value: ScopeOriginal): Scope {
-    return createMockOfUnsafe<Scope>(value);
+    return bridgeType<Scope>(value);
   }
 
   public asOriginalType__(): ScopeOriginal {
-    return createMockOfUnsafe<ScopeOriginal>(this);
+    return bridgeType<ScopeOriginal>(this);
   }
 
   public constructor__(_parent?: Scope): void {
