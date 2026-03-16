@@ -1,10 +1,10 @@
 import type { SearchComponent as SearchComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -14,7 +14,7 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     super(createEl('input'));
     this.inputEl.type = 'search';
     this.clearButtonEl = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor4__(_containerEl);
     return self;
   }
@@ -24,11 +24,11 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public static fromOriginalType4__(value: SearchComponentOriginal): SearchComponent {
-    return createMockOfUnsafe<SearchComponent>(value);
+    return bridgeType<SearchComponent>(value);
   }
 
   public asOriginalType4__(): SearchComponentOriginal {
-    return createMockOfUnsafe<SearchComponentOriginal>(this);
+    return bridgeType<SearchComponentOriginal>(this);
   }
 
   public constructor4__(_containerEl: HTMLElement): void {

@@ -1,10 +1,10 @@
 import type { SliderComponent as SliderComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 const DEFAULT_MAX = 100;
@@ -22,7 +22,7 @@ export class SliderComponent extends ValueComponent<number> {
     super();
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(_containerEl);
     return self;
   }
@@ -32,11 +32,11 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public static fromOriginalType3__(value: SliderComponentOriginal): SliderComponent {
-    return createMockOfUnsafe<SliderComponent>(value);
+    return bridgeType<SliderComponent>(value);
   }
 
   public asOriginalType3__(): SliderComponentOriginal {
-    return createMockOfUnsafe<SliderComponentOriginal>(this);
+    return bridgeType<SliderComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

@@ -6,11 +6,11 @@ import type {
 
 import type { App } from './App.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export abstract class SettingTab {
   public app: App;
@@ -20,17 +20,17 @@ export abstract class SettingTab {
   public constructor(app: App, setting?: SettingOriginal) {
     this.app = app;
     this.containerEl = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(app, setting);
     return self;
   }
 
   public static fromOriginalType__(value: SettingTabOriginal): SettingTab {
-    return createMockOfUnsafe<SettingTab>(value);
+    return bridgeType<SettingTab>(value);
   }
 
   public asOriginalType__(): SettingTabOriginal {
-    return createMockOfUnsafe<SettingTabOriginal>(this);
+    return bridgeType<SettingTabOriginal>(this);
   }
 
   public constructor__(_app: App, _setting?: SettingOriginal): void {

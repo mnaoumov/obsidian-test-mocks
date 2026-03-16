@@ -1,16 +1,16 @@
 import type { TextAreaComponent as TextAreaComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement> {
   public constructor(_containerEl: HTMLElement) {
     super(createEl('textarea'));
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor4__(_containerEl);
     return self;
   }
@@ -20,11 +20,11 @@ export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement
   }
 
   public static fromOriginalType4__(value: TextAreaComponentOriginal): TextAreaComponent {
-    return createMockOfUnsafe<TextAreaComponent>(value);
+    return bridgeType<TextAreaComponent>(value);
   }
 
   public asOriginalType4__(): TextAreaComponentOriginal {
-    return createMockOfUnsafe<TextAreaComponentOriginal>(this);
+    return bridgeType<TextAreaComponentOriginal>(this);
   }
 
   public constructor4__(_containerEl: HTMLElement): void {

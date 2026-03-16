@@ -5,11 +5,11 @@ import type {
 
 import type { Vault } from './Vault.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
 export class TFile extends TAbstractFile {
@@ -22,7 +22,7 @@ export class TFile extends TAbstractFile {
     const dotIndex = this.name.lastIndexOf('.');
     this.extension = dotIndex >= 0 ? this.name.slice(dotIndex + 1) : '';
     this.basename = dotIndex >= 0 ? this.name.slice(0, dotIndex) : this.name;
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(vault, path);
     return self;
   }
@@ -32,11 +32,11 @@ export class TFile extends TAbstractFile {
   }
 
   public static fromOriginalType2__(value: TFileOriginal): TFile {
-    return createMockOfUnsafe<TFile>(value);
+    return bridgeType<TFile>(value);
   }
 
   public asOriginalType2__(): TFileOriginal {
-    return createMockOfUnsafe<TFileOriginal>(this);
+    return bridgeType<TFileOriginal>(this);
   }
 
   public constructor2__(_vault: Vault, _path: string): void {

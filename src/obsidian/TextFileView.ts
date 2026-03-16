@@ -3,13 +3,13 @@ import type { TextFileView as TextFileViewOriginal } from 'obsidian';
 import type { TFile } from './TFile.ts';
 
 import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
-import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { EditableFileView } from './EditableFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -18,17 +18,17 @@ export abstract class TextFileView extends EditableFileView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor6__(leaf);
     return self;
   }
 
   public static fromOriginalType6__(value: TextFileViewOriginal): TextFileView {
-    return createMockOfUnsafe<TextFileView>(value);
+    return bridgeType<TextFileView>(value);
   }
 
   public asOriginalType6__(): TextFileViewOriginal {
-    return createMockOfUnsafe<TextFileViewOriginal>(this);
+    return bridgeType<TextFileViewOriginal>(this);
   }
 
   public abstract clear(): void;

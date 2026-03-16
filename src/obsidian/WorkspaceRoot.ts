@@ -2,11 +2,11 @@ import type { WorkspaceRoot as WorkspaceRootOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { WorkspaceContainer } from './WorkspaceContainer.ts';
 
 export class WorkspaceRoot extends WorkspaceContainer {
@@ -20,7 +20,7 @@ export class WorkspaceRoot extends WorkspaceContainer {
 
   protected constructor(workspace: Workspace, direction: string, id?: string) {
     super(workspace, direction, id);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor6__(workspace, direction, id);
     return self;
   }
@@ -30,11 +30,11 @@ export class WorkspaceRoot extends WorkspaceContainer {
   }
 
   public static fromOriginalType6__(value: WorkspaceRootOriginal): WorkspaceRoot {
-    return createMockOfUnsafe<WorkspaceRoot>(value);
+    return bridgeType<WorkspaceRoot>(value);
   }
 
   public asOriginalType6__(): WorkspaceRootOriginal {
-    return createMockOfUnsafe<WorkspaceRootOriginal>(this);
+    return bridgeType<WorkspaceRootOriginal>(this);
   }
 
   public constructor6__(_workspace: Workspace, _direction: string, _id?: string): void {

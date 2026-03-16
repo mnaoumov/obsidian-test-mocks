@@ -2,11 +2,11 @@ import type { TFolder as TFolderOriginal } from 'obsidian';
 
 import type { Vault } from './Vault.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
 export class TFolder extends TAbstractFile {
@@ -14,7 +14,7 @@ export class TFolder extends TAbstractFile {
 
   protected constructor(vault: Vault, path: string) {
     super(vault, path);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(vault, path);
     return self;
   }
@@ -24,11 +24,11 @@ export class TFolder extends TAbstractFile {
   }
 
   public static fromOriginalType2__(value: TFolderOriginal): TFolder {
-    return createMockOfUnsafe<TFolder>(value);
+    return bridgeType<TFolder>(value);
   }
 
   public asOriginalType2__(): TFolderOriginal {
-    return createMockOfUnsafe<TFolderOriginal>(this);
+    return bridgeType<TFolderOriginal>(this);
   }
 
   public constructor2__(_vault: Vault, _path: string): void {

@@ -1,10 +1,10 @@
 import type { TextComponent as TextComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -22,7 +22,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       }
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor4__(_containerEl);
     return self;
   }
@@ -32,11 +32,11 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public static fromOriginalType4__(value: TextComponentOriginal): TextComponent {
-    return createMockOfUnsafe<TextComponent>(value);
+    return bridgeType<TextComponent>(value);
   }
 
   public asOriginalType4__(): TextComponentOriginal {
-    return createMockOfUnsafe<TextComponentOriginal>(this);
+    return bridgeType<TextComponentOriginal>(this);
   }
 
   public constructor4__(_containerEl: HTMLElement): void {

@@ -6,11 +6,11 @@ import type {
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
@@ -29,7 +29,7 @@ export class Vault extends Events {
     this.fileMap['/'] = root;
     this.fileMapLowerCase['/'] = root;
     root.deleted__ = false;
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(adapter);
     return self;
   }
@@ -39,7 +39,7 @@ export class Vault extends Events {
   }
 
   public static fromOriginalType2__(value: VaultOriginal): Vault {
-    return createMockOfUnsafe<Vault>(value);
+    return bridgeType<Vault>(value);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {
@@ -57,7 +57,7 @@ export class Vault extends Events {
   }
 
   public asOriginalType2__(): VaultOriginal {
-    return createMockOfUnsafe<VaultOriginal>(this);
+    return bridgeType<VaultOriginal>(this);
   }
 
   public async cachedRead(file: TFile): Promise<string> {

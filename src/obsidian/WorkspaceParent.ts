@@ -2,27 +2,27 @@ import type { WorkspaceParent as WorkspaceParentOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 export abstract class WorkspaceParent extends WorkspaceItem {
   protected constructor(workspace?: Workspace, id?: string) {
     super(workspace, id);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(workspace, id);
     return self;
   }
 
   public static fromOriginalType3__(value: WorkspaceParentOriginal): WorkspaceParent {
-    return createMockOfUnsafe<WorkspaceParent>(value);
+    return bridgeType<WorkspaceParent>(value);
   }
 
   public asOriginalType3__(): WorkspaceParentOriginal {
-    return createMockOfUnsafe<WorkspaceParentOriginal>(this);
+    return bridgeType<WorkspaceParentOriginal>(this);
   }
 
   public constructor3__(_workspace?: Workspace, _id?: string): void {

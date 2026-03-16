@@ -7,13 +7,13 @@ import type {
 } from 'obsidian';
 
 import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
-import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -36,17 +36,17 @@ export abstract class View extends Component {
     this.app = App.create__(FileSystemAdapter.create__('/mock-vault').asOriginalType__(), '');
     this.containerEl = createDiv();
     this.leaf = leaf;
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(leaf);
     return self;
   }
 
   public static fromOriginalType2__(value: ViewOriginal): View {
-    return createMockOfUnsafe<View>(value);
+    return bridgeType<View>(value);
   }
 
   public asOriginalType2__(): ViewOriginal {
-    return createMockOfUnsafe<ViewOriginal>(this);
+    return bridgeType<ViewOriginal>(this);
   }
 
   public constructor2__(_leaf: WorkspaceLeaf): void {

@@ -19,13 +19,13 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
-import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 import { debounce } from './functions/debounce.ts';
@@ -65,7 +65,7 @@ export class Workspace extends Events {
     this.rightRibbon = WorkspaceRibbon.create__(this, 'right');
     this.rightSplit = WorkspaceSidedock.create3__(this, 'vertical', 'right');
     this.rootSplit = WorkspaceRoot.create3__(this, 'vertical');
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(app, containerEl);
     return self;
   }
@@ -75,11 +75,11 @@ export class Workspace extends Events {
   }
 
   public static fromOriginalType2__(value: WorkspaceOriginal): Workspace {
-    return createMockOfUnsafe<Workspace>(value);
+    return bridgeType<Workspace>(value);
   }
 
   public asOriginalType2__(): WorkspaceOriginal {
-    return createMockOfUnsafe<WorkspaceOriginal>(this);
+    return bridgeType<WorkspaceOriginal>(this);
   }
 
   public async changeLayout(_workspace: unknown): Promise<void> {

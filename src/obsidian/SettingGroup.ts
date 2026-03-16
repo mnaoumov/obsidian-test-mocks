@@ -5,11 +5,11 @@ import type {
   Setting as SettingOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
@@ -20,7 +20,7 @@ export class SettingGroup {
   public constructor(containerEl: HTMLElement) {
     this.listEl__ = createDiv();
     containerEl.appendChild(this.listEl__);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(containerEl);
     return self;
   }
@@ -30,7 +30,7 @@ export class SettingGroup {
   }
 
   public static fromOriginalType__(value: SettingGroupOriginal): SettingGroup {
-    return createMockOfUnsafe<SettingGroup>(value);
+    return bridgeType<SettingGroup>(value);
   }
 
   public addClass(cls: string): this {
@@ -57,7 +57,7 @@ export class SettingGroup {
   }
 
   public asOriginalType__(): SettingGroupOriginal {
-    return createMockOfUnsafe<SettingGroupOriginal>(this);
+    return bridgeType<SettingGroupOriginal>(this);
   }
 
   public constructor__(_containerEl: HTMLElement): void {

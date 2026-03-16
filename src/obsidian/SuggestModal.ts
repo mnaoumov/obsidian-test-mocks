@@ -5,11 +5,11 @@ import type {
 
 import type { App } from './App.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Modal } from './Modal.ts';
 
 const DEFAULT_LIMIT = 100;
@@ -25,17 +25,17 @@ export abstract class SuggestModal<T> extends Modal {
     super(app);
     this.inputEl = createEl('input');
     this.resultContainerEl = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(app);
     return self;
   }
 
   public static fromOriginalType2__<T>(value: SuggestModalOriginal<T>): SuggestModal<T> {
-    return createMockOfUnsafe<SuggestModal<T>>(value);
+    return bridgeType<SuggestModal<T>>(value);
   }
 
   public asOriginalType2__(): SuggestModalOriginal<T> {
-    return createMockOfUnsafe<SuggestModalOriginal<T>>(this);
+    return bridgeType<SuggestModalOriginal<T>>(this);
   }
 
   public override close(): void {

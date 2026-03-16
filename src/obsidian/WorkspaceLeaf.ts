@@ -11,13 +11,13 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
-import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 let nextLeafId = 1;
@@ -44,7 +44,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     super(app.workspace, id);
     this.app = app;
     this.id__ = id ?? String(nextLeafId++);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(app, id);
     return self;
   }
@@ -54,11 +54,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public static fromOriginalType3__(value: WorkspaceLeafOriginal): WorkspaceLeaf {
-    return createMockOfUnsafe<WorkspaceLeaf>(value);
+    return bridgeType<WorkspaceLeaf>(value);
   }
 
   public asOriginalType3__(): WorkspaceLeafOriginal {
-    return createMockOfUnsafe<WorkspaceLeafOriginal>(this);
+    return bridgeType<WorkspaceLeafOriginal>(this);
   }
 
   public constructor3__(_app: App, _id?: string): void {
