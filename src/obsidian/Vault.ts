@@ -6,7 +6,7 @@ import type {
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
@@ -37,7 +37,7 @@ export class Vault extends Events {
   }
 
   public static fromOriginalType2__(value: VaultOriginal): Vault {
-    return castTo<Vault>(value);
+    return createMockOfUnsafe<Vault>(value);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {
@@ -55,7 +55,7 @@ export class Vault extends Events {
   }
 
   public asOriginalType2__(): VaultOriginal {
-    return castTo<VaultOriginal>(this);
+    return createMockOfUnsafe<VaultOriginal>(this);
   }
 
   public async cachedRead(file: TFile): Promise<string> {

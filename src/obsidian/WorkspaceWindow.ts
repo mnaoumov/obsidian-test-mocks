@@ -2,7 +2,7 @@ import type { WorkspaceWindow as WorkspaceWindowOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceContainer } from './WorkspaceContainer.ts';
@@ -28,11 +28,11 @@ export class WorkspaceWindow extends WorkspaceContainer {
   }
 
   public static fromOriginalType6__(value: WorkspaceWindowOriginal): WorkspaceWindow {
-    return castTo<WorkspaceWindow>(value);
+    return createMockOfUnsafe<WorkspaceWindow>(value);
   }
 
   public asOriginalType6__(): WorkspaceWindowOriginal {
-    return castTo<WorkspaceWindowOriginal>(this);
+    return createMockOfUnsafe<WorkspaceWindowOriginal>(this);
   }
 
   public constructor6__(_workspace: Workspace, _id?: string, _size?: Record<string, number>): void {

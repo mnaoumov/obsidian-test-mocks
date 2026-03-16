@@ -2,7 +2,7 @@ import type { SecretStorage as SecretStorageOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -20,11 +20,11 @@ export class SecretStorage {
   }
 
   public static fromOriginalType__(value: SecretStorageOriginal): SecretStorage {
-    return castTo<SecretStorage>(value);
+    return createMockOfUnsafe<SecretStorage>(value);
   }
 
   public asOriginalType__(): SecretStorageOriginal {
-    return castTo<SecretStorageOriginal>(this);
+    return createMockOfUnsafe<SecretStorageOriginal>(this);
   }
 
   public constructor__(_app: App): void {

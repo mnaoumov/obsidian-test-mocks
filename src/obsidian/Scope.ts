@@ -5,19 +5,12 @@ import type {
   Scope as ScopeOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
-interface MockKeyScope {
-  func(): void;
-  key: null | string;
-  modifiers: null | string;
-  scope: Scope;
-}
-
 export class Scope {
-  private readonly keys: MockKeyScope[] = [];
+  private readonly handlers: KeymapEventHandlerOriginal[] = [];
 
   protected constructor(_parent?: Scope) {
     const self = strictMock(this);
@@ -30,11 +23,11 @@ export class Scope {
   }
 
   public static fromOriginalType__(value: ScopeOriginal): Scope {
-    return castTo<Scope>(value);
+    return createMockOfUnsafe<Scope>(value);
   }
 
   public asOriginalType__(): ScopeOriginal {
-    return castTo<ScopeOriginal>(this);
+    return createMockOfUnsafe<ScopeOriginal>(this);
   }
 
   public constructor__(_parent?: Scope): void {
@@ -42,15 +35,19 @@ export class Scope {
   }
 
   public register(modifiers: ModifierOriginal[] | null, key: null | string, _func: KeymapEventListenerOriginal): KeymapEventHandlerOriginal {
-    const handler = castTo<KeymapEventHandlerOriginal>({ key, modifiers: modifiers?.join(',') ?? null, scope: this });
-    this.keys.push(castTo<MockKeyScope>(handler));
+    const handler: KeymapEventHandlerOriginal = {
+      key,
+      modifiers: modifiers?.join(',') ?? null,
+      scope: this
+    };
+    this.handlers.push(handler);
     return handler;
   }
 
   public unregister(handler: KeymapEventHandlerOriginal): void {
-    const index = this.keys.indexOf(castTo<MockKeyScope>(handler));
+    const index = this.handlers.indexOf(handler);
     if (index !== -1) {
-      this.keys.splice(index, 1);
+      this.handlers.splice(index, 1);
     }
   }
 }

@@ -1,6 +1,6 @@
 import type { TextComponent as TextComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
@@ -30,11 +30,11 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public static fromOriginalType4__(value: TextComponentOriginal): TextComponent {
-    return castTo<TextComponent>(value);
+    return createMockOfUnsafe<TextComponent>(value);
   }
 
   public asOriginalType4__(): TextComponentOriginal {
-    return castTo<TextComponentOriginal>(this);
+    return createMockOfUnsafe<TextComponentOriginal>(this);
   }
 
   public constructor4__(_containerEl: HTMLElement): void {

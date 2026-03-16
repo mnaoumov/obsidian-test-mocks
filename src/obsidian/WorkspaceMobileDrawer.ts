@@ -1,6 +1,6 @@
 import type { WorkspaceMobileDrawer as WorkspaceMobileDrawerOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
@@ -20,11 +20,11 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceMobileDrawerOriginal): WorkspaceMobileDrawer {
-    return castTo<WorkspaceMobileDrawer>(value);
+    return createMockOfUnsafe<WorkspaceMobileDrawer>(value);
   }
 
   public asOriginalType4__(): WorkspaceMobileDrawerOriginal {
-    return castTo<WorkspaceMobileDrawerOriginal>(this);
+    return createMockOfUnsafe<WorkspaceMobileDrawerOriginal>(this);
   }
 
   public collapse(): void {

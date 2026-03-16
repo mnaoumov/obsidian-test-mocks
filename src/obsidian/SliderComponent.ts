@@ -1,6 +1,6 @@
 import type { SliderComponent as SliderComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -30,11 +30,11 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public static fromOriginalType3__(value: SliderComponentOriginal): SliderComponent {
-    return castTo<SliderComponent>(value);
+    return createMockOfUnsafe<SliderComponent>(value);
   }
 
   public asOriginalType3__(): SliderComponentOriginal {
-    return castTo<SliderComponentOriginal>(this);
+    return createMockOfUnsafe<SliderComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

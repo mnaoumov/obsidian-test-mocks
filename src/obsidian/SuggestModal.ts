@@ -5,7 +5,7 @@ import type {
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Modal } from './Modal.ts';
@@ -29,11 +29,11 @@ export abstract class SuggestModal<T> extends Modal {
   }
 
   public static fromOriginalType2__<T>(value: SuggestModalOriginal<T>): SuggestModal<T> {
-    return castTo<SuggestModal<T>>(value);
+    return createMockOfUnsafe<SuggestModal<T>>(value);
   }
 
   public asOriginalType2__(): SuggestModalOriginal<T> {
-    return castTo<SuggestModalOriginal<T>>(this);
+    return createMockOfUnsafe<SuggestModalOriginal<T>>(this);
   }
 
   public override close(): void {

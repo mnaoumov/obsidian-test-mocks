@@ -16,20 +16,20 @@ import type {
 
 import type { BaseComponent } from './BaseComponent.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
-import { ButtonComponent as MockButtonComponent } from './ButtonComponent.ts';
-import { ColorComponent as MockColorComponent } from './ColorComponent.ts';
-import { DropdownComponent as MockDropdownComponent } from './DropdownComponent.ts';
-import { ExtraButtonComponent as MockExtraButtonComponent } from './ExtraButtonComponent.ts';
-import { MomentFormatComponent as MockMomentFormatComponent } from './MomentFormatComponent.ts';
-import { ProgressBarComponent as MockProgressBarComponent } from './ProgressBarComponent.ts';
-import { SearchComponent as MockSearchComponent } from './SearchComponent.ts';
-import { SliderComponent as MockSliderComponent } from './SliderComponent.ts';
-import { TextAreaComponent as MockTextAreaComponent } from './TextAreaComponent.ts';
-import { TextComponent as MockTextComponent } from './TextComponent.ts';
-import { ToggleComponent as MockToggleComponent } from './ToggleComponent.ts';
+import { ButtonComponent } from './ButtonComponent.ts';
+import { ColorComponent } from './ColorComponent.ts';
+import { DropdownComponent } from './DropdownComponent.ts';
+import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
+import { MomentFormatComponent } from './MomentFormatComponent.ts';
+import { ProgressBarComponent } from './ProgressBarComponent.ts';
+import { SearchComponent } from './SearchComponent.ts';
+import { SliderComponent } from './SliderComponent.ts';
+import { TextAreaComponent } from './TextAreaComponent.ts';
+import { TextComponent } from './TextComponent.ts';
+import { ToggleComponent } from './ToggleComponent.ts';
 
 export class Setting {
   public components: BaseComponent[] = [];
@@ -60,20 +60,20 @@ export class Setting {
   }
 
   public static fromOriginalType__(value: SettingOriginal): Setting {
-    return castTo<Setting>(value);
+    return createMockOfUnsafe<Setting>(value);
   }
 
   public addButton(cb: (component: ButtonComponentOriginal) => unknown): this {
-    const comp = MockButtonComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<ButtonComponentOriginal>(comp));
+    const comp = ButtonComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType2__());
     return this;
   }
 
   public addColorPicker(cb: (component: ColorComponentOriginal) => unknown): this {
-    const comp = MockColorComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<ColorComponentOriginal>(comp));
+    const comp = ColorComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType3__());
     return this;
   }
 
@@ -84,70 +84,70 @@ export class Setting {
   }
 
   public addDropdown(cb: (component: DropdownComponentOriginal) => unknown): this {
-    const comp = MockDropdownComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<DropdownComponentOriginal>(comp));
+    const comp = DropdownComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType3__());
     return this;
   }
 
   public addExtraButton(cb: (component: ExtraButtonComponentOriginal) => unknown): this {
-    const comp = MockExtraButtonComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<ExtraButtonComponentOriginal>(comp));
+    const comp = ExtraButtonComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType2__());
     return this;
   }
 
   public addMomentFormat(cb: (component: MomentFormatComponentOriginal) => unknown): this {
-    const comp = MockMomentFormatComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<MomentFormatComponentOriginal>(comp));
+    const comp = MomentFormatComponent.create2__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType5__());
     return this;
   }
 
   public addProgressBar(cb: (component: ProgressBarComponentOriginal) => unknown): this {
-    const comp = MockProgressBarComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<ProgressBarComponentOriginal>(comp));
+    const comp = ProgressBarComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType3__());
     return this;
   }
 
   public addSearch(cb: (component: SearchComponentOriginal) => unknown): this {
-    const comp = MockSearchComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<SearchComponentOriginal>(comp));
+    const comp = SearchComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType4__());
     return this;
   }
 
   public addSlider(cb: (component: SliderComponentOriginal) => unknown): this {
-    const comp = MockSliderComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<SliderComponentOriginal>(comp));
+    const comp = SliderComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType3__());
     return this;
   }
 
   public addText(cb: (component: TextComponentOriginal) => unknown): this {
-    const comp = MockTextComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<TextComponentOriginal>(comp));
+    const comp = TextComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType4__());
     return this;
   }
 
   public addTextArea(cb: (component: TextAreaComponentOriginal) => unknown): this {
-    const comp = MockTextAreaComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<TextAreaComponentOriginal>(comp));
+    const comp = TextAreaComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType4__());
     return this;
   }
 
   public addToggle(cb: (component: ToggleComponentOriginal) => unknown): this {
-    const comp = MockToggleComponent.create__(this.controlEl);
-    this.components.push(castTo<BaseComponent>(comp));
-    cb(castTo<ToggleComponentOriginal>(comp));
+    const comp = ToggleComponent.create__(this.controlEl);
+    this.components.push(comp);
+    cb(comp.asOriginalType3__());
     return this;
   }
 
   public asOriginalType__(): SettingOriginal {
-    return castTo<SettingOriginal>(this);
+    return createMockOfUnsafe<SettingOriginal>(this);
   }
 
   public clear(): this {

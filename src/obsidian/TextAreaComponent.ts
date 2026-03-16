@@ -1,6 +1,6 @@
 import type { TextAreaComponent as TextAreaComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
@@ -18,11 +18,11 @@ export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement
   }
 
   public static fromOriginalType4__(value: TextAreaComponentOriginal): TextAreaComponent {
-    return castTo<TextAreaComponent>(value);
+    return createMockOfUnsafe<TextAreaComponent>(value);
   }
 
   public asOriginalType4__(): TextAreaComponentOriginal {
-    return castTo<TextAreaComponentOriginal>(this);
+    return createMockOfUnsafe<TextAreaComponentOriginal>(this);
   }
 
   public constructor4__(_containerEl: HTMLElement): void {

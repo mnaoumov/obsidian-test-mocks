@@ -2,7 +2,7 @@ import type { Value as ValueOriginal } from 'obsidian';
 
 import type { RenderContext } from './RenderContext.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -23,7 +23,7 @@ export abstract class Value {
   }
 
   public static fromOriginalType__(value: ValueOriginal): Value {
-    return castTo<Value>(value);
+    return createMockOfUnsafe<Value>(value);
   }
 
   public static looseEquals(a: null | Value, b: null | Value): boolean {
@@ -34,7 +34,7 @@ export abstract class Value {
   }
 
   public asOriginalType__(): ValueOriginal {
-    return castTo<ValueOriginal>(this);
+    return createMockOfUnsafe<ValueOriginal>(this);
   }
 
   public constructor__(): void {

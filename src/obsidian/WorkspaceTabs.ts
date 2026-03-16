@@ -3,7 +3,7 @@ import type { WorkspaceTabs as WorkspaceTabsOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 import type { WorkspaceSplit } from './WorkspaceSplit.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
@@ -23,11 +23,11 @@ export class WorkspaceTabs extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceTabsOriginal): WorkspaceTabs {
-    return castTo<WorkspaceTabs>(value);
+    return createMockOfUnsafe<WorkspaceTabs>(value);
   }
 
   public asOriginalType4__(): WorkspaceTabsOriginal {
-    return castTo<WorkspaceTabsOriginal>(this);
+    return createMockOfUnsafe<WorkspaceTabsOriginal>(this);
   }
 
   public constructor4__(_workspace: Workspace, _id?: string): void {

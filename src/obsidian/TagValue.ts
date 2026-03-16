@@ -1,6 +1,6 @@
 import type { TagValue as TagValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { StringValue } from './StringValue.ts';
@@ -18,11 +18,11 @@ export class TagValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: TagValueOriginal): TagValue {
-    return castTo<TagValue>(value);
+    return createMockOfUnsafe<TagValue>(value);
   }
 
   public asOriginalType5__(): TagValueOriginal {
-    return castTo<TagValueOriginal>(this);
+    return createMockOfUnsafe<TagValueOriginal>(this);
   }
 
   public constructor5__(_value: string): void {

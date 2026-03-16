@@ -2,7 +2,7 @@ import type { TextFileView as TextFileViewOriginal } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -22,11 +22,11 @@ export abstract class TextFileView extends EditableFileView {
   }
 
   public static fromOriginalType6__(value: TextFileViewOriginal): TextFileView {
-    return castTo<TextFileView>(value);
+    return createMockOfUnsafe<TextFileView>(value);
   }
 
   public asOriginalType6__(): TextFileViewOriginal {
-    return castTo<TextFileViewOriginal>(this);
+    return createMockOfUnsafe<TextFileViewOriginal>(this);
   }
 
   public abstract clear(): void;

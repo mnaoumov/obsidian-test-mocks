@@ -1,6 +1,6 @@
 import type { StringValue as StringValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
@@ -18,11 +18,11 @@ export class StringValue extends PrimitiveValue<string> {
   }
 
   public static fromOriginalType4__(value: StringValueOriginal): StringValue {
-    return castTo<StringValue>(value);
+    return createMockOfUnsafe<StringValue>(value);
   }
 
   public asOriginalType4__(): StringValueOriginal {
-    return castTo<StringValueOriginal>(this);
+    return createMockOfUnsafe<StringValueOriginal>(this);
   }
 
   public constructor4__(_value = ''): void {

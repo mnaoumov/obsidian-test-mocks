@@ -1,5 +1,4 @@
 import type {
-  DataAdapter as DataAdapterOriginal,
   IconName as IconNameOriginal,
   Menu as MenuOriginal,
   Scope as ScopeOriginal,
@@ -7,7 +6,7 @@ import type {
   ViewStateResult as ViewStateResultOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -32,7 +31,7 @@ export abstract class View extends Component {
 
   public constructor(leaf: WorkspaceLeaf) {
     super();
-    this.app = App.create__(castTo<DataAdapterOriginal>(FileSystemAdapter.create__('/mock-vault')), '');
+    this.app = App.create__(FileSystemAdapter.create__('/mock-vault').asOriginalType__(), '');
     this.containerEl = createDiv();
     this.leaf = leaf;
     const self = strictMock(this);
@@ -41,11 +40,11 @@ export abstract class View extends Component {
   }
 
   public static fromOriginalType2__(value: ViewOriginal): View {
-    return castTo<View>(value);
+    return createMockOfUnsafe<View>(value);
   }
 
   public asOriginalType2__(): ViewOriginal {
-    return castTo<ViewOriginal>(this);
+    return createMockOfUnsafe<ViewOriginal>(this);
   }
 
   public constructor2__(_leaf: WorkspaceLeaf): void {

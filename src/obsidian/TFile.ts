@@ -5,7 +5,7 @@ import type {
 
 import type { Vault } from './Vault.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
@@ -30,11 +30,11 @@ export class TFile extends TAbstractFile {
   }
 
   public static fromOriginalType2__(value: TFileOriginal): TFile {
-    return castTo<TFile>(value);
+    return createMockOfUnsafe<TFile>(value);
   }
 
   public asOriginalType2__(): TFileOriginal {
-    return castTo<TFileOriginal>(this);
+    return createMockOfUnsafe<TFileOriginal>(this);
   }
 
   public constructor2__(_vault: Vault, _path: string): void {

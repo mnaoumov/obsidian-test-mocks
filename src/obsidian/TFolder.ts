@@ -2,7 +2,7 @@ import type { TFolder as TFolderOriginal } from 'obsidian';
 
 import type { Vault } from './Vault.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
@@ -22,11 +22,11 @@ export class TFolder extends TAbstractFile {
   }
 
   public static fromOriginalType2__(value: TFolderOriginal): TFolder {
-    return castTo<TFolder>(value);
+    return createMockOfUnsafe<TFolder>(value);
   }
 
   public asOriginalType2__(): TFolderOriginal {
-    return castTo<TFolderOriginal>(this);
+    return createMockOfUnsafe<TFolderOriginal>(this);
   }
 
   public constructor2__(_vault: Vault, _path: string): void {

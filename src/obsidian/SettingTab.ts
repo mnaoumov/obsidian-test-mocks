@@ -6,7 +6,7 @@ import type {
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -24,11 +24,11 @@ export abstract class SettingTab {
   }
 
   public static fromOriginalType__(value: SettingTabOriginal): SettingTab {
-    return castTo<SettingTab>(value);
+    return createMockOfUnsafe<SettingTab>(value);
   }
 
   public asOriginalType__(): SettingTabOriginal {
-    return castTo<SettingTabOriginal>(this);
+    return createMockOfUnsafe<SettingTabOriginal>(this);
   }
 
   public constructor__(_app: App, _setting?: SettingOriginal): void {

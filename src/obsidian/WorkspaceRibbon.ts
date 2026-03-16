@@ -2,7 +2,7 @@ import type { WorkspaceRibbon as WorkspaceRibbonOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -18,11 +18,11 @@ export class WorkspaceRibbon {
   }
 
   public static fromOriginalType__(value: WorkspaceRibbonOriginal): WorkspaceRibbon {
-    return castTo<WorkspaceRibbon>(value);
+    return createMockOfUnsafe<WorkspaceRibbon>(value);
   }
 
   public asOriginalType__(): WorkspaceRibbonOriginal {
-    return castTo<WorkspaceRibbonOriginal>(this);
+    return createMockOfUnsafe<WorkspaceRibbonOriginal>(this);
   }
 
   public constructor__(_workspace: Workspace, _side: string): void {
