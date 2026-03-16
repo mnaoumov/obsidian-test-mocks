@@ -15,7 +15,6 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 let nextLeafId = 1;
@@ -42,7 +41,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     super(app.workspace, id);
     this.app = app;
     this.id__ = id ?? String(nextLeafId++);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(app, id);
     return self;
   }

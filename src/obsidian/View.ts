@@ -11,7 +11,6 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -34,7 +33,7 @@ export abstract class View extends Component {
     this.app = App.create__(FileSystemAdapter.create__('/mock-vault').asOriginalType__(), '');
     this.containerEl = createDiv();
     this.leaf = leaf;
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(leaf);
     return self;
   }

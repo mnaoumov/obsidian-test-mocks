@@ -23,7 +23,6 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 import { debounce } from './functions/debounce.ts';
@@ -63,7 +62,7 @@ export class Workspace extends Events {
     this.rightRibbon = WorkspaceRibbon.create__(this, 'right');
     this.rightSplit = WorkspaceSidedock.create3__(this, 'vertical', 'right');
     this.rootSplit = WorkspaceRoot.create3__(this, 'vertical');
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(app, containerEl);
     return self;
   }

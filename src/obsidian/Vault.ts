@@ -8,7 +8,6 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
@@ -27,7 +26,7 @@ export class Vault extends Events {
     this.fileMap['/'] = root;
     this.fileMapLowerCase['/'] = root;
     root.deleted__ = false;
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(adapter);
     return self;
   }

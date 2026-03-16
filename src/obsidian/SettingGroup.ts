@@ -7,7 +7,6 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
@@ -18,7 +17,7 @@ export class SettingGroup {
   public constructor(containerEl: HTMLElement) {
     this.listEl__ = createDiv();
     containerEl.appendChild(this.listEl__);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(containerEl);
     return self;
   }

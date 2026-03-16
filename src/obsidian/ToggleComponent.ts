@@ -5,7 +5,6 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ToggleComponent extends ValueComponent<boolean> {
@@ -17,7 +16,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.toggleEl = createDiv();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(_containerEl);
     return self;
   }

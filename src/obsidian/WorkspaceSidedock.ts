@@ -4,7 +4,6 @@ import type { Workspace } from './Workspace.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 export class WorkspaceSidedock extends WorkspaceSplit {
@@ -12,7 +11,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
 
   protected constructor(workspace: Workspace, direction: string, _side: string, id?: string) {
     super(workspace, direction, id);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor5__(workspace, direction, _side, id);
     return self;
   }

@@ -7,13 +7,12 @@ import type { Workspace } from './Workspace.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {
   protected constructor(workspace?: Workspace, id?: string) {
     super();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(workspace, id);
     return self;
   }

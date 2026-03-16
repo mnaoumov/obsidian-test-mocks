@@ -8,7 +8,6 @@ import type { App } from './App.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export abstract class SettingTab {
   public app: App;
@@ -18,7 +17,7 @@ export abstract class SettingTab {
   public constructor(app: App, setting?: SettingOriginal) {
     this.app = app;
     this.containerEl = createDiv();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(app, setting);
     return self;
   }

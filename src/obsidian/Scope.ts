@@ -7,13 +7,12 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export class Scope {
   private readonly handlers: KeymapEventHandlerOriginal[] = [];
 
   protected constructor(_parent?: Scope) {
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(_parent);
     return self;
   }

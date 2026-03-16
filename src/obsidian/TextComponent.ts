@@ -2,7 +2,6 @@ import type { TextComponent as TextComponentOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -20,7 +19,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       }
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor4__(_containerEl);
     return self;
   }

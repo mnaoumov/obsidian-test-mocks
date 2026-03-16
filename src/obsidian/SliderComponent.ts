@@ -2,7 +2,6 @@ import type { SliderComponent as SliderComponentOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 const DEFAULT_MAX = 100;
@@ -20,7 +19,7 @@ export class SliderComponent extends ValueComponent<number> {
     super();
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(_containerEl);
     return self;
   }
