@@ -1,10 +1,7 @@
 import type { IconValue as IconValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 export class IconValue extends StringValue {
@@ -20,7 +17,7 @@ export class IconValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: IconValueOriginal): IconValue {
-    return mergePrototype(IconValue, value);
+    return strictProxyForce(value, IconValue);
   }
 
   public asOriginalType5__(): IconValueOriginal {

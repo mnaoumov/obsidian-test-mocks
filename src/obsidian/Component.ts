@@ -4,10 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class Component {
   public children__: Component[] = [];
@@ -27,7 +24,7 @@ export class Component {
   }
 
   public static fromOriginalType__(value: ComponentOriginal): Component {
-    return mergePrototype(Component, value);
+    return strictProxyForce(value, Component);
   }
 
   public addChild<T extends Component>(component: T): T {

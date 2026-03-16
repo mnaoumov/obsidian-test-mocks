@@ -6,10 +6,7 @@ import type {
 import type { BasesEntry } from './BasesEntry.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class BasesEntryGroup {
   public entries: BasesEntry[];
@@ -30,7 +27,7 @@ export class BasesEntryGroup {
   }
 
   public static fromOriginalType__(value: BasesEntryGroupOriginal): BasesEntryGroup {
-    return mergePrototype(BasesEntryGroup, value);
+    return strictProxyForce(value, BasesEntryGroup);
   }
 
   public asOriginalType__(): BasesEntryGroupOriginal {

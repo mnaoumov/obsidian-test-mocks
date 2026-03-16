@@ -3,10 +3,7 @@ import type { LinkValue as LinkValueOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { StringValue } from './StringValue.ts';
 
@@ -23,7 +20,7 @@ export class LinkValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: LinkValueOriginal): LinkValue {
-    return mergePrototype(LinkValue, value);
+    return strictProxyForce(value, LinkValue);
   }
 
   public static parseFromString(app: App, input: string, sourcePath: string): LinkValue | null {

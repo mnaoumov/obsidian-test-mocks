@@ -1,10 +1,7 @@
 import type { ExtraButtonComponent as ExtraButtonComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ExtraButtonComponent extends BaseComponent {
@@ -24,7 +21,7 @@ export class ExtraButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ExtraButtonComponentOriginal): ExtraButtonComponent {
-    return mergePrototype(ExtraButtonComponent, value);
+    return strictProxyForce(value, ExtraButtonComponent);
   }
 
   public asOriginalType2__(): ExtraButtonComponentOriginal {

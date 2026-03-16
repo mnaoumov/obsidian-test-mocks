@@ -1,10 +1,7 @@
 import type { ImageValue as ImageValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 export class ImageValue extends StringValue {
@@ -20,7 +17,7 @@ export class ImageValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: ImageValueOriginal): ImageValue {
-    return mergePrototype(ImageValue, value);
+    return strictProxyForce(value, ImageValue);
   }
 
   public asOriginalType5__(): ImageValueOriginal {

@@ -1,10 +1,7 @@
 import type { BooleanValue as BooleanValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class BooleanValue extends PrimitiveValue<boolean> {
@@ -20,7 +17,7 @@ export class BooleanValue extends PrimitiveValue<boolean> {
   }
 
   public static fromOriginalType4__(value: BooleanValueOriginal): BooleanValue {
-    return mergePrototype(BooleanValue, value);
+    return strictProxyForce(value, BooleanValue);
   }
 
   public asOriginalType4__(): BooleanValueOriginal {

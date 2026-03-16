@@ -8,10 +8,7 @@ import type {
 import type { Scope } from './Scope.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class Keymap {
   private readonly scopeStack: Scope[] = [];
@@ -27,7 +24,7 @@ export class Keymap {
   }
 
   public static fromOriginalType__(value: KeymapOriginal): Keymap {
-    return mergePrototype(Keymap, value);
+    return strictProxyForce(value, Keymap);
   }
 
   public static isModEvent(_evt?: null | UserEventOriginal): boolean | PaneTypeOriginal {

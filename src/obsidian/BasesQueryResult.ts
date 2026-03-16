@@ -12,10 +12,7 @@ import type { BasesViewConfig } from './BasesViewConfig.ts';
 import type { QueryController } from './QueryController.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class BasesQueryResult {
   public data: BasesEntry[] = [];
@@ -42,7 +39,7 @@ export class BasesQueryResult {
   }
 
   public static fromOriginalType__(value: BasesQueryResultOriginal): BasesQueryResult {
-    return mergePrototype(BasesQueryResult, value);
+    return strictProxyForce(value, BasesQueryResult);
   }
 
   public asOriginalType__(): BasesQueryResultOriginal {

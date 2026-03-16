@@ -1,10 +1,7 @@
 import type { DurationValue as DurationValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DurationValue extends NotNullValue {
@@ -36,7 +33,7 @@ export class DurationValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: DurationValueOriginal): DurationValue {
-    return mergePrototype(DurationValue, value);
+    return strictProxyForce(value, DurationValue);
   }
 
   public asOriginalType3__(): DurationValueOriginal {

@@ -9,10 +9,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -29,7 +26,7 @@ export abstract class FileView extends ItemView {
   }
 
   public static fromOriginalType4__(value: FileViewOriginal): FileView {
-    return mergePrototype(FileView, value);
+    return strictProxyForce(value, FileView);
   }
 
   public asOriginalType4__(): FileViewOriginal {

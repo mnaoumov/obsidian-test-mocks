@@ -12,10 +12,7 @@ import type {
 import type { CoordsLeftTop } from '../internal/types.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
 export abstract class Editor {
@@ -36,7 +33,7 @@ export abstract class Editor {
   }
 
   public static fromOriginalType__(value: EditorOriginal): Editor {
-    return mergePrototype(Editor, value);
+    return strictProxyForce(value, Editor);
   }
 
   public asOriginalType__(): EditorOriginal {

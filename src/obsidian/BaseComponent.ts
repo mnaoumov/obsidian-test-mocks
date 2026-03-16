@@ -1,10 +1,7 @@
 import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export abstract class BaseComponent {
   public disabled = false;
@@ -16,7 +13,7 @@ export abstract class BaseComponent {
   }
 
   public static fromOriginalType__(value: BaseComponentOriginal): BaseComponent {
-    return mergePrototype(BaseComponent, value);
+    return strictProxyForce(value, BaseComponent);
   }
 
   public asOriginalType__(): BaseComponentOriginal {

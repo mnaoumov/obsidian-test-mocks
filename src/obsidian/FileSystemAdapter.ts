@@ -2,10 +2,7 @@ import type { FileSystemAdapter as FileSystemAdapterOriginal } from 'obsidian';
 
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class FileSystemAdapter extends InMemoryAdapter {
   protected constructor(basePath: string) {
@@ -20,7 +17,7 @@ export class FileSystemAdapter extends InMemoryAdapter {
   }
 
   public static fromOriginalType__(value: FileSystemAdapterOriginal): FileSystemAdapter {
-    return mergePrototype(FileSystemAdapter, value);
+    return strictProxyForce(value, FileSystemAdapter);
   }
 
   public asOriginalType__(): FileSystemAdapterOriginal {
