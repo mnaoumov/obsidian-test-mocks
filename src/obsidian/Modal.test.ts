@@ -17,7 +17,7 @@ beforeEach(async () => {
   app = await App.createConfigured__();
 });
 
-// Use dynamic import to avoid issues with module loading
+// eslint-disable-next-line no-restricted-syntax -- Modal uses setTimeout in its constructor, requiring dynamic import after vi.useFakeTimers() setup at module level.
 const { Modal } = await import('./Modal.ts');
 
 describe('Modal', () => {

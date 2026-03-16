@@ -7,11 +7,16 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
 import { Vault } from './Vault.ts';
+
+interface VaultWithFileMap {
+  fileMap: Record<string, unknown>;
+}
 
 const BINARY_SIZE_SMALL = 2;
 const BINARY_SIZE_MEDIUM = 4;
@@ -352,7 +357,7 @@ describe('Vault', () => {
     it('should create a fallback root when fileMap has no root entry', async () => {
       const app = await App.createConfigured__();
       // Remove the root entry to trigger the fallback branch
-      const fileMap = (app.vault as unknown as { fileMap: Record<string, unknown> }).fileMap;
+      const fileMap = castTo<VaultWithFileMap>(app.vault).fileMap;
       delete fileMap['/'];
       const root = app.vault.getRoot();
       expect(root).toBeInstanceOf(TFolder);

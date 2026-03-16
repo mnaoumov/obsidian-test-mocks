@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { Events } from './Events.ts';
 
 describe('Events', () => {
@@ -17,7 +18,7 @@ describe('Events', () => {
 
   it('should throw when accessing an unmocked property', () => {
     const events = Events.create__();
-    const record = events as unknown as Record<string, unknown>;
+    const record = castTo<Record<string, unknown>>(events);
     expect(() => record['nonExistentProperty']).toThrow(
       'Property "nonExistentProperty" is not mocked in Events. To override, assign a value first: mock.nonExistentProperty = ...'
     );
@@ -46,7 +47,7 @@ describe('Events', () => {
       const ref = events.on('test-event', cb);
       expect(ref).toBeDefined();
       // EventRef has a name property at runtime even though the obsidian type does not expose it
-      const refRecord = ref as unknown as Record<string, unknown>;
+      const refRecord = castTo<Record<string, unknown>>(ref);
       expect(refRecord['name']).toBe('test-event');
     });
   });

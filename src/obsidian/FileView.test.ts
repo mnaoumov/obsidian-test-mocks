@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { FileView } from './FileView.ts';
@@ -31,7 +32,7 @@ describe('FileView', () => {
 
   it('should throw when accessing an unmocked property', async () => {
     const view = await createFileView();
-    const record = view as unknown as Record<string, unknown>;
+    const record = castTo<Record<string, unknown>>(view);
     expect(() => record['nonExistentProperty']).toThrow();
   });
 

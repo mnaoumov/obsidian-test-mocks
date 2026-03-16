@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { SettingGroup } from './SettingGroup.ts';
 
 describe('SettingGroup', () => {
@@ -75,7 +76,7 @@ describe('SettingGroup', () => {
       const group = SettingGroup.create__(createDiv());
       const fragment = document.createDocumentFragment();
       fragment.append('Fragment heading');
-      const result = group.setHeading(fragment as unknown as DocumentFragment);
+      const result = group.setHeading(castTo<DocumentFragment>(fragment));
       expect(result).toBe(group);
     });
   });

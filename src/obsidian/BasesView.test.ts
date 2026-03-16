@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { App } from './App.ts';
 import { BasesView } from './BasesView.ts';
 import { QueryController } from './QueryController.ts';
@@ -30,7 +31,7 @@ describe('BasesView', () => {
 
   it('should throw when accessing an unmocked property', async () => {
     const view = await createBasesView();
-    const record = view as unknown as Record<string, unknown>;
+    const record = castTo<Record<string, unknown>>(view);
     expect(() => record['nonExistentProperty']).toThrow();
   });
 

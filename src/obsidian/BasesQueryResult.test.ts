@@ -11,6 +11,7 @@ import {
 
 import type { QueryController } from './QueryController.ts';
 
+import { castTo } from '../internal/cast.ts';
 import { App } from './App.ts';
 import { BasesEntry } from './BasesEntry.ts';
 import { BasesEntryGroup } from './BasesEntryGroup.ts';
@@ -21,7 +22,7 @@ import { TFile } from './TFile.ts';
 
 describe('BasesQueryResult', () => {
   function createResult(): BasesQueryResult {
-    const adapter = FileSystemAdapter.create__('/mock') as unknown as DataAdapter;
+    const adapter = castTo<DataAdapter>(FileSystemAdapter.create__('/mock'));
     const app = App.create__(adapter, '');
     const config = BasesViewConfig.create__('', '', '');
     return BasesQueryResult.create__(app, config, [], []);

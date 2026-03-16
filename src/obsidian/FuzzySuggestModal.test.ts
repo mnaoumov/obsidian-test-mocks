@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { FuzzySuggestModal } from './FuzzySuggestModal.ts';
@@ -42,7 +43,7 @@ describe('FuzzySuggestModal', () => {
 
   it('should throw when accessing an unmocked property', async () => {
     const modal = await createModal();
-    const record = modal as unknown as Record<string, unknown>;
+    const record = castTo<Record<string, unknown>>(modal);
     expect(() => record['nonExistentProperty']).toThrow();
   });
 

@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { DropdownComponent } from './DropdownComponent.ts';
 
 describe('DropdownComponent', () => {
@@ -28,7 +29,7 @@ describe('DropdownComponent', () => {
 
   it('should throw when accessing an unmocked property', () => {
     const dropdown = createDropdown();
-    const record = dropdown as unknown as Record<string, unknown>;
+    const record = castTo<Record<string, unknown>>(dropdown);
     expect(() => record['nonExistentProperty']).toThrow(
       'Property "nonExistentProperty" is not mocked in DropdownComponent. To override, assign a value first: mock.nonExistentProperty = ...'
     );

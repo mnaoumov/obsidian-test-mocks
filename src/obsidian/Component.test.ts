@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { Component } from './Component.ts';
 
 describe('Component', () => {
@@ -17,7 +18,7 @@ describe('Component', () => {
 
   it('should throw when accessing an unmocked property', () => {
     const component = Component.create__();
-    const record = component as unknown as Record<string, unknown>;
+    const record = castTo<Record<string, unknown>>(component);
     expect(() => record['nonExistentProperty']).toThrow(
       'Property "nonExistentProperty" is not mocked in Component. To override, assign a value first: mock.nonExistentProperty = ...'
     );

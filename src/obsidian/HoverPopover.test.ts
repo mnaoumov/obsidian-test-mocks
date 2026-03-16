@@ -9,6 +9,7 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { HoverPopover } from './HoverPopover.ts';
 
 describe('HoverPopover', () => {
@@ -27,7 +28,7 @@ describe('HoverPopover', () => {
 
   it('should throw when accessing an unmocked property', () => {
     const popover = createPopover();
-    const record = popover as unknown as Record<string, unknown>;
+    const record = castTo<Record<string, unknown>>(popover);
     expect(() => record['nonExistentProperty']).toThrow(
       'Property "nonExistentProperty" is not mocked in HoverPopover. To override, assign a value first: mock.nonExistentProperty = ...'
     );
