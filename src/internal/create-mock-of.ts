@@ -47,9 +47,5 @@ export function createMockOf<T>(partial: PartialDeep<T>): T {
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  const proto = Object.getPrototypeOf(value) as unknown;
-  return proto === Object.prototype || proto === null;
+  return value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
 }
