@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.0.8
+
+- feat: expose fileMap__
+- test: restore 100% coverage
+- feat: add fromOriginalType__()
+
 ## 1.0.7
 
 - fix: expose proper type
