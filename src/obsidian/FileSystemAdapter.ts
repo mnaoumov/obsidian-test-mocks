@@ -1,13 +1,16 @@
 import type { FileSystemAdapter as FileSystemAdapterOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import { noop } from '../internal/noop.ts';
 
 export class FileSystemAdapter extends InMemoryAdapter {
   protected constructor(basePath: string) {
     super(basePath);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(basePath);
     return self;
   }

@@ -7,7 +7,10 @@ import type {
 
 import type { BasesView } from './BasesView.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { NullValue } from './NullValue.ts';
 
@@ -20,7 +23,7 @@ export class BasesViewConfig {
 
   protected constructor(_query: string, _type: string, name: string) {
     this.name = name;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(_query, _type, name);
     return self;
   }

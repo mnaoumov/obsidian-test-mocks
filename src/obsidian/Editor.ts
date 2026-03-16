@@ -11,7 +11,10 @@ import type {
 
 import type { CoordsLeftTop } from '../internal/types.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
@@ -27,7 +30,7 @@ export abstract class Editor {
   private scrollTop = 0;
   private readonly undoStack: string[] = [];
   public constructor() {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__();
     return self;
   }

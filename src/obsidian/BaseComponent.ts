@@ -1,13 +1,16 @@
 import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export abstract class BaseComponent {
   public disabled = false;
 
   protected constructor() {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__();
     return self;
   }

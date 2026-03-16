@@ -2,14 +2,17 @@ import type { BasesView as BasesViewOriginal } from 'obsidian';
 
 import type { QueryController } from './QueryController.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { Component } from './Component.ts';
 
 export abstract class BasesView extends Component {
   public constructor(controller: QueryController) {
     super();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(controller);
     return self;
   }

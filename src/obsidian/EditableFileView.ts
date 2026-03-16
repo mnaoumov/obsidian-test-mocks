@@ -1,6 +1,9 @@
 import type { EditableFileView as EditableFileViewOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { FileView } from './FileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -8,7 +11,7 @@ import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 export abstract class EditableFileView extends FileView {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor5__(leaf);
     return self;
   }

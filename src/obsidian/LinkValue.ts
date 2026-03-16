@@ -2,7 +2,10 @@ import type { LinkValue as LinkValueOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { StringValue } from './StringValue.ts';
@@ -10,7 +13,7 @@ import { StringValue } from './StringValue.ts';
 export class LinkValue extends StringValue {
   public constructor(app: App, value: string, sourcePath: string, display?: null | string) {
     super(value);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor5__(app, value, sourcePath, display);
     return self;
   }

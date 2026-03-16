@@ -2,7 +2,10 @@ import type { ListValue as ListValueOriginal } from 'obsidian';
 
 import type { Value } from './Value.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
@@ -12,7 +15,7 @@ export class ListValue extends NotNullValue {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
   public constructor(value: (unknown | Value)[]) {
     super();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor3__(value);
     return self;
   }

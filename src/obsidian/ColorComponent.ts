@@ -4,7 +4,10 @@ import type {
   RGB as RGBOriginal
 } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -34,7 +37,7 @@ export class ColorComponent extends ValueComponent<string> {
     super();
     this.colorPickerEl__ = containerEl.createEl('input');
     this.colorPickerEl__.type = 'color';
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor3__(containerEl);
     return self;
   }

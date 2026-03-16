@@ -5,7 +5,10 @@ import type {
 
 import type { BasesEntry } from './BasesEntry.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export class BasesEntryGroup {
@@ -17,7 +20,7 @@ export class BasesEntryGroup {
     if (key !== undefined) {
       this.key = key as ValueOriginal;
     }
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(entries, key);
     return self;
   }

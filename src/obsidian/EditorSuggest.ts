@@ -10,7 +10,10 @@ import type {
 
 import type { App } from './App.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
@@ -22,7 +25,7 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public constructor(app: App) {
     super(app);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(app);
     return self;
   }
