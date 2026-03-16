@@ -18,6 +18,8 @@
  */
 import type { PartialDeep } from 'type-fest';
 
+import { ensureGenericObject } from './type-guards.ts';
+
 const STRICT_PROXY_MARKER = Symbol('strictProxy');
 
 const PASSTHROUGH_PROPS = new Set<string | symbol>([
@@ -66,7 +68,7 @@ function wrapProxy<T>(value: unknown, mockClass?: MockClassRef): T {
 
   const isClass = !isPlainObject(value);
   const className = mockClass?.name ?? (isClass ? value.constructor.name : '');
-  const mockProto = mockClass ? mockClass.prototype as Record<string, unknown> : null;
+  const mockProto = mockClass ? ensureGenericObject(mockClass.prototype) : null;
   const proxiedChildren = isClass ? null : new Map<string | symbol, unknown>();
 
   return new Proxy(value, {

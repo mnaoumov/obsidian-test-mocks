@@ -375,7 +375,7 @@ describe('Vault', () => {
     it('should create a fallback root when fileMap has no root entry', async () => {
       const app = await App.createConfigured__();
       // Remove the root entry to trigger the fallback branch
-      const fileMap = ensureGenericObject(app.vault)['fileMap'] as Record<string, unknown>;
+      const fileMap = ensureGenericObject(app.vault).fileMap as Record<string, unknown>;
       delete fileMap['/'];
       const root = app.vault.getRoot();
       expect(root).toBeInstanceOf(TFolder);

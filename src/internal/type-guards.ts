@@ -24,8 +24,8 @@ export function assertNonNullable<T extends NullableConstraint<T>>(value: T, err
   throw error;
 }
 
-export function ensureGenericObject(obj: object): GenericObject {
-  return obj as GenericObject;
+export function ensureGenericObject<T extends object>(obj: T): GenericObject & T {
+  return obj as GenericObject & T;
 }
 
 export function ensureNonNullable<T extends NullableConstraint<T>>(value: T, errorOrMessage?: Error | string): NonNullable<T> {

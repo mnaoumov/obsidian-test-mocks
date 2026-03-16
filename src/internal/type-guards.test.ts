@@ -103,6 +103,6 @@ describe('ensureGenericObject', () => {
   it('should return the object as GenericObject', () => {
     const obj = { key: 'value' };
     const result = ensureGenericObject(obj);
-    expect(result['key']).toBe('value');
+    expect(result.key).toBe('value');
   });
 });

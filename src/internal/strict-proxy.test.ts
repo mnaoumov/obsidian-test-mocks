@@ -120,3 +120,28 @@ describe('strictProxy', () => {
     expect(second).toBe(first);
   });
 });
+
+describe('strictProxy with mockClass', () => {
+  it('should expose __ methods from the mock prototype', () => {
+    class MockClass {
+      public helper__(): string {
+        return 'mock-helper';
+      }
+    }
+    const value = { name: 'test' };
+    const proxied = strictProxy(value, MockClass);
+    const record = ensureGenericObject(proxied);
+    const helper = record.helper__.bind(record);
+    expect(helper()).toBe('mock-helper');
+  });
+
+  it('should return non-function __ properties from the mock prototype', () => {
+    class MockClass {
+      public name = '';
+    }
+    Object.defineProperty(MockClass.prototype, 'flag__', { value: 'proto-value' });
+    const value = { name: 'test' };
+    const proxied = strictProxy(value, MockClass);
+    expect(ensureGenericObject(proxied)['flag__']).toBe('proto-value');
+  });
+});
