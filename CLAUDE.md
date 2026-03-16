@@ -74,11 +74,3 @@ L10. **Never `override` a `__` method — always use numbered variants.** Any mo
 ## Code Conventions
 
 - Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`) follow the global kebab-case convention.
-
-## Current Task
-
-Add 3 missing methods/properties for structural compatibility with obsidian types:
-
-1. `Vault.appendBinary` — in-memory implementation delegating to adapter
-2. `WorkspaceItem.parent` — abstract property `WorkspaceParent`, plus `parent` declarations on `WorkspaceLeaf` and `WorkspaceMobileDrawer`
-3. `MomentFormatComponent.updateSample` — UI-only method, use `noop()`
