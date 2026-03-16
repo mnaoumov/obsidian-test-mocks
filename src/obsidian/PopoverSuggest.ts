@@ -2,11 +2,11 @@ import type { PopoverSuggest as PopoverSuggestOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Scope } from './Scope.ts';
 
 export abstract class PopoverSuggest<T> {
@@ -17,17 +17,17 @@ export abstract class PopoverSuggest<T> {
   public constructor(app: App, scope?: Scope) {
     this.app = app;
     this.scope = scope ?? Scope.create__();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(app, scope);
     return self;
   }
 
   public static fromOriginalType__<T>(value: PopoverSuggestOriginal<T>): PopoverSuggest<T> {
-    return createMockOfUnsafe<PopoverSuggest<T>>(value);
+    return bridgeType<PopoverSuggest<T>>(value);
   }
 
   public asOriginalType__(): PopoverSuggestOriginal<T> {
-    return createMockOfUnsafe<PopoverSuggestOriginal<T>>(this);
+    return bridgeType<PopoverSuggestOriginal<T>>(this);
   }
 
   public close(): void {

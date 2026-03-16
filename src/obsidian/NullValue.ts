@@ -1,16 +1,16 @@
 import type { NullValue as NullValueOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Value } from './Value.ts';
 
 export class NullValue extends Value {
   public constructor() {
     super();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__();
     return self;
   }
@@ -20,11 +20,11 @@ export class NullValue extends Value {
   }
 
   public static fromOriginalType2__(value: NullValueOriginal): NullValue {
-    return createMockOfUnsafe<NullValue>(value);
+    return bridgeType<NullValue>(value);
   }
 
   public asOriginalType2__(): NullValueOriginal {
-    return createMockOfUnsafe<NullValueOriginal>(this);
+    return bridgeType<NullValueOriginal>(this);
   }
 
   public constructor2__(): void {

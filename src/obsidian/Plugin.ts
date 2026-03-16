@@ -12,13 +12,13 @@ import type {
 import type { App } from './App.ts';
 
 import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
-import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
@@ -39,13 +39,13 @@ export abstract class Plugin extends Component {
     super();
     this.app = app;
     this.manifest = manifest;
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(app, manifest);
     return self;
   }
 
   public static fromOriginalType2__(value: PluginOriginal): Plugin {
-    return createMockOfUnsafe<Plugin>(value);
+    return bridgeType<Plugin>(value);
   }
 
   public addCommand(command: CommandOriginal): CommandOriginal {
@@ -70,7 +70,7 @@ export abstract class Plugin extends Component {
   }
 
   public asOriginalType2__(): PluginOriginal {
-    return createMockOfUnsafe<PluginOriginal>(this);
+    return bridgeType<PluginOriginal>(this);
   }
 
   public constructor2__(_app: App, _manifest: PluginManifestOriginal): void {

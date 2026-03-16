@@ -1,16 +1,16 @@
 import type { RegExpValue as RegExpValueOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class RegExpValue extends NotNullValue {
   public constructor(regexp: RegExp) {
     super();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(regexp);
     return self;
   }
@@ -20,11 +20,11 @@ export class RegExpValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: RegExpValueOriginal): RegExpValue {
-    return createMockOfUnsafe<RegExpValue>(value);
+    return bridgeType<RegExpValue>(value);
   }
 
   public asOriginalType3__(): RegExpValueOriginal {
-    return createMockOfUnsafe<RegExpValueOriginal>(this);
+    return bridgeType<RegExpValueOriginal>(this);
   }
 
   public constructor3__(_regexp: RegExp): void {

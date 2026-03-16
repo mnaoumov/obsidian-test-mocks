@@ -3,11 +3,11 @@ import type { MarkdownPreviewView as MarkdownPreviewViewOriginal } from 'obsidia
 import type { MarkdownView } from './MarkdownView.ts';
 import type { TFile } from './TFile.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
@@ -24,7 +24,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     super(markdownView.app, markdownView.containerEl);
     this.containerEl = markdownView.containerEl;
     this.markdownView = markdownView;
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor4__(markdownView);
     return self;
   }
@@ -34,7 +34,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public static fromOriginalType4__(value: MarkdownPreviewViewOriginal): MarkdownPreviewView {
-    return createMockOfUnsafe<MarkdownPreviewView>(value);
+    return bridgeType<MarkdownPreviewView>(value);
   }
 
   public applyScroll(_scroll: number): void {
@@ -42,7 +42,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public asOriginalType4__(): MarkdownPreviewViewOriginal {
-    return createMockOfUnsafe<MarkdownPreviewViewOriginal>(this);
+    return bridgeType<MarkdownPreviewViewOriginal>(this);
   }
 
   public clear(): void {
