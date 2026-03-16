@@ -5,8 +5,8 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
@@ -17,7 +17,7 @@ export class ButtonComponent extends BaseComponent {
   public constructor(containerEl: HTMLElement) {
     super();
     this.buttonEl = containerEl.createEl('button');
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(containerEl);
     return self;
   }
@@ -27,11 +27,11 @@ export class ButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ButtonComponentOriginal): ButtonComponent {
-    return bridgeType<ButtonComponent>(value);
+    return mergePrototype(ButtonComponent, value);
   }
 
   public asOriginalType2__(): ButtonComponentOriginal {
-    return bridgeType<ButtonComponentOriginal>(this);
+    return strictProxyForce<ButtonComponentOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

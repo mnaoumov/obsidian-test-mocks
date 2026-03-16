@@ -2,8 +2,8 @@ import type { ExtraButtonComponent as ExtraButtonComponentOriginal } from 'obsid
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
@@ -14,7 +14,7 @@ export class ExtraButtonComponent extends BaseComponent {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.extraSettingsEl = createDiv();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(_containerEl);
     return self;
   }
@@ -24,11 +24,11 @@ export class ExtraButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ExtraButtonComponentOriginal): ExtraButtonComponent {
-    return bridgeType<ExtraButtonComponent>(value);
+    return mergePrototype(ExtraButtonComponent, value);
   }
 
   public asOriginalType2__(): ExtraButtonComponentOriginal {
-    return bridgeType<ExtraButtonComponentOriginal>(this);
+    return strictProxyForce<ExtraButtonComponentOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

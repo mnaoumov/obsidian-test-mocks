@@ -2,25 +2,25 @@ import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export abstract class BaseComponent {
   public disabled = false;
 
   protected constructor() {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__();
     return self;
   }
 
   public static fromOriginalType__(value: BaseComponentOriginal): BaseComponent {
-    return bridgeType<BaseComponent>(value);
+    return mergePrototype(BaseComponent, value);
   }
 
   public asOriginalType__(): BaseComponentOriginal {
-    return bridgeType<BaseComponentOriginal>(this);
+    return strictProxyForce<BaseComponentOriginal>(this);
   }
 
   public constructor__(): void {

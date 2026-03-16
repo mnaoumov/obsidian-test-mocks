@@ -5,8 +5,8 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class Component {
@@ -17,7 +17,7 @@ export class Component {
   public loaded__ = false;
 
   public constructor() {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__();
     return self;
   }
@@ -27,7 +27,7 @@ export class Component {
   }
 
   public static fromOriginalType__(value: ComponentOriginal): Component {
-    return bridgeType<Component>(value);
+    return mergePrototype(Component, value);
   }
 
   public addChild<T extends Component>(component: T): T {
@@ -39,7 +39,7 @@ export class Component {
   }
 
   public asOriginalType__(): ComponentOriginal {
-    return bridgeType<ComponentOriginal>(this);
+    return strictProxyForce<ComponentOriginal>(this);
   }
 
   public constructor__(): void {

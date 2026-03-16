@@ -2,8 +2,8 @@ import type { DropdownComponent as DropdownComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -15,7 +15,7 @@ export class DropdownComponent extends ValueComponent<string> {
   public constructor(containerEl: HTMLElement) {
     super();
     this.selectEl = containerEl.createEl('select');
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(containerEl);
     return self;
   }
@@ -25,7 +25,7 @@ export class DropdownComponent extends ValueComponent<string> {
   }
 
   public static fromOriginalType3__(value: DropdownComponentOriginal): DropdownComponent {
-    return bridgeType<DropdownComponent>(value);
+    return mergePrototype(DropdownComponent, value);
   }
 
   public addOption(value: string, display: string): this {
@@ -44,7 +44,7 @@ export class DropdownComponent extends ValueComponent<string> {
   }
 
   public asOriginalType3__(): DropdownComponentOriginal {
-    return bridgeType<DropdownComponentOriginal>(this);
+    return strictProxyForce<DropdownComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

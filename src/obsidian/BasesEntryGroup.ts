@@ -7,8 +7,8 @@ import type { BasesEntry } from './BasesEntry.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class BasesEntryGroup {
@@ -20,7 +20,7 @@ export class BasesEntryGroup {
     if (key !== undefined) {
       this.key = key as ValueOriginal;
     }
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(entries, key);
     return self;
   }
@@ -30,11 +30,11 @@ export class BasesEntryGroup {
   }
 
   public static fromOriginalType__(value: BasesEntryGroupOriginal): BasesEntryGroup {
-    return bridgeType<BasesEntryGroup>(value);
+    return mergePrototype(BasesEntryGroup, value);
   }
 
   public asOriginalType__(): BasesEntryGroupOriginal {
-    return bridgeType<BasesEntryGroupOriginal>(this);
+    return strictProxyForce<BasesEntryGroupOriginal>(this);
   }
 
   public constructor__(_entries: BasesEntry[], _key: unknown): void {

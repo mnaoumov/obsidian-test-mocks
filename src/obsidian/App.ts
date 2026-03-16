@@ -8,8 +8,8 @@ import type { CreateConfiguredParams } from '../internal/create-configured-param
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { FileManager } from './FileManager.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -37,7 +37,7 @@ export class App {
     this.metadataCache = MetadataCache.create2__(this, this.vault);
     this.scope = Scope.create__();
     this.workspace = Workspace.create2__(this, createDiv());
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(adapter, _appId);
     return self;
   }
@@ -93,11 +93,11 @@ export class App {
   }
 
   public static fromOriginalType__(value: AppOriginal): App {
-    return bridgeType<App>(value);
+    return mergePrototype(App, value);
   }
 
   public asOriginalType__(): AppOriginal {
-    return bridgeType<AppOriginal>(this);
+    return strictProxyForce<AppOriginal>(this);
   }
 
   public constructor__(_adapter: DataAdapterOriginal, _appId: string): void {

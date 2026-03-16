@@ -11,10 +11,7 @@ import type {
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  bridgeType,
-  strictProxy
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 const DEFAULT_LIMIT = 100;
@@ -25,17 +22,17 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public constructor(app: App) {
     super(app);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(app);
     return self;
   }
 
   public static fromOriginalType2__<T>(value: EditorSuggestOriginal<T>): EditorSuggest<T> {
-    return bridgeType<EditorSuggest<T>>(value);
+    return strictProxyForce<EditorSuggest<T>>(value);
   }
 
   public asOriginalType2__(): EditorSuggestOriginal<T> {
-    return bridgeType<EditorSuggestOriginal<T>>(this);
+    return strictProxyForce<EditorSuggestOriginal<T>>(this);
   }
 
   public constructor2__(_app: App): void {

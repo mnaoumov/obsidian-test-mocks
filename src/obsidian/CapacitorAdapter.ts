@@ -3,14 +3,14 @@ import type { CapacitorAdapter as CapacitorAdapterOriginal } from 'obsidian';
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class CapacitorAdapter extends InMemoryAdapter {
   protected constructor(basePath: string, _fs: unknown) {
     super(basePath);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(basePath, _fs);
     return self;
   }
@@ -20,11 +20,11 @@ export class CapacitorAdapter extends InMemoryAdapter {
   }
 
   public static fromOriginalType__(value: CapacitorAdapterOriginal): CapacitorAdapter {
-    return bridgeType<CapacitorAdapter>(value);
+    return mergePrototype(CapacitorAdapter, value);
   }
 
   public asOriginalType__(): CapacitorAdapterOriginal {
-    return bridgeType<CapacitorAdapterOriginal>(this);
+    return strictProxyForce<CapacitorAdapterOriginal>(this);
   }
 
   public constructor__(_basePath: string, _fs: unknown): void {
