@@ -9,7 +9,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -20,17 +20,17 @@ export abstract class FileView extends ItemView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor4__(leaf);
     return self;
   }
 
   public static fromOriginalType4__(value: FileViewOriginal): FileView {
-    return strictProxyForce(value, FileView);
+    return strictProxy(value, FileView);
   }
 
   public asOriginalType4__(): FileViewOriginal {
-    return strictProxyForce<FileViewOriginal>(this);
+    return strictProxy<FileViewOriginal>(this);
   }
 
   public canAcceptExtension(_extension: string): boolean {

@@ -1,7 +1,7 @@
 import type { DurationValue as DurationValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DurationValue extends NotNullValue {
@@ -15,7 +15,7 @@ export class DurationValue extends NotNullValue {
     milliseconds: number
   ) {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor3__(years, months, days, hours, minutes, seconds, milliseconds);
     return self;
   }
@@ -33,11 +33,11 @@ export class DurationValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: DurationValueOriginal): DurationValue {
-    return strictProxyForce(value, DurationValue);
+    return strictProxy(value, DurationValue);
   }
 
   public asOriginalType3__(): DurationValueOriginal {
-    return strictProxyForce<DurationValueOriginal>(this);
+    return strictProxy<DurationValueOriginal>(this);
   }
 
   public constructor3__(

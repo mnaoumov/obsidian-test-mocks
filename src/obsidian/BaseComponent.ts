@@ -1,23 +1,23 @@
 import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export abstract class BaseComponent {
   public disabled = false;
 
   protected constructor() {
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
 
   public static fromOriginalType__(value: BaseComponentOriginal): BaseComponent {
-    return strictProxyForce(value, BaseComponent);
+    return strictProxy(value, BaseComponent);
   }
 
   public asOriginalType__(): BaseComponentOriginal {
-    return strictProxyForce<BaseComponentOriginal>(this);
+    return strictProxy<BaseComponentOriginal>(this);
   }
 
   public constructor__(): void {

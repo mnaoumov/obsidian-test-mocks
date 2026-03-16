@@ -1,13 +1,13 @@
 import type { IconValue as IconValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 export class IconValue extends StringValue {
   public constructor(value = '') {
     super(value);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor5__(value);
     return self;
   }
@@ -17,11 +17,11 @@ export class IconValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: IconValueOriginal): IconValue {
-    return strictProxyForce(value, IconValue);
+    return strictProxy(value, IconValue);
   }
 
   public asOriginalType5__(): IconValueOriginal {
-    return strictProxyForce<IconValueOriginal>(this);
+    return strictProxy<IconValueOriginal>(this);
   }
 
   public constructor5__(_value: string): void {

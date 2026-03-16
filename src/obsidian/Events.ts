@@ -6,13 +6,13 @@ import type {
 import type { EventsEntry } from '../internal/types.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
   public constructor() {
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
@@ -22,11 +22,11 @@ export class Events {
   }
 
   public static fromOriginalType__(value: EventsOriginal): Events {
-    return strictProxyForce(value, Events);
+    return strictProxy(value, Events);
   }
 
   public asOriginalType__(): EventsOriginal {
-    return strictProxyForce<EventsOriginal>(this);
+    return strictProxy<EventsOriginal>(this);
   }
 
   public constructor__(): void {

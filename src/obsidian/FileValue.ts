@@ -4,13 +4,13 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class FileValue extends NotNullValue {
   public constructor(app: App, file: TFile) {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor3__(app, file);
     return self;
   }
@@ -20,11 +20,11 @@ export class FileValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: FileValueOriginal): FileValue {
-    return strictProxyForce(value, FileValue);
+    return strictProxy(value, FileValue);
   }
 
   public asOriginalType3__(): FileValueOriginal {
-    return strictProxyForce<FileValueOriginal>(this);
+    return strictProxy<FileValueOriginal>(this);
   }
 
   public constructor3__(_app: App, _file: TFile): void {

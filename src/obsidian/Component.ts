@@ -4,7 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class Component {
   public children__: Component[] = [];
@@ -14,7 +14,7 @@ export class Component {
   public loaded__ = false;
 
   public constructor() {
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
@@ -24,7 +24,7 @@ export class Component {
   }
 
   public static fromOriginalType__(value: ComponentOriginal): Component {
-    return strictProxyForce(value, Component);
+    return strictProxy(value, Component);
   }
 
   public addChild<T extends Component>(component: T): T {
@@ -36,7 +36,7 @@ export class Component {
   }
 
   public asOriginalType__(): ComponentOriginal {
-    return strictProxyForce<ComponentOriginal>(this);
+    return strictProxy<ComponentOriginal>(this);
   }
 
   public constructor__(): void {

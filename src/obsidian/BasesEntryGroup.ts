@@ -6,7 +6,7 @@ import type {
 import type { BasesEntry } from './BasesEntry.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class BasesEntryGroup {
   public entries: BasesEntry[];
@@ -17,7 +17,7 @@ export class BasesEntryGroup {
     if (key !== undefined) {
       this.key = key as ValueOriginal;
     }
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(entries, key);
     return self;
   }
@@ -27,11 +27,11 @@ export class BasesEntryGroup {
   }
 
   public static fromOriginalType__(value: BasesEntryGroupOriginal): BasesEntryGroup {
-    return strictProxyForce(value, BasesEntryGroup);
+    return strictProxy(value, BasesEntryGroup);
   }
 
   public asOriginalType__(): BasesEntryGroupOriginal {
-    return strictProxyForce<BasesEntryGroupOriginal>(this);
+    return strictProxy<BasesEntryGroupOriginal>(this);
   }
 
   public constructor__(_entries: BasesEntry[], _key: unknown): void {

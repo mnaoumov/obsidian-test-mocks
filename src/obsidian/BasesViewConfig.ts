@@ -8,7 +8,7 @@ import type {
 import type { BasesView } from './BasesView.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { NullValue } from './NullValue.ts';
 
 export class BasesViewConfig {
@@ -20,7 +20,7 @@ export class BasesViewConfig {
 
   protected constructor(_query: string, _type: string, name: string) {
     this.name = name;
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(_query, _type, name);
     return self;
   }
@@ -30,11 +30,11 @@ export class BasesViewConfig {
   }
 
   public static fromOriginalType__(value: BasesViewConfigOriginal): BasesViewConfig {
-    return strictProxyForce(value, BasesViewConfig);
+    return strictProxy(value, BasesViewConfig);
   }
 
   public asOriginalType__(): BasesViewConfigOriginal {
-    return strictProxyForce<BasesViewConfigOriginal>(this);
+    return strictProxy<BasesViewConfigOriginal>(this);
   }
 
   public constructor__(_query: string, _type: string, _name: string): void {

@@ -1,13 +1,13 @@
 import type { DateValue as DateValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DateValue extends NotNullValue {
   public constructor(private readonly date: Date, private readonly showTime?: boolean) {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor3__(date, showTime);
     return self;
   }
@@ -17,11 +17,11 @@ export class DateValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: DateValueOriginal): DateValue {
-    return strictProxyForce(value, DateValue);
+    return strictProxy(value, DateValue);
   }
 
   public asOriginalType3__(): DateValueOriginal {
-    return strictProxyForce<DateValueOriginal>(this);
+    return strictProxy<DateValueOriginal>(this);
   }
 
   public constructor3__(_date: unknown, _showTime?: boolean): void {
