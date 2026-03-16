@@ -11,6 +11,7 @@ import {
 
 import type { BasesView } from './BasesView.ts';
 
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { BasesViewConfig } from './BasesViewConfig.ts';
 import { NullValue } from './NullValue.ts';
 
@@ -97,7 +98,7 @@ describe('BasesViewConfig', () => {
   describe('getEvaluatedFormula', () => {
     it('should return a NullValue', () => {
       const config = BasesViewConfig.create__('', '', 'test');
-      const result = config.getEvaluatedFormula({} as BasesView, 'formula');
+      const result = config.getEvaluatedFormula(strictProxy<BasesView>({}), 'formula');
       expect(result).toBeInstanceOf(NullValue);
     });
   });

@@ -118,7 +118,7 @@ describe('Value', () => {
       const app = App.createConfigured__();
       const val = new StringValue('test');
       expect(() => {
-        val.renderTo({} as HTMLElement, RenderContext.create__(app));
+        val.renderTo(createDiv(), RenderContext.create__(app));
       }).not.toThrow();
     });
   });

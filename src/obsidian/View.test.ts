@@ -7,6 +7,7 @@ import {
 } from 'vitest';
 
 import { App } from './App.ts';
+import { Menu } from './Menu.ts';
 import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -106,7 +107,7 @@ describe('View', () => {
     it('should not throw', () => {
       const view = createView();
       expect(() => {
-        view.onPaneMenu({} as never, 'tab-header');
+        view.onPaneMenu(Menu.create2__().asOriginalType2__(), 'tab-header');
       }).not.toThrow();
     });
   });

@@ -1,6 +1,7 @@
 import type {
   HoverParent as HoverParentOriginal,
-  HoverPopover as HoverPopoverOriginal
+  HoverPopover as HoverPopoverOriginal,
+  WorkspaceLeaf as WorkspaceLeafOriginal
 } from 'obsidian';
 
 import {
@@ -9,6 +10,7 @@ import {
   it
 } from 'vitest';
 
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureGenericObject } from '../internal/type-guards.ts';
 import { HoverPopover } from './HoverPopover.ts';
 
@@ -62,7 +64,7 @@ describe('HoverPopover', () => {
 
   describe('forLeaf__', () => {
     it('should return null', () => {
-      const result = HoverPopover.forLeaf__({} as never);
+      const result = HoverPopover.forLeaf__(strictProxy<WorkspaceLeafOriginal>({}));
       expect(result).toBeNull();
     });
   });
