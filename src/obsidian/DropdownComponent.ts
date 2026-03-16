@@ -2,7 +2,6 @@ import type { DropdownComponent as DropdownComponentOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class DropdownComponent extends ValueComponent<string> {
@@ -13,7 +12,7 @@ export class DropdownComponent extends ValueComponent<string> {
   public constructor(containerEl: HTMLElement) {
     super();
     this.selectEl = containerEl.createEl('select');
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(containerEl);
     return self;
   }

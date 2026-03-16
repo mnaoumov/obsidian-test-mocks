@@ -4,7 +4,6 @@ import type { Value } from './Value.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ListValue extends NotNullValue {
@@ -13,7 +12,7 @@ export class ListValue extends NotNullValue {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
   public constructor(value: (unknown | Value)[]) {
     super();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(value);
     return self;
   }

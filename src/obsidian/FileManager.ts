@@ -13,14 +13,13 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { parseYaml } from './functions/parseYaml.ts';
 import { stringifyYaml } from './functions/stringifyYaml.ts';
 
 export class FileManager {
   protected constructor(private readonly app: App) {
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(app);
     return self;
   }

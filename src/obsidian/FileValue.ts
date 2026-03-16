@@ -5,13 +5,12 @@ import type { TFile } from './TFile.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class FileValue extends NotNullValue {
   public constructor(app: App, file: TFile) {
     super();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(app, file);
     return self;
   }

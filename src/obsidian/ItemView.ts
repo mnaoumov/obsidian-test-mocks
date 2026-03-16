@@ -5,7 +5,6 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -15,7 +14,7 @@ export abstract class ItemView extends View {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.contentEl = createDiv();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(leaf);
     return self;
   }

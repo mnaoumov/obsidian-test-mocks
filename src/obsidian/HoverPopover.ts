@@ -8,7 +8,6 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
 
 export class HoverPopover extends Component {
@@ -18,7 +17,7 @@ export class HoverPopover extends Component {
   public constructor(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null | PointOriginal) {
     super();
     this.hoverEl = createDiv();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(_parent, _targetEl, _waitTime, _staticPos);
     return self;
   }

@@ -5,7 +5,6 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
@@ -15,7 +14,7 @@ export class ButtonComponent extends BaseComponent {
   public constructor(containerEl: HTMLElement) {
     super();
     this.buttonEl = containerEl.createEl('button');
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(containerEl);
     return self;
   }

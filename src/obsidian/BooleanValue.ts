@@ -2,13 +2,12 @@ import type { BooleanValue as BooleanValueOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class BooleanValue extends PrimitiveValue<boolean> {
   public constructor(value = false) {
     super(value);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor4__(value);
     return self;
   }

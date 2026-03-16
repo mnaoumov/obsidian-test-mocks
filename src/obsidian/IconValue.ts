@@ -2,13 +2,12 @@ import type { IconValue as IconValueOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { StringValue } from './StringValue.ts';
 
 export class IconValue extends StringValue {
   public constructor(value = '') {
     super(value);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor5__(value);
     return self;
   }

@@ -5,7 +5,6 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export class Component {
   public children__: Component[] = [];
@@ -15,7 +14,7 @@ export class Component {
   public loaded__ = false;
 
   public constructor() {
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__();
     return self;
   }

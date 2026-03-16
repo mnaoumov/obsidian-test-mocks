@@ -8,7 +8,6 @@ import type { CreateConfiguredParams } from '../internal/create-configured-param
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { FileManager } from './FileManager.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { Keymap } from './Keymap.ts';
@@ -35,7 +34,7 @@ export class App {
     this.metadataCache = MetadataCache.create2__(this, this.vault);
     this.scope = Scope.create__();
     this.workspace = Workspace.create2__(this, createDiv());
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(adapter, _appId);
     return self;
   }
