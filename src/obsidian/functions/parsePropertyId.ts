@@ -4,10 +4,10 @@ import type {
   BasesPropertyType as BasesPropertyTypeOriginal
 } from 'obsidian';
 
+import { assert } from '../../internal/type-guards.ts';
+
 export function parsePropertyId(propertyId: BasesPropertyIdOriginal): BasesPropertyOriginal {
   const dotIndex = propertyId.indexOf('.');
-  if (dotIndex === -1) {
-    return { name: propertyId, type: propertyId as BasesPropertyTypeOriginal };
-  }
+  assert(dotIndex !== -1, `Invalid BasesPropertyId: "${propertyId}"`);
   return { name: propertyId.slice(dotIndex + 1), type: propertyId.slice(0, dotIndex) as BasesPropertyTypeOriginal };
 }

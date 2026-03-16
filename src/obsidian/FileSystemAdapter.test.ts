@@ -6,7 +6,7 @@ import {
   it
 } from 'vitest';
 
-import { castTo } from '../internal/cast.ts';
+import { ensureGenericObject } from '../internal/type-guards.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 
 describe('FileSystemAdapter', () => {
@@ -21,7 +21,7 @@ describe('FileSystemAdapter', () => {
 
   it('should throw when accessing an unmocked property', () => {
     const adapter = createAdapter();
-    const record = castTo<Record<string, unknown>>(adapter);
+    const record = ensureGenericObject(adapter);
     expect(() => record['nonExistentProperty']).toThrow(
       'Property "nonExistentProperty" is not mocked in FileSystemAdapter. To override, assign a value first: mock.nonExistentProperty = ...'
     );

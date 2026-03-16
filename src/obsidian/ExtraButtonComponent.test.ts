@@ -7,7 +7,7 @@ import {
   vi
 } from 'vitest';
 
-import { castTo } from '../internal/cast.ts';
+import { ensureGenericObject } from '../internal/type-guards.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
 
 describe('ExtraButtonComponent', () => {
@@ -23,7 +23,7 @@ describe('ExtraButtonComponent', () => {
 
   it('should throw when accessing an unmocked property', () => {
     const button = createExtraButton();
-    const record = castTo<Record<string, unknown>>(button);
+    const record = ensureGenericObject(button);
     expect(() => record['nonExistentProperty']).toThrow(
       'Property "nonExistentProperty" is not mocked in ExtraButtonComponent. To override, assign a value first: mock.nonExistentProperty = ...'
     );

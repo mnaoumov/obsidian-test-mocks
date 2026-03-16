@@ -6,7 +6,7 @@ import {
   it
 } from 'vitest';
 
-import { castTo } from '../internal/cast.ts';
+import { ensureGenericObject } from '../internal/type-guards.ts';
 import { CapacitorAdapter } from './CapacitorAdapter.ts';
 
 describe('CapacitorAdapter', () => {
@@ -21,7 +21,7 @@ describe('CapacitorAdapter', () => {
 
   it('should throw when accessing an unmocked property', () => {
     const adapter = createAdapter();
-    const record = castTo<Record<string, unknown>>(adapter);
+    const record = ensureGenericObject(adapter);
     expect(() => record['nonExistentProperty']).toThrow(
       'Property "nonExistentProperty" is not mocked in CapacitorAdapter. To override, assign a value first: mock.nonExistentProperty = ...'
     );

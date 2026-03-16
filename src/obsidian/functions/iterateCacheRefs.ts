@@ -6,6 +6,7 @@ import type {
 
 import type { MaybeReturn } from '../../internal/types.ts';
 
+import { assert } from '../../internal/type-guards.ts';
 import { iterateRefs } from './iterateRefs.ts';
 
 export function iterateCacheRefs(cache: CachedMetadataOriginal, cb: (ref: ReferenceCacheOriginal) => MaybeReturn<boolean>): boolean {
@@ -19,9 +20,7 @@ export function iterateCacheRefs(cache: CachedMetadataOriginal, cb: (ref: Refere
 
   function referenceCallback(ref: ReferenceOriginal): MaybeReturn<boolean> {
     const maybeReferenceCache = ref as Partial<ReferenceCacheOriginal>;
-    if (!maybeReferenceCache.position) {
-      throw new Error('Should be ReferenceCache, but position property is missing');
-    }
+    assert(!!maybeReferenceCache.position, 'Should be ReferenceCache, but position property is missing');
     return cb(maybeReferenceCache as ReferenceCacheOriginal);
   }
 }

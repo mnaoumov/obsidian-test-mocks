@@ -7,7 +7,7 @@ import {
   vi
 } from 'vitest';
 
-import { castTo } from '../internal/cast.ts';
+import { ensureGenericObject } from '../internal/type-guards.ts';
 import { ColorComponent } from './ColorComponent.ts';
 
 describe('ColorComponent', () => {
@@ -34,7 +34,7 @@ describe('ColorComponent', () => {
 
   it('should throw when accessing an unmocked property', () => {
     const color = createColor();
-    const record = castTo<Record<string, unknown>>(color);
+    const record = ensureGenericObject(color);
     expect(() => record['nonExistentProperty']).toThrow(
       'Property "nonExistentProperty" is not mocked in ColorComponent. To override, assign a value first: mock.nonExistentProperty = ...'
     );
