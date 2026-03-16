@@ -6,6 +6,7 @@ import type {
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
+import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
@@ -100,6 +101,28 @@ export class Vault extends Events {
     this.setVaultAbstractFile__(path, folder);
     this.trigger('create', folder);
     return folder;
+  }
+
+  public createFolderSync__(path: string): TFolder {
+    if (!(this.adapter instanceof InMemoryAdapter)) {
+      throw new Error('createFolderSync__ is only supported for in-memory adapters');
+    }
+    this.adapter.mkdirSync__(path);
+    const folder = TFolder.create__(this, path);
+    this.setVaultAbstractFile__(path, folder);
+    this.trigger('create', folder);
+    return folder;
+  }
+
+  public createSync__(path: string, content: string): TFile {
+    if (!(this.adapter instanceof InMemoryAdapter)) {
+      throw new Error('createSync__ is only supported for in-memory adapters');
+    }
+    this.adapter.writeSync__(path, content);
+    const file = TFile.create__(this, path);
+    this.setVaultAbstractFile__(path, file);
+    this.trigger('create', file);
+    return file;
   }
 
   public async delete(file: TAbstractFile, _force?: boolean): Promise<void> {

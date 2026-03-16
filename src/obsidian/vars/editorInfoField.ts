@@ -1,16 +1,13 @@
-import type {
-  App as AppOriginal,
-  MarkdownFileInfo as MarkdownFileInfoOriginal
-} from 'obsidian';
+import type { MarkdownFileInfo as MarkdownFileInfoOriginal } from 'obsidian';
 
 import { StateField } from '@codemirror/state';
 
-import { strictProxy } from '../../internal/strict-proxy.ts';
+import { app } from '../../globals/vars/app.ts';
 
 export const editorInfoField: StateField<MarkdownFileInfoOriginal> = StateField.define({
   create(): MarkdownFileInfoOriginal {
     return {
-      app: strictProxy<AppOriginal>({}),
+      app: app.asOriginalType__(),
       file: null,
       hoverPopover: null
     };

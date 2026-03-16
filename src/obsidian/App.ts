@@ -43,7 +43,7 @@ export class App {
     return new App(adapter, appId);
   }
 
-  public static async createConfigured__(params: CreateConfiguredParams = {}): Promise<App> {
+  public static createConfigured__(params: CreateConfiguredParams = {}): App {
     let adapter: DataAdapterOriginal;
     if (params.adapter) {
       adapter = params.adapter;
@@ -52,9 +52,9 @@ export class App {
       if (params.isAdapterCaseInsensitive) {
         mockAdapter.insensitive__ = true;
       }
-      adapter = mockAdapter;
+      adapter = mockAdapter.asOriginalType__();
     }
-    const app = App.create__(adapter, params.appId ?? '');
+    const app = App.create__(adapter, params.appId ?? 'mock-app-id');
 
     const neededFolders = new Set<string>();
     const fileEntries: [string, string][] = [];
@@ -79,11 +79,11 @@ export class App {
 
     const sortedFolders = [...neededFolders].sort();
     for (const folder of sortedFolders) {
-      await app.vault.createFolder(folder);
+      app.vault.createFolderSync__(folder);
     }
 
     for (const [filePath, content] of fileEntries) {
-      await app.vault.create(filePath, content);
+      app.vault.createSync__(filePath, content);
     }
 
     return app;
