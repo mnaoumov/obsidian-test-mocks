@@ -4,7 +4,6 @@ import {
   it
 } from 'vitest';
 
-import { castTo } from '../../internal/cast.ts';
 import { displayTooltip } from './displayTooltip.ts';
 
 describe('displayTooltip', () => {
@@ -20,7 +19,7 @@ describe('displayTooltip', () => {
     const el = createDiv();
     const fragment = document.createDocumentFragment();
     fragment.append('fragment text');
-    displayTooltip(el, castTo<string>(fragment));
+    displayTooltip(el, fragment);
     const span = el.querySelector('span.tooltip');
     expect(span).not.toBeNull();
   });
