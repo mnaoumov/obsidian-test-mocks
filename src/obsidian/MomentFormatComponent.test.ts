@@ -43,6 +43,15 @@ describe('MomentFormatComponent', () => {
     });
   });
 
+  describe('updateSample', () => {
+    it('should be callable without throwing', () => {
+      const comp = MomentFormatComponent.create2__(createDiv());
+      expect(() => {
+        comp.updateSample();
+      }).not.toThrow();
+    });
+  });
+
   describe('setValue', () => {
     it('should delegate to super and return this', () => {
       const comp = MomentFormatComponent.create2__(createDiv());

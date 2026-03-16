@@ -5,8 +5,8 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -17,13 +17,13 @@ export abstract class ItemView extends View {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.contentEl = createDiv();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(leaf);
     return self;
   }
 
   public static fromOriginalType3__(value: ItemViewOriginal): ItemView {
-    return bridgeType<ItemView>(value);
+    return mergePrototype(ItemView, value);
   }
 
   public addAction(_icon: IconNameOriginal, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
@@ -31,7 +31,7 @@ export abstract class ItemView extends View {
   }
 
   public asOriginalType3__(): ItemViewOriginal {
-    return bridgeType<ItemViewOriginal>(this);
+    return strictProxyForce<ItemViewOriginal>(this);
   }
 
   public constructor3__(_leaf: WorkspaceLeaf): void {

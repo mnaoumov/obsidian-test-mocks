@@ -8,8 +8,8 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 
@@ -20,7 +20,7 @@ export class HoverPopover extends Component {
   public constructor(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null | PointOriginal) {
     super();
     this.hoverEl = createDiv();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(_parent, _targetEl, _waitTime, _staticPos);
     return self;
   }
@@ -34,11 +34,11 @@ export class HoverPopover extends Component {
   }
 
   public static fromOriginalType2__(value: HoverPopoverOriginal): HoverPopover {
-    return bridgeType<HoverPopover>(value);
+    return mergePrototype(HoverPopover, value);
   }
 
   public asOriginalType2__(): HoverPopoverOriginal {
-    return bridgeType<HoverPopoverOriginal>(this);
+    return strictProxyForce<HoverPopoverOriginal>(this);
   }
 
   public constructor2__(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null | PointOriginal): void {

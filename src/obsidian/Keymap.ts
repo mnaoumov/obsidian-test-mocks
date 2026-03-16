@@ -9,15 +9,15 @@ import type { Scope } from './Scope.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class Keymap {
   private readonly scopeStack: Scope[] = [];
 
   protected constructor() {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__();
     return self;
   }
@@ -27,7 +27,7 @@ export class Keymap {
   }
 
   public static fromOriginalType__(value: KeymapOriginal): Keymap {
-    return bridgeType<Keymap>(value);
+    return mergePrototype(Keymap, value);
   }
 
   public static isModEvent(_evt?: null | UserEventOriginal): boolean | PaneTypeOriginal {
@@ -39,7 +39,7 @@ export class Keymap {
   }
 
   public asOriginalType__(): KeymapOriginal {
-    return bridgeType<KeymapOriginal>(this);
+    return strictProxyForce<KeymapOriginal>(this);
   }
 
   public constructor__(): void {

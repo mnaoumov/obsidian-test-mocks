@@ -4,13 +4,13 @@ import type { Menu } from './Menu.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class MenuSeparator {
   protected constructor(_menu: Menu) {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(_menu);
     return self;
   }
@@ -20,11 +20,11 @@ export class MenuSeparator {
   }
 
   public static fromOriginalType__(value: MenuSeparatorOriginal): MenuSeparator {
-    return bridgeType<MenuSeparator>(value);
+    return mergePrototype(MenuSeparator, value);
   }
 
   public asOriginalType__(): MenuSeparatorOriginal {
-    return bridgeType<MenuSeparatorOriginal>(this);
+    return strictProxyForce<MenuSeparatorOriginal>(this);
   }
 
   public constructor__(_menu: Menu): void {

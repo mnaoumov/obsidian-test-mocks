@@ -2,15 +2,15 @@ import type { ImageValue as ImageValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 export class ImageValue extends StringValue {
   public constructor(value = '') {
     super(value);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor5__(value);
     return self;
   }
@@ -20,11 +20,11 @@ export class ImageValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: ImageValueOriginal): ImageValue {
-    return bridgeType<ImageValue>(value);
+    return mergePrototype(ImageValue, value);
   }
 
   public asOriginalType5__(): ImageValueOriginal {
-    return bridgeType<ImageValueOriginal>(this);
+    return strictProxyForce<ImageValueOriginal>(this);
   }
 
   public constructor5__(_value: string): void {

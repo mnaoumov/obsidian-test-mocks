@@ -10,8 +10,8 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -23,17 +23,17 @@ export abstract class FileView extends ItemView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__(leaf);
     return self;
   }
 
   public static fromOriginalType4__(value: FileViewOriginal): FileView {
-    return bridgeType<FileView>(value);
+    return mergePrototype(FileView, value);
   }
 
   public asOriginalType4__(): FileViewOriginal {
-    return bridgeType<FileViewOriginal>(this);
+    return strictProxyForce<FileViewOriginal>(this);
   }
 
   public canAcceptExtension(_extension: string): boolean {

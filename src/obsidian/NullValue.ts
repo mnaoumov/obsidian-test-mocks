@@ -2,15 +2,15 @@ import type { NullValue as NullValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { Value } from './Value.ts';
 
 export class NullValue extends Value {
   public constructor() {
     super();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__();
     return self;
   }
@@ -20,11 +20,11 @@ export class NullValue extends Value {
   }
 
   public static fromOriginalType2__(value: NullValueOriginal): NullValue {
-    return bridgeType<NullValue>(value);
+    return mergePrototype(NullValue, value);
   }
 
   public asOriginalType2__(): NullValueOriginal {
-    return bridgeType<NullValueOriginal>(this);
+    return strictProxyForce<NullValueOriginal>(this);
   }
 
   public constructor2__(): void {

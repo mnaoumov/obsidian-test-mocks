@@ -2,15 +2,15 @@ import type { NumberValue as NumberValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class NumberValue extends PrimitiveValue<number> {
   public constructor(value = 0) {
     super(value);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__(value);
     return self;
   }
@@ -20,11 +20,11 @@ export class NumberValue extends PrimitiveValue<number> {
   }
 
   public static fromOriginalType4__(value: NumberValueOriginal): NumberValue {
-    return bridgeType<NumberValue>(value);
+    return mergePrototype(NumberValue, value);
   }
 
   public asOriginalType4__(): NumberValueOriginal {
-    return bridgeType<NumberValueOriginal>(this);
+    return strictProxyForce<NumberValueOriginal>(this);
   }
 
   public constructor4__(_value = 0): void {

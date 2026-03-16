@@ -2,8 +2,8 @@ import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obs
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { TextComponent } from './TextComponent.ts';
 
@@ -14,7 +14,7 @@ export class MomentFormatComponent extends TextComponent {
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
     this.sampleEl = createDiv();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor5__(containerEl);
     return self;
   }
@@ -24,11 +24,11 @@ export class MomentFormatComponent extends TextComponent {
   }
 
   public static fromOriginalType5__(value: MomentFormatComponentOriginal): MomentFormatComponent {
-    return bridgeType<MomentFormatComponent>(value);
+    return mergePrototype(MomentFormatComponent, value);
   }
 
   public asOriginalType5__(): MomentFormatComponentOriginal {
-    return bridgeType<MomentFormatComponentOriginal>(this);
+    return strictProxyForce<MomentFormatComponentOriginal>(this);
   }
 
   public constructor5__(_containerEl: HTMLElement): void {
@@ -47,5 +47,9 @@ export class MomentFormatComponent extends TextComponent {
 
   public override setValue(value: string): this {
     return super.setValue(value);
+  }
+
+  public updateSample(): void {
+    noop();
   }
 }

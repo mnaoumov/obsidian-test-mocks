@@ -10,8 +10,8 @@ import type { Vault } from './Vault.ts';
 import { parseMarkdownContent } from '../internal/markdown-parser.ts';
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 import { TFile as TFileClass } from './TFile.ts';
@@ -31,7 +31,7 @@ export class MetadataCache extends Events {
     vault.on('modify', (...data: unknown[]) => {
       this.parseFileMetadata(data[0]);
     });
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(app, vault);
     return self;
   }
@@ -41,11 +41,11 @@ export class MetadataCache extends Events {
   }
 
   public static fromOriginalType2__(value: MetadataCacheOriginal): MetadataCache {
-    return bridgeType<MetadataCache>(value);
+    return mergePrototype(MetadataCache, value);
   }
 
   public asOriginalType2__(): MetadataCacheOriginal {
-    return bridgeType<MetadataCacheOriginal>(this);
+    return strictProxyForce<MetadataCacheOriginal>(this);
   }
 
   public constructor2__(_app: App, _vault: Vault): void {

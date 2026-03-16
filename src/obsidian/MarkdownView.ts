@@ -5,8 +5,8 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { Editor } from './Editor.ts';
 import { TextFileView } from './TextFileView.ts';
@@ -69,7 +69,7 @@ export class MarkdownView extends TextFileView {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.editor = new MockEditor();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor7__(leaf);
     return self;
   }
@@ -79,11 +79,11 @@ export class MarkdownView extends TextFileView {
   }
 
   public static fromOriginalType7__(value: MarkdownViewOriginal): MarkdownView {
-    return bridgeType<MarkdownView>(value);
+    return mergePrototype(MarkdownView, value);
   }
 
   public asOriginalType7__(): MarkdownViewOriginal {
-    return bridgeType<MarkdownViewOriginal>(this);
+    return strictProxyForce<MarkdownViewOriginal>(this);
   }
 
   public override canAcceptExtension(extension: string): boolean {

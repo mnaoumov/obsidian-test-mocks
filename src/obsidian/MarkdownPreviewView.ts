@@ -5,8 +5,8 @@ import type { TFile } from './TFile.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
@@ -24,7 +24,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     super(markdownView.app, markdownView.containerEl);
     this.containerEl = markdownView.containerEl;
     this.markdownView = markdownView;
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__(markdownView);
     return self;
   }
@@ -34,7 +34,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public static fromOriginalType4__(value: MarkdownPreviewViewOriginal): MarkdownPreviewView {
-    return bridgeType<MarkdownPreviewView>(value);
+    return mergePrototype(MarkdownPreviewView, value);
   }
 
   public applyScroll(_scroll: number): void {
@@ -42,7 +42,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public asOriginalType4__(): MarkdownPreviewViewOriginal {
-    return bridgeType<MarkdownPreviewViewOriginal>(this);
+    return strictProxyForce<MarkdownPreviewViewOriginal>(this);
   }
 
   public clear(): void {
