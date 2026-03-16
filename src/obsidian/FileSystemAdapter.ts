@@ -1,6 +1,6 @@
 import type { FileSystemAdapter as FileSystemAdapterOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
@@ -18,11 +18,11 @@ export class FileSystemAdapter extends InMemoryAdapter {
   }
 
   public static fromOriginalType__(value: FileSystemAdapterOriginal): FileSystemAdapter {
-    return castTo<FileSystemAdapter>(value);
+    return createMockOfUnsafe<FileSystemAdapter>(value);
   }
 
   public asOriginalType__(): FileSystemAdapterOriginal {
-    return castTo<FileSystemAdapterOriginal>(this);
+    return createMockOfUnsafe<FileSystemAdapterOriginal>(this);
   }
 
   public constructor__(_basePath: string): void {

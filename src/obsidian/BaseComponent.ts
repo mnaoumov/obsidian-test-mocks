@@ -1,6 +1,6 @@
 import type { BaseComponent as BaseComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -14,11 +14,11 @@ export abstract class BaseComponent {
   }
 
   public static fromOriginalType__(value: BaseComponentOriginal): BaseComponent {
-    return castTo<BaseComponent>(value);
+    return createMockOfUnsafe<BaseComponent>(value);
   }
 
   public asOriginalType__(): BaseComponentOriginal {
-    return castTo<BaseComponentOriginal>(this);
+    return createMockOfUnsafe<BaseComponentOriginal>(this);
   }
 
   public constructor__(): void {

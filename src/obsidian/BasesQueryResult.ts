@@ -11,7 +11,7 @@ import type { BasesEntryGroup } from './BasesEntryGroup.ts';
 import type { BasesViewConfig } from './BasesViewConfig.ts';
 import type { QueryController } from './QueryController.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -40,11 +40,11 @@ export class BasesQueryResult {
   }
 
   public static fromOriginalType__(value: BasesQueryResultOriginal): BasesQueryResult {
-    return castTo<BasesQueryResult>(value);
+    return createMockOfUnsafe<BasesQueryResult>(value);
   }
 
   public asOriginalType__(): BasesQueryResultOriginal {
-    return castTo<BasesQueryResultOriginal>(this);
+    return createMockOfUnsafe<BasesQueryResultOriginal>(this);
   }
 
   public constructor__(_app: App, _config: BasesViewConfig, _allProperties: BasesPropertyOriginal[], _data: BasesEntry[]): void {

@@ -1,6 +1,6 @@
 import type { DateValue as DateValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
@@ -18,11 +18,11 @@ export class DateValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: DateValueOriginal): DateValue {
-    return castTo<DateValue>(value);
+    return createMockOfUnsafe<DateValue>(value);
   }
 
   public asOriginalType3__(): DateValueOriginal {
-    return castTo<DateValueOriginal>(this);
+    return createMockOfUnsafe<DateValueOriginal>(this);
   }
 
   public constructor3__(_date: unknown, _showTime?: boolean): void {

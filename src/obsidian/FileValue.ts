@@ -3,7 +3,7 @@ import type { FileValue as FileValueOriginal } from 'obsidian';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
@@ -21,11 +21,11 @@ export class FileValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: FileValueOriginal): FileValue {
-    return castTo<FileValue>(value);
+    return createMockOfUnsafe<FileValue>(value);
   }
 
   public asOriginalType3__(): FileValueOriginal {
-    return castTo<FileValueOriginal>(this);
+    return createMockOfUnsafe<FileValueOriginal>(this);
   }
 
   public constructor3__(_app: App, _file: TFile): void {

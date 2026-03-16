@@ -1,6 +1,6 @@
 import type { ExtraButtonComponent as ExtraButtonComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
@@ -22,11 +22,11 @@ export class ExtraButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ExtraButtonComponentOriginal): ExtraButtonComponent {
-    return castTo<ExtraButtonComponent>(value);
+    return createMockOfUnsafe<ExtraButtonComponent>(value);
   }
 
   public asOriginalType2__(): ExtraButtonComponentOriginal {
-    return castTo<ExtraButtonComponentOriginal>(this);
+    return createMockOfUnsafe<ExtraButtonComponentOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

@@ -8,7 +8,7 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -30,11 +30,11 @@ export class FileManager {
   }
 
   public static fromOriginalType__(value: FileManagerOriginal): FileManager {
-    return castTo<FileManager>(value);
+    return createMockOfUnsafe<FileManager>(value);
   }
 
   public asOriginalType__(): FileManagerOriginal {
-    return castTo<FileManagerOriginal>(this);
+    return createMockOfUnsafe<FileManagerOriginal>(this);
   }
 
   public constructor__(_app: App): void {

@@ -1,6 +1,6 @@
 import type { DropdownComponent as DropdownComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -23,7 +23,7 @@ export class DropdownComponent extends ValueComponent<string> {
   }
 
   public static fromOriginalType3__(value: DropdownComponentOriginal): DropdownComponent {
-    return castTo<DropdownComponent>(value);
+    return createMockOfUnsafe<DropdownComponent>(value);
   }
 
   public addOption(value: string, display: string): this {
@@ -42,7 +42,7 @@ export class DropdownComponent extends ValueComponent<string> {
   }
 
   public asOriginalType3__(): DropdownComponentOriginal {
-    return castTo<DropdownComponentOriginal>(this);
+    return createMockOfUnsafe<DropdownComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

@@ -1,6 +1,6 @@
 import type { DurationValue as DurationValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
@@ -34,11 +34,11 @@ export class DurationValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: DurationValueOriginal): DurationValue {
-    return castTo<DurationValue>(value);
+    return createMockOfUnsafe<DurationValue>(value);
   }
 
   public asOriginalType3__(): DurationValueOriginal {
-    return castTo<DurationValueOriginal>(this);
+    return createMockOfUnsafe<DurationValueOriginal>(this);
   }
 
   public constructor3__(

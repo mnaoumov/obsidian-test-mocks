@@ -5,7 +5,7 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -27,11 +27,11 @@ export abstract class FileView extends ItemView {
   }
 
   public static fromOriginalType4__(value: FileViewOriginal): FileView {
-    return castTo<FileView>(value);
+    return createMockOfUnsafe<FileView>(value);
   }
 
   public asOriginalType4__(): FileViewOriginal {
-    return castTo<FileViewOriginal>(this);
+    return createMockOfUnsafe<FileViewOriginal>(this);
   }
 
   public canAcceptExtension(_extension: string): boolean {
@@ -54,8 +54,9 @@ export abstract class FileView extends ItemView {
     noop();
   }
 
-  public async onLoadFile(_file: TFile): Promise<void> {
+  public async onLoadFile(file: TFile): Promise<void> {
     await noopAsync();
+    this.file = file;
   }
 
   public async onRename(_file: TFile): Promise<void> {

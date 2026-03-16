@@ -1,49 +1,81 @@
 /**
- * Creates a strictly-typed mock object from a partial implementation.
- * Unlike `castTo<T>()`, this uses a `Proxy` to throw an error if any
- * unmocked property is accessed, preventing silent `undefined` returns
- * that don't match the actual type.
+ * Creates a strictly-typed mock object from a full or partial implementation.
+ * Uses a `Proxy` to throw an error if any unmocked property is accessed,
+ * preventing silent `undefined` returns that don't match the actual type.
  *
  * Nested plain objects are recursively proxied for deep protection.
  * Functions (including `vi.fn()`), arrays, class instances, and primitives
  * are passed through without proxying.
  *
- * @param partial - A partial object containing only the mocked members.
- * @returns A proxy typed as `T` that throws on unmocked property access.
+ * For class instances, the error message includes the class name for easier
+ * debugging (e.g., "Property X is not mocked in App").
+ *
+ * Idempotent: calling on an already-proxied object returns it unchanged.
  */
 import type { PartialDeep } from 'type-fest';
 
+const STRICT_MOCK_MARKER = Symbol('strictMock');
+
+const PASSTHROUGH_PROPS = new Set<string | symbol>([
+  Symbol.iterator,
+  Symbol.toPrimitive,
+  Symbol.toStringTag,
+  'then',
+  'toJSON'
+]);
+
+/**
+ * Type-safe version for test code — accepts deep-partial objects.
+ */
 export function createMockOf<T>(partial: PartialDeep<T>): T {
-  if (!isPlainObject(partial)) {
-    return partial as T;
+  return createMockOfUnsafe<T>(partial);
+}
+
+/**
+ * Untyped version for internal type bridging (asOriginalType / fromOriginalType).
+ * Accepts any value without type constraints.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T provides return type inference at call sites.
+export function createMockOfUnsafe<T>(value: unknown): T {
+  if (!isObjectLike(value)) {
+    return value as T;
   }
 
-  const proxiedChildren = new Map<string | symbol, unknown>();
+  if (STRICT_MOCK_MARKER in value) {
+    return value as T;
+  }
+  Object.defineProperty(value, STRICT_MOCK_MARKER, { value: true });
 
-  return new Proxy(partial, {
+  const isClass = !isPlainObject(value);
+  const className = isClass ? value.constructor.name : '';
+  const proxiedChildren = isClass ? null : new Map<string | symbol, unknown>();
+
+  return new Proxy(value, {
     get(target, prop, receiver): unknown {
-      if (!(prop in target) && typeof prop !== 'symbol') {
-        // 'then' must return undefined so that Promise.resolve() / await
-        // Can detect non-thenable objects without throwing.
-        if (prop === 'then') {
-          return undefined;
+      if (typeof prop === 'symbol' || prop in target || PASSTHROUGH_PROPS.has(prop)) {
+        if (proxiedChildren?.has(prop)) {
+          return proxiedChildren.get(prop);
         }
-        throw new Error(`Unmocked property "${prop}" was accessed on mock object`);
+
+        const val: unknown = Reflect.get(target, prop, receiver);
+        if (proxiedChildren && isPlainObject(val)) {
+          const result = createMockOfUnsafe<unknown>(val);
+          proxiedChildren.set(prop, result);
+          return result;
+        }
+        return val;
       }
 
-      if (proxiedChildren.has(prop)) {
-        return proxiedChildren.get(prop);
-      }
-
-      const value: unknown = Reflect.get(target, prop, receiver);
-      if (isPlainObject(value)) {
-        const result = createMockOf<unknown>(value);
-        proxiedChildren.set(prop, result);
-        return result;
-      }
-      return value;
+      const label = isClass
+        ? `Property "${prop}" is not mocked in ${className}. To override, assign a value first: mock.${prop} = ...`
+        : `Unmocked property "${prop}" was accessed on mock object`;
+      throw new Error(label);
     }
   }) as T;
+}
+
+function isObjectLike(value: unknown): value is object {
+  return value !== null && typeof value === 'object';
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

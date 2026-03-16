@@ -6,7 +6,7 @@ import type {
   WorkspaceLeaf as WorkspaceLeafOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
@@ -32,11 +32,11 @@ export class HoverPopover extends Component {
   }
 
   public static fromOriginalType2__(value: HoverPopoverOriginal): HoverPopover {
-    return castTo<HoverPopover>(value);
+    return createMockOfUnsafe<HoverPopover>(value);
   }
 
   public asOriginalType2__(): HoverPopoverOriginal {
-    return castTo<HoverPopoverOriginal>(this);
+    return createMockOfUnsafe<HoverPopoverOriginal>(this);
   }
 
   public constructor2__(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null | PointOriginal): void {

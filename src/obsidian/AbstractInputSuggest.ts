@@ -2,7 +2,7 @@ import type { AbstractInputSuggest as AbstractInputSuggestOriginal } from 'obsid
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
@@ -18,11 +18,11 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   }
 
   public static fromOriginalType2__<T>(value: AbstractInputSuggestOriginal<T>): AbstractInputSuggest<T> {
-    return castTo<AbstractInputSuggest<T>>(value);
+    return createMockOfUnsafe<AbstractInputSuggest<T>>(value);
   }
 
   public asOriginalType2__(): AbstractInputSuggestOriginal<T> {
-    return castTo<AbstractInputSuggestOriginal<T>>(this);
+    return createMockOfUnsafe<AbstractInputSuggestOriginal<T>>(this);
   }
 
   public constructor2__(_app: App, _textInputEl: HTMLDivElement | HTMLInputElement): void {

@@ -5,7 +5,7 @@ import type {
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Modal } from './Modal.ts';
@@ -22,11 +22,11 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   }
 
   public static fromOriginalType2__<T>(value: FuzzySuggestModalOriginal<T>): FuzzySuggestModal<T> {
-    return castTo<FuzzySuggestModal<T>>(value);
+    return createMockOfUnsafe<FuzzySuggestModal<T>>(value);
   }
 
   public asOriginalType2__(): FuzzySuggestModalOriginal<T> {
-    return castTo<FuzzySuggestModalOriginal<T>>(this);
+    return createMockOfUnsafe<FuzzySuggestModalOriginal<T>>(this);
   }
 
   public constructor2__(_app: App): void {

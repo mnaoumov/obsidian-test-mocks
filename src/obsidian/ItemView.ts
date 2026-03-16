@@ -3,7 +3,7 @@ import type {
   ItemView as ItemViewOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { View } from './View.ts';
@@ -21,7 +21,7 @@ export abstract class ItemView extends View {
   }
 
   public static fromOriginalType3__(value: ItemViewOriginal): ItemView {
-    return castTo<ItemView>(value);
+    return createMockOfUnsafe<ItemView>(value);
   }
 
   public addAction(_icon: IconNameOriginal, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
@@ -29,7 +29,7 @@ export abstract class ItemView extends View {
   }
 
   public asOriginalType3__(): ItemViewOriginal {
-    return castTo<ItemViewOriginal>(this);
+    return createMockOfUnsafe<ItemViewOriginal>(this);
   }
 
   public constructor3__(_leaf: WorkspaceLeaf): void {
