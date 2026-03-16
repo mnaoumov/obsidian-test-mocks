@@ -1,6 +1,9 @@
 import type { ProgressBarComponent as ProgressBarComponentOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -12,7 +15,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.progressBar__ = createDiv();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor3__(_containerEl);
     return self;
   }

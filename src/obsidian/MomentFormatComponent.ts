@@ -1,6 +1,9 @@
 import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { TextComponent } from './TextComponent.ts';
 
@@ -11,7 +14,7 @@ export class MomentFormatComponent extends TextComponent {
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
     this.sampleEl = createDiv();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor5__(containerEl);
     return self;
   }

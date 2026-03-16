@@ -7,7 +7,10 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { parseMarkdownContent } from '../internal/markdown-parser.ts';
 import { noop } from '../internal/noop.ts';
 import { Events } from './Events.ts';
@@ -28,7 +31,7 @@ export class MetadataCache extends Events {
     vault.on('modify', (...data: unknown[]) => {
       this.parseFileMetadata(data[0]);
     });
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(app, vault);
     return self;
   }

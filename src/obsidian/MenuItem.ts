@@ -3,7 +3,10 @@ import type {
   MenuItem as MenuItemOriginal
 } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 // eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
 import { Menu } from './Menu.ts';
@@ -19,7 +22,7 @@ export class MenuItem {
   public warning__ = false;
 
   private constructor(_menu: unknown) {
-    const mock = createMockOfUnsafe(this);
+    const mock = createMockOf(this);
     return mock;
   }
 

@@ -5,7 +5,10 @@ import type {
 
 import type { MarkdownView } from './MarkdownView.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
@@ -22,7 +25,7 @@ export class MarkdownEditView {
   public constructor(view: MarkdownView) {
     this.app = view.app;
     this.editor__ = new MockEditor();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(view);
     return self;
   }

@@ -11,7 +11,10 @@ import type {
 
 import type { App } from './App.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -36,7 +39,7 @@ export abstract class Plugin extends Component {
     super();
     this.app = app;
     this.manifest = manifest;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(app, manifest);
     return self;
   }
