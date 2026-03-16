@@ -2,7 +2,10 @@ import type { WorkspaceSidedock as WorkspaceSidedockOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
@@ -11,7 +14,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
 
   protected constructor(workspace: Workspace, direction: string, _side: string, id?: string) {
     super(workspace, direction, id);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor5__(workspace, direction, _side, id);
     return self;
   }

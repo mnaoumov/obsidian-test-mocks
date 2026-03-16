@@ -16,7 +16,10 @@ import type {
 
 import type { BaseComponent } from './BaseComponent.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { ButtonComponent } from './ButtonComponent.ts';
 import { ColorComponent } from './ColorComponent.ts';
@@ -49,7 +52,7 @@ export class Setting {
     this.infoEl.appendChild(this.descEl);
     this.settingEl.appendChild(this.controlEl);
     containerEl.appendChild(this.settingEl);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(containerEl);
     return self;
   }

@@ -2,7 +2,10 @@ import type { SecretComponent as SecretComponentOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
@@ -11,7 +14,7 @@ export class SecretComponent extends BaseComponent {
 
   public constructor(_app: App, _containerEl: HTMLElement) {
     super();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(_app, _containerEl);
     return self;
   }

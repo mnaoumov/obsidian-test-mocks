@@ -2,14 +2,17 @@ import type { SecretStorage as SecretStorageOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export class SecretStorage {
   private readonly store = new Map<string, string>();
 
   protected constructor(_app: App) {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(_app);
     return self;
   }

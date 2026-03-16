@@ -10,7 +10,10 @@ import type {
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -41,7 +44,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     super(app.workspace, id);
     this.app = app;
     this.id__ = id ?? String(nextLeafId++);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor3__(app, id);
     return self;
   }

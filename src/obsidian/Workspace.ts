@@ -18,7 +18,10 @@ import type {
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -62,7 +65,7 @@ export class Workspace extends Events {
     this.rightRibbon = WorkspaceRibbon.create__(this, 'right');
     this.rightSplit = WorkspaceSidedock.create3__(this, 'vertical', 'right');
     this.rootSplit = WorkspaceRoot.create3__(this, 'vertical');
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(app, containerEl);
     return self;
   }

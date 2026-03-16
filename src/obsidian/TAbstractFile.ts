@@ -3,7 +3,10 @@ import type { TAbstractFile as TAbstractFileOriginal } from 'obsidian';
 import type { TFolder } from './TFolder.ts';
 import type { Vault } from './Vault.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
@@ -19,7 +22,7 @@ export abstract class TAbstractFile {
     this.path = path;
     const parts = path.split('/');
     this.name = ensureNonNullable(parts[parts.length - 1]);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(vault, path);
     return self;
   }

@@ -5,14 +5,17 @@ import type {
   Scope as ScopeOriginal
 } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export class Scope {
   private readonly handlers: KeymapEventHandlerOriginal[] = [];
 
   protected constructor(_parent?: Scope) {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(_parent);
     return self;
   }

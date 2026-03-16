@@ -5,7 +5,10 @@ import type {
 
 import type { Vault } from './Vault.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
@@ -19,7 +22,7 @@ export class TFile extends TAbstractFile {
     const dotIndex = this.name.lastIndexOf('.');
     this.extension = dotIndex >= 0 ? this.name.slice(dotIndex + 1) : '';
     this.basename = dotIndex >= 0 ? this.name.slice(0, dotIndex) : this.name;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(vault, path);
     return self;
   }

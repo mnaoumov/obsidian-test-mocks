@@ -2,7 +2,10 @@ import type { WorkspaceRoot as WorkspaceRootOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { WorkspaceContainer } from './WorkspaceContainer.ts';
 
@@ -17,7 +20,7 @@ export class WorkspaceRoot extends WorkspaceContainer {
 
   protected constructor(workspace: Workspace, direction: string, id?: string) {
     super(workspace, direction, id);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor6__(workspace, direction, id);
     return self;
   }

@@ -1,13 +1,16 @@
 import type { StringValue as StringValueOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class StringValue extends PrimitiveValue<string> {
   public constructor(value = '') {
     super(value);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor4__(value);
     return self;
   }
