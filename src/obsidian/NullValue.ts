@@ -1,13 +1,13 @@
 import type { NullValue as NullValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { Value } from './Value.ts';
 
 export class NullValue extends Value {
   public constructor() {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__();
     return self;
   }
@@ -17,11 +17,11 @@ export class NullValue extends Value {
   }
 
   public static fromOriginalType2__(value: NullValueOriginal): NullValue {
-    return strictProxyForce(value, NullValue);
+    return strictProxy(value, NullValue);
   }
 
   public asOriginalType2__(): NullValueOriginal {
-    return strictProxyForce<NullValueOriginal>(this);
+    return strictProxy<NullValueOriginal>(this);
   }
 
   public constructor2__(): void {

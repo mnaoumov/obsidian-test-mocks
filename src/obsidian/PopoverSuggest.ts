@@ -3,7 +3,7 @@ import type { PopoverSuggest as PopoverSuggestOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { Scope } from './Scope.ts';
 
 export abstract class PopoverSuggest<T> {
@@ -14,17 +14,17 @@ export abstract class PopoverSuggest<T> {
   public constructor(app: App, scope?: Scope) {
     this.app = app;
     this.scope = scope ?? Scope.create__();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(app, scope);
     return self;
   }
 
   public static fromOriginalType__<T>(value: PopoverSuggestOriginal<T>): PopoverSuggest<T> {
-    return strictProxyForce<PopoverSuggest<T>>(value);
+    return strictProxy<PopoverSuggest<T>>(value);
   }
 
   public asOriginalType__(): PopoverSuggestOriginal<T> {
-    return strictProxyForce<PopoverSuggestOriginal<T>>(this);
+    return strictProxy<PopoverSuggestOriginal<T>>(this);
   }
 
   public close(): void {

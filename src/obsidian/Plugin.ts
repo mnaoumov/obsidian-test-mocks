@@ -15,7 +15,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
@@ -36,13 +36,13 @@ export abstract class Plugin extends Component {
     super();
     this.app = app;
     this.manifest = manifest;
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(app, manifest);
     return self;
   }
 
   public static fromOriginalType2__(value: PluginOriginal): Plugin {
-    return strictProxyForce(value, Plugin);
+    return strictProxy(value, Plugin);
   }
 
   public addCommand(command: CommandOriginal): CommandOriginal {
@@ -67,7 +67,7 @@ export abstract class Plugin extends Component {
   }
 
   public asOriginalType2__(): PluginOriginal {
-    return strictProxyForce<PluginOriginal>(this);
+    return strictProxy<PluginOriginal>(this);
   }
 
   public constructor2__(_app: App, _manifest: PluginManifestOriginal): void {

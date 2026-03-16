@@ -17,7 +17,7 @@ import type {
 import type { BaseComponent } from './BaseComponent.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ButtonComponent } from './ButtonComponent.ts';
 import { ColorComponent } from './ColorComponent.ts';
 import { DropdownComponent } from './DropdownComponent.ts';
@@ -49,7 +49,7 @@ export class Setting {
     this.infoEl.appendChild(this.descEl);
     this.settingEl.appendChild(this.controlEl);
     containerEl.appendChild(this.settingEl);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(containerEl);
     return self;
   }
@@ -59,7 +59,7 @@ export class Setting {
   }
 
   public static fromOriginalType__(value: SettingOriginal): Setting {
-    return strictProxyForce(value, Setting);
+    return strictProxy(value, Setting);
   }
 
   public addButton(cb: (component: ButtonComponentOriginal) => unknown): this {
@@ -146,7 +146,7 @@ export class Setting {
   }
 
   public asOriginalType__(): SettingOriginal {
-    return strictProxyForce<SettingOriginal>(this);
+    return strictProxy<SettingOriginal>(this);
   }
 
   public clear(): this {

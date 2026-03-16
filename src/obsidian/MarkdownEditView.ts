@@ -6,7 +6,7 @@ import type {
 import type { MarkdownView } from './MarkdownView.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
 
@@ -22,7 +22,7 @@ export class MarkdownEditView {
   public constructor(view: MarkdownView) {
     this.app = view.app;
     this.editor__ = new MockEditor();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(view);
     return self;
   }
@@ -32,7 +32,7 @@ export class MarkdownEditView {
   }
 
   public static fromOriginalType__(value: MarkdownEditViewOriginal): MarkdownEditView {
-    return strictProxyForce(value, MarkdownEditView);
+    return strictProxy(value, MarkdownEditView);
   }
 
   public applyScroll(scroll: number): void {
@@ -40,7 +40,7 @@ export class MarkdownEditView {
   }
 
   public asOriginalType__(): MarkdownEditViewOriginal {
-    return strictProxyForce<MarkdownEditViewOriginal>(this);
+    return strictProxy<MarkdownEditViewOriginal>(this);
   }
 
   public clear(): void {

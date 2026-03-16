@@ -1,7 +1,7 @@
 import type { WorkspaceFloating as WorkspaceFloatingOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceFloating extends WorkspaceParent {
@@ -9,7 +9,7 @@ export class WorkspaceFloating extends WorkspaceParent {
 
   protected constructor() {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor4__();
     return self;
   }
@@ -19,11 +19,11 @@ export class WorkspaceFloating extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceFloatingOriginal): WorkspaceFloating {
-    return strictProxyForce(value, WorkspaceFloating);
+    return strictProxy(value, WorkspaceFloating);
   }
 
   public asOriginalType4__(): WorkspaceFloatingOriginal {
-    return strictProxyForce<WorkspaceFloatingOriginal>(this);
+    return strictProxy<WorkspaceFloatingOriginal>(this);
   }
 
   public constructor4__(): void {

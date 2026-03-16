@@ -6,13 +6,13 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class Scope {
   private readonly handlers: KeymapEventHandlerOriginal[] = [];
 
   protected constructor(_parent?: Scope) {
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(_parent);
     return self;
   }
@@ -22,11 +22,11 @@ export class Scope {
   }
 
   public static fromOriginalType__(value: ScopeOriginal): Scope {
-    return strictProxyForce(value, Scope);
+    return strictProxy(value, Scope);
   }
 
   public asOriginalType__(): ScopeOriginal {
-    return strictProxyForce<ScopeOriginal>(this);
+    return strictProxy<ScopeOriginal>(this);
   }
 
   public constructor__(_parent?: Scope): void {

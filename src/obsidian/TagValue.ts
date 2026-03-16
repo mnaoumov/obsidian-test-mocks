@@ -1,13 +1,13 @@
 import type { TagValue as TagValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 export class TagValue extends StringValue {
   public constructor(value: string) {
     super(value);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor5__(value);
     return self;
   }
@@ -17,11 +17,11 @@ export class TagValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: TagValueOriginal): TagValue {
-    return strictProxyForce(value, TagValue);
+    return strictProxy(value, TagValue);
   }
 
   public asOriginalType5__(): TagValueOriginal {
-    return strictProxyForce<TagValueOriginal>(this);
+    return strictProxy<TagValueOriginal>(this);
   }
 
   public constructor5__(_value: string): void {

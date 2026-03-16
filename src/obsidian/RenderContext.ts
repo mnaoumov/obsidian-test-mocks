@@ -6,13 +6,13 @@ import type {
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class RenderContext {
   public hoverPopover: HoverPopoverOriginal | null = null;
 
   protected constructor(_app: App) {
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(_app);
     return self;
   }
@@ -22,11 +22,11 @@ export class RenderContext {
   }
 
   public static fromOriginalType__(value: RenderContextOriginal): RenderContext {
-    return strictProxyForce(value, RenderContext);
+    return strictProxy(value, RenderContext);
   }
 
   public asOriginalType__(): RenderContextOriginal {
-    return strictProxyForce<RenderContextOriginal>(this);
+    return strictProxy<RenderContextOriginal>(this);
   }
 
   public constructor__(_app: App): void {

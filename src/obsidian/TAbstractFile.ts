@@ -4,7 +4,7 @@ import type { TFolder } from './TFolder.ts';
 import type { Vault } from './Vault.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
 export abstract class TAbstractFile {
@@ -19,17 +19,17 @@ export abstract class TAbstractFile {
     this.path = path;
     const parts = path.split('/');
     this.name = ensureNonNullable(parts[parts.length - 1]);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(vault, path);
     return self;
   }
 
   public static fromOriginalType__(value: TAbstractFileOriginal): TAbstractFile {
-    return strictProxyForce(value, TAbstractFile);
+    return strictProxy(value, TAbstractFile);
   }
 
   public asOriginalType__(): TAbstractFileOriginal {
-    return strictProxyForce<TAbstractFileOriginal>(this);
+    return strictProxy<TAbstractFileOriginal>(this);
   }
 
   public constructor__(_vault: Vault, _path: string): void {

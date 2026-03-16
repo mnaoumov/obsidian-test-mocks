@@ -7,7 +7,7 @@ import type {
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {
@@ -15,17 +15,17 @@ export abstract class WorkspaceItem extends Events {
 
   protected constructor(workspace?: Workspace, id?: string) {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(workspace, id);
     return self;
   }
 
   public static fromOriginalType2__(value: WorkspaceItemOriginal): WorkspaceItem {
-    return strictProxyForce(value, WorkspaceItem);
+    return strictProxy(value, WorkspaceItem);
   }
 
   public asOriginalType2__(): WorkspaceItemOriginal {
-    return strictProxyForce<WorkspaceItemOriginal>(this);
+    return strictProxy<WorkspaceItemOriginal>(this);
   }
 
   public constructor2__(_workspace?: Workspace, _id?: string): void {
@@ -33,7 +33,7 @@ export abstract class WorkspaceItem extends Events {
   }
 
   public getContainer(): WorkspaceContainerOriginal {
-    return strictProxyForce<WorkspaceContainerOriginal>(this);
+    return strictProxy<WorkspaceContainerOriginal>(this);
   }
 
   public getRoot(): this {

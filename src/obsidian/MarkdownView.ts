@@ -4,7 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { Editor } from './Editor.ts';
 import { TextFileView } from './TextFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -66,7 +66,7 @@ export class MarkdownView extends TextFileView {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.editor = new MockEditor();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor7__(leaf);
     return self;
   }
@@ -76,11 +76,11 @@ export class MarkdownView extends TextFileView {
   }
 
   public static fromOriginalType7__(value: MarkdownViewOriginal): MarkdownView {
-    return strictProxyForce(value, MarkdownView);
+    return strictProxy(value, MarkdownView);
   }
 
   public asOriginalType7__(): MarkdownViewOriginal {
-    return strictProxyForce<MarkdownViewOriginal>(this);
+    return strictProxy<MarkdownViewOriginal>(this);
   }
 
   public override canAcceptExtension(extension: string): boolean {

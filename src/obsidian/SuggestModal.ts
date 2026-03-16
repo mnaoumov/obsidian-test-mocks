@@ -6,7 +6,7 @@ import type {
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { Modal } from './Modal.ts';
 
 const DEFAULT_LIMIT = 100;
@@ -22,17 +22,17 @@ export abstract class SuggestModal<T> extends Modal {
     super(app);
     this.inputEl = createEl('input');
     this.resultContainerEl = createDiv();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(app);
     return self;
   }
 
   public static fromOriginalType2__<T>(value: SuggestModalOriginal<T>): SuggestModal<T> {
-    return strictProxyForce<SuggestModal<T>>(value);
+    return strictProxy<SuggestModal<T>>(value);
   }
 
   public asOriginalType2__(): SuggestModalOriginal<T> {
-    return strictProxyForce<SuggestModalOriginal<T>>(this);
+    return strictProxy<SuggestModalOriginal<T>>(this);
   }
 
   public override close(): void {

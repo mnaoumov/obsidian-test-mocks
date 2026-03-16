@@ -16,7 +16,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 let nextLeafId = 1;
@@ -44,7 +44,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     super(app.workspace, id);
     this.app = app;
     this.id__ = id ?? String(nextLeafId++);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor3__(app, id);
     return self;
   }
@@ -54,11 +54,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public static fromOriginalType3__(value: WorkspaceLeafOriginal): WorkspaceLeaf {
-    return strictProxyForce(value, WorkspaceLeaf);
+    return strictProxy(value, WorkspaceLeaf);
   }
 
   public asOriginalType3__(): WorkspaceLeafOriginal {
-    return strictProxyForce<WorkspaceLeafOriginal>(this);
+    return strictProxy<WorkspaceLeafOriginal>(this);
   }
 
   public constructor3__(_app: App, _id?: string): void {

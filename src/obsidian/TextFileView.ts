@@ -6,7 +6,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { EditableFileView } from './EditableFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -15,17 +15,17 @@ export abstract class TextFileView extends EditableFileView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor6__(leaf);
     return self;
   }
 
   public static fromOriginalType6__(value: TextFileViewOriginal): TextFileView {
-    return strictProxyForce(value, TextFileView);
+    return strictProxy(value, TextFileView);
   }
 
   public asOriginalType6__(): TextFileViewOriginal {
-    return strictProxyForce<TextFileViewOriginal>(this);
+    return strictProxy<TextFileViewOriginal>(this);
   }
 
   public abstract clear(): void;

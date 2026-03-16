@@ -3,7 +3,7 @@ import type { WorkspaceWindow as WorkspaceWindowOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceContainer } from './WorkspaceContainer.ts';
 
 export class WorkspaceWindow extends WorkspaceContainer {
@@ -17,7 +17,7 @@ export class WorkspaceWindow extends WorkspaceContainer {
 
   protected constructor(workspace: Workspace, id?: string, _size?: Record<string, number>) {
     super(workspace, '', id);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor6__(workspace, id, _size);
     return self;
   }
@@ -27,11 +27,11 @@ export class WorkspaceWindow extends WorkspaceContainer {
   }
 
   public static fromOriginalType6__(value: WorkspaceWindowOriginal): WorkspaceWindow {
-    return strictProxyForce(value, WorkspaceWindow);
+    return strictProxy(value, WorkspaceWindow);
   }
 
   public asOriginalType6__(): WorkspaceWindowOriginal {
-    return strictProxyForce<WorkspaceWindowOriginal>(this);
+    return strictProxy<WorkspaceWindowOriginal>(this);
   }
 
   public constructor6__(_workspace: Workspace, _id?: string, _size?: Record<string, number>): void {

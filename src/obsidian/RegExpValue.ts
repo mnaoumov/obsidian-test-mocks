@@ -1,13 +1,13 @@
 import type { RegExpValue as RegExpValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class RegExpValue extends NotNullValue {
   public constructor(regexp: RegExp) {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor3__(regexp);
     return self;
   }
@@ -17,11 +17,11 @@ export class RegExpValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: RegExpValueOriginal): RegExpValue {
-    return strictProxyForce(value, RegExpValue);
+    return strictProxy(value, RegExpValue);
   }
 
   public asOriginalType3__(): RegExpValueOriginal {
-    return strictProxyForce<RegExpValueOriginal>(this);
+    return strictProxy<RegExpValueOriginal>(this);
   }
 
   public constructor3__(_regexp: RegExp): void {

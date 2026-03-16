@@ -6,7 +6,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
@@ -17,7 +17,7 @@ export class SettingGroup {
   public constructor(containerEl: HTMLElement) {
     this.listEl__ = createDiv();
     containerEl.appendChild(this.listEl__);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(containerEl);
     return self;
   }
@@ -27,7 +27,7 @@ export class SettingGroup {
   }
 
   public static fromOriginalType__(value: SettingGroupOriginal): SettingGroup {
-    return strictProxyForce(value, SettingGroup);
+    return strictProxy(value, SettingGroup);
   }
 
   public addClass(cls: string): this {
@@ -54,7 +54,7 @@ export class SettingGroup {
   }
 
   public asOriginalType__(): SettingGroupOriginal {
-    return strictProxyForce<SettingGroupOriginal>(this);
+    return strictProxy<SettingGroupOriginal>(this);
   }
 
   public constructor__(_containerEl: HTMLElement): void {

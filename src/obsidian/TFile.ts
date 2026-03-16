@@ -6,7 +6,7 @@ import type {
 import type { Vault } from './Vault.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
 export class TFile extends TAbstractFile {
@@ -19,7 +19,7 @@ export class TFile extends TAbstractFile {
     const dotIndex = this.name.lastIndexOf('.');
     this.extension = dotIndex >= 0 ? this.name.slice(dotIndex + 1) : '';
     this.basename = dotIndex >= 0 ? this.name.slice(0, dotIndex) : this.name;
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(vault, path);
     return self;
   }
@@ -29,11 +29,11 @@ export class TFile extends TAbstractFile {
   }
 
   public static fromOriginalType2__(value: TFileOriginal): TFile {
-    return strictProxyForce(value, TFile);
+    return strictProxy(value, TFile);
   }
 
   public asOriginalType2__(): TFileOriginal {
-    return strictProxyForce<TFileOriginal>(this);
+    return strictProxy<TFileOriginal>(this);
   }
 
   public constructor2__(_vault: Vault, _path: string): void {
