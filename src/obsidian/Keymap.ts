@@ -7,17 +7,17 @@ import type {
 
 import type { Scope } from './Scope.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export class Keymap {
   private readonly scopeStack: Scope[] = [];
 
   protected constructor() {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
@@ -27,7 +27,7 @@ export class Keymap {
   }
 
   public static fromOriginalType__(value: KeymapOriginal): Keymap {
-    return createMockOfUnsafe<Keymap>(value);
+    return bridgeType<Keymap>(value);
   }
 
   public static isModEvent(_evt?: null | UserEventOriginal): boolean | PaneTypeOriginal {
@@ -39,7 +39,7 @@ export class Keymap {
   }
 
   public asOriginalType__(): KeymapOriginal {
-    return createMockOfUnsafe<KeymapOriginal>(this);
+    return bridgeType<KeymapOriginal>(this);
   }
 
   public constructor__(): void {

@@ -6,11 +6,11 @@ import type {
   WorkspaceLeaf as WorkspaceLeafOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 
 export class HoverPopover extends Component {
@@ -20,7 +20,7 @@ export class HoverPopover extends Component {
   public constructor(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null | PointOriginal) {
     super();
     this.hoverEl = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(_parent, _targetEl, _waitTime, _staticPos);
     return self;
   }
@@ -34,11 +34,11 @@ export class HoverPopover extends Component {
   }
 
   public static fromOriginalType2__(value: HoverPopoverOriginal): HoverPopover {
-    return createMockOfUnsafe<HoverPopover>(value);
+    return bridgeType<HoverPopover>(value);
   }
 
   public asOriginalType2__(): HoverPopoverOriginal {
-    return createMockOfUnsafe<HoverPopoverOriginal>(this);
+    return bridgeType<HoverPopoverOriginal>(this);
   }
 
   public constructor2__(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null | PointOriginal): void {

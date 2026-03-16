@@ -1,16 +1,16 @@
 import type { DateValue as DateValueOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class DateValue extends NotNullValue {
   public constructor(private readonly date: Date, private readonly showTime?: boolean) {
     super();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(date, showTime);
     return self;
   }
@@ -20,11 +20,11 @@ export class DateValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: DateValueOriginal): DateValue {
-    return createMockOfUnsafe<DateValue>(value);
+    return bridgeType<DateValue>(value);
   }
 
   public asOriginalType3__(): DateValueOriginal {
-    return createMockOfUnsafe<DateValueOriginal>(this);
+    return bridgeType<DateValueOriginal>(this);
   }
 
   public constructor3__(_date: unknown, _showTime?: boolean): void {

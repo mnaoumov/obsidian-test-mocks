@@ -1,10 +1,10 @@
 import type { AbstractTextComponent as AbstractTextComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTextAreaElement> extends ValueComponent<string> {
@@ -16,17 +16,17 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   public constructor(inputEl: T) {
     super();
     this.inputEl = inputEl;
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(inputEl);
     return self;
   }
 
   public static fromOriginalType3__<T extends HTMLInputElement | HTMLTextAreaElement>(value: AbstractTextComponentOriginal<T>): AbstractTextComponent<T> {
-    return createMockOfUnsafe<AbstractTextComponent<T>>(value);
+    return bridgeType<AbstractTextComponent<T>>(value);
   }
 
   public asOriginalType3__(): AbstractTextComponentOriginal<T> {
-    return createMockOfUnsafe<AbstractTextComponentOriginal<T>>(this);
+    return bridgeType<AbstractTextComponentOriginal<T>>(this);
   }
 
   public constructor3__(_inputEl: T): void {

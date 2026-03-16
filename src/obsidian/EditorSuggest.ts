@@ -10,11 +10,11 @@ import type {
 
 import type { App } from './App.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 const DEFAULT_LIMIT = 100;
@@ -25,17 +25,17 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public constructor(app: App) {
     super(app);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(app);
     return self;
   }
 
   public static fromOriginalType2__<T>(value: EditorSuggestOriginal<T>): EditorSuggest<T> {
-    return createMockOfUnsafe<EditorSuggest<T>>(value);
+    return bridgeType<EditorSuggest<T>>(value);
   }
 
   public asOriginalType2__(): EditorSuggestOriginal<T> {
-    return createMockOfUnsafe<EditorSuggestOriginal<T>>(this);
+    return bridgeType<EditorSuggestOriginal<T>>(this);
   }
 
   public constructor2__(_app: App): void {

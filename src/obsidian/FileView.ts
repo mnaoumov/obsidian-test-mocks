@@ -6,13 +6,13 @@ import type {
 import type { TFile } from './TFile.ts';
 
 import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
-import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -23,17 +23,17 @@ export abstract class FileView extends ItemView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor4__(leaf);
     return self;
   }
 
   public static fromOriginalType4__(value: FileViewOriginal): FileView {
-    return createMockOfUnsafe<FileView>(value);
+    return bridgeType<FileView>(value);
   }
 
   public asOriginalType4__(): FileViewOriginal {
-    return createMockOfUnsafe<FileViewOriginal>(this);
+    return bridgeType<FileViewOriginal>(this);
   }
 
   public canAcceptExtension(_extension: string): boolean {

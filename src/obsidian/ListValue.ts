@@ -2,11 +2,11 @@ import type { ListValue as ListValueOriginal } from 'obsidian';
 
 import type { Value } from './Value.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ListValue extends NotNullValue {
@@ -15,7 +15,7 @@ export class ListValue extends NotNullValue {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
   public constructor(value: (unknown | Value)[]) {
     super();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(value);
     return self;
   }
@@ -26,11 +26,11 @@ export class ListValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: ListValueOriginal): ListValue {
-    return createMockOfUnsafe<ListValue>(value);
+    return bridgeType<ListValue>(value);
   }
 
   public asOriginalType3__(): ListValueOriginal {
-    return createMockOfUnsafe<ListValueOriginal>(this);
+    return bridgeType<ListValueOriginal>(this);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.

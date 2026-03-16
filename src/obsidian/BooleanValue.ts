@@ -1,16 +1,16 @@
 import type { BooleanValue as BooleanValueOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class BooleanValue extends PrimitiveValue<boolean> {
   public constructor(value = false) {
     super(value);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor4__(value);
     return self;
   }
@@ -20,11 +20,11 @@ export class BooleanValue extends PrimitiveValue<boolean> {
   }
 
   public static fromOriginalType4__(value: BooleanValueOriginal): BooleanValue {
-    return createMockOfUnsafe<BooleanValue>(value);
+    return bridgeType<BooleanValue>(value);
   }
 
   public asOriginalType4__(): BooleanValueOriginal {
-    return createMockOfUnsafe<BooleanValueOriginal>(this);
+    return bridgeType<BooleanValueOriginal>(this);
   }
 
   public constructor4__(_value = false): void {

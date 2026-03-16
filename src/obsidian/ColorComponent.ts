@@ -4,11 +4,11 @@ import type {
   RGB as RGBOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 /* eslint-disable no-magic-numbers -- Color conversion constants. */
@@ -37,7 +37,7 @@ export class ColorComponent extends ValueComponent<string> {
     super();
     this.colorPickerEl__ = containerEl.createEl('input');
     this.colorPickerEl__.type = 'color';
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(containerEl);
     return self;
   }
@@ -47,11 +47,11 @@ export class ColorComponent extends ValueComponent<string> {
   }
 
   public static fromOriginalType3__(value: ColorComponentOriginal): ColorComponent {
-    return createMockOfUnsafe<ColorComponent>(value);
+    return bridgeType<ColorComponent>(value);
   }
 
   public asOriginalType3__(): ColorComponentOriginal {
-    return createMockOfUnsafe<ColorComponentOriginal>(this);
+    return bridgeType<ColorComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

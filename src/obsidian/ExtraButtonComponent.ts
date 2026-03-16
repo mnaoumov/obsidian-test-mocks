@@ -1,10 +1,10 @@
 import type { ExtraButtonComponent as ExtraButtonComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ExtraButtonComponent extends BaseComponent {
@@ -14,7 +14,7 @@ export class ExtraButtonComponent extends BaseComponent {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.extraSettingsEl = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(_containerEl);
     return self;
   }
@@ -24,11 +24,11 @@ export class ExtraButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ExtraButtonComponentOriginal): ExtraButtonComponent {
-    return createMockOfUnsafe<ExtraButtonComponent>(value);
+    return bridgeType<ExtraButtonComponent>(value);
   }
 
   public asOriginalType2__(): ExtraButtonComponentOriginal {
-    return createMockOfUnsafe<ExtraButtonComponentOriginal>(this);
+    return bridgeType<ExtraButtonComponentOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

@@ -5,17 +5,17 @@ import type {
 
 import type { EventsEntry } from '../internal/types.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
 
   public constructor() {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
@@ -25,11 +25,11 @@ export class Events {
   }
 
   public static fromOriginalType__(value: EventsOriginal): Events {
-    return createMockOfUnsafe<Events>(value);
+    return bridgeType<Events>(value);
   }
 
   public asOriginalType__(): EventsOriginal {
-    return createMockOfUnsafe<EventsOriginal>(this);
+    return bridgeType<EventsOriginal>(this);
   }
 
   public constructor__(): void {
