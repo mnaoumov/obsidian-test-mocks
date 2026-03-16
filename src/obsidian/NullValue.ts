@@ -1,10 +1,7 @@
 import type { NullValue as NullValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Value } from './Value.ts';
 
 export class NullValue extends Value {
@@ -20,7 +17,7 @@ export class NullValue extends Value {
   }
 
   public static fromOriginalType2__(value: NullValueOriginal): NullValue {
-    return mergePrototype(NullValue, value);
+    return strictProxyForce(value, NullValue);
   }
 
   public asOriginalType2__(): NullValueOriginal {

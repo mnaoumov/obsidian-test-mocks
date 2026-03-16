@@ -10,10 +10,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -42,7 +39,7 @@ export abstract class View extends Component {
   }
 
   public static fromOriginalType2__(value: ViewOriginal): View {
-    return mergePrototype(View, value);
+    return strictProxyForce(value, View);
   }
 
   public asOriginalType2__(): ViewOriginal {

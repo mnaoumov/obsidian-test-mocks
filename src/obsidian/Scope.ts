@@ -6,10 +6,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class Scope {
   private readonly handlers: KeymapEventHandlerOriginal[] = [];
@@ -25,7 +22,7 @@ export class Scope {
   }
 
   public static fromOriginalType__(value: ScopeOriginal): Scope {
-    return mergePrototype(Scope, value);
+    return strictProxyForce(value, Scope);
   }
 
   public asOriginalType__(): ScopeOriginal {

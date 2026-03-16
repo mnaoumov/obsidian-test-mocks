@@ -6,10 +6,7 @@ import type {
 import type { MarkdownView } from './MarkdownView.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
 
@@ -35,7 +32,7 @@ export class MarkdownEditView {
   }
 
   public static fromOriginalType__(value: MarkdownEditViewOriginal): MarkdownEditView {
-    return mergePrototype(MarkdownEditView, value);
+    return strictProxyForce(value, MarkdownEditView);
   }
 
   public applyScroll(scroll: number): void {

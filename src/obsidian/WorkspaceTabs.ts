@@ -4,10 +4,7 @@ import type { Workspace } from './Workspace.ts';
 import type { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceTabs extends WorkspaceParent {
@@ -25,7 +22,7 @@ export class WorkspaceTabs extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceTabsOriginal): WorkspaceTabs {
-    return mergePrototype(WorkspaceTabs, value);
+    return strictProxyForce(value, WorkspaceTabs);
   }
 
   public asOriginalType4__(): WorkspaceTabsOriginal {

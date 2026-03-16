@@ -3,10 +3,7 @@ import type { Value as ValueOriginal } from 'obsidian';
 import type { RenderContext } from './RenderContext.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export abstract class Value {
   public static type: string;
@@ -25,7 +22,7 @@ export abstract class Value {
   }
 
   public static fromOriginalType__(value: ValueOriginal): Value {
-    return mergePrototype(Value, value);
+    return strictProxyForce(value, Value);
   }
 
   public static looseEquals(a: null | Value, b: null | Value): boolean {

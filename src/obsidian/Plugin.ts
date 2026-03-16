@@ -15,10 +15,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
@@ -45,7 +42,7 @@ export abstract class Plugin extends Component {
   }
 
   public static fromOriginalType2__(value: PluginOriginal): Plugin {
-    return mergePrototype(Plugin, value);
+    return strictProxyForce(value, Plugin);
   }
 
   public addCommand(command: CommandOriginal): CommandOriginal {

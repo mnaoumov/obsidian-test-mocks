@@ -3,10 +3,7 @@ import type { SecretStorage as SecretStorageOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class SecretStorage {
   private readonly store = new Map<string, string>();
@@ -22,7 +19,7 @@ export class SecretStorage {
   }
 
   public static fromOriginalType__(value: SecretStorageOriginal): SecretStorage {
-    return mergePrototype(SecretStorage, value);
+    return strictProxyForce(value, SecretStorage);
   }
 
   public asOriginalType__(): SecretStorageOriginal {

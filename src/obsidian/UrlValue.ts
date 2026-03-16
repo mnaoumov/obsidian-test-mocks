@@ -1,10 +1,7 @@
 import type { UrlValue as UrlValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 export class UrlValue extends StringValue {
@@ -20,7 +17,7 @@ export class UrlValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: UrlValueOriginal): UrlValue {
-    return mergePrototype(UrlValue, value);
+    return strictProxyForce(value, UrlValue);
   }
 
   public asOriginalType5__(): UrlValueOriginal {

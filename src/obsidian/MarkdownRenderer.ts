@@ -8,10 +8,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { MarkdownRenderChild } from './MarkdownRenderChild.ts';
 
@@ -30,7 +27,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   }
 
   public static fromOriginalType3__(value: MarkdownRendererOriginal): MarkdownRenderer {
-    return mergePrototype(MarkdownRenderer, value);
+    return strictProxyForce(value, MarkdownRenderer);
   }
 
   public static async render(_app: App, _markdown: string, _el: HTMLElement, _sourcePath: string, _component: Component): Promise<void> {

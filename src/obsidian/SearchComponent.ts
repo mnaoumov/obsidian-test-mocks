@@ -1,10 +1,7 @@
 import type { SearchComponent as SearchComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -24,7 +21,7 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public static fromOriginalType4__(value: SearchComponentOriginal): SearchComponent {
-    return mergePrototype(SearchComponent, value);
+    return strictProxyForce(value, SearchComponent);
   }
 
   public asOriginalType4__(): SearchComponentOriginal {

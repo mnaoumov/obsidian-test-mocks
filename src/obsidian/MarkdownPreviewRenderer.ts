@@ -4,10 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class MarkdownPreviewRenderer {
   private static _postProcessors: MarkdownPostProcessorOriginal[] = [];
@@ -19,7 +16,7 @@ export class MarkdownPreviewRenderer {
   }
 
   public static fromOriginalType__(value: MarkdownPreviewRendererOriginal): MarkdownPreviewRenderer {
-    return mergePrototype(MarkdownPreviewRenderer, value);
+    return strictProxyForce(value, MarkdownPreviewRenderer);
   }
 
   public static registerPostProcessor(postProcessor: MarkdownPostProcessorOriginal, _sortOrder?: number): void {

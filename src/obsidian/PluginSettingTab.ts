@@ -4,10 +4,7 @@ import type { App } from './App.ts';
 import type { Plugin } from './Plugin.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { SettingTab } from './SettingTab.ts';
 
 export abstract class PluginSettingTab extends SettingTab {
@@ -22,7 +19,7 @@ export abstract class PluginSettingTab extends SettingTab {
   }
 
   public static fromOriginalType2__(value: PluginSettingTabOriginal): PluginSettingTab {
-    return mergePrototype(PluginSettingTab, value);
+    return strictProxyForce(value, PluginSettingTab);
   }
 
   public asOriginalType2__(): PluginSettingTabOriginal {

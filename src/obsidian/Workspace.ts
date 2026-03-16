@@ -22,10 +22,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 import { debounce } from './functions/debounce.ts';
@@ -75,7 +72,7 @@ export class Workspace extends Events {
   }
 
   public static fromOriginalType2__(value: WorkspaceOriginal): Workspace {
-    return mergePrototype(Workspace, value);
+    return strictProxyForce(value, Workspace);
   }
 
   public asOriginalType2__(): WorkspaceOriginal {

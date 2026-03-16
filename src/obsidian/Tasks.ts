@@ -1,10 +1,7 @@
 import type { Tasks as TasksOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class Tasks {
   private readonly promises: Promise<unknown>[] = [];
@@ -20,7 +17,7 @@ export class Tasks {
   }
 
   public static fromOriginalType__(value: TasksOriginal): Tasks {
-    return mergePrototype(Tasks, value);
+    return strictProxyForce(value, Tasks);
   }
 
   public add(callback: () => Promise<unknown>): void {

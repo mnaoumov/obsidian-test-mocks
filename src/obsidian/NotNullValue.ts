@@ -1,10 +1,7 @@
 import type { NotNullValue as NotNullValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Value } from './Value.ts';
 
 export abstract class NotNullValue extends Value {
@@ -16,7 +13,7 @@ export abstract class NotNullValue extends Value {
   }
 
   public static fromOriginalType2__(value: NotNullValueOriginal): NotNullValue {
-    return mergePrototype(NotNullValue, value);
+    return strictProxyForce(value, NotNullValue);
   }
 
   public asOriginalType2__(): NotNullValueOriginal {

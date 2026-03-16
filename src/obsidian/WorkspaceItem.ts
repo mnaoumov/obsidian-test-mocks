@@ -7,10 +7,7 @@ import type {
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 
 export abstract class WorkspaceItem extends Events {
@@ -24,7 +21,7 @@ export abstract class WorkspaceItem extends Events {
   }
 
   public static fromOriginalType2__(value: WorkspaceItemOriginal): WorkspaceItem {
-    return mergePrototype(WorkspaceItem, value);
+    return strictProxyForce(value, WorkspaceItem);
   }
 
   public asOriginalType2__(): WorkspaceItemOriginal {

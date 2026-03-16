@@ -3,10 +3,7 @@ import type { WorkspaceSidedock as WorkspaceSidedockOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 export class WorkspaceSidedock extends WorkspaceSplit {
@@ -24,7 +21,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
   }
 
   public static fromOriginalType5__(value: WorkspaceSidedockOriginal): WorkspaceSidedock {
-    return mergePrototype(WorkspaceSidedock, value);
+    return strictProxyForce(value, WorkspaceSidedock);
   }
 
   public asOriginalType5__(): WorkspaceSidedockOriginal {

@@ -1,10 +1,7 @@
 import type { WorkspaceMobileDrawer as WorkspaceMobileDrawerOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceMobileDrawer extends WorkspaceParent {
@@ -23,7 +20,7 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceMobileDrawerOriginal): WorkspaceMobileDrawer {
-    return mergePrototype(WorkspaceMobileDrawer, value);
+    return strictProxyForce(value, WorkspaceMobileDrawer);
   }
 
   public asOriginalType4__(): WorkspaceMobileDrawerOriginal {

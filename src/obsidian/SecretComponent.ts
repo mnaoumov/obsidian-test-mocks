@@ -3,10 +3,7 @@ import type { SecretComponent as SecretComponentOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class SecretComponent extends BaseComponent {
@@ -24,7 +21,7 @@ export class SecretComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: SecretComponentOriginal): SecretComponent {
-    return mergePrototype(SecretComponent, value);
+    return strictProxyForce(value, SecretComponent);
   }
 
   public asOriginalType2__(): SecretComponentOriginal {

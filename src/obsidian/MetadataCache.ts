@@ -9,10 +9,7 @@ import type { Vault } from './Vault.ts';
 
 import { parseMarkdownContent } from '../internal/markdown-parser.ts';
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 import { TFile as TFileClass } from './TFile.ts';
 
@@ -41,7 +38,7 @@ export class MetadataCache extends Events {
   }
 
   public static fromOriginalType2__(value: MetadataCacheOriginal): MetadataCache {
-    return mergePrototype(MetadataCache, value);
+    return strictProxyForce(value, MetadataCache);
   }
 
   public asOriginalType2__(): MetadataCacheOriginal {

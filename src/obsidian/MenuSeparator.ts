@@ -3,10 +3,7 @@ import type { MenuSeparator as MenuSeparatorOriginal } from 'obsidian';
 import type { Menu } from './Menu.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class MenuSeparator {
   protected constructor(_menu: Menu) {
@@ -20,7 +17,7 @@ export class MenuSeparator {
   }
 
   public static fromOriginalType__(value: MenuSeparatorOriginal): MenuSeparator {
-    return mergePrototype(MenuSeparator, value);
+    return strictProxyForce(value, MenuSeparator);
   }
 
   public asOriginalType__(): MenuSeparatorOriginal {

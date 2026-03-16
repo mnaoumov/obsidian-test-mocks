@@ -1,10 +1,7 @@
 import type { RegExpValue as RegExpValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class RegExpValue extends NotNullValue {
@@ -20,7 +17,7 @@ export class RegExpValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: RegExpValueOriginal): RegExpValue {
-    return mergePrototype(RegExpValue, value);
+    return strictProxyForce(value, RegExpValue);
   }
 
   public asOriginalType3__(): RegExpValueOriginal {

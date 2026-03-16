@@ -6,10 +6,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
@@ -30,7 +27,7 @@ export class SettingGroup {
   }
 
   public static fromOriginalType__(value: SettingGroupOriginal): SettingGroup {
-    return mergePrototype(SettingGroup, value);
+    return strictProxyForce(value, SettingGroup);
   }
 
   public addClass(cls: string): this {

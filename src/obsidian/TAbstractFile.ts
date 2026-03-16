@@ -4,10 +4,7 @@ import type { TFolder } from './TFolder.ts';
 import type { Vault } from './Vault.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
 export abstract class TAbstractFile {
@@ -28,7 +25,7 @@ export abstract class TAbstractFile {
   }
 
   public static fromOriginalType__(value: TAbstractFileOriginal): TAbstractFile {
-    return mergePrototype(TAbstractFile, value);
+    return strictProxyForce(value, TAbstractFile);
   }
 
   public asOriginalType__(): TAbstractFileOriginal {

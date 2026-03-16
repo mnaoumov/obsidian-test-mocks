@@ -6,10 +6,7 @@ import type {
 import type { Vault } from './Vault.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
 export class TFile extends TAbstractFile {
@@ -32,7 +29,7 @@ export class TFile extends TAbstractFile {
   }
 
   public static fromOriginalType2__(value: TFileOriginal): TFile {
-    return mergePrototype(TFile, value);
+    return strictProxyForce(value, TFile);
   }
 
   public asOriginalType2__(): TFileOriginal {

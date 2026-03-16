@@ -7,10 +7,7 @@ import type {
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export abstract class SettingTab {
   public app: App;
@@ -26,7 +23,7 @@ export abstract class SettingTab {
   }
 
   public static fromOriginalType__(value: SettingTabOriginal): SettingTab {
-    return mergePrototype(SettingTab, value);
+    return strictProxyForce(value, SettingTab);
   }
 
   public asOriginalType__(): SettingTabOriginal {

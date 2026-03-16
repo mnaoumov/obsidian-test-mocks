@@ -7,10 +7,7 @@ import type {
 import type { TAbstractFile } from './TAbstractFile.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
@@ -39,7 +36,7 @@ export class Vault extends Events {
   }
 
   public static fromOriginalType2__(value: VaultOriginal): Vault {
-    return mergePrototype(Vault, value);
+    return strictProxyForce(value, Vault);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {

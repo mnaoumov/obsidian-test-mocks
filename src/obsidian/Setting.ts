@@ -17,10 +17,7 @@ import type {
 import type { BaseComponent } from './BaseComponent.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ButtonComponent } from './ButtonComponent.ts';
 import { ColorComponent } from './ColorComponent.ts';
 import { DropdownComponent } from './DropdownComponent.ts';
@@ -62,7 +59,7 @@ export class Setting {
   }
 
   public static fromOriginalType__(value: SettingOriginal): Setting {
-    return mergePrototype(Setting, value);
+    return strictProxyForce(value, Setting);
   }
 
   public addButton(cb: (component: ButtonComponentOriginal) => unknown): this {

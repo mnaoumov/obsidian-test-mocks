@@ -1,10 +1,7 @@
 import type { SliderComponent as SliderComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 const DEFAULT_MAX = 100;
@@ -32,7 +29,7 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public static fromOriginalType3__(value: SliderComponentOriginal): SliderComponent {
-    return mergePrototype(SliderComponent, value);
+    return strictProxyForce(value, SliderComponent);
   }
 
   public asOriginalType3__(): SliderComponentOriginal {
