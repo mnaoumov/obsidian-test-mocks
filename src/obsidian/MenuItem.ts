@@ -5,8 +5,8 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 // eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
 import { Menu } from './Menu.ts';
@@ -22,7 +22,7 @@ export class MenuItem {
   public warning__ = false;
 
   private constructor(_menu: unknown) {
-    const mock = strictProxy(this);
+    const mock = strictProxyForce(this);
     return mock;
   }
 
@@ -31,11 +31,11 @@ export class MenuItem {
   }
 
   public static fromOriginalType__(value: MenuItemOriginal): MenuItem {
-    return bridgeType<MenuItem>(value);
+    return mergePrototype(MenuItem, value);
   }
 
   public asOriginalType__(): MenuItemOriginal {
-    return bridgeType<MenuItemOriginal>(this);
+    return strictProxyForce<MenuItemOriginal>(this);
   }
 
   public constructor__(_menu: unknown): void {

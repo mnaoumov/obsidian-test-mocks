@@ -5,21 +5,21 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class MarkdownPreviewRenderer {
   private static _postProcessors: MarkdownPostProcessorOriginal[] = [];
 
   public constructor(owner: unknown, containerEl: HTMLElement, parentEl: HTMLElement, workerPath: unknown, observeInsertion?: boolean) {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(owner, containerEl, parentEl, workerPath, observeInsertion);
     return self;
   }
 
   public static fromOriginalType__(value: MarkdownPreviewRendererOriginal): MarkdownPreviewRenderer {
-    return bridgeType<MarkdownPreviewRenderer>(value);
+    return mergePrototype(MarkdownPreviewRenderer, value);
   }
 
   public static registerPostProcessor(postProcessor: MarkdownPostProcessorOriginal, _sortOrder?: number): void {
@@ -31,7 +31,7 @@ export class MarkdownPreviewRenderer {
   }
 
   public asOriginalType__(): MarkdownPreviewRendererOriginal {
-    return bridgeType<MarkdownPreviewRendererOriginal>(this);
+    return strictProxyForce<MarkdownPreviewRendererOriginal>(this);
   }
 
   public constructor__(_owner: unknown, _containerEl: HTMLElement, _parentEl: HTMLElement, _workerPath: unknown, _observeInsertion?: boolean): void {

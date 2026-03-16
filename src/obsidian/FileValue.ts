@@ -5,15 +5,15 @@ import type { TFile } from './TFile.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class FileValue extends NotNullValue {
   public constructor(app: App, file: TFile) {
     super();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(app, file);
     return self;
   }
@@ -23,11 +23,11 @@ export class FileValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: FileValueOriginal): FileValue {
-    return bridgeType<FileValue>(value);
+    return mergePrototype(FileValue, value);
   }
 
   public asOriginalType3__(): FileValueOriginal {
-    return bridgeType<FileValueOriginal>(this);
+    return strictProxyForce<FileValueOriginal>(this);
   }
 
   public constructor3__(_app: App, _file: TFile): void {

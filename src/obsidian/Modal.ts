@@ -4,8 +4,8 @@ import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { Scope } from './Scope.ts';
 
@@ -27,7 +27,7 @@ export class Modal {
     this.modalEl = createDiv();
     this.scope = Scope.create__();
     this.titleEl = createDiv();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(app);
     return self;
   }
@@ -37,11 +37,11 @@ export class Modal {
   }
 
   public static fromOriginalType__(value: ModalOriginal): Modal {
-    return bridgeType<Modal>(value);
+    return mergePrototype(Modal, value);
   }
 
   public asOriginalType__(): ModalOriginal {
-    return bridgeType<ModalOriginal>(this);
+    return strictProxyForce<ModalOriginal>(this);
   }
 
   public close(): void {

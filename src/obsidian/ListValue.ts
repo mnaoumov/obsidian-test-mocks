@@ -4,8 +4,8 @@ import type { Value } from './Value.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
@@ -15,7 +15,7 @@ export class ListValue extends NotNullValue {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
   public constructor(value: (unknown | Value)[]) {
     super();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(value);
     return self;
   }
@@ -26,11 +26,11 @@ export class ListValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: ListValueOriginal): ListValue {
-    return bridgeType<ListValue>(value);
+    return mergePrototype(ListValue, value);
   }
 
   public asOriginalType3__(): ListValueOriginal {
-    return bridgeType<ListValueOriginal>(this);
+    return strictProxyForce<ListValueOriginal>(this);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.

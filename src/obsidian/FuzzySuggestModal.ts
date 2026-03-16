@@ -6,10 +6,7 @@ import type {
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  bridgeType,
-  strictProxy
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Modal } from './Modal.ts';
 
 export abstract class FuzzySuggestModal<T> extends Modal {
@@ -18,17 +15,17 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   public constructor(app: App) {
     super(app);
     this.inputEl = createEl('input');
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(app);
     return self;
   }
 
   public static fromOriginalType2__<T>(value: FuzzySuggestModalOriginal<T>): FuzzySuggestModal<T> {
-    return bridgeType<FuzzySuggestModal<T>>(value);
+    return strictProxyForce<FuzzySuggestModal<T>>(value);
   }
 
   public asOriginalType2__(): FuzzySuggestModalOriginal<T> {
-    return bridgeType<FuzzySuggestModalOriginal<T>>(this);
+    return strictProxyForce<FuzzySuggestModalOriginal<T>>(this);
   }
 
   public constructor2__(_app: App): void {

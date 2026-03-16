@@ -13,8 +13,8 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { parseYaml } from './functions/parseYaml.ts';
@@ -22,7 +22,7 @@ import { stringifyYaml } from './functions/stringifyYaml.ts';
 
 export class FileManager {
   protected constructor(private readonly app: App) {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(app);
     return self;
   }
@@ -32,11 +32,11 @@ export class FileManager {
   }
 
   public static fromOriginalType__(value: FileManagerOriginal): FileManager {
-    return bridgeType<FileManager>(value);
+    return mergePrototype(FileManager, value);
   }
 
   public asOriginalType__(): FileManagerOriginal {
-    return bridgeType<FileManagerOriginal>(this);
+    return strictProxyForce<FileManagerOriginal>(this);
   }
 
   public constructor__(_app: App): void {

@@ -2,8 +2,8 @@ import type { MarkdownRenderChild as MarkdownRenderChildOriginal } from 'obsidia
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 
@@ -13,7 +13,7 @@ export class MarkdownRenderChild extends Component {
   public constructor(containerEl: HTMLElement) {
     super();
     this.containerEl = containerEl;
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(containerEl);
     return self;
   }
@@ -23,11 +23,11 @@ export class MarkdownRenderChild extends Component {
   }
 
   public static fromOriginalType2__(value: MarkdownRenderChildOriginal): MarkdownRenderChild {
-    return bridgeType<MarkdownRenderChild>(value);
+    return mergePrototype(MarkdownRenderChild, value);
   }
 
   public asOriginalType2__(): MarkdownRenderChildOriginal {
-    return bridgeType<MarkdownRenderChildOriginal>(this);
+    return strictProxyForce<MarkdownRenderChildOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

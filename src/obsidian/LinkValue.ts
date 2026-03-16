@@ -4,8 +4,8 @@ import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { StringValue } from './StringValue.ts';
@@ -13,7 +13,7 @@ import { StringValue } from './StringValue.ts';
 export class LinkValue extends StringValue {
   public constructor(app: App, value: string, sourcePath: string, display?: null | string) {
     super(value);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor5__(app, value, sourcePath, display);
     return self;
   }
@@ -23,7 +23,7 @@ export class LinkValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: LinkValueOriginal): LinkValue {
-    return bridgeType<LinkValue>(value);
+    return mergePrototype(LinkValue, value);
   }
 
   public static parseFromString(app: App, input: string, sourcePath: string): LinkValue | null {
@@ -38,7 +38,7 @@ export class LinkValue extends StringValue {
   }
 
   public asOriginalType5__(): LinkValueOriginal {
-    return bridgeType<LinkValueOriginal>(this);
+    return strictProxyForce<LinkValueOriginal>(this);
   }
 
   public constructor5__(_app: App, _value: string, _sourcePath: string, _display?: null | string): void {

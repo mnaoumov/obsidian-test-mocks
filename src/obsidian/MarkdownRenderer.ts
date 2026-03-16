@@ -9,8 +9,8 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { MarkdownRenderChild } from './MarkdownRenderChild.ts';
@@ -24,13 +24,13 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   public constructor(app: App, containerEl: HTMLElement, supportWorker?: boolean) {
     super(containerEl);
     this.app = app;
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor3__(app, containerEl, supportWorker);
     return self;
   }
 
   public static fromOriginalType3__(value: MarkdownRendererOriginal): MarkdownRenderer {
-    return bridgeType<MarkdownRenderer>(value);
+    return mergePrototype(MarkdownRenderer, value);
   }
 
   public static async render(_app: App, _markdown: string, _el: HTMLElement, _sourcePath: string, _component: Component): Promise<void> {
@@ -42,7 +42,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   }
 
   public asOriginalType3__(): MarkdownRendererOriginal {
-    return bridgeType<MarkdownRendererOriginal>(this);
+    return strictProxyForce<MarkdownRendererOriginal>(this);
   }
 
   public constructor3__(_app: App, _containerEl: HTMLElement, _supportWorker?: boolean): void {
