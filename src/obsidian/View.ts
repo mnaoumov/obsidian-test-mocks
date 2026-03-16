@@ -10,7 +10,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -33,17 +33,17 @@ export abstract class View extends Component {
     this.app = App.create__(FileSystemAdapter.create__('/mock-vault').asOriginalType__(), '');
     this.containerEl = createDiv();
     this.leaf = leaf;
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(leaf);
     return self;
   }
 
   public static fromOriginalType2__(value: ViewOriginal): View {
-    return strictProxyForce(value, View);
+    return strictProxy(value, View);
   }
 
   public asOriginalType2__(): ViewOriginal {
-    return strictProxyForce<ViewOriginal>(this);
+    return strictProxy<ViewOriginal>(this);
   }
 
   public constructor2__(_leaf: WorkspaceLeaf): void {

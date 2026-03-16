@@ -3,7 +3,7 @@ import type { Modal as ModalOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { Scope } from './Scope.ts';
 
 export class Modal {
@@ -24,7 +24,7 @@ export class Modal {
     this.modalEl = createDiv();
     this.scope = Scope.create__();
     this.titleEl = createDiv();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(app);
     return self;
   }
@@ -34,11 +34,11 @@ export class Modal {
   }
 
   public static fromOriginalType__(value: ModalOriginal): Modal {
-    return strictProxyForce(value, Modal);
+    return strictProxy(value, Modal);
   }
 
   public asOriginalType__(): ModalOriginal {
-    return strictProxyForce<ModalOriginal>(this);
+    return strictProxy<ModalOriginal>(this);
   }
 
   public close(): void {

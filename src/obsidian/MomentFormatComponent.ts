@@ -1,7 +1,7 @@
 import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { TextComponent } from './TextComponent.ts';
 
 export class MomentFormatComponent extends TextComponent {
@@ -11,7 +11,7 @@ export class MomentFormatComponent extends TextComponent {
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
     this.sampleEl = createDiv();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor5__(containerEl);
     return self;
   }
@@ -21,11 +21,11 @@ export class MomentFormatComponent extends TextComponent {
   }
 
   public static fromOriginalType5__(value: MomentFormatComponentOriginal): MomentFormatComponent {
-    return strictProxyForce(value, MomentFormatComponent);
+    return strictProxy(value, MomentFormatComponent);
   }
 
   public asOriginalType5__(): MomentFormatComponentOriginal {
-    return strictProxyForce<MomentFormatComponentOriginal>(this);
+    return strictProxy<MomentFormatComponentOriginal>(this);
   }
 
   public constructor5__(_containerEl: HTMLElement): void {

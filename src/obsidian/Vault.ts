@@ -7,7 +7,7 @@ import type {
 import type { TAbstractFile } from './TAbstractFile.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
@@ -26,7 +26,7 @@ export class Vault extends Events {
     this.fileMap['/'] = root;
     this.fileMapLowerCase['/'] = root;
     root.deleted__ = false;
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(adapter);
     return self;
   }
@@ -36,7 +36,7 @@ export class Vault extends Events {
   }
 
   public static fromOriginalType2__(value: VaultOriginal): Vault {
-    return strictProxyForce(value, Vault);
+    return strictProxy(value, Vault);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {
@@ -59,7 +59,7 @@ export class Vault extends Events {
   }
 
   public asOriginalType2__(): VaultOriginal {
-    return strictProxyForce<VaultOriginal>(this);
+    return strictProxy<VaultOriginal>(this);
   }
 
   public async cachedRead(file: TFile): Promise<string> {

@@ -3,7 +3,7 @@ import type { SecretComponent as SecretComponentOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class SecretComponent extends BaseComponent {
@@ -11,7 +11,7 @@ export class SecretComponent extends BaseComponent {
 
   public constructor(_app: App, _containerEl: HTMLElement) {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(_app, _containerEl);
     return self;
   }
@@ -21,11 +21,11 @@ export class SecretComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: SecretComponentOriginal): SecretComponent {
-    return strictProxyForce(value, SecretComponent);
+    return strictProxy(value, SecretComponent);
   }
 
   public asOriginalType2__(): SecretComponentOriginal {
-    return strictProxyForce<SecretComponentOriginal>(this);
+    return strictProxy<SecretComponentOriginal>(this);
   }
 
   public constructor2__(_app: App, _containerEl: HTMLElement): void {

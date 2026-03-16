@@ -7,7 +7,7 @@ import type {
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export abstract class SettingTab {
   public app: App;
@@ -17,17 +17,17 @@ export abstract class SettingTab {
   public constructor(app: App, setting?: SettingOriginal) {
     this.app = app;
     this.containerEl = createDiv();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(app, setting);
     return self;
   }
 
   public static fromOriginalType__(value: SettingTabOriginal): SettingTab {
-    return strictProxyForce(value, SettingTab);
+    return strictProxy(value, SettingTab);
   }
 
   public asOriginalType__(): SettingTabOriginal {
-    return strictProxyForce<SettingTabOriginal>(this);
+    return strictProxy<SettingTabOriginal>(this);
   }
 
   public constructor__(_app: App, _setting?: SettingOriginal): void {

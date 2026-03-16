@@ -1,7 +1,7 @@
 import type { SliderComponent as SliderComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 const DEFAULT_MAX = 100;
@@ -19,7 +19,7 @@ export class SliderComponent extends ValueComponent<number> {
     super();
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor3__(_containerEl);
     return self;
   }
@@ -29,11 +29,11 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   public static fromOriginalType3__(value: SliderComponentOriginal): SliderComponent {
-    return strictProxyForce(value, SliderComponent);
+    return strictProxy(value, SliderComponent);
   }
 
   public asOriginalType3__(): SliderComponentOriginal {
-    return strictProxyForce<SliderComponentOriginal>(this);
+    return strictProxy<SliderComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

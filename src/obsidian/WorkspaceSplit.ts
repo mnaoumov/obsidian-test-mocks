@@ -3,7 +3,7 @@ import type { WorkspaceSplit as WorkspaceSplitOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceSplit extends WorkspaceParent {
@@ -11,7 +11,7 @@ export class WorkspaceSplit extends WorkspaceParent {
 
   protected constructor(_workspace: Workspace, _direction: string, _id?: string) {
     super(_workspace, _id);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor4__(_workspace, _direction, _id);
     return self;
   }
@@ -21,11 +21,11 @@ export class WorkspaceSplit extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceSplitOriginal): WorkspaceSplit {
-    return strictProxyForce(value, WorkspaceSplit);
+    return strictProxy(value, WorkspaceSplit);
   }
 
   public asOriginalType4__(): WorkspaceSplitOriginal {
-    return strictProxyForce<WorkspaceSplitOriginal>(this);
+    return strictProxy<WorkspaceSplitOriginal>(this);
   }
 
   public constructor4__(_workspace: Workspace, _direction: string, _id?: string): void {

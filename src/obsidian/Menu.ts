@@ -5,7 +5,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 // eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
 import { MenuItem } from './MenuItem.ts';
@@ -19,7 +19,7 @@ export class Menu extends Component {
   protected constructor() {
     super();
     this.dom__ = createDiv();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__();
     return self;
   }
@@ -33,7 +33,7 @@ export class Menu extends Component {
   }
 
   public static fromOriginalType2__(value: MenuOriginal): Menu {
-    return strictProxyForce(value, Menu);
+    return strictProxy(value, Menu);
   }
 
   public addItem(cb: (item: MenuItemOriginal) => unknown): this {
@@ -48,7 +48,7 @@ export class Menu extends Component {
   }
 
   public asOriginalType2__(): MenuOriginal {
-    return strictProxyForce<MenuOriginal>(this);
+    return strictProxy<MenuOriginal>(this);
   }
 
   public close(): void {

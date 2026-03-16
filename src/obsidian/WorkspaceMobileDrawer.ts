@@ -1,7 +1,7 @@
 import type { WorkspaceMobileDrawer as WorkspaceMobileDrawerOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceMobileDrawer extends WorkspaceParent {
@@ -10,7 +10,7 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
 
   protected constructor() {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor4__();
     return self;
   }
@@ -20,11 +20,11 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceMobileDrawerOriginal): WorkspaceMobileDrawer {
-    return strictProxyForce(value, WorkspaceMobileDrawer);
+    return strictProxy(value, WorkspaceMobileDrawer);
   }
 
   public asOriginalType4__(): WorkspaceMobileDrawerOriginal {
-    return strictProxyForce<WorkspaceMobileDrawerOriginal>(this);
+    return strictProxy<WorkspaceMobileDrawerOriginal>(this);
   }
 
   public collapse(): void {

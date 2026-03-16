@@ -1,7 +1,7 @@
 import type { ProgressBarComponent as ProgressBarComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ProgressBarComponent extends ValueComponent<number> {
@@ -12,7 +12,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.progressBar__ = createDiv();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor3__(_containerEl);
     return self;
   }
@@ -22,11 +22,11 @@ export class ProgressBarComponent extends ValueComponent<number> {
   }
 
   public static fromOriginalType3__(value: ProgressBarComponentOriginal): ProgressBarComponent {
-    return strictProxyForce(value, ProgressBarComponent);
+    return strictProxy(value, ProgressBarComponent);
   }
 
   public asOriginalType3__(): ProgressBarComponentOriginal {
-    return strictProxyForce<ProgressBarComponentOriginal>(this);
+    return strictProxy<ProgressBarComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

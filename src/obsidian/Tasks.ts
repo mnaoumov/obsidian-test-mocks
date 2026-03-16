@@ -1,13 +1,13 @@
 import type { Tasks as TasksOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class Tasks {
   private readonly promises: Promise<unknown>[] = [];
 
   protected constructor() {
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
@@ -17,7 +17,7 @@ export class Tasks {
   }
 
   public static fromOriginalType__(value: TasksOriginal): Tasks {
-    return strictProxyForce(value, Tasks);
+    return strictProxy(value, Tasks);
   }
 
   public add(callback: () => Promise<unknown>): void {
@@ -29,7 +29,7 @@ export class Tasks {
   }
 
   public asOriginalType__(): TasksOriginal {
-    return strictProxyForce<TasksOriginal>(this);
+    return strictProxy<TasksOriginal>(this);
   }
 
   public constructor__(): void {

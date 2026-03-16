@@ -1,7 +1,7 @@
 import type { Notice as NoticeOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class Notice {
   public containerEl: HTMLElement;
@@ -20,7 +20,7 @@ export class Notice {
       this.messageEl.appendChild(message.cloneNode(true));
     }
     (this as { duration__: number }).duration__ = duration ?? 0;
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(message, duration);
     return self;
   }
@@ -30,11 +30,11 @@ export class Notice {
   }
 
   public static fromOriginalType__(value: NoticeOriginal): Notice {
-    return strictProxyForce(value, Notice);
+    return strictProxy(value, Notice);
   }
 
   public asOriginalType__(): NoticeOriginal {
-    return strictProxyForce<NoticeOriginal>(this);
+    return strictProxy<NoticeOriginal>(this);
   }
 
   public constructor__(_message: DocumentFragment | string, _duration?: number): void {

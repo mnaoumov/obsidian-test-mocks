@@ -3,11 +3,11 @@ import type { WorkspaceRibbon as WorkspaceRibbonOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class WorkspaceRibbon {
   protected constructor(_workspace: Workspace, _side: string) {
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(_workspace, _side);
     return self;
   }
@@ -17,11 +17,11 @@ export class WorkspaceRibbon {
   }
 
   public static fromOriginalType__(value: WorkspaceRibbonOriginal): WorkspaceRibbon {
-    return strictProxyForce(value, WorkspaceRibbon);
+    return strictProxy(value, WorkspaceRibbon);
   }
 
   public asOriginalType__(): WorkspaceRibbonOriginal {
-    return strictProxyForce<WorkspaceRibbonOriginal>(this);
+    return strictProxy<WorkspaceRibbonOriginal>(this);
   }
 
   public constructor__(_workspace: Workspace, _side: string): void {

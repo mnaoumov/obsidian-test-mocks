@@ -9,7 +9,7 @@ import type { Vault } from './Vault.ts';
 
 import { parseMarkdownContent } from '../internal/markdown-parser.ts';
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 import { TFile as TFileClass } from './TFile.ts';
 
@@ -28,7 +28,7 @@ export class MetadataCache extends Events {
     vault.on('modify', (...data: unknown[]) => {
       this.parseFileMetadata(data[0]);
     });
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(app, vault);
     return self;
   }
@@ -38,11 +38,11 @@ export class MetadataCache extends Events {
   }
 
   public static fromOriginalType2__(value: MetadataCacheOriginal): MetadataCache {
-    return strictProxyForce(value, MetadataCache);
+    return strictProxy(value, MetadataCache);
   }
 
   public asOriginalType2__(): MetadataCacheOriginal {
-    return strictProxyForce<MetadataCacheOriginal>(this);
+    return strictProxy<MetadataCacheOriginal>(this);
   }
 
   public constructor2__(_app: App, _vault: Vault): void {

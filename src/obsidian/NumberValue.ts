@@ -1,13 +1,13 @@
 import type { NumberValue as NumberValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class NumberValue extends PrimitiveValue<number> {
   public constructor(value = 0) {
     super(value);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor4__(value);
     return self;
   }
@@ -17,11 +17,11 @@ export class NumberValue extends PrimitiveValue<number> {
   }
 
   public static fromOriginalType4__(value: NumberValueOriginal): NumberValue {
-    return strictProxyForce(value, NumberValue);
+    return strictProxy(value, NumberValue);
   }
 
   public asOriginalType4__(): NumberValueOriginal {
-    return strictProxyForce<NumberValueOriginal>(this);
+    return strictProxy<NumberValueOriginal>(this);
   }
 
   public constructor4__(_value = 0): void {

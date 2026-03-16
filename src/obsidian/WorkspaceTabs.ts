@@ -4,7 +4,7 @@ import type { Workspace } from './Workspace.ts';
 import type { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceTabs extends WorkspaceParent {
@@ -12,7 +12,7 @@ export class WorkspaceTabs extends WorkspaceParent {
 
   protected constructor(_workspace: Workspace, _id?: string) {
     super(_workspace, _id);
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor4__(_workspace, _id);
     return self;
   }
@@ -22,11 +22,11 @@ export class WorkspaceTabs extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceTabsOriginal): WorkspaceTabs {
-    return strictProxyForce(value, WorkspaceTabs);
+    return strictProxy(value, WorkspaceTabs);
   }
 
   public asOriginalType4__(): WorkspaceTabsOriginal {
-    return strictProxyForce<WorkspaceTabsOriginal>(this);
+    return strictProxy<WorkspaceTabsOriginal>(this);
   }
 
   public constructor4__(_workspace: Workspace, _id?: string): void {
