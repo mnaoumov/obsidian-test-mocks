@@ -1,6 +1,6 @@
 import type { Notice as NoticeOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -31,11 +31,11 @@ export class Notice {
   }
 
   public static fromOriginalType__(value: NoticeOriginal): Notice {
-    return castTo<Notice>(value);
+    return createMockOfUnsafe<Notice>(value);
   }
 
   public asOriginalType__(): NoticeOriginal {
-    return castTo<NoticeOriginal>(this);
+    return createMockOfUnsafe<NoticeOriginal>(this);
   }
 
   public constructor__(_message: DocumentFragment | string, _duration?: number): void {

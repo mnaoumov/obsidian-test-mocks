@@ -1,6 +1,6 @@
 import type { MarkdownRenderChild as MarkdownRenderChildOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
@@ -21,11 +21,11 @@ export class MarkdownRenderChild extends Component {
   }
 
   public static fromOriginalType2__(value: MarkdownRenderChildOriginal): MarkdownRenderChild {
-    return castTo<MarkdownRenderChild>(value);
+    return createMockOfUnsafe<MarkdownRenderChild>(value);
   }
 
   public asOriginalType2__(): MarkdownRenderChildOriginal {
-    return castTo<MarkdownRenderChildOriginal>(this);
+    return createMockOfUnsafe<MarkdownRenderChildOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

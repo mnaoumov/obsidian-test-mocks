@@ -3,7 +3,7 @@ import type {
   MarkdownView as MarkdownViewOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Editor } from './Editor.ts';
@@ -77,11 +77,11 @@ export class MarkdownView extends TextFileView {
   }
 
   public static fromOriginalType7__(value: MarkdownViewOriginal): MarkdownView {
-    return castTo<MarkdownView>(value);
+    return createMockOfUnsafe<MarkdownView>(value);
   }
 
   public asOriginalType7__(): MarkdownViewOriginal {
-    return castTo<MarkdownViewOriginal>(this);
+    return createMockOfUnsafe<MarkdownViewOriginal>(this);
   }
 
   public override canAcceptExtension(extension: string): boolean {

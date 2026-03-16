@@ -1,6 +1,6 @@
 import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { TextComponent } from './TextComponent.ts';
@@ -22,11 +22,11 @@ export class MomentFormatComponent extends TextComponent {
   }
 
   public static fromOriginalType5__(value: MomentFormatComponentOriginal): MomentFormatComponent {
-    return castTo<MomentFormatComponent>(value);
+    return createMockOfUnsafe<MomentFormatComponent>(value);
   }
 
   public asOriginalType5__(): MomentFormatComponentOriginal {
-    return castTo<MomentFormatComponentOriginal>(this);
+    return createMockOfUnsafe<MomentFormatComponentOriginal>(this);
   }
 
   public constructor5__(_containerEl: HTMLElement): void {

@@ -2,7 +2,7 @@ import type { Modal as ModalOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Scope } from './Scope.ts';
@@ -35,11 +35,11 @@ export class Modal {
   }
 
   public static fromOriginalType__(value: ModalOriginal): Modal {
-    return castTo<Modal>(value);
+    return createMockOfUnsafe<Modal>(value);
   }
 
   public asOriginalType__(): ModalOriginal {
-    return castTo<ModalOriginal>(this);
+    return createMockOfUnsafe<ModalOriginal>(this);
   }
 
   public close(): void {

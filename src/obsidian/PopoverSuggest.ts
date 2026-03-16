@@ -2,7 +2,7 @@ import type { PopoverSuggest as PopoverSuggestOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Scope } from './Scope.ts';
@@ -21,11 +21,11 @@ export abstract class PopoverSuggest<T> {
   }
 
   public static fromOriginalType__<T>(value: PopoverSuggestOriginal<T>): PopoverSuggest<T> {
-    return castTo<PopoverSuggest<T>>(value);
+    return createMockOfUnsafe<PopoverSuggest<T>>(value);
   }
 
   public asOriginalType__(): PopoverSuggestOriginal<T> {
-    return castTo<PopoverSuggestOriginal<T>>(this);
+    return createMockOfUnsafe<PopoverSuggestOriginal<T>>(this);
   }
 
   public close(): void {

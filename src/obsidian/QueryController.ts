@@ -3,7 +3,7 @@ import type { QueryController as QueryControllerOriginal } from 'obsidian';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
@@ -21,11 +21,11 @@ export class QueryController extends Component {
   }
 
   public static fromOriginalType2__(value: QueryControllerOriginal): QueryController {
-    return castTo<QueryController>(value);
+    return createMockOfUnsafe<QueryController>(value);
   }
 
   public asOriginalType2__(): QueryControllerOriginal {
-    return castTo<QueryControllerOriginal>(this);
+    return createMockOfUnsafe<QueryControllerOriginal>(this);
   }
 
   public constructor2__(_app: App, _plugin: unknown, _viewHeaderEl: HTMLElement, _currentFile?: null | TFile): void {

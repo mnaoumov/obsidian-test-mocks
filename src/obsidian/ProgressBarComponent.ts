@@ -1,6 +1,6 @@
 import type { ProgressBarComponent as ProgressBarComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -23,11 +23,11 @@ export class ProgressBarComponent extends ValueComponent<number> {
   }
 
   public static fromOriginalType3__(value: ProgressBarComponentOriginal): ProgressBarComponent {
-    return castTo<ProgressBarComponent>(value);
+    return createMockOfUnsafe<ProgressBarComponent>(value);
   }
 
   public asOriginalType3__(): ProgressBarComponentOriginal {
-    return castTo<ProgressBarComponentOriginal>(this);
+    return createMockOfUnsafe<ProgressBarComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

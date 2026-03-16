@@ -3,7 +3,7 @@ import type { PluginSettingTab as PluginSettingTabOriginal } from 'obsidian';
 import type { App } from './App.ts';
 import type { Plugin } from './Plugin.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { SettingTab } from './SettingTab.ts';
@@ -20,11 +20,11 @@ export abstract class PluginSettingTab extends SettingTab {
   }
 
   public static fromOriginalType2__(value: PluginSettingTabOriginal): PluginSettingTab {
-    return castTo<PluginSettingTab>(value);
+    return createMockOfUnsafe<PluginSettingTab>(value);
   }
 
   public asOriginalType2__(): PluginSettingTabOriginal {
-    return castTo<PluginSettingTabOriginal>(this);
+    return createMockOfUnsafe<PluginSettingTabOriginal>(this);
   }
 
   public constructor2__(_app: App, _plugin: Plugin): void {

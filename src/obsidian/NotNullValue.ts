@@ -1,6 +1,6 @@
 import type { NotNullValue as NotNullValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Value } from './Value.ts';
@@ -14,11 +14,11 @@ export abstract class NotNullValue extends Value {
   }
 
   public static fromOriginalType2__(value: NotNullValueOriginal): NotNullValue {
-    return castTo<NotNullValue>(value);
+    return createMockOfUnsafe<NotNullValue>(value);
   }
 
   public asOriginalType2__(): NotNullValueOriginal {
-    return castTo<NotNullValueOriginal>(this);
+    return createMockOfUnsafe<NotNullValueOriginal>(this);
   }
 
   public constructor2__(): void {

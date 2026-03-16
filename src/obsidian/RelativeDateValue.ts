@@ -1,6 +1,6 @@
 import type { RelativeDateValue as RelativeDateValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { DateValue } from './DateValue.ts';
@@ -18,11 +18,11 @@ export class RelativeDateValue extends DateValue {
   }
 
   public static fromOriginalType4__(value: RelativeDateValueOriginal): RelativeDateValue {
-    return castTo<RelativeDateValue>(value);
+    return createMockOfUnsafe<RelativeDateValue>(value);
   }
 
   public asOriginalType4__(): RelativeDateValueOriginal {
-    return castTo<RelativeDateValueOriginal>(this);
+    return createMockOfUnsafe<RelativeDateValueOriginal>(this);
   }
 
   public constructor4__(_date: unknown, _showTime?: boolean): void {

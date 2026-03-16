@@ -6,15 +6,21 @@ import {
   it
 } from 'vitest';
 
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { MarkdownPreviewView } from './MarkdownPreviewView.ts';
 import { MarkdownView } from './MarkdownView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 async function createPreviewView(): Promise<MarkdownPreviewView> {
-  const app = await App.createConfigured__();
+  const app = await App.createConfigured__({
+    files: {
+      'test.md': 'test content'
+    }
+  });
   const leaf = WorkspaceLeaf.create2__(app);
   const mdView = MarkdownView.create2__(leaf);
+  await mdView.onLoadFile(ensureNonNullable(app.vault.getFileByPath('test.md')));
   return MarkdownPreviewView.create3__(mdView);
 }
 
@@ -75,10 +81,9 @@ describe('MarkdownPreviewView', () => {
   });
 
   describe('file', () => {
-    it('should return a value from the getter', async () => {
+    it('should throw when no file is set on the markdown view', async () => {
       const view = await createPreviewView();
-      // The getter returns castTo<TFile>(null), so it returns null typed as TFile
-      expect(view.file).toBeDefined();
+      expect(() => view.file).toThrow('Value is null');
     });
   });
 

@@ -1,6 +1,6 @@
 import type { RegExpValue as RegExpValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
@@ -18,11 +18,11 @@ export class RegExpValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: RegExpValueOriginal): RegExpValue {
-    return castTo<RegExpValue>(value);
+    return createMockOfUnsafe<RegExpValue>(value);
   }
 
   public asOriginalType3__(): RegExpValueOriginal {
-    return castTo<RegExpValueOriginal>(this);
+    return createMockOfUnsafe<RegExpValueOriginal>(this);
   }
 
   public constructor3__(_regexp: RegExp): void {
