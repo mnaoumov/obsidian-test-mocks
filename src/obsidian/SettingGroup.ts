@@ -5,7 +5,10 @@ import type {
   Setting as SettingOriginal
 } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent } from './SearchComponent.ts';
@@ -17,7 +20,7 @@ export class SettingGroup {
   public constructor(containerEl: HTMLElement) {
     this.listEl__ = createDiv();
     containerEl.appendChild(this.listEl__);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(containerEl);
     return self;
   }

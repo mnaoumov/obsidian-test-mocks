@@ -1,13 +1,16 @@
 import type { UrlValue as UrlValueOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { StringValue } from './StringValue.ts';
 
 export class UrlValue extends StringValue {
   public constructor(value: string, display?: null | string) {
     super(value);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor5__(value, display);
     return self;
   }

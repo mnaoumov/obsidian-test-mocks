@@ -3,7 +3,10 @@ import type { WorkspaceTabs as WorkspaceTabsOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 import type { WorkspaceSplit } from './WorkspaceSplit.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
@@ -12,7 +15,7 @@ export class WorkspaceTabs extends WorkspaceParent {
 
   protected constructor(_workspace: Workspace, _id?: string) {
     super(_workspace, _id);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor4__(_workspace, _id);
     return self;
   }

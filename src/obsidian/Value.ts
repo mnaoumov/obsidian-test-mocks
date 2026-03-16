@@ -2,14 +2,17 @@ import type { Value as ValueOriginal } from 'obsidian';
 
 import type { RenderContext } from './RenderContext.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export abstract class Value {
   public static type: string;
 
   public constructor() {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__();
     return self;
   }

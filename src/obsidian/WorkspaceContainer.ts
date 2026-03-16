@@ -2,7 +2,10 @@ import type { WorkspaceContainer as WorkspaceContainerOriginal } from 'obsidian'
 
 import type { Workspace } from './Workspace.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
@@ -12,7 +15,7 @@ export abstract class WorkspaceContainer extends WorkspaceSplit {
 
   protected constructor(workspace: Workspace, direction: string, id?: string) {
     super(workspace, direction, id);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor5__(workspace, direction, id);
     return self;
   }

@@ -2,7 +2,10 @@ import type { TFolder as TFolderOriginal } from 'obsidian';
 
 import type { Vault } from './Vault.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
@@ -11,7 +14,7 @@ export class TFolder extends TAbstractFile {
 
   protected constructor(vault: Vault, path: string) {
     super(vault, path);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(vault, path);
     return self;
   }

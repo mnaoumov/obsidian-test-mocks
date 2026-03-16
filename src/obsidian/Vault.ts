@@ -6,7 +6,10 @@ import type {
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
@@ -26,7 +29,7 @@ export class Vault extends Events {
     this.fileMap['/'] = root;
     this.fileMapLowerCase['/'] = root;
     root.deleted__ = false;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(adapter);
     return self;
   }

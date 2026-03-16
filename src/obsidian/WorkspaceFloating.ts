@@ -1,6 +1,9 @@
 import type { WorkspaceFloating as WorkspaceFloatingOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
@@ -9,7 +12,7 @@ export class WorkspaceFloating extends WorkspaceParent {
 
   protected constructor() {
     super();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor4__();
     return self;
   }

@@ -2,7 +2,10 @@ import type { TextFileView as TextFileViewOriginal } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -15,7 +18,7 @@ export abstract class TextFileView extends EditableFileView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor6__(leaf);
     return self;
   }

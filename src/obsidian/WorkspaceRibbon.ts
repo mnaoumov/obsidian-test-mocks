@@ -2,12 +2,15 @@ import type { WorkspaceRibbon as WorkspaceRibbonOriginal } from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export class WorkspaceRibbon {
   protected constructor(_workspace: Workspace, _side: string) {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(_workspace, _side);
     return self;
   }
