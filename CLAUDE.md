@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-`obsidian-test-mocks` is a standalone npm package providing comprehensive test mocks for the Obsidian plugin API. It publishes as a dual-format (ESM + CJS) package with three entry points: `obsidian`, `globals`, and `helpers`.
+`obsidian-test-mocks` is a standalone npm package providing comprehensive test mocks for the Obsidian plugin API. It publishes as a dual-format (ESM + CJS) package with two entry points: `obsidian` and `setup`.
 
 ## Commands
 
