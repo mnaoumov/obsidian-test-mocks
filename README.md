@@ -21,7 +21,7 @@ Peer dependencies: `obsidian`
 | Import path                    | Description                                                               |
 | ------------------------------ | ------------------------------------------------------------------------- |
 | `obsidian-test-mocks/obsidian` | Mocks for every class/function in `obsidian.d.ts`                         |
-| `obsidian-test-mocks/globals`  | Prototype extensions (`HTMLElement`, `Document`, `Array`, `String`, etc.) |
+| `obsidian-test-mocks/setup`    | Prototype extensions (`HTMLElement`, `Document`, `Array`, `String`, etc.) |
 
 ## Usage with Vitest
 
@@ -35,7 +35,7 @@ export default defineConfig({
     alias: {
       obsidian: 'obsidian-test-mocks/obsidian',
     },
-    setupFiles: ['obsidian-test-mocks/globals'],
+    setupFiles: ['obsidian-test-mocks/setup'],
   },
 });
 ```
@@ -74,7 +74,7 @@ Use `App.createConfigured__()` for a fully wired `App` instance. Parent folders 
 ```typescript
 import { App } from 'obsidian';
 
-const app = await App.createConfigured__({
+const app = App.createConfigured__({
   files: {
     'notes/daily/2024-01-01.md': '# New Year',
   },
@@ -85,7 +85,7 @@ const app = await App.createConfigured__({
 Paths ending with `/` are treated as folders (content must be empty):
 
 ```typescript
-const app = await App.createConfigured__({
+const app = App.createConfigured__({
   files: {
     'archive/2023/': '',
   },
@@ -165,7 +165,7 @@ Mock types and original obsidian types are structurally different — you cannot
 import type { App as AppOriginal } from 'obsidian';
 import { App } from 'obsidian';
 
-const app = await App.createConfigured__();
+const app = App.createConfigured__();
 
 // Pass to code that expects the original obsidian type
 function pluginInit(app: AppOriginal): void { /* ... */ }
@@ -184,7 +184,7 @@ The inverse of `asOriginalType__()`. Every mock class provides a static `fromOri
 import type { App as AppOriginal } from 'obsidian';
 import { App, Vault } from 'obsidian';
 
-const app: AppOriginal = (await App.createConfigured__()).asOriginalType__();
+const app: AppOriginal = App.createConfigured__().asOriginalType__();
 
 // Convert back to mock type when you need mock-specific APIs
 const mockVault = Vault.fromOriginalType2__(app.vault);
@@ -198,7 +198,7 @@ Subclasses use numbered variants following the same inheritance-depth convention
 Because every mock is a [strict mock](#strict-mocks), passing the result to code that accesses internal members (not part of `obsidian.d.ts`) will throw a descriptive error unless you assign those members first:
 
 ```typescript
-const app = await App.createConfigured__();
+const app = App.createConfigured__();
 const original = app.asOriginalType__();
 
 // If pluginInit() accesses app.internalPlugins internally, this throws:
@@ -244,14 +244,14 @@ import { App } from 'obsidian';
 
 function myPluginHelper(app: AppOriginal): void { /* ... */ }
 
-const app = await App.createConfigured__();
+const app = App.createConfigured__();
 myPluginHelper(app.asOriginalType__());
 ```
 
 With `obsidian-typings` installed, the returned type includes all augmented properties, so you can assign internal members in a type-safe way:
 
 ```typescript
-const app = await App.createConfigured__();
+const app = App.createConfigured__();
 const original = app.asOriginalType__();
 
 // Type-safe with obsidian-typings — no casts needed
@@ -261,7 +261,7 @@ original.internalPlugins = { manifests: {} };
 Without `obsidian-typings`, you can still assign them via a `Record` cast:
 
 ```typescript
-const app = await App.createConfigured__();
+const app = App.createConfigured__();
 (app as unknown as Record<string, unknown>)['internalPlugins'] = { manifests: {} };
 ```
 

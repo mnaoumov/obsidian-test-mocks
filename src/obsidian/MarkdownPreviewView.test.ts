@@ -13,7 +13,7 @@ import { MarkdownView } from './MarkdownView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 async function createPreviewView(): Promise<MarkdownPreviewView> {
-  const app = await App.createConfigured__({
+  const app = App.createConfigured__({
     files: {
       'test.md': 'test content'
     }

@@ -10,31 +10,31 @@ import { App } from './App.ts';
 import { WorkspaceWindow } from './WorkspaceWindow.ts';
 
 describe('WorkspaceWindow', () => {
-  it('should create an instance via create3__', async () => {
-    const app = await App.createConfigured__();
+  it('should create an instance via create3__', () => {
+    const app = App.createConfigured__();
     const win = WorkspaceWindow.create3__(app.workspace);
     expect(win).toBeInstanceOf(WorkspaceWindow);
   });
 
   describe('doc', () => {
-    it('should return the document', async () => {
-      const app = await App.createConfigured__();
+    it('should return the document', () => {
+      const app = App.createConfigured__();
       const win = WorkspaceWindow.create3__(app.workspace);
       expect(win.doc).toBe(document);
     });
   });
 
   describe('win', () => {
-    it('should return the window', async () => {
-      const app = await App.createConfigured__();
+    it('should return the window', () => {
+      const app = App.createConfigured__();
       const win = WorkspaceWindow.create3__(app.workspace);
       expect(win.win).toBe(window);
     });
   });
 
   describe('asOriginalType6__()', () => {
-    it('should return the same instance typed as the original', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the original', () => {
+      const app = App.createConfigured__();
       const win = WorkspaceWindow.create3__(app.workspace);
       const original: WorkspaceWindowOriginal = win.asOriginalType6__();
       expect(original).toBe(win);
@@ -42,8 +42,8 @@ describe('WorkspaceWindow', () => {
   });
 
   describe('fromOriginalType6__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the mock type', () => {
+      const app = App.createConfigured__();
       const win = WorkspaceWindow.create3__(app.workspace);
       const mock = WorkspaceWindow.fromOriginalType6__(win.asOriginalType6__());
       expect(mock).toBe(win);

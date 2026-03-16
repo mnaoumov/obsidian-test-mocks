@@ -27,7 +27,7 @@ async function flushMicrotasks(): Promise<void> {
 describe('MetadataCache', () => {
   describe('auto-parse on vault create', () => {
     it('should populate cache when a markdown file is created', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('note.md', '# Hello\n\nSome text with #tag1');
 
       // Wait for the async cache population
@@ -42,7 +42,7 @@ describe('MetadataCache', () => {
     });
 
     it('should not populate cache for non-markdown files', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('data.json', '{"key": "value"}');
 
       await flushMicrotasks();
@@ -54,7 +54,7 @@ describe('MetadataCache', () => {
 
   describe('auto-parse on vault modify', () => {
     it('should update cache when a markdown file is modified', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('note.md', '# Old Title');
       await flushMicrotasks();
 
@@ -70,7 +70,7 @@ describe('MetadataCache', () => {
 
   describe('changed event', () => {
     it('should fire changed event with file, content, and cache', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       let eventFired = false;
       let receivedFile: unknown = null;
       let receivedContent: unknown = null;
@@ -95,7 +95,7 @@ describe('MetadataCache', () => {
 
   describe('_setCache', () => {
     it('should allow manual cache override', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('note.md', '# Auto');
       await flushMicrotasks();
 
@@ -111,7 +111,7 @@ describe('MetadataCache', () => {
 
   describe('frontmatter parsing', () => {
     it('should parse frontmatter on file creation', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const content = '---\ntitle: My Note\ntags: [a, b]\n---\n\nBody';
       const file = await app.vault.create('note.md', content);
       await flushMicrotasks();
@@ -125,7 +125,7 @@ describe('MetadataCache', () => {
 
   describe('links and embeds', () => {
     it('should parse wikilinks and embeds', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const content = 'See [[Page]] and ![[image.png]]';
       const file = await app.vault.create('note.md', content);
       await flushMicrotasks();
@@ -140,21 +140,21 @@ describe('MetadataCache', () => {
 
   describe('fileToLinktext', () => {
     it('should return file name by default', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('note.md', '');
       await flushMicrotasks();
       expect(app.metadataCache.fileToLinktext(file, '')).toBe('note.md');
     });
 
     it('should return basename when omitMdExtension is true for md files', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('note.md', '');
       await flushMicrotasks();
       expect(app.metadataCache.fileToLinktext(file, '', true)).toBe('note');
     });
 
     it('should return file name when omitMdExtension is true for non-md files', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('data.json', '{}');
       await flushMicrotasks();
       expect(app.metadataCache.fileToLinktext(file, '', true)).toBe('data.json');
@@ -163,7 +163,7 @@ describe('MetadataCache', () => {
 
   describe('getFirstLinkpathDest', () => {
     it('should find file by exact path', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('note.md', '');
       await flushMicrotasks();
       const found = app.metadataCache.getFirstLinkpathDest('note.md', '');
@@ -171,7 +171,7 @@ describe('MetadataCache', () => {
     });
 
     it('should find file by path with .md appended', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('note.md', '');
       await flushMicrotasks();
       const found = app.metadataCache.getFirstLinkpathDest('note', '');
@@ -179,30 +179,30 @@ describe('MetadataCache', () => {
     });
 
     it('should find file by basename', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('folder/note.md', '');
       await flushMicrotasks();
       const found = app.metadataCache.getFirstLinkpathDest('note', '');
       expect(found).toBe(file);
     });
 
-    it('should return null when file is not found', async () => {
-      const app = await App.createConfigured__();
+    it('should return null when file is not found', () => {
+      const app = App.createConfigured__();
       const found = app.metadataCache.getFirstLinkpathDest('nonexistent', '');
       expect(found).toBeNull();
     });
   });
 
   describe('getCache', () => {
-    it('should return null for unknown path', async () => {
-      const app = await App.createConfigured__();
+    it('should return null for unknown path', () => {
+      const app = App.createConfigured__();
       expect(app.metadataCache.getCache('unknown.md')).toBeNull();
     });
   });
 
   describe('getFileCache', () => {
     it('should return null for file with no cache', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('data.txt', 'hello');
       await flushMicrotasks();
       expect(app.metadataCache.getFileCache(file)).toBeNull();
@@ -210,16 +210,16 @@ describe('MetadataCache', () => {
   });
 
   describe('asOriginalType2__', () => {
-    it('should return the same instance typed as the original', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the original', () => {
+      const app = App.createConfigured__();
       const original: MetadataCacheOriginal = app.metadataCache.asOriginalType2__();
       expect(original).toBe(app.metadataCache);
     });
   });
 
   describe('fromOriginalType2__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the mock type', () => {
+      const app = App.createConfigured__();
       const mock = MetadataCache.fromOriginalType2__(app.metadataCache.asOriginalType2__());
       expect(mock).toBe(app.metadataCache);
     });
@@ -227,7 +227,7 @@ describe('MetadataCache', () => {
 
   describe('parseFileMetadata', () => {
     it('should not parse non-TFile objects', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       // Trigger the vault create event with a non-TFile object
       app.vault.trigger('create', { path: 'fake.md' });
       await flushMicrotasks();
@@ -235,7 +235,7 @@ describe('MetadataCache', () => {
     });
 
     it('should catch error when file is removed before parsing', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('will-remove.md', '# Title');
       await flushMicrotasks();
 
@@ -256,8 +256,8 @@ describe('MetadataCache', () => {
   });
 
   describe('constructor2__', () => {
-    it('should be callable without throwing', async () => {
-      const app = await App.createConfigured__();
+    it('should be callable without throwing', () => {
+      const app = App.createConfigured__();
       expect(() => {
         app.metadataCache.constructor2__(app, app.vault);
       }).not.toThrow();
@@ -266,7 +266,7 @@ describe('MetadataCache', () => {
 
   describe('getFirstLinkpathDest by file name', () => {
     it('should find file by its full name including extension', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const file = await app.vault.create('folder/report.txt', '');
       await flushMicrotasks();
       const found = app.metadataCache.getFirstLinkpathDest('report.txt', '');
@@ -274,7 +274,7 @@ describe('MetadataCache', () => {
     });
 
     it('should find file by f.name when basename does not match', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       await app.vault.create('folder/other.md', '');
       const file = await app.vault.create('folder/test.md', '');
       await flushMicrotasks();

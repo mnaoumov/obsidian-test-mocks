@@ -25,7 +25,7 @@ async function collectTsFiles(dir: string): Promise<TsFileEntry[]> {
     if ((await stat(full)).isDirectory()) {
       continue;
     }
-    if (entry.endsWith('.ts') && !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts') && entry !== 'index.ts') {
+    if (entry.endsWith('.ts') && !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts') && entry !== 'index.ts' && entry !== 'setup.ts') {
       results.push({ fullPath: full, name: entry });
     }
   }
@@ -94,7 +94,8 @@ async function generateGlobalsIndex(dir: string): Promise<string> {
   const registrationLines: string[] = [];
   const globalNamespaces: string[] = [];
 
-  const rootFiles = await collectTsFiles(dir);
+  const POST_SETUP = 'post-setup.ts';
+  const rootFiles = (await collectTsFiles(dir)).filter((f) => f.name !== POST_SETUP);
 
   for (const file of rootFiles) {
     const modulePath = `./${file.name}`;
@@ -136,10 +137,13 @@ async function generateGlobalsIndex(dir: string): Promise<string> {
     registrationLines.push(`Object.assign(globalThis, ${ns});`);
   }
 
+  importLines.push(`import { postSetup } from './${POST_SETUP}';`);
+
   const lines: string[] = [];
   lines.push(...importLines.sort());
   lines.push('');
   lines.push(registrationLines.sort().join('\n'));
+  lines.push('postSetup();');
   lines.push('');
 
   return lines.join('\n');
@@ -153,7 +157,7 @@ async function generateSubdirectoryBarrel(dir: string): Promise<void> {
 
 async function main(): Promise<void> {
   const globalsContent = await generateGlobalsIndex('src/globals');
-  await writeFile(join('src/globals', 'index.ts'), globalsContent, 'utf-8');
+  await writeFile(join('src/globals', 'setup.ts'), globalsContent, 'utf-8');
 
   const obsidianBarrel = await generateBarrelIndexWithClaimedNames('src/obsidian');
   await writeFile(join('src/obsidian', 'index.ts'), obsidianBarrel.content, 'utf-8');

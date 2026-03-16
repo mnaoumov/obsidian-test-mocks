@@ -12,9 +12,9 @@ import { App } from './App.ts';
 
 let app: App;
 
-beforeEach(async () => {
+beforeEach(() => {
   vi.useFakeTimers();
-  app = await App.createConfigured__();
+  app = App.createConfigured__();
 });
 
 // eslint-disable-next-line no-restricted-syntax -- Modal uses setTimeout in its constructor, requiring dynamic import after vi.useFakeTimers() setup at module level.

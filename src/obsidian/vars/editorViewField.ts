@@ -1,13 +1,16 @@
-import type { MarkdownFileInfo as MarkdownFileInfoOriginal } from 'obsidian';
+import type {
+  App as AppOriginal,
+  MarkdownFileInfo as MarkdownFileInfoOriginal
+} from 'obsidian';
 
 import { StateField } from '@codemirror/state';
 
-import { app } from '../../globals/vars/app.ts';
+import { ensureGenericObject } from '../../internal/type-guards.ts';
 
 export const editorViewField: StateField<MarkdownFileInfoOriginal> = StateField.define({
   create(): MarkdownFileInfoOriginal {
     return {
-      app: app.asOriginalType__(),
+      app: ensureGenericObject(globalThis)['app'] as AppOriginal,
       file: null,
       hoverPopover: null
     };

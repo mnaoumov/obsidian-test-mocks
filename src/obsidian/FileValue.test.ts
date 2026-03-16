@@ -4,18 +4,18 @@ import {
   it
 } from 'vitest';
 
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
-import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { FileValue } from './FileValue.ts';
-import { TFile } from './TFile.ts';
-import { Vault } from './Vault.ts';
 
 describe('FileValue', () => {
   function createFileValue(): FileValue {
-    const adapter = FileSystemAdapter.create__('/mock').asOriginalType__();
-    const app = App.create__(adapter, '');
-    const vault = Vault.create2__(adapter);
-    const file = TFile.create__(vault, 'test.md');
+    const app = App.createConfigured__({
+      files: {
+        'test.md': ''
+      }
+    });
+    const file = ensureNonNullable(app.vault.getFileByPath('test.md'));
     return new FileValue(app, file);
   }
 
@@ -31,10 +31,12 @@ describe('FileValue', () => {
 
   describe('create__', () => {
     it('should create an instance via factory method', () => {
-      const adapter = FileSystemAdapter.create__('/mock').asOriginalType__();
-      const app = App.create__(adapter, '');
-      const vault = Vault.create2__(adapter);
-      const file = TFile.create__(vault, 'test.md');
+      const app = App.createConfigured__({
+        files: {
+          'test.md': ''
+        }
+      });
+      const file = ensureNonNullable(app.vault.getFileByPath('test.md'));
       const val = FileValue.create__(app, file);
       expect(val).toBeInstanceOf(FileValue);
     });

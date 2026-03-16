@@ -47,48 +47,48 @@ class MinimalView extends View {
 }
 
 describe('View', () => {
-  async function createView(): Promise<ConcreteView> {
-    const app = await App.createConfigured__();
+  function createView(): ConcreteView {
+    const app = App.createConfigured__();
     const leaf = WorkspaceLeaf.create2__(app);
     return new ConcreteView(leaf);
   }
 
-  it('should have app property', async () => {
-    const view = await createView();
+  it('should have app property', () => {
+    const view = createView();
     expect(view.app).toBeDefined();
   });
 
-  it('should have containerEl', async () => {
-    const view = await createView();
+  it('should have containerEl', () => {
+    const view = createView();
     expect(view.containerEl).toBeInstanceOf(HTMLElement);
   });
 
-  it('should have a leaf reference', async () => {
-    const view = await createView();
+  it('should have a leaf reference', () => {
+    const view = createView();
     expect(view.leaf).toBeInstanceOf(WorkspaceLeaf);
   });
 
   describe('getState / setState', () => {
-    it('should return empty object by default', async () => {
-      const view = await createView();
+    it('should return empty object by default', () => {
+      const view = createView();
       expect(view.getState()).toEqual({});
     });
 
     it('should set and get state', async () => {
-      const view = await createView();
+      const view = createView();
       await view.setState({ key: 'value' }, { history: false });
       expect(view.getState()).toEqual({ key: 'value' });
     });
   });
 
   describe('getEphemeralState / setEphemeralState', () => {
-    it('should return empty object by default', async () => {
-      const view = await createView();
+    it('should return empty object by default', () => {
+      const view = createView();
       expect(view.getEphemeralState()).toEqual({});
     });
 
-    it('should set and get ephemeral state', async () => {
-      const view = await createView();
+    it('should set and get ephemeral state', () => {
+      const view = createView();
       const SCROLL_VALUE = 100;
       view.setEphemeralState({ scroll: SCROLL_VALUE });
       expect(view.getEphemeralState()).toEqual({ scroll: SCROLL_VALUE });
@@ -96,15 +96,15 @@ describe('View', () => {
   });
 
   describe('getIcon', () => {
-    it('should return the icon', async () => {
-      const view = await createView();
+    it('should return the icon', () => {
+      const view = createView();
       expect(view.getIcon()).toBe('');
     });
   });
 
   describe('onPaneMenu', () => {
-    it('should not throw', async () => {
-      const view = await createView();
+    it('should not throw', () => {
+      const view = createView();
       expect(() => {
         view.onPaneMenu({} as never, 'tab-header');
       }).not.toThrow();
@@ -112,8 +112,8 @@ describe('View', () => {
   });
 
   describe('onResize', () => {
-    it('should not throw', async () => {
-      const view = await createView();
+    it('should not throw', () => {
+      const view = createView();
       expect(() => {
         view.onResize();
       }).not.toThrow();
@@ -121,24 +121,24 @@ describe('View', () => {
   });
 
   describe('asOriginalType2__', () => {
-    it('should return the same instance typed as the original', async () => {
-      const view = await createView();
+    it('should return the same instance typed as the original', () => {
+      const view = createView();
       const original: ViewOriginal = view.asOriginalType2__();
       expect(original).toBe(view);
     });
   });
 
   describe('fromOriginalType2__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const view = await createView();
+    it('should return the same instance typed as the mock type', () => {
+      const view = createView();
       const mock = View.fromOriginalType2__(view.asOriginalType2__());
       expect(mock).toBe(view);
     });
   });
 
   describe('constructor2__()', () => {
-    it('should be callable without throwing', async () => {
-      const view = await createView();
+    it('should be callable without throwing', () => {
+      const view = createView();
       expect(() => {
         view.constructor2__(view.leaf);
       }).not.toThrow();
@@ -146,29 +146,29 @@ describe('View', () => {
   });
 
   describe('navigation', () => {
-    it('should default to true', async () => {
-      const view = await createView();
+    it('should default to true', () => {
+      const view = createView();
       expect(view.navigation).toBe(true);
     });
   });
 
   describe('onOpen', () => {
     it('should resolve without error', async () => {
-      const view = await createView();
+      const view = createView();
       await expect(view.onOpen()).resolves.toBeUndefined();
     });
   });
 
   describe('onClose', () => {
     it('should resolve without error', async () => {
-      const view = await createView();
+      const view = createView();
       await expect(view.onClose()).resolves.toBeUndefined();
     });
   });
 
   describe('base onOpen', () => {
     it('should resolve without error when not overridden', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const view = new MinimalView(leaf);
       const onOpen = view.onOpen.bind(view);
@@ -178,7 +178,7 @@ describe('View', () => {
 
   describe('base onClose', () => {
     it('should resolve without error when not overridden', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const view = new MinimalView(leaf);
       const onClose = view.onClose.bind(view);

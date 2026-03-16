@@ -114,8 +114,8 @@ describe('Value', () => {
   });
 
   describe('renderTo', () => {
-    it('should not throw', async () => {
-      const app = await App.createConfigured__();
+    it('should not throw', () => {
+      const app = App.createConfigured__();
       const val = new StringValue('test');
       expect(() => {
         val.renderTo({} as HTMLElement, RenderContext.create__(app));

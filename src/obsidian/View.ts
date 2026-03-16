@@ -13,7 +13,6 @@ import {
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
-import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 export abstract class View extends Component {
@@ -30,7 +29,7 @@ export abstract class View extends Component {
 
   public constructor(leaf: WorkspaceLeaf) {
     super();
-    this.app = App.create__(FileSystemAdapter.create__('/mock-vault').asOriginalType__(), '');
+    this.app = leaf.app__;
     this.containerEl = createDiv();
     this.leaf = leaf;
     const self = strictProxy(this);

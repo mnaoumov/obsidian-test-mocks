@@ -41,49 +41,49 @@ class ConcreteEditorSuggest extends EditorSuggest<string> {
 }
 
 describe('EditorSuggest', () => {
-  async function createSuggest(): Promise<ConcreteEditorSuggest> {
-    const app = await App.createConfigured__();
+  function createSuggest(): ConcreteEditorSuggest {
+    const app = App.createConfigured__();
     return new ConcreteEditorSuggest(app);
   }
 
-  it('should create an instance', async () => {
-    const suggest = await createSuggest();
+  it('should create an instance', () => {
+    const suggest = createSuggest();
     expect(suggest).toBeInstanceOf(EditorSuggest);
   });
 
-  it('should throw when accessing an unmocked property', async () => {
-    const suggest = await createSuggest();
+  it('should throw when accessing an unmocked property', () => {
+    const suggest = createSuggest();
     const record = ensureGenericObject(suggest);
     expect(() => record['nonExistentProperty']).toThrow();
   });
 
   describe('asOriginalType2__', () => {
-    it('should return the same instance typed as the original obsidian type', async () => {
-      const suggest = await createSuggest();
+    it('should return the same instance typed as the original obsidian type', () => {
+      const suggest = createSuggest();
       const original: EditorSuggestOriginal<string> = suggest.asOriginalType2__();
       expect(original).toBe(suggest);
     });
   });
 
   describe('fromOriginalType2__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const suggest = await createSuggest();
+    it('should return the same instance typed as the mock type', () => {
+      const suggest = createSuggest();
       const mock = EditorSuggest.fromOriginalType2__(suggest.asOriginalType2__());
       expect(mock).toBe(suggest);
     });
   });
 
   describe('limit', () => {
-    it('should default to 100', async () => {
-      const suggest = await createSuggest();
+    it('should default to 100', () => {
+      const suggest = createSuggest();
       const DEFAULT_LIMIT = 100;
       expect(suggest.limit).toBe(DEFAULT_LIMIT);
     });
   });
 
   describe('setInstructions', () => {
-    it('should store the instructions', async () => {
-      const suggest = await createSuggest();
+    it('should store the instructions', () => {
+      const suggest = createSuggest();
       const instructions = [{ command: 'Enter', purpose: 'Select' }];
       suggest.setInstructions(instructions);
       expect(suggest.instructions__).toBe(instructions);
