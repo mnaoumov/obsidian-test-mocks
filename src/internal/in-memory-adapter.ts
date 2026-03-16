@@ -153,7 +153,13 @@ export class InMemoryAdapter implements DataAdapterOriginal {
 
   public async mkdir(normalizedPath: string): Promise<void> {
     await noopAsync();
-    this.mkdirSync(normalizedPath);
+    this.mkdirSync__(normalizedPath);
+  }
+
+  public mkdirSync__(normalizedPath: string): void {
+    this.directories.add(normalizedPath);
+    this.addLowerCaseKey(normalizedPath);
+    this.ensureParentDirs(normalizedPath);
   }
 
   public async process(normalizedPath: string, fn: (data: string) => string, options?: DataWriteOptionsOriginal): Promise<string> {
@@ -316,18 +322,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
 
   public async write(normalizedPath: string, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
     await noopAsync();
-    const now = Date.now();
-    const meta = this.fileMeta.get(normalizedPath);
-
-    this.textFiles.set(normalizedPath, data);
-    this.addLowerCaseKey(normalizedPath);
-    this.fileMeta.set(normalizedPath, {
-      ctime: options?.ctime ?? meta?.ctime ?? now,
-      mtime: options?.mtime ?? now,
-      size: data.length
-    });
-
-    this.ensureParentDirs(normalizedPath);
+    this.writeSync__(normalizedPath, data, options);
   }
 
   public async writeBinary(normalizedPath: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
@@ -343,6 +338,19 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       size: data.byteLength
     });
 
+    this.ensureParentDirs(normalizedPath);
+  }
+
+  public writeSync__(normalizedPath: string, data: string, options?: DataWriteOptionsOriginal): void {
+    this.textFiles.set(normalizedPath, data);
+    this.addLowerCaseKey(normalizedPath);
+    const meta = this.fileMeta.get(normalizedPath);
+    const now = Date.now();
+    this.fileMeta.set(normalizedPath, {
+      ctime: options?.ctime ?? meta?.ctime ?? now,
+      mtime: options?.mtime ?? now,
+      size: data.length
+    });
     this.ensureParentDirs(normalizedPath);
   }
 
@@ -369,12 +377,6 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     }
     const remainder = path.slice(prefix.length);
     return remainder !== '' && !remainder.includes('/');
-  }
-
-  private mkdirSync(normalizedPath: string): void {
-    this.directories.add(normalizedPath);
-    this.addLowerCaseKey(normalizedPath);
-    this.ensureParentDirs(normalizedPath);
   }
 
   private moveMapEntry<V>(map: Map<string, V>, oldKey: string, newKey: string): void {
