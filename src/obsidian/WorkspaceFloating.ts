@@ -5,8 +5,6 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceFloating extends WorkspaceParent {
-  declare public parent: WorkspaceParent;
-
   protected constructor() {
     super();
     const self = strictProxy(this);

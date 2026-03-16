@@ -6,7 +6,6 @@ import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceMobileDrawer extends WorkspaceParent {
   public collapsed = false;
-  declare public parent: WorkspaceParent;
 
   protected constructor() {
     super();
