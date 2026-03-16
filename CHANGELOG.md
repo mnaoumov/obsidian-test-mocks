@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.0.9
+
+- fix: declare types
+
 ## 1.0.8
 
 - feat: expose fileMap__
