@@ -6,14 +6,9 @@ import {
   it
 } from 'vitest';
 
-import { castTo } from '../internal/cast.ts';
+import { noopAsync } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
-
-interface ViewWithProtectedMethods {
-  onClose(): Promise<void>;
-  onOpen(): Promise<void>;
-}
 
 // eslint-disable-next-line no-restricted-syntax -- View is abstract; extending it requires a top-level await dynamic import to define ConcreteView at module scope.
 class ConcreteView extends (await import('./View.ts')).View {
@@ -23,6 +18,14 @@ class ConcreteView extends (await import('./View.ts')).View {
 
   public getViewType(): string {
     return 'test';
+  }
+
+  public override async onClose(): Promise<void> {
+    await noopAsync();
+  }
+
+  public override async onOpen(): Promise<void> {
+    await noopAsync();
   }
 }
 
@@ -137,16 +140,14 @@ describe('View', () => {
   describe('onOpen', () => {
     it('should resolve without error', async () => {
       const view = await createView();
-      // Access protected method for coverage.
-      await expect(castTo<ViewWithProtectedMethods>(view).onOpen()).resolves.toBeUndefined();
+      await expect(view.onOpen()).resolves.toBeUndefined();
     });
   });
 
   describe('onClose', () => {
     it('should resolve without error', async () => {
       const view = await createView();
-      // Access protected method for coverage.
-      await expect(castTo<ViewWithProtectedMethods>(view).onClose()).resolves.toBeUndefined();
+      await expect(view.onClose()).resolves.toBeUndefined();
     });
   });
 });
