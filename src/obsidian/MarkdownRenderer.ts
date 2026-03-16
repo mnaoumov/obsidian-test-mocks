@@ -5,13 +5,13 @@ import type { HoverPopover } from './HoverPopover.ts';
 import type { TFile } from './TFile.ts';
 
 import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
-import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { MarkdownRenderChild } from './MarkdownRenderChild.ts';
 
@@ -24,13 +24,13 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   public constructor(app: App, containerEl: HTMLElement, supportWorker?: boolean) {
     super(containerEl);
     this.app = app;
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(app, containerEl, supportWorker);
     return self;
   }
 
   public static fromOriginalType3__(value: MarkdownRendererOriginal): MarkdownRenderer {
-    return createMockOfUnsafe<MarkdownRenderer>(value);
+    return bridgeType<MarkdownRenderer>(value);
   }
 
   public static async render(_app: App, _markdown: string, _el: HTMLElement, _sourcePath: string, _component: Component): Promise<void> {
@@ -42,7 +42,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   }
 
   public asOriginalType3__(): MarkdownRendererOriginal {
-    return createMockOfUnsafe<MarkdownRendererOriginal>(this);
+    return bridgeType<MarkdownRendererOriginal>(this);
   }
 
   public constructor3__(_app: App, _containerEl: HTMLElement, _supportWorker?: boolean): void {

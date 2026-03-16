@@ -4,11 +4,11 @@ import type {
   MenuPositionDef as MenuPositionDefOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 // eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
 import { MenuItem } from './MenuItem.ts';
@@ -22,7 +22,7 @@ export class Menu extends Component {
   protected constructor() {
     super();
     this.dom__ = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__();
     return self;
   }
@@ -36,7 +36,7 @@ export class Menu extends Component {
   }
 
   public static fromOriginalType2__(value: MenuOriginal): Menu {
-    return createMockOfUnsafe<Menu>(value);
+    return bridgeType<Menu>(value);
   }
 
   public addItem(cb: (item: MenuItemOriginal) => unknown): this {
@@ -51,7 +51,7 @@ export class Menu extends Component {
   }
 
   public asOriginalType2__(): MenuOriginal {
-    return createMockOfUnsafe<MenuOriginal>(this);
+    return bridgeType<MenuOriginal>(this);
   }
 
   public close(): void {

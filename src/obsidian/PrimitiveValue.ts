@@ -1,10 +1,10 @@
 import type { PrimitiveValue as PrimitiveValueOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export abstract class PrimitiveValue<T> extends NotNullValue {
@@ -13,17 +13,17 @@ export abstract class PrimitiveValue<T> extends NotNullValue {
   public constructor(value: T) {
     super();
     this.value__ = value;
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(value);
     return self;
   }
 
   public static fromOriginalType3__<T>(value: PrimitiveValueOriginal<T>): PrimitiveValue<T> {
-    return createMockOfUnsafe<PrimitiveValue<T>>(value);
+    return bridgeType<PrimitiveValue<T>>(value);
   }
 
   public asOriginalType3__(): PrimitiveValueOriginal<T> {
-    return createMockOfUnsafe<PrimitiveValueOriginal<T>>(this);
+    return bridgeType<PrimitiveValueOriginal<T>>(this);
   }
 
   public constructor3__(_value: T): void {

@@ -1,16 +1,16 @@
 import type { RelativeDateValue as RelativeDateValueOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { DateValue } from './DateValue.ts';
 
 export class RelativeDateValue extends DateValue {
   public constructor(date: Date, showTime?: boolean) {
     super(date, showTime);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor4__(date, showTime);
     return self;
   }
@@ -20,11 +20,11 @@ export class RelativeDateValue extends DateValue {
   }
 
   public static fromOriginalType4__(value: RelativeDateValueOriginal): RelativeDateValue {
-    return createMockOfUnsafe<RelativeDateValue>(value);
+    return bridgeType<RelativeDateValue>(value);
   }
 
   public asOriginalType4__(): RelativeDateValueOriginal {
-    return createMockOfUnsafe<RelativeDateValueOriginal>(this);
+    return bridgeType<RelativeDateValueOriginal>(this);
   }
 
   public constructor4__(_date: unknown, _showTime?: boolean): void {

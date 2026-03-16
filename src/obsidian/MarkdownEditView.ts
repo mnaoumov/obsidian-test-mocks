@@ -5,11 +5,11 @@ import type {
 
 import type { MarkdownView } from './MarkdownView.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
 
@@ -25,7 +25,7 @@ export class MarkdownEditView {
   public constructor(view: MarkdownView) {
     this.app = view.app;
     this.editor__ = new MockEditor();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(view);
     return self;
   }
@@ -35,7 +35,7 @@ export class MarkdownEditView {
   }
 
   public static fromOriginalType__(value: MarkdownEditViewOriginal): MarkdownEditView {
-    return createMockOfUnsafe<MarkdownEditView>(value);
+    return bridgeType<MarkdownEditView>(value);
   }
 
   public applyScroll(scroll: number): void {
@@ -43,7 +43,7 @@ export class MarkdownEditView {
   }
 
   public asOriginalType__(): MarkdownEditViewOriginal {
-    return createMockOfUnsafe<MarkdownEditViewOriginal>(this);
+    return bridgeType<MarkdownEditViewOriginal>(this);
   }
 
   public clear(): void {

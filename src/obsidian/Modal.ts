@@ -2,11 +2,11 @@ import type { Modal as ModalOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Scope } from './Scope.ts';
 
 export class Modal {
@@ -27,7 +27,7 @@ export class Modal {
     this.modalEl = createDiv();
     this.scope = Scope.create__();
     this.titleEl = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(app);
     return self;
   }
@@ -37,11 +37,11 @@ export class Modal {
   }
 
   public static fromOriginalType__(value: ModalOriginal): Modal {
-    return createMockOfUnsafe<Modal>(value);
+    return bridgeType<Modal>(value);
   }
 
   public asOriginalType__(): ModalOriginal {
-    return createMockOfUnsafe<ModalOriginal>(this);
+    return bridgeType<ModalOriginal>(this);
   }
 
   public close(): void {

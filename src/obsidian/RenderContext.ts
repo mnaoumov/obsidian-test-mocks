@@ -5,17 +5,17 @@ import type {
 
 import type { App } from './App.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export class RenderContext {
   public hoverPopover: HoverPopoverOriginal | null = null;
 
   protected constructor(_app: App) {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(_app);
     return self;
   }
@@ -25,11 +25,11 @@ export class RenderContext {
   }
 
   public static fromOriginalType__(value: RenderContextOriginal): RenderContext {
-    return createMockOfUnsafe<RenderContext>(value);
+    return bridgeType<RenderContext>(value);
   }
 
   public asOriginalType__(): RenderContextOriginal {
-    return createMockOfUnsafe<RenderContextOriginal>(this);
+    return bridgeType<RenderContextOriginal>(this);
   }
 
   public constructor__(_app: App): void {

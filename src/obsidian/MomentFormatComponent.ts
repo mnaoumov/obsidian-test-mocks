@@ -1,10 +1,10 @@
 import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { TextComponent } from './TextComponent.ts';
 
 export class MomentFormatComponent extends TextComponent {
@@ -14,7 +14,7 @@ export class MomentFormatComponent extends TextComponent {
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
     this.sampleEl = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor5__(containerEl);
     return self;
   }
@@ -24,11 +24,11 @@ export class MomentFormatComponent extends TextComponent {
   }
 
   public static fromOriginalType5__(value: MomentFormatComponentOriginal): MomentFormatComponent {
-    return createMockOfUnsafe<MomentFormatComponent>(value);
+    return bridgeType<MomentFormatComponent>(value);
   }
 
   public asOriginalType5__(): MomentFormatComponentOriginal {
-    return createMockOfUnsafe<MomentFormatComponentOriginal>(this);
+    return bridgeType<MomentFormatComponentOriginal>(this);
   }
 
   public constructor5__(_containerEl: HTMLElement): void {

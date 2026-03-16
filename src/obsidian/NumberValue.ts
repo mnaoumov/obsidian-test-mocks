@@ -1,16 +1,16 @@
 import type { NumberValue as NumberValueOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class NumberValue extends PrimitiveValue<number> {
   public constructor(value = 0) {
     super(value);
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor4__(value);
     return self;
   }
@@ -20,11 +20,11 @@ export class NumberValue extends PrimitiveValue<number> {
   }
 
   public static fromOriginalType4__(value: NumberValueOriginal): NumberValue {
-    return createMockOfUnsafe<NumberValue>(value);
+    return bridgeType<NumberValue>(value);
   }
 
   public asOriginalType4__(): NumberValueOriginal {
-    return createMockOfUnsafe<NumberValueOriginal>(this);
+    return bridgeType<NumberValueOriginal>(this);
   }
 
   public constructor4__(_value = 0): void {

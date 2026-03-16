@@ -2,15 +2,15 @@ import type { MenuSeparator as MenuSeparatorOriginal } from 'obsidian';
 
 import type { Menu } from './Menu.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 
 export class MenuSeparator {
   protected constructor(_menu: Menu) {
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor__(_menu);
     return self;
   }
@@ -20,11 +20,11 @@ export class MenuSeparator {
   }
 
   public static fromOriginalType__(value: MenuSeparatorOriginal): MenuSeparator {
-    return createMockOfUnsafe<MenuSeparator>(value);
+    return bridgeType<MenuSeparator>(value);
   }
 
   public asOriginalType__(): MenuSeparatorOriginal {
-    return createMockOfUnsafe<MenuSeparatorOriginal>(this);
+    return bridgeType<MenuSeparatorOriginal>(this);
   }
 
   public constructor__(_menu: Menu): void {

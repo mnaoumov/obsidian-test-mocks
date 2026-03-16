@@ -7,12 +7,12 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { parseMarkdownContent } from '../internal/markdown-parser.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 import { TFile as TFileClass } from './TFile.ts';
 
@@ -31,7 +31,7 @@ export class MetadataCache extends Events {
     vault.on('modify', (...data: unknown[]) => {
       this.parseFileMetadata(data[0]);
     });
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor2__(app, vault);
     return self;
   }
@@ -41,11 +41,11 @@ export class MetadataCache extends Events {
   }
 
   public static fromOriginalType2__(value: MetadataCacheOriginal): MetadataCache {
-    return createMockOfUnsafe<MetadataCache>(value);
+    return bridgeType<MetadataCache>(value);
   }
 
   public asOriginalType2__(): MetadataCacheOriginal {
-    return createMockOfUnsafe<MetadataCacheOriginal>(this);
+    return bridgeType<MetadataCacheOriginal>(this);
   }
 
   public constructor2__(_app: App, _vault: Vault): void {

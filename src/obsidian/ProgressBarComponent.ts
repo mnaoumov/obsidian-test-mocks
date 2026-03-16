@@ -1,10 +1,10 @@
 import type { ProgressBarComponent as ProgressBarComponentOriginal } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ProgressBarComponent extends ValueComponent<number> {
@@ -15,7 +15,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.progressBar__ = createDiv();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor3__(_containerEl);
     return self;
   }
@@ -25,11 +25,11 @@ export class ProgressBarComponent extends ValueComponent<number> {
   }
 
   public static fromOriginalType3__(value: ProgressBarComponentOriginal): ProgressBarComponent {
-    return createMockOfUnsafe<ProgressBarComponent>(value);
+    return bridgeType<ProgressBarComponent>(value);
   }
 
   public asOriginalType3__(): ProgressBarComponentOriginal {
-    return createMockOfUnsafe<ProgressBarComponentOriginal>(this);
+    return bridgeType<ProgressBarComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

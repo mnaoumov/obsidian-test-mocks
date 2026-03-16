@@ -3,11 +3,11 @@ import type {
   MarkdownView as MarkdownViewOriginal
 } from 'obsidian';
 
-import {
-  createMockOf,
-  createMockOfUnsafe
-} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  bridgeType,
+  strictProxy
+} from '../internal/strict-proxy.ts';
 import { Editor } from './Editor.ts';
 import { TextFileView } from './TextFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -69,7 +69,7 @@ export class MarkdownView extends TextFileView {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.editor = new MockEditor();
-    const self = createMockOf(this);
+    const self = strictProxy(this);
     self.constructor7__(leaf);
     return self;
   }
@@ -79,11 +79,11 @@ export class MarkdownView extends TextFileView {
   }
 
   public static fromOriginalType7__(value: MarkdownViewOriginal): MarkdownView {
-    return createMockOfUnsafe<MarkdownView>(value);
+    return bridgeType<MarkdownView>(value);
   }
 
   public asOriginalType7__(): MarkdownViewOriginal {
-    return createMockOfUnsafe<MarkdownViewOriginal>(this);
+    return bridgeType<MarkdownViewOriginal>(this);
   }
 
   public override canAcceptExtension(extension: string): boolean {
