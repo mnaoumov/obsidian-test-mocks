@@ -6,10 +6,11 @@ import {
 
 import type { App } from './App.ts';
 
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { LinkValue } from './LinkValue.ts';
 
 describe('LinkValue', () => {
-  const mockApp = {} as App;
+  const mockApp = strictProxy<App>({});
 
   describe('parseFromString', () => {
     it('should parse a simple wiki link', () => {

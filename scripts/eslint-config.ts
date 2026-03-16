@@ -196,6 +196,10 @@ function getEslintConfigs(): Linter.Config[] {
             selector: 'ImportExpression'
           },
           {
+            message: 'Do not use `{} as T`. Use `createMockOf<T>()` from src/internal/cast.ts instead (G10e).',
+            selector: 'TSAsExpression > ObjectExpression[properties.length=0]'
+          },
+          {
             message: 'Do not use `declare` on class properties. Initialize the property or use a regular type annotation.',
             selector: 'PropertyDefinition[declare=true]'
           }

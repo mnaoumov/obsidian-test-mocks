@@ -6,13 +6,13 @@ import {
   it
 } from 'vitest';
 
-import type { QueryController } from './QueryController.ts';
-
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { BasesEntry } from './BasesEntry.ts';
 import { BasesEntryGroup } from './BasesEntryGroup.ts';
 import { BasesQueryResult } from './BasesQueryResult.ts';
 import { BasesViewConfig } from './BasesViewConfig.ts';
+import { QueryController } from './QueryController.ts';
 import { TFile } from './TFile.ts';
 
 describe('BasesQueryResult', () => {
@@ -73,7 +73,7 @@ describe('BasesQueryResult', () => {
     const result = createResult();
     expect(() => {
       result.getSummaryValue(
-        {} as QueryController,
+        strictProxy<QueryController>({}),
         [],
         'prop.a' as BasesPropertyId,
         'sum'

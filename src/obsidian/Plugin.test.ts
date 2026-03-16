@@ -1,4 +1,5 @@
 import type {
+  MarkdownPostProcessorContext as MarkdownPostProcessorContextOriginal,
   PluginManifest as PluginManifestOriginal,
   Plugin as PluginOriginal
 } from 'obsidian';
@@ -10,6 +11,7 @@ import {
   vi
 } from 'vitest';
 
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Plugin } from './Plugin.ts';
 
@@ -72,7 +74,8 @@ describe('Plugin', () => {
     it('should track the setting tab', () => {
       const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
-      const mockTab = {} as PluginOriginal extends { addSettingTab(tab: infer T): void } ? T : never;
+      type MockTab = PluginOriginal extends { addSettingTab(tab: infer T): void } ? T : never;
+      const mockTab = strictProxy<MockTab>({});
       plugin.addSettingTab(mockTab);
       expect(plugin.settingTabs__).toContain(mockTab);
     });
@@ -150,7 +153,7 @@ describe('Plugin', () => {
       const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const processor = plugin.registerMarkdownCodeBlockProcessor('lang', vi.fn());
-      const result = processor(createDiv(), {} as never);
+      const result = processor(createDiv(), strictProxy<MarkdownPostProcessorContextOriginal>({}));
       await Promise.resolve(result);
       expect(result).toBeUndefined();
     });

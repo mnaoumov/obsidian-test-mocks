@@ -1,4 +1,7 @@
-import type { Vault as VaultOriginal } from 'obsidian';
+import type {
+  DataAdapter as DataAdapterOriginal,
+  Vault as VaultOriginal
+} from 'obsidian';
 
 import {
   describe,
@@ -7,6 +10,7 @@ import {
   vi
 } from 'vitest';
 
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { TFile } from './TFile.ts';
@@ -726,6 +730,36 @@ describe('Vault', () => {
       await app.vault.rename(file, 'New.md');
 
       expect(app.vault.getAbstractFileByPathInsensitive__('old.md')).toBeNull();
+    });
+  });
+
+  describe('createFolderSync__', () => {
+    it('should create a folder synchronously', () => {
+      const app = App.createConfigured__();
+      const folder = app.vault.createFolderSync__('sync-folder');
+      expect(folder).toBeInstanceOf(TFolder);
+      expect(app.vault.getAbstractFileByPath('sync-folder')).toBe(folder);
+    });
+
+    it('should throw for non-InMemoryAdapter', () => {
+      const fakeAdapter = strictProxy<DataAdapterOriginal>({});
+      const vault = Vault.create2__(fakeAdapter);
+      expect(() => vault.createFolderSync__('folder')).toThrow('createFolderSync__ is only supported for in-memory adapters');
+    });
+  });
+
+  describe('createSync__', () => {
+    it('should create a file synchronously', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('sync-file.md', 'content');
+      expect(file).toBeInstanceOf(TFile);
+      expect(app.vault.getFileByPath('sync-file.md')).toBe(file);
+    });
+
+    it('should throw for non-InMemoryAdapter', () => {
+      const fakeAdapter = strictProxy<DataAdapterOriginal>({});
+      const vault = Vault.create2__(fakeAdapter);
+      expect(() => vault.createSync__('file.md', 'content')).toThrow('createSync__ is only supported for in-memory adapters');
     });
   });
 });

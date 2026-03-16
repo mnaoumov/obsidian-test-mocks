@@ -10,6 +10,7 @@ import {
   vi
 } from 'vitest';
 
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureGenericObject } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
 
@@ -113,7 +114,7 @@ describe('Events', () => {
 
     it('should not throw when event ref has no name or fn', () => {
       const events = Events.create__();
-      const emptyRef = {} as EventRefOriginal;
+      const emptyRef = strictProxy<EventRefOriginal>({});
       expect(() => {
         events.offref(emptyRef);
       }).not.toThrow();
@@ -131,7 +132,7 @@ describe('Events', () => {
 
     it('should not throw when event ref has no fn or e', () => {
       const events = Events.create__();
-      const emptyRef = {} as EventRefOriginal;
+      const emptyRef = strictProxy<EventRefOriginal>({});
       expect(() => {
         events.tryTrigger(emptyRef, ['data']);
       }).not.toThrow();

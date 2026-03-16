@@ -13,6 +13,7 @@ import type {
 
 import { getFrontMatterInfo } from '../obsidian/functions/getFrontMatterInfo.ts';
 import { parseYaml } from '../obsidian/functions/parseYaml.ts';
+import { strictProxy } from './strict-proxy.ts';
 import {
   assert,
   ensureNonNullable
@@ -229,7 +230,7 @@ function parseFrontmatter(
   if (parsed && typeof parsed === 'object') {
     cache.frontmatter = parsed as FrontMatterCache;
   } else {
-    cache.frontmatter = {} as FrontMatterCache;
+    cache.frontmatter = strictProxy<FrontMatterCache>({});
   }
 
   cache.frontmatterPosition = makePos(lineStarts, 0, info.contentStart - 1);

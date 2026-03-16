@@ -8,6 +8,7 @@ import {
 
 import type { TFile } from './TFile.ts';
 
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Component } from './Component.ts';
 import { MarkdownPreviewView } from './MarkdownPreviewView.ts';
@@ -17,7 +18,7 @@ import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 class ConcreteMarkdownRenderer extends MarkdownRenderer {
   public get file(): TFile {
-    return {} as TFile;
+    return strictProxy<TFile>({});
   }
 
   public constructor(app: App, containerEl: HTMLElement) {
