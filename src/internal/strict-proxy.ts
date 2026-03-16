@@ -9,12 +9,12 @@
  * - Class-name-aware error messages for class instances.
  * - Recursive proxying of nested plain objects (for partial mocks only).
  *
- * Two entry points:
- * - `strictProxy<T>()` — type-safe (`PartialDeep<T>`). Use for test mocking.
- *   Compile errors reveal real type incompatibilities.
- * - `strictProxyForce<T>()` — accepts `unknown`. Use for constructors,
- *   `asOriginalTypeN__`, and `fromOriginalTypeN__` (with `mockClass` param
- *   to overlay `__` methods from the mock prototype).
+ * Overloads:
+ * 1. `strictProxy(value, MockClass)` — `fromOriginalTypeN__`: infers T from
+ *    MockClass.prototype, overlays `__` methods via proxy.
+ * 2. `strictProxy(value: T)` — constructors: infers T from argument.
+ * 3. `strictProxy<T>(partial)` — test mocking: typed via `PartialDeep<T>`.
+ * 4. `strictProxy<T>(value)` — `asOriginalTypeN__`: explicit T, unchecked.
  */
 import type { PartialDeep } from 'type-fest';
 
@@ -35,32 +35,13 @@ interface MockClassRef {
   prototype: object;
 }
 
-/**
- * Type-safe strict proxy. Prefer this over `strictProxyForce`.
- * Compile errors from `PartialDeep<T>` reveal real structural gaps.
- */
-export function strictProxy<T>(value: PartialDeep<T>): T {
-  return wrapProxy<T>(value);
-}
-
-/**
- * Strict proxy that accepts any value.
- *
- * - Constructor wrapping: `strictProxyForce(this)`
- * - `asOriginalTypeN__`: `strictProxyForce<OriginalType>(this)`
- * - `fromOriginalTypeN__`: `strictProxyForce<MockType>(value, MockClass)`
- *   — overlays `__` methods from MockClass prototype via Proxy lookup.
- *
- * @param mockClass - When provided, the proxy also resolves `__` methods
- *   from this class's prototype chain, making them available on objects
- *   that weren't created as mocks.
- */
-// eslint-disable-next-line @typescript-eslint/unified-signatures -- Overload 1 infers T from mockClass; overload 3 accepts explicit T with unchecked value. They serve different purposes.
-export function strictProxyForce<T>(value: unknown, mockClass: MockClassLike<T>): T;
-export function strictProxyForce<T extends object>(value: T): T;
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T provides return type inference at call sites.
-export function strictProxyForce<T>(value: unknown): T;
-export function strictProxyForce<T>(value: unknown, mockClass?: MockClassRef): T {
+// eslint-disable-next-line @typescript-eslint/unified-signatures -- This overload infers T from mockClass; the `unknown` overload below requires explicit T. Cannot be combined.
+export function strictProxy<T>(value: unknown, mockClass: MockClassLike<T>): T;
+export function strictProxy<T extends object>(value: T): T;
+export function strictProxy<T>(value: PartialDeep<T>): T;
+// eslint-disable-next-line @typescript-eslint/unified-signatures, @typescript-eslint/no-unnecessary-type-parameters -- PartialDeep<T> above gives type safety for test partial mocks; this overload accepts explicit T with unchecked value for cross-type casts.
+export function strictProxy<T>(value: unknown): T;
+export function strictProxy<T>(value: unknown, mockClass?: MockClassRef): T {
   return wrapProxy<T>(value, mockClass);
 }
 

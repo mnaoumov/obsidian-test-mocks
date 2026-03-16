@@ -5,7 +5,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 /* eslint-disable no-magic-numbers -- Color conversion constants. */
@@ -34,7 +34,7 @@ export class ColorComponent extends ValueComponent<string> {
     super();
     this.colorPickerEl__ = containerEl.createEl('input');
     this.colorPickerEl__.type = 'color';
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor3__(containerEl);
     return self;
   }
@@ -44,11 +44,11 @@ export class ColorComponent extends ValueComponent<string> {
   }
 
   public static fromOriginalType3__(value: ColorComponentOriginal): ColorComponent {
-    return strictProxyForce(value, ColorComponent);
+    return strictProxy(value, ColorComponent);
   }
 
   public asOriginalType3__(): ColorComponentOriginal {
-    return strictProxyForce<ColorComponentOriginal>(this);
+    return strictProxy<ColorComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

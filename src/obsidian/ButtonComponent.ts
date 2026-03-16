@@ -4,7 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
@@ -14,7 +14,7 @@ export class ButtonComponent extends BaseComponent {
   public constructor(containerEl: HTMLElement) {
     super();
     this.buttonEl = containerEl.createEl('button');
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(containerEl);
     return self;
   }
@@ -24,11 +24,11 @@ export class ButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ButtonComponentOriginal): ButtonComponent {
-    return strictProxyForce(value, ButtonComponent);
+    return strictProxy(value, ButtonComponent);
   }
 
   public asOriginalType2__(): ButtonComponentOriginal {
-    return strictProxyForce<ButtonComponentOriginal>(this);
+    return strictProxy<ButtonComponentOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

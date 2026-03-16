@@ -12,7 +12,7 @@ import type { BasesViewConfig } from './BasesViewConfig.ts';
 import type { QueryController } from './QueryController.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class BasesQueryResult {
   public data: BasesEntry[] = [];
@@ -29,7 +29,7 @@ export class BasesQueryResult {
   private _properties: BasesPropertyIdOriginal[] = [];
 
   protected constructor(app: App, config: BasesViewConfig, allProperties: BasesPropertyOriginal[], data: BasesEntry[]) {
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(app, config, allProperties, data);
     return self;
   }
@@ -39,11 +39,11 @@ export class BasesQueryResult {
   }
 
   public static fromOriginalType__(value: BasesQueryResultOriginal): BasesQueryResult {
-    return strictProxyForce(value, BasesQueryResult);
+    return strictProxy(value, BasesQueryResult);
   }
 
   public asOriginalType__(): BasesQueryResultOriginal {
-    return strictProxyForce<BasesQueryResultOriginal>(this);
+    return strictProxy<BasesQueryResultOriginal>(this);
   }
 
   public constructor__(_app: App, _config: BasesViewConfig, _allProperties: BasesPropertyOriginal[], _data: BasesEntry[]): void {

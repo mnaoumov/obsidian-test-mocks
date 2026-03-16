@@ -8,13 +8,13 @@ import type {
 import type { Scope } from './Scope.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class Keymap {
   private readonly scopeStack: Scope[] = [];
 
   protected constructor() {
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__();
     return self;
   }
@@ -24,7 +24,7 @@ export class Keymap {
   }
 
   public static fromOriginalType__(value: KeymapOriginal): Keymap {
-    return strictProxyForce(value, Keymap);
+    return strictProxy(value, Keymap);
   }
 
   public static isModEvent(_evt?: null | UserEventOriginal): boolean | PaneTypeOriginal {
@@ -36,7 +36,7 @@ export class Keymap {
   }
 
   public asOriginalType__(): KeymapOriginal {
-    return strictProxyForce<KeymapOriginal>(this);
+    return strictProxy<KeymapOriginal>(this);
   }
 
   public constructor__(): void {

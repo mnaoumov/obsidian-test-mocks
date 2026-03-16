@@ -1,7 +1,7 @@
 import type { ExtraButtonComponent as ExtraButtonComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ExtraButtonComponent extends BaseComponent {
@@ -11,7 +11,7 @@ export class ExtraButtonComponent extends BaseComponent {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.extraSettingsEl = createDiv();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(_containerEl);
     return self;
   }
@@ -21,11 +21,11 @@ export class ExtraButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ExtraButtonComponentOriginal): ExtraButtonComponent {
-    return strictProxyForce(value, ExtraButtonComponent);
+    return strictProxy(value, ExtraButtonComponent);
   }
 
   public asOriginalType2__(): ExtraButtonComponentOriginal {
-    return strictProxyForce<ExtraButtonComponentOriginal>(this);
+    return strictProxy<ExtraButtonComponentOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

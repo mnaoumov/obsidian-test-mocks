@@ -3,7 +3,7 @@ import type { AbstractInputSuggest as AbstractInputSuggestOriginal } from 'obsid
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
@@ -11,17 +11,17 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   public constructor(app: App, textInputEl: HTMLDivElement | HTMLInputElement) {
     super(app);
     this.inputEl = textInputEl;
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor2__(app, textInputEl);
     return self;
   }
 
   public static fromOriginalType2__<T>(value: AbstractInputSuggestOriginal<T>): AbstractInputSuggest<T> {
-    return strictProxyForce<AbstractInputSuggest<T>>(value);
+    return strictProxy<AbstractInputSuggest<T>>(value);
   }
 
   public asOriginalType2__(): AbstractInputSuggestOriginal<T> {
-    return strictProxyForce<AbstractInputSuggestOriginal<T>>(this);
+    return strictProxy<AbstractInputSuggestOriginal<T>>(this);
   }
 
   public constructor2__(_app: App, _textInputEl: HTMLDivElement | HTMLInputElement): void {

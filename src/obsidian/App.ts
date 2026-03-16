@@ -7,7 +7,7 @@ import type {
 import type { CreateConfiguredParams } from '../internal/create-configured-params.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { FileManager } from './FileManager.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { Keymap } from './Keymap.ts';
@@ -34,7 +34,7 @@ export class App {
     this.metadataCache = MetadataCache.create2__(this, this.vault);
     this.scope = Scope.create__();
     this.workspace = Workspace.create2__(this, createDiv());
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor__(adapter, _appId);
     return self;
   }
@@ -90,11 +90,11 @@ export class App {
   }
 
   public static fromOriginalType__(value: AppOriginal): App {
-    return strictProxyForce(value, App);
+    return strictProxy(value, App);
   }
 
   public asOriginalType__(): AppOriginal {
-    return strictProxyForce<AppOriginal>(this);
+    return strictProxy<AppOriginal>(this);
   }
 
   public constructor__(_adapter: DataAdapterOriginal, _appId: string): void {

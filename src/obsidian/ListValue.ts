@@ -3,7 +3,7 @@ import type { ListValue as ListValueOriginal } from 'obsidian';
 import type { Value } from './Value.ts';
 
 import { noop } from '../internal/noop.ts';
-import { strictProxyForce } from '../internal/strict-proxy.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ListValue extends NotNullValue {
@@ -12,7 +12,7 @@ export class ListValue extends NotNullValue {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
   public constructor(value: (unknown | Value)[]) {
     super();
-    const self = strictProxyForce(this);
+    const self = strictProxy(this);
     self.constructor3__(value);
     return self;
   }
@@ -23,11 +23,11 @@ export class ListValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: ListValueOriginal): ListValue {
-    return strictProxyForce(value, ListValue);
+    return strictProxy(value, ListValue);
   }
 
   public asOriginalType3__(): ListValueOriginal {
-    return strictProxyForce<ListValueOriginal>(this);
+    return strictProxy<ListValueOriginal>(this);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
