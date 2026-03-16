@@ -5,7 +5,6 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 // eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
 import { Menu } from './Menu.ts';
 
@@ -20,7 +19,7 @@ export class MenuItem {
   public warning__ = false;
 
   private constructor(_menu: unknown) {
-    const mock = strictMock(this);
+    const mock = createMockOfUnsafe(this);
     return mock;
   }
 

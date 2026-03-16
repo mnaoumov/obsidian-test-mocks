@@ -2,7 +2,6 @@ import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obs
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { TextComponent } from './TextComponent.ts';
 
 export class MomentFormatComponent extends TextComponent {
@@ -12,7 +11,7 @@ export class MomentFormatComponent extends TextComponent {
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
     this.sampleEl = createDiv();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor5__(containerEl);
     return self;
   }

@@ -5,7 +5,6 @@ import type { TFile } from './TFile.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
@@ -22,7 +21,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     super(markdownView.app, markdownView.containerEl);
     this.containerEl = markdownView.containerEl;
     this.markdownView = markdownView;
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor4__(markdownView);
     return self;
   }

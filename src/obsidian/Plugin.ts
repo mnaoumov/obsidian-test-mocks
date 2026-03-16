@@ -16,7 +16,6 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
@@ -37,7 +36,7 @@ export abstract class Plugin extends Component {
     super();
     this.app = app;
     this.manifest = manifest;
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(app, manifest);
     return self;
   }

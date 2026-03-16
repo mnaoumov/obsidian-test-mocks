@@ -5,7 +5,6 @@ import type { Plugin } from './Plugin.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { SettingTab } from './SettingTab.ts';
 
 export abstract class PluginSettingTab extends SettingTab {
@@ -14,7 +13,7 @@ export abstract class PluginSettingTab extends SettingTab {
   public constructor(app: App, plugin: Plugin) {
     super(app);
     this.plugin = plugin;
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(app, plugin);
     return self;
   }

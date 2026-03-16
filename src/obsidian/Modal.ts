@@ -4,7 +4,6 @@ import type { App } from './App.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { Scope } from './Scope.ts';
 
 export class Modal {
@@ -25,7 +24,7 @@ export class Modal {
     this.modalEl = createDiv();
     this.scope = Scope.create__();
     this.titleEl = createDiv();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(app);
     return self;
   }

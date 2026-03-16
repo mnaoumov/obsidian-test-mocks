@@ -5,13 +5,12 @@ import type {
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export class MarkdownPreviewRenderer {
   private static _postProcessors: MarkdownPostProcessorOriginal[] = [];
 
   public constructor(owner: unknown, containerEl: HTMLElement, parentEl: HTMLElement, workerPath: unknown, observeInsertion?: boolean) {
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(owner, containerEl, parentEl, workerPath, observeInsertion);
     return self;
   }

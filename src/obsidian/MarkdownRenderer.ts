@@ -9,7 +9,6 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { App } from './App.ts';
 import { MarkdownRenderChild } from './MarkdownRenderChild.ts';
 
@@ -22,7 +21,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   public constructor(app: App, containerEl: HTMLElement, supportWorker?: boolean) {
     super(containerEl);
     this.app = app;
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(app, containerEl, supportWorker);
     return self;
   }

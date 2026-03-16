@@ -5,13 +5,12 @@ import type { TFile } from './TFile.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
 
 export class QueryController extends Component {
   public constructor(app: App, plugin: unknown, viewHeaderEl: HTMLElement, currentFile?: null | TFile) {
     super();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(app, plugin, viewHeaderEl, currentFile);
     return self;
   }
