@@ -1,7 +1,4 @@
-import type {
-  App as AppOriginal,
-  DataAdapter
-} from 'obsidian';
+import type { App as AppOriginal } from 'obsidian';
 
 import {
   describe,
@@ -9,7 +6,7 @@ import {
   it
 } from 'vitest';
 
-import { castTo } from '../internal/cast.ts';
+import { ensureGenericObject } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 
@@ -50,7 +47,7 @@ describe('App', () => {
   });
 
   it('should create an instance via create__', () => {
-    const adapter = castTo<DataAdapter>(FileSystemAdapter.create__('/mock'));
+    const adapter = FileSystemAdapter.create__('/mock').asOriginalType__();
     const app = App.create__(adapter, 'test-id');
     expect(app).toBeInstanceOf(App);
   });
@@ -115,7 +112,7 @@ describe('App', () => {
 
     it('should throw when accessing an unmocked property', async () => {
       const app = await App.createConfigured__();
-      const record = castTo<Record<string, unknown>>(app);
+      const record = ensureGenericObject(app);
       expect(() => record['nonExistentProperty']).toThrow(
         'Property "nonExistentProperty" is not mocked in App. To override, assign a value first: mock.nonExistentProperty = ...'
       );
@@ -123,7 +120,7 @@ describe('App', () => {
 
     it('should allow accessing a property after assigning it', async () => {
       const app = await App.createConfigured__();
-      const record = castTo<Record<string, unknown>>(app);
+      const record = ensureGenericObject(app);
       const mockValue = { test: true };
       record['customProperty'] = mockValue;
       expect(record['customProperty']).toBe(mockValue);

@@ -6,7 +6,7 @@ import {
   it
 } from 'vitest';
 
-import { castTo } from '../internal/cast.ts';
+import { ensureGenericObject } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { BasesView } from './BasesView.ts';
 import { QueryController } from './QueryController.ts';
@@ -31,7 +31,7 @@ describe('BasesView', () => {
 
   it('should throw when accessing an unmocked property', async () => {
     const view = await createBasesView();
-    const record = castTo<Record<string, unknown>>(view);
+    const record = ensureGenericObject(view);
     expect(() => record['nonExistentProperty']).toThrow();
   });
 

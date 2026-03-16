@@ -1,7 +1,4 @@
-import type {
-  BasesPropertyId,
-  DataAdapter
-} from 'obsidian';
+import type { BasesPropertyId } from 'obsidian';
 
 import {
   describe,
@@ -11,7 +8,6 @@ import {
 
 import type { QueryController } from './QueryController.ts';
 
-import { castTo } from '../internal/cast.ts';
 import { App } from './App.ts';
 import { BasesEntry } from './BasesEntry.ts';
 import { BasesEntryGroup } from './BasesEntryGroup.ts';
@@ -22,7 +18,7 @@ import { TFile } from './TFile.ts';
 
 describe('BasesQueryResult', () => {
   function createResult(): BasesQueryResult {
-    const adapter = castTo<DataAdapter>(FileSystemAdapter.create__('/mock'));
+    const adapter = FileSystemAdapter.create__('/mock').asOriginalType__();
     const app = App.create__(adapter, '');
     const config = BasesViewConfig.create__('', '', '');
     return BasesQueryResult.create__(app, config, [], []);
