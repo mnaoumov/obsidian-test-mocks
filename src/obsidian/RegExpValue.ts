@@ -1,13 +1,16 @@
 import type { RegExpValue as RegExpValueOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class RegExpValue extends NotNullValue {
   public constructor(regexp: RegExp) {
     super();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor3__(regexp);
     return self;
   }

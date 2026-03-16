@@ -4,7 +4,10 @@ import type { Component } from './Component.ts';
 import type { HoverPopover } from './HoverPopover.ts';
 import type { TFile } from './TFile.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -21,7 +24,7 @@ export abstract class MarkdownRenderer extends MarkdownRenderChild {
   public constructor(app: App, containerEl: HTMLElement, supportWorker?: boolean) {
     super(containerEl);
     this.app = app;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor3__(app, containerEl, supportWorker);
     return self;
   }

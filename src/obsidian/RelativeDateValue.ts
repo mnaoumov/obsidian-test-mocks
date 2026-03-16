@@ -1,13 +1,16 @@
 import type { RelativeDateValue as RelativeDateValueOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { DateValue } from './DateValue.ts';
 
 export class RelativeDateValue extends DateValue {
   public constructor(date: Date, showTime?: boolean) {
     super(date, showTime);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor4__(date, showTime);
     return self;
   }

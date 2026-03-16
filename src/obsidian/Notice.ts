@@ -1,6 +1,9 @@
 import type { Notice as NoticeOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export class Notice {
@@ -20,7 +23,7 @@ export class Notice {
       this.messageEl.appendChild(message.cloneNode(true));
     }
     (this as { duration__: number }).duration__ = duration ?? 0;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(message, duration);
     return self;
   }

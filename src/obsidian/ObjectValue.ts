@@ -1,13 +1,16 @@
 import type { ObjectValue as ObjectValueOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ObjectValue extends NotNullValue {
   public constructor(data: unknown) {
     super();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor3__(data);
     return self;
   }

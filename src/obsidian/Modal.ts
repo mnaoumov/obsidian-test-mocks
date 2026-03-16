@@ -2,7 +2,10 @@ import type { Modal as ModalOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { Scope } from './Scope.ts';
 
@@ -24,7 +27,7 @@ export class Modal {
     this.modalEl = createDiv();
     this.scope = Scope.create__();
     this.titleEl = createDiv();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(app);
     return self;
   }

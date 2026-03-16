@@ -1,6 +1,9 @@
 import type { MarkdownRenderChild as MarkdownRenderChildOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { Component } from './Component.ts';
 
@@ -10,7 +13,7 @@ export class MarkdownRenderChild extends Component {
   public constructor(containerEl: HTMLElement) {
     super();
     this.containerEl = containerEl;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(containerEl);
     return self;
   }

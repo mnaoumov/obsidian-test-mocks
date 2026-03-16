@@ -3,14 +3,17 @@ import type { QueryController as QueryControllerOriginal } from 'obsidian';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { Component } from './Component.ts';
 
 export class QueryController extends Component {
   public constructor(app: App, plugin: unknown, viewHeaderEl: HTMLElement, currentFile?: null | TFile) {
     super();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(app, plugin, viewHeaderEl, currentFile);
     return self;
   }

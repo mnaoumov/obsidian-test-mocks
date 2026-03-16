@@ -2,7 +2,10 @@ import type { PopoverSuggest as PopoverSuggestOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { Scope } from './Scope.ts';
 
@@ -14,7 +17,7 @@ export abstract class PopoverSuggest<T> {
   public constructor(app: App, scope?: Scope) {
     this.app = app;
     this.scope = scope ?? Scope.create__();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(app, scope);
     return self;
   }
