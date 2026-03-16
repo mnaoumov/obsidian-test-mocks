@@ -11,9 +11,9 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 export class RenderContext {
   public hoverPopover: HoverPopoverOriginal | null = null;
 
-  protected constructor(_app: App) {
+  protected constructor(app: App) {
     const self = strictProxy(this);
-    self.constructor__(_app);
+    self.constructor__(app);
     return self;
   }
 

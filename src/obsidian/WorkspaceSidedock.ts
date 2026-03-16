@@ -9,10 +9,10 @@ import { WorkspaceSplit } from './WorkspaceSplit.ts';
 export class WorkspaceSidedock extends WorkspaceSplit {
   public collapsed = false;
 
-  protected constructor(workspace: Workspace, direction: string, _side: string, id?: string) {
+  protected constructor(workspace: Workspace, direction: string, side: string, id?: string) {
     super(workspace, direction, id);
     const self = strictProxy(this);
-    self.constructor5__(workspace, direction, _side, id);
+    self.constructor5__(workspace, direction, side, id);
     return self;
   }
 

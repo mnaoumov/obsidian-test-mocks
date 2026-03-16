@@ -15,10 +15,10 @@ export class WorkspaceWindow extends WorkspaceContainer {
     return window;
   }
 
-  protected constructor(workspace: Workspace, id?: string, _size?: Record<string, number>) {
+  protected constructor(workspace: Workspace, id?: string, size?: Record<string, number>) {
     super(workspace, '', id);
     const self = strictProxy(this);
-    self.constructor6__(workspace, id, _size);
+    self.constructor6__(workspace, id, size);
     return self;
   }
 

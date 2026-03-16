@@ -14,11 +14,11 @@ export class HoverPopover extends Component {
   public hoverEl: HTMLElement;
   public state: PopoverStateOriginal = 0;
 
-  public constructor(_parent: HoverParentOriginal, _targetEl: HTMLElement | null, _waitTime?: number, _staticPos?: null | PointOriginal) {
+  public constructor(parent: HoverParentOriginal, targetEl: HTMLElement | null, waitTime?: number, staticPos?: null | PointOriginal) {
     super();
     this.hoverEl = createDiv();
     const self = strictProxy(this);
-    self.constructor2__(_parent, _targetEl, _waitTime, _staticPos);
+    self.constructor2__(parent, targetEl, waitTime, staticPos);
     return self;
   }
 

@@ -9,10 +9,10 @@ import { BaseComponent } from './BaseComponent.ts';
 export class SecretComponent extends BaseComponent {
   private _onChange: ((value: string) => unknown) | null = null;
 
-  public constructor(_app: App, _containerEl: HTMLElement) {
+  public constructor(app: App, containerEl: HTMLElement) {
     super();
     const self = strictProxy(this);
-    self.constructor2__(_app, _containerEl);
+    self.constructor2__(app, containerEl);
     return self;
   }
 

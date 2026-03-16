@@ -8,11 +8,11 @@ export class ExtraButtonComponent extends BaseComponent {
   public extraSettingsEl: HTMLElement;
   private clickHandler?: () => unknown;
 
-  public constructor(_containerEl: HTMLElement) {
+  public constructor(containerEl: HTMLElement) {
     super();
     this.extraSettingsEl = createDiv();
     const self = strictProxy(this);
-    self.constructor2__(_containerEl);
+    self.constructor2__(containerEl);
     return self;
   }
 

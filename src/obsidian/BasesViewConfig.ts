@@ -18,10 +18,10 @@ export class BasesViewConfig {
   private order: BasesPropertyIdOriginal[] = [];
   private sort: BasesSortConfigOriginal[] = [];
 
-  protected constructor(_query: string, _type: string, name: string) {
+  protected constructor(query: string, type: string, name: string) {
     this.name = name;
     const self = strictProxy(this);
-    self.constructor__(_query, _type, name);
+    self.constructor__(query, type, name);
     return self;
   }
 

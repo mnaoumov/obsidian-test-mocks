@@ -27,7 +27,7 @@ export class App {
 
   private readonly localStorage = new Map<string, unknown>();
 
-  protected constructor(adapter: DataAdapterOriginal, _appId: string) {
+  protected constructor(adapter: DataAdapterOriginal, appId: string) {
     this.vault = Vault.create2__(adapter);
     this.fileManager = FileManager.create__(this);
     this.keymap = Keymap.create__();
@@ -35,7 +35,7 @@ export class App {
     this.scope = Scope.create__();
     this.workspace = Workspace.create2__(this, createDiv());
     const self = strictProxy(this);
-    self.constructor__(adapter, _appId);
+    self.constructor__(adapter, appId);
     return self;
   }
 

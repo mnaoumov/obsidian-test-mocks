@@ -7,10 +7,10 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceSplit extends WorkspaceParent {
-  protected constructor(_workspace: Workspace, _direction: string, _id?: string) {
-    super(_workspace, _id);
+  protected constructor(workspace: Workspace, direction: string, id?: string) {
+    super(workspace, id);
     const self = strictProxy(this);
-    self.constructor4__(_workspace, _direction, _id);
+    self.constructor4__(workspace, direction, id);
     return self;
   }
 

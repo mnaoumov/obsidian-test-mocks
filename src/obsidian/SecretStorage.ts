@@ -8,9 +8,9 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 export class SecretStorage {
   private readonly store = new Map<string, string>();
 
-  protected constructor(_app: App) {
+  protected constructor(app: App) {
     const self = strictProxy(this);
-    self.constructor__(_app);
+    self.constructor__(app);
     return self;
   }
 

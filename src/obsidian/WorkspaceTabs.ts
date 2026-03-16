@@ -12,10 +12,10 @@ import { WorkspaceParent } from './WorkspaceParent.ts';
 export class WorkspaceTabs extends WorkspaceParent {
   public override parent: WorkspaceSplitOriginal = strictProxy<WorkspaceSplitOriginal>({});
 
-  protected constructor(_workspace: Workspace, _id?: string) {
-    super(_workspace, _id);
+  protected constructor(workspace: Workspace, id?: string) {
+    super(workspace, id);
     const self = strictProxy(this);
-    self.constructor4__(_workspace, _id);
+    self.constructor4__(workspace, id);
     return self;
   }
 

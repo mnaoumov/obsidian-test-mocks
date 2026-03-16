@@ -6,9 +6,9 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class WorkspaceRibbon {
-  protected constructor(_workspace: Workspace, _side: string) {
+  protected constructor(workspace: Workspace, side: string) {
     const self = strictProxy(this);
-    self.constructor__(_workspace, _side);
+    self.constructor__(workspace, side);
     return self;
   }
 
