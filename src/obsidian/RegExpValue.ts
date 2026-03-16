@@ -2,13 +2,12 @@ import type { RegExpValue as RegExpValueOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class RegExpValue extends NotNullValue {
   public constructor(regexp: RegExp) {
     super();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(regexp);
     return self;
   }

@@ -2,7 +2,6 @@ import type { PrimitiveValue as PrimitiveValueOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export abstract class PrimitiveValue<T> extends NotNullValue {
@@ -11,7 +10,7 @@ export abstract class PrimitiveValue<T> extends NotNullValue {
   public constructor(value: T) {
     super();
     this.value__ = value;
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(value);
     return self;
   }

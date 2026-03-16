@@ -2,7 +2,6 @@ import type { ProgressBarComponent as ProgressBarComponentOriginal } from 'obsid
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ProgressBarComponent extends ValueComponent<number> {
@@ -13,7 +12,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.progressBar__ = createDiv();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor3__(_containerEl);
     return self;
   }
