@@ -117,6 +117,7 @@
     "obsidian": "latest",
     "patch-package": "latest",
     "semver": "latest",
+    "type-fest": "latest",
     "typescript": "latest",
     "typescript-eslint": "latest",
     "vitest": "latest"
