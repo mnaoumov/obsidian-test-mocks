@@ -7,7 +7,10 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export class BasesEntry implements FormulaContextOriginal {
@@ -16,7 +19,7 @@ export class BasesEntry implements FormulaContextOriginal {
 
   protected constructor(_ctx: unknown, file: TFile) {
     this.file = file;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(_ctx, file);
     return self;
   }

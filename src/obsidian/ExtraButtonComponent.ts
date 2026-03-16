@@ -1,6 +1,9 @@
 import type { ExtraButtonComponent as ExtraButtonComponentOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
@@ -11,7 +14,7 @@ export class ExtraButtonComponent extends BaseComponent {
   public constructor(_containerEl: HTMLElement) {
     super();
     this.extraSettingsEl = createDiv();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(_containerEl);
     return self;
   }

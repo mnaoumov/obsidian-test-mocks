@@ -8,7 +8,10 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 import type { TFile } from './TFile.ts';
 import type { TFolder } from './TFolder.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -19,7 +22,7 @@ import { stringifyYaml } from './functions/stringifyYaml.ts';
 
 export class FileManager {
   protected constructor(private readonly app: App) {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(app);
     return self;
   }

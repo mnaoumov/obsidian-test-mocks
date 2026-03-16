@@ -2,7 +2,10 @@ import type { AbstractInputSuggest as AbstractInputSuggestOriginal } from 'obsid
 
 import type { App } from './App.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
@@ -11,7 +14,7 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   public constructor(app: App, textInputEl: HTMLDivElement | HTMLInputElement) {
     super(app);
     this.inputEl = textInputEl;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(app, textInputEl);
     return self;
   }

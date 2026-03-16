@@ -7,14 +7,17 @@ import type {
 
 import type { Scope } from './Scope.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export class Keymap {
   private readonly scopeStack: Scope[] = [];
 
   protected constructor() {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__();
     return self;
   }

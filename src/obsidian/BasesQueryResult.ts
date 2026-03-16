@@ -11,7 +11,10 @@ import type { BasesEntryGroup } from './BasesEntryGroup.ts';
 import type { BasesViewConfig } from './BasesViewConfig.ts';
 import type { QueryController } from './QueryController.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export class BasesQueryResult {
@@ -29,7 +32,7 @@ export class BasesQueryResult {
   private _properties: BasesPropertyIdOriginal[] = [];
 
   protected constructor(app: App, config: BasesViewConfig, allProperties: BasesPropertyOriginal[], data: BasesEntry[]) {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(app, config, allProperties, data);
     return self;
   }

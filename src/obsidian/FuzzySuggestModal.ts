@@ -5,7 +5,10 @@ import type {
 
 import type { App } from './App.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { Modal } from './Modal.ts';
 
@@ -15,7 +18,7 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   public constructor(app: App) {
     super(app);
     this.inputEl = createEl('input');
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor2__(app);
     return self;
   }

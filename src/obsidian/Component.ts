@@ -3,7 +3,10 @@ import type {
   EventRef as EventRefOriginal
 } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 
 export class Component {
@@ -14,7 +17,7 @@ export class Component {
   public loaded__ = false;
 
   public constructor() {
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__();
     return self;
   }

@@ -6,7 +6,10 @@ import type {
 
 import type { CreateConfiguredParams } from '../internal/create-configured-params.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { FileManager } from './FileManager.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -34,7 +37,7 @@ export class App {
     this.metadataCache = MetadataCache.create2__(this, this.vault);
     this.scope = Scope.create__();
     this.workspace = Workspace.create2__(this, createDiv());
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor__(adapter, _appId);
     return self;
   }

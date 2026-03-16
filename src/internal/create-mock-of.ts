@@ -25,10 +25,12 @@ const PASSTHROUGH_PROPS = new Set<string | symbol>([
 ]);
 
 /**
- * Type-safe version for test code — accepts deep-partial objects.
+ * Type-safe version — accepts full objects (inferring T) or deep-partial objects.
  */
-export function createMockOf<T>(partial: PartialDeep<T>): T {
-  return createMockOfUnsafe<T>(partial);
+export function createMockOf<T extends object>(value: T): T;
+export function createMockOf<T>(partial: PartialDeep<T>): T;
+export function createMockOf<T>(value: unknown): T {
+  return createMockOfUnsafe<T>(value);
 }
 
 /**

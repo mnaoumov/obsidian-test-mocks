@@ -3,7 +3,10 @@ import type {
   ItemView as ItemViewOriginal
 } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -14,7 +17,7 @@ export abstract class ItemView extends View {
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.contentEl = createDiv();
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor3__(leaf);
     return self;
   }

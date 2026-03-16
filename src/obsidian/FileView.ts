@@ -5,7 +5,10 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import {
   noop,
   noopAsync
@@ -20,7 +23,7 @@ export abstract class FileView extends ItemView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor4__(leaf);
     return self;
   }

@@ -1,6 +1,9 @@
 import type { AbstractTextComponent as AbstractTextComponentOriginal } from 'obsidian';
 
-import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
+import {
+  createMockOf,
+  createMockOfUnsafe
+} from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -13,7 +16,7 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   public constructor(inputEl: T) {
     super();
     this.inputEl = inputEl;
-    const self = createMockOfUnsafe(this);
+    const self = createMockOf(this);
     self.constructor3__(inputEl);
     return self;
   }
