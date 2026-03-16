@@ -114,7 +114,7 @@ describe('Events', () => {
 
     it('should not throw when event ref has no name or fn', () => {
       const events = Events.create__();
-      const emptyRef = strictProxy<EventRefOriginal>({});
+      const emptyRef = strictProxy<EventRefOriginal>({ fn: undefined, name: undefined });
       expect(() => {
         events.offref(emptyRef);
       }).not.toThrow();
@@ -132,7 +132,7 @@ describe('Events', () => {
 
     it('should not throw when event ref has no fn or e', () => {
       const events = Events.create__();
-      const emptyRef = strictProxy<EventRefOriginal>({});
+      const emptyRef = strictProxy<EventRefOriginal>({ e: undefined, fn: undefined });
       expect(() => {
         events.tryTrigger(emptyRef, ['data']);
       }).not.toThrow();
