@@ -1,6 +1,6 @@
 import type { AbstractTextComponent as AbstractTextComponentOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -20,11 +20,11 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   }
 
   public static fromOriginalType3__<T extends HTMLInputElement | HTMLTextAreaElement>(value: AbstractTextComponentOriginal<T>): AbstractTextComponent<T> {
-    return castTo<AbstractTextComponent<T>>(value);
+    return createMockOfUnsafe<AbstractTextComponent<T>>(value);
   }
 
   public asOriginalType3__(): AbstractTextComponentOriginal<T> {
-    return castTo<AbstractTextComponentOriginal<T>>(this);
+    return createMockOfUnsafe<AbstractTextComponentOriginal<T>>(this);
   }
 
   public constructor3__(_inputEl: T): void {

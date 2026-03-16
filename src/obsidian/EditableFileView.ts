@@ -1,6 +1,6 @@
 import type { EditableFileView as EditableFileViewOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { FileView } from './FileView.ts';
@@ -15,11 +15,11 @@ export abstract class EditableFileView extends FileView {
   }
 
   public static fromOriginalType5__(value: EditableFileViewOriginal): EditableFileView {
-    return castTo<EditableFileView>(value);
+    return createMockOfUnsafe<EditableFileView>(value);
   }
 
   public asOriginalType5__(): EditableFileViewOriginal {
-    return castTo<EditableFileViewOriginal>(this);
+    return createMockOfUnsafe<EditableFileViewOriginal>(this);
   }
 
   public constructor5__(_leaf: WorkspaceLeaf): void {

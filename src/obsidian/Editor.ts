@@ -11,7 +11,7 @@ import type {
 
 import type { CoordsLeftTop } from '../internal/types.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
@@ -34,11 +34,11 @@ export abstract class Editor {
   }
 
   public static fromOriginalType__(value: EditorOriginal): Editor {
-    return castTo<Editor>(value);
+    return createMockOfUnsafe<Editor>(value);
   }
 
   public asOriginalType__(): EditorOriginal {
-    return castTo<EditorOriginal>(this);
+    return createMockOfUnsafe<EditorOriginal>(this);
   }
 
   public blur(): void {
@@ -303,7 +303,7 @@ export abstract class Editor {
     }
 
     if (tx.selections) {
-      this.setSelections(castTo<EditorSelectionOrCaretOriginal[]>(tx.selections));
+      this.setSelections(tx.selections.map((sel) => ({ anchor: sel.from, head: sel.to ?? sel.from })));
     }
   }
 

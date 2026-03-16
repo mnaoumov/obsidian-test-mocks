@@ -1,6 +1,6 @@
 import type { CapacitorAdapter as CapacitorAdapterOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
@@ -18,11 +18,11 @@ export class CapacitorAdapter extends InMemoryAdapter {
   }
 
   public static fromOriginalType__(value: CapacitorAdapterOriginal): CapacitorAdapter {
-    return castTo<CapacitorAdapter>(value);
+    return createMockOfUnsafe<CapacitorAdapter>(value);
   }
 
   public asOriginalType__(): CapacitorAdapterOriginal {
-    return castTo<CapacitorAdapterOriginal>(this);
+    return createMockOfUnsafe<CapacitorAdapterOriginal>(this);
   }
 
   public constructor__(_basePath: string, _fs: unknown): void {

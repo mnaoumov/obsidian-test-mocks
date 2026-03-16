@@ -2,7 +2,7 @@ import type { BasesView as BasesViewOriginal } from 'obsidian';
 
 import type { QueryController } from './QueryController.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { Component } from './Component.ts';
@@ -16,11 +16,11 @@ export abstract class BasesView extends Component {
   }
 
   public static fromOriginalType2__(value: BasesViewOriginal): BasesView {
-    return castTo<BasesView>(value);
+    return createMockOfUnsafe<BasesView>(value);
   }
 
   public asOriginalType2__(): BasesViewOriginal {
-    return castTo<BasesViewOriginal>(this);
+    return createMockOfUnsafe<BasesViewOriginal>(this);
   }
 
   public constructor2__(_controller: QueryController): void {

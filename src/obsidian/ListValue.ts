@@ -2,7 +2,7 @@ import type { ListValue as ListValueOriginal } from 'obsidian';
 
 import type { Value } from './Value.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { NotNullValue } from './NotNullValue.ts';
@@ -24,11 +24,11 @@ export class ListValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: ListValueOriginal): ListValue {
-    return castTo<ListValue>(value);
+    return createMockOfUnsafe<ListValue>(value);
   }
 
   public asOriginalType3__(): ListValueOriginal {
-    return castTo<ListValueOriginal>(this);
+    return createMockOfUnsafe<ListValueOriginal>(this);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.

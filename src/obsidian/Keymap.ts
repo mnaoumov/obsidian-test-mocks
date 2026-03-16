@@ -7,7 +7,7 @@ import type {
 
 import type { Scope } from './Scope.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -25,7 +25,7 @@ export class Keymap {
   }
 
   public static fromOriginalType__(value: KeymapOriginal): Keymap {
-    return castTo<Keymap>(value);
+    return createMockOfUnsafe<Keymap>(value);
   }
 
   public static isModEvent(_evt?: null | UserEventOriginal): boolean | PaneTypeOriginal {
@@ -37,7 +37,7 @@ export class Keymap {
   }
 
   public asOriginalType__(): KeymapOriginal {
-    return castTo<KeymapOriginal>(this);
+    return createMockOfUnsafe<KeymapOriginal>(this);
   }
 
   public constructor__(): void {

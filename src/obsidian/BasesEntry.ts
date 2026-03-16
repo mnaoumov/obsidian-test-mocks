@@ -7,7 +7,7 @@ import type {
 
 import type { TFile } from './TFile.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -27,11 +27,11 @@ export class BasesEntry implements FormulaContextOriginal {
   }
 
   public static fromOriginalType__(value: BasesEntryOriginal): BasesEntry {
-    return castTo<BasesEntry>(value);
+    return createMockOfUnsafe<BasesEntry>(value);
   }
 
   public asOriginalType__(): BasesEntryOriginal {
-    return castTo<BasesEntryOriginal>(this);
+    return createMockOfUnsafe<BasesEntryOriginal>(this);
   }
 
   public constructor__(_ctx: unknown, _file: TFile): void {

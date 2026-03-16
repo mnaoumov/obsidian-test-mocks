@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T is the cast target type specified by the caller.
-export function castTo<T>(value: unknown): T {
-  return value as T;
-}
+// Re-export for backward compatibility during migration.
+
+export { createMockOfUnsafe as castTo } from './create-mock-of.ts';

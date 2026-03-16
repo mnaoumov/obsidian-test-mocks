@@ -1,6 +1,5 @@
 import type { SvgElementInfo } from '../internal/types.ts';
 
-import { castTo } from '../internal/cast.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { createEl as createElGlobal } from './functions/createEl.ts';
 import { createSvg as createSvgGlobal } from './functions/createSvg.ts';
@@ -80,7 +79,7 @@ export function insertAfter<T extends Node>(this: Node, node: T, child: Node | n
 }
 
 export function instanceOf<T>(this: Node, type: new () => T): this is T {
-  return this instanceof (castTo<new () => object>(type));
+  return this instanceof type;
 }
 
 export function setChildrenInPlace(this: Node, children: Node[]): void {

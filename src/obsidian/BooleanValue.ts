@@ -1,6 +1,6 @@
 import type { BooleanValue as BooleanValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
@@ -18,11 +18,11 @@ export class BooleanValue extends PrimitiveValue<boolean> {
   }
 
   public static fromOriginalType4__(value: BooleanValueOriginal): BooleanValue {
-    return castTo<BooleanValue>(value);
+    return createMockOfUnsafe<BooleanValue>(value);
   }
 
   public asOriginalType4__(): BooleanValueOriginal {
-    return castTo<BooleanValueOriginal>(this);
+    return createMockOfUnsafe<BooleanValueOriginal>(this);
   }
 
   public constructor4__(_value = false): void {

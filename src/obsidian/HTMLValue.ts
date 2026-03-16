@@ -1,6 +1,6 @@
 import type { HTMLValue as HTMLValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { StringValue } from './StringValue.ts';
@@ -18,11 +18,11 @@ export class HTMLValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: HTMLValueOriginal): HTMLValue {
-    return castTo<HTMLValue>(value);
+    return createMockOfUnsafe<HTMLValue>(value);
   }
 
   public asOriginalType5__(): HTMLValueOriginal {
-    return castTo<HTMLValueOriginal>(this);
+    return createMockOfUnsafe<HTMLValueOriginal>(this);
   }
 
   public constructor5__(_value: string): void {

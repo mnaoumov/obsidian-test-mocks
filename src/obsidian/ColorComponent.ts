@@ -4,7 +4,7 @@ import type {
   RGB as RGBOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ValueComponent } from './ValueComponent.ts';
@@ -45,11 +45,11 @@ export class ColorComponent extends ValueComponent<string> {
   }
 
   public static fromOriginalType3__(value: ColorComponentOriginal): ColorComponent {
-    return castTo<ColorComponent>(value);
+    return createMockOfUnsafe<ColorComponent>(value);
   }
 
   public asOriginalType3__(): ColorComponentOriginal {
-    return castTo<ColorComponentOriginal>(this);
+    return createMockOfUnsafe<ColorComponentOriginal>(this);
   }
 
   public constructor3__(_containerEl: HTMLElement): void {

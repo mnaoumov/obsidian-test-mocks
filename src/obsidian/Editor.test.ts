@@ -655,8 +655,8 @@ describe('Editor core methods', () => {
       const editor = createEditor('hello world');
       editor.transaction({
         selections: [
-          { anchor: pos(LINE_1, CH_2), head: pos(LINE_1, CH_5) }
-        ] as never
+          { from: pos(LINE_1, CH_2), to: pos(LINE_1, CH_5) }
+        ]
       });
       expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, CH_2));
       expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_5));

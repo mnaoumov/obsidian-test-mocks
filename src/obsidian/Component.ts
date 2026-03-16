@@ -3,7 +3,7 @@ import type {
   EventRef as EventRefOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -25,7 +25,7 @@ export class Component {
   }
 
   public static fromOriginalType__(value: ComponentOriginal): Component {
-    return castTo<Component>(value);
+    return createMockOfUnsafe<Component>(value);
   }
 
   public addChild<T extends Component>(component: T): T {
@@ -37,7 +37,7 @@ export class Component {
   }
 
   public asOriginalType__(): ComponentOriginal {
-    return castTo<ComponentOriginal>(this);
+    return createMockOfUnsafe<ComponentOriginal>(this);
   }
 
   public constructor__(): void {

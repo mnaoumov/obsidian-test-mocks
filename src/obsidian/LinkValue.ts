@@ -2,7 +2,7 @@ import type { LinkValue as LinkValueOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
@@ -21,7 +21,7 @@ export class LinkValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: LinkValueOriginal): LinkValue {
-    return castTo<LinkValue>(value);
+    return createMockOfUnsafe<LinkValue>(value);
   }
 
   public static parseFromString(app: App, input: string, sourcePath: string): LinkValue | null {
@@ -36,7 +36,7 @@ export class LinkValue extends StringValue {
   }
 
   public asOriginalType5__(): LinkValueOriginal {
-    return castTo<LinkValueOriginal>(this);
+    return createMockOfUnsafe<LinkValueOriginal>(this);
   }
 
   public constructor5__(_app: App, _value: string, _sourcePath: string, _display?: null | string): void {

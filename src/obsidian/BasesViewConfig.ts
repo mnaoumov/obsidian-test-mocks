@@ -7,7 +7,7 @@ import type {
 
 import type { BasesView } from './BasesView.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { NullValue } from './NullValue.ts';
@@ -31,11 +31,11 @@ export class BasesViewConfig {
   }
 
   public static fromOriginalType__(value: BasesViewConfigOriginal): BasesViewConfig {
-    return castTo<BasesViewConfig>(value);
+    return createMockOfUnsafe<BasesViewConfig>(value);
   }
 
   public asOriginalType__(): BasesViewConfigOriginal {
-    return castTo<BasesViewConfigOriginal>(this);
+    return createMockOfUnsafe<BasesViewConfigOriginal>(this);
   }
 
   public constructor__(_query: string, _type: string, _name: string): void {

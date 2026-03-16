@@ -6,7 +6,7 @@ import type {
 
 import type { CreateConfiguredParams } from '../internal/create-configured-params.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { FileManager } from './FileManager.ts';
@@ -91,11 +91,11 @@ export class App {
   }
 
   public static fromOriginalType__(value: AppOriginal): App {
-    return castTo<App>(value);
+    return createMockOfUnsafe<App>(value);
   }
 
   public asOriginalType__(): AppOriginal {
-    return castTo<AppOriginal>(this);
+    return createMockOfUnsafe<AppOriginal>(this);
   }
 
   public constructor__(_adapter: DataAdapterOriginal, _appId: string): void {

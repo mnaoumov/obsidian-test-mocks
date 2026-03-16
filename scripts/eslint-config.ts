@@ -174,7 +174,7 @@ function getEslintConfigs(): Linter.Config[] {
             selector: 'MethodDefinition[override=true][key.name=/.*__$/]'
           },
           {
-            message: 'Do not use double type assertions (as X as Y). Use castTo<T>() from src/internal/cast.ts instead (G10e).',
+            message: 'Do not use double type assertions (as X as Y). Use createMockOf<T>() from src/internal/cast.ts instead (G10e).',
             selector: 'TSAsExpression > TSAsExpression'
           },
           {
@@ -184,6 +184,10 @@ function getEslintConfigs(): Linter.Config[] {
           {
             message: 'Do not use _ prefix on methods or functions. The _ prefix is for unused parameters only (G10e).',
             selector: 'FunctionDeclaration[id.name=/^_/]'
+          },
+          {
+            message: 'Do not rename imports with "Mock" in the alias. Mock classes are the canonical types in this project — use the original name.',
+            selector: 'ImportSpecifier[local.name=/Mock/]:not([imported.name=/Mock/])'
           },
           {
             message: 'Avoid dynamic import(). Use static imports instead. Only use dynamic imports for lazy/conditional loading (G10a).',

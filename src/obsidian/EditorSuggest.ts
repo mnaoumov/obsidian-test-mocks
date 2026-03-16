@@ -10,7 +10,7 @@ import type {
 
 import type { App } from './App.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
@@ -29,11 +29,11 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
   }
 
   public static fromOriginalType2__<T>(value: EditorSuggestOriginal<T>): EditorSuggest<T> {
-    return castTo<EditorSuggest<T>>(value);
+    return createMockOfUnsafe<EditorSuggest<T>>(value);
   }
 
   public asOriginalType2__(): EditorSuggestOriginal<T> {
-    return castTo<EditorSuggestOriginal<T>>(this);
+    return createMockOfUnsafe<EditorSuggestOriginal<T>>(this);
   }
 
   public constructor2__(_app: App): void {

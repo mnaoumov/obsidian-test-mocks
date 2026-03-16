@@ -5,7 +5,7 @@ import type {
 
 import type { EventsEntry } from '../internal/types.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -23,11 +23,11 @@ export class Events {
   }
 
   public static fromOriginalType__(value: EventsOriginal): Events {
-    return castTo<Events>(value);
+    return createMockOfUnsafe<Events>(value);
   }
 
   public asOriginalType__(): EventsOriginal {
-    return castTo<EventsOriginal>(this);
+    return createMockOfUnsafe<EventsOriginal>(this);
   }
 
   public constructor__(): void {
@@ -43,15 +43,18 @@ export class Events {
   }
 
   public offref(ref: EventRefOriginal): void {
-    const entry = castTo<EventsEntry>(ref);
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- entry.fn is a stored function reference, not a class method.
+    const entry = ref as Partial<EventsEntry>;
+    if (!entry.name || !entry.fn) {
+      return;
+    }
+
     const fn = entry.fn as (...data: unknown[]) => unknown;
     this.off(entry.name, fn);
   }
 
   public on(name: string, callback: (...data: unknown[]) => unknown, ctx?: unknown): EventRefOriginal {
     this._[name] ??= [];
-    const self = castTo<EventsOriginal>(this);
+    const self = this.asOriginalType__();
     this._[name].push({ ctx, e: self, fn: callback, name });
     return { e: self, fn: callback, name };
   }
@@ -67,7 +70,10 @@ export class Events {
   }
 
   public tryTrigger(evt: EventRefOriginal, args: unknown[]): void {
-    const entry = castTo<EventsEntry>(evt);
+    const entry = evt as Partial<EventsEntry>;
+    if (!entry.fn || !entry.e) {
+      return;
+    }
     entry.fn.call(entry.e, ...args);
   }
 }

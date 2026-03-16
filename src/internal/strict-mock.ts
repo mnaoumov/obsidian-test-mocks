@@ -1,28 +1,11 @@
-const STRICT_MOCK_MARKER = Symbol('strictMock');
+import { createMockOfUnsafe } from './create-mock-of.ts';
 
-const PASSTHROUGH_PROPS = new Set<string | symbol>([
-  Symbol.iterator,
-  Symbol.toPrimitive,
-  Symbol.toStringTag,
-  'then',
-  'toJSON'
-]);
-
-const strictMockHandler: ProxyHandler<object> = {
-  get(target, prop, receiver): unknown {
-    if (typeof prop === 'symbol' || prop in target || PASSTHROUGH_PROPS.has(prop)) {
-      return Reflect.get(target, prop, receiver);
-    }
-
-    const name = target.constructor.name;
-    throw new Error(`Property "${prop}" is not mocked in ${name}. To override, assign a value first: mock.${prop} = ...`);
-  }
-};
-
+/**
+ * Wraps a class instance in a strict proxy that throws on unmocked property access.
+ * Delegates to `createMockOfUnsafe`, which handles idempotent double-wrap protection,
+ * passthrough props (`Symbol.iterator`, `then`, `toJSON`, etc.), and class-name-aware
+ * error messages.
+ */
 export function strictMock<T extends object>(instance: T): T {
-  if (STRICT_MOCK_MARKER in instance) {
-    return instance;
-  }
-  Object.defineProperty(instance, STRICT_MOCK_MARKER, { value: true });
-  return new Proxy(instance, strictMockHandler) as T;
+  return createMockOfUnsafe<T>(instance);
 }

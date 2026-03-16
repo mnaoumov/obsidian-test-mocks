@@ -5,7 +5,7 @@ import type {
 
 import type { BasesEntry } from './BasesEntry.ts';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 
@@ -28,11 +28,11 @@ export class BasesEntryGroup {
   }
 
   public static fromOriginalType__(value: BasesEntryGroupOriginal): BasesEntryGroup {
-    return castTo<BasesEntryGroup>(value);
+    return createMockOfUnsafe<BasesEntryGroup>(value);
   }
 
   public asOriginalType__(): BasesEntryGroupOriginal {
-    return castTo<BasesEntryGroupOriginal>(this);
+    return createMockOfUnsafe<BasesEntryGroupOriginal>(this);
   }
 
   public constructor__(_entries: BasesEntry[], _key: unknown): void {

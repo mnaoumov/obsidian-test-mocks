@@ -3,7 +3,7 @@ import type {
   TooltipOptions as TooltipOptionsOriginal
 } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
@@ -25,11 +25,11 @@ export class ButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ButtonComponentOriginal): ButtonComponent {
-    return castTo<ButtonComponent>(value);
+    return createMockOfUnsafe<ButtonComponent>(value);
   }
 
   public asOriginalType2__(): ButtonComponentOriginal {
-    return castTo<ButtonComponentOriginal>(this);
+    return createMockOfUnsafe<ButtonComponentOriginal>(this);
   }
 
   public constructor2__(_containerEl: HTMLElement): void {

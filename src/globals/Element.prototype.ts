@@ -1,4 +1,4 @@
-import { castTo } from '../internal/cast.ts';
+import { assert } from '../internal/type-guards.ts';
 import { empty } from './Node.prototype.ts';
 
 export function addClass(this: Element, ...classes: string[]): void {
@@ -20,7 +20,8 @@ export function findAll(this: Element, selector: string): HTMLElement[] {
 export function findAllSelf(this: Element, selector: string): HTMLElement[] {
   const out: HTMLElement[] = [];
   if (this.matches(selector)) {
-    out.push(castTo<HTMLElement>(this));
+    assert(this instanceof HTMLElement, 'This is not an HTMLElement');
+    out.push(this);
   }
   out.push(...Array.from(this.querySelectorAll<HTMLElement>(selector)));
   return out;

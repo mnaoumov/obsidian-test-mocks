@@ -1,6 +1,6 @@
 import type { IconValue as IconValueOriginal } from 'obsidian';
 
-import { castTo } from '../internal/cast.ts';
+import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
 import { strictMock } from '../internal/strict-mock.ts';
 import { StringValue } from './StringValue.ts';
@@ -18,11 +18,11 @@ export class IconValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: IconValueOriginal): IconValue {
-    return castTo<IconValue>(value);
+    return createMockOfUnsafe<IconValue>(value);
   }
 
   public asOriginalType5__(): IconValueOriginal {
-    return castTo<IconValueOriginal>(this);
+    return createMockOfUnsafe<IconValueOriginal>(this);
   }
 
   public constructor5__(_value: string): void {
