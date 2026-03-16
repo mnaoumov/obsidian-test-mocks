@@ -4,11 +4,10 @@ import type { Workspace } from './Workspace.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 
 export class WorkspaceRibbon {
   protected constructor(_workspace: Workspace, _side: string) {
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(_workspace, _side);
     return self;
   }

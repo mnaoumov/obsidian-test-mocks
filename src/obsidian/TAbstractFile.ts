@@ -5,7 +5,6 @@ import type { Vault } from './Vault.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
 export abstract class TAbstractFile {
@@ -20,7 +19,7 @@ export abstract class TAbstractFile {
     this.path = path;
     const parts = path.split('/');
     this.name = ensureNonNullable(parts[parts.length - 1]);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor__(vault, path);
     return self;
   }

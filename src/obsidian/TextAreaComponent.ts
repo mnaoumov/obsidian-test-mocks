@@ -2,13 +2,12 @@ import type { TextAreaComponent as TextAreaComponentOriginal } from 'obsidian';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement> {
   public constructor(_containerEl: HTMLElement) {
     super(createEl('textarea'));
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor4__(_containerEl);
     return self;
   }

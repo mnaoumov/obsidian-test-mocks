@@ -7,7 +7,6 @@ import type { App } from './App.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { Modal } from './Modal.ts';
 
 const DEFAULT_LIMIT = 100;
@@ -23,7 +22,7 @@ export abstract class SuggestModal<T> extends Modal {
     super(app);
     this.inputEl = createEl('input');
     this.resultContainerEl = createDiv();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(app);
     return self;
   }

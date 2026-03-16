@@ -4,7 +4,6 @@ import type { App } from './App.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class SecretComponent extends BaseComponent {
@@ -12,7 +11,7 @@ export class SecretComponent extends BaseComponent {
 
   public constructor(_app: App, _containerEl: HTMLElement) {
     super();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor2__(_app, _containerEl);
     return self;
   }

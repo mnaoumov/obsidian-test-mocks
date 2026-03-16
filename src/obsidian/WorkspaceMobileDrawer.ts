@@ -2,7 +2,6 @@ import type { WorkspaceMobileDrawer as WorkspaceMobileDrawerOriginal } from 'obs
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceMobileDrawer extends WorkspaceParent {
@@ -10,7 +9,7 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
 
   protected constructor() {
     super();
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor4__();
     return self;
   }

@@ -4,7 +4,6 @@ import type { Workspace } from './Workspace.ts';
 
 import { createMockOfUnsafe } from '../internal/create-mock-of.ts';
 import { noop } from '../internal/noop.ts';
-import { strictMock } from '../internal/strict-mock.ts';
 import { WorkspaceContainer } from './WorkspaceContainer.ts';
 
 export class WorkspaceWindow extends WorkspaceContainer {
@@ -18,7 +17,7 @@ export class WorkspaceWindow extends WorkspaceContainer {
 
   protected constructor(workspace: Workspace, id?: string, _size?: Record<string, number>) {
     super(workspace, '', id);
-    const self = strictMock(this);
+    const self = createMockOfUnsafe(this);
     self.constructor6__(workspace, id, _size);
     return self;
   }
