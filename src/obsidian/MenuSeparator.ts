@@ -6,9 +6,9 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class MenuSeparator {
-  protected constructor(_menu: Menu) {
+  protected constructor(menu: Menu) {
     const self = strictProxy(this);
-    self.constructor__(_menu);
+    self.constructor__(menu);
     return self;
   }
 

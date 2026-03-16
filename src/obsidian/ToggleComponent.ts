@@ -13,11 +13,11 @@ export class ToggleComponent extends ValueComponent<boolean> {
   private _onChange: ((value: boolean) => unknown) | null = null;
   private value = false;
 
-  public constructor(_containerEl: HTMLElement) {
+  public constructor(containerEl: HTMLElement) {
     super();
     this.toggleEl = createDiv();
     const self = strictProxy(this);
-    self.constructor3__(_containerEl);
+    self.constructor3__(containerEl);
     return self;
   }
 

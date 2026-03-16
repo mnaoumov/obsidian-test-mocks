@@ -14,10 +14,10 @@ export class BasesEntry implements FormulaContextOriginal {
   public file: TFile;
   private readonly values = new Map<BasesPropertyIdOriginal, null | ValueOriginal>();
 
-  protected constructor(_ctx: unknown, file: TFile) {
+  protected constructor(ctx: unknown, file: TFile) {
     this.file = file;
     const self = strictProxy(this);
-    self.constructor__(_ctx, file);
+    self.constructor__(ctx, file);
     return self;
   }
 

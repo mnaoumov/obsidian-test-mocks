@@ -5,10 +5,10 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class CapacitorAdapter extends InMemoryAdapter {
-  protected constructor(basePath: string, _fs: unknown) {
+  protected constructor(basePath: string, fs: unknown) {
     super(basePath);
     const self = strictProxy(this);
-    self.constructor__(basePath, _fs);
+    self.constructor__(basePath, fs);
     return self;
   }
 

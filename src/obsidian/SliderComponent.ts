@@ -15,12 +15,12 @@ export class SliderComponent extends ValueComponent<number> {
   private step: 'any' | number = 1;
   private value = 0;
 
-  public constructor(_containerEl: HTMLElement) {
+  public constructor(containerEl: HTMLElement) {
     super();
     this.sliderEl = createEl('input');
     this.sliderEl.type = 'range';
     const self = strictProxy(this);
-    self.constructor3__(_containerEl);
+    self.constructor3__(containerEl);
     return self;
   }
 

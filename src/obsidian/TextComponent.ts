@@ -7,7 +7,7 @@ import { AbstractTextComponent } from './AbstractTextComponent.ts';
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
   public eventListeners__: Record<string, ((...args: unknown[]) => void)[]> = {};
 
-  public constructor(_containerEl: HTMLElement) {
+  public constructor(containerEl: HTMLElement) {
     super(createEl('input'));
     const eventListeners = this.eventListeners__;
     const origAddEventListener = this.inputEl.addEventListener.bind(this.inputEl);
@@ -20,7 +20,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
       origAddEventListener(...args);
     } as HTMLInputElement['addEventListener'];
     const self = strictProxy(this);
-    self.constructor4__(_containerEl);
+    self.constructor4__(containerEl);
     return self;
   }
 

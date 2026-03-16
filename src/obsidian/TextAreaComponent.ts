@@ -5,10 +5,10 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement> {
-  public constructor(_containerEl: HTMLElement) {
+  public constructor(containerEl: HTMLElement) {
     super(createEl('textarea'));
     const self = strictProxy(this);
-    self.constructor4__(_containerEl);
+    self.constructor4__(containerEl);
     return self;
   }
 

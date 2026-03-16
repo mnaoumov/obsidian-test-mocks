@@ -7,12 +7,12 @@ import { AbstractTextComponent } from './AbstractTextComponent.ts';
 export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   public clearButtonEl: HTMLElement;
 
-  public constructor(_containerEl: HTMLElement) {
+  public constructor(containerEl: HTMLElement) {
     super(createEl('input'));
     this.inputEl.type = 'search';
     this.clearButtonEl = createDiv();
     const self = strictProxy(this);
-    self.constructor4__(_containerEl);
+    self.constructor4__(containerEl);
     return self;
   }
 

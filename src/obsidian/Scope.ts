@@ -11,9 +11,9 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 export class Scope {
   private readonly handlers: KeymapEventHandlerOriginal[] = [];
 
-  protected constructor(_parent?: Scope) {
+  protected constructor(parent?: Scope) {
     const self = strictProxy(this);
-    self.constructor__(_parent);
+    self.constructor__(parent);
     return self;
   }
 
