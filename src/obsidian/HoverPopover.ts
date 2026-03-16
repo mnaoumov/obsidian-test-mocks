@@ -7,10 +7,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 
 export class HoverPopover extends Component {
@@ -34,7 +31,7 @@ export class HoverPopover extends Component {
   }
 
   public static fromOriginalType2__(value: HoverPopoverOriginal): HoverPopover {
-    return mergePrototype(HoverPopover, value);
+    return strictProxyForce(value, HoverPopover);
   }
 
   public asOriginalType2__(): HoverPopoverOriginal {

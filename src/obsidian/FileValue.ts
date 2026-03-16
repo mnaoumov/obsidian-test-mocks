@@ -4,10 +4,7 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class FileValue extends NotNullValue {
@@ -23,7 +20,7 @@ export class FileValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: FileValueOriginal): FileValue {
-    return mergePrototype(FileValue, value);
+    return strictProxyForce(value, FileValue);
   }
 
   public asOriginalType3__(): FileValueOriginal {

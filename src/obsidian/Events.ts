@@ -6,10 +6,7 @@ import type {
 import type { EventsEntry } from '../internal/types.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class Events {
   private _: Record<string, EventsEntry[]> = {};
@@ -25,7 +22,7 @@ export class Events {
   }
 
   public static fromOriginalType__(value: EventsOriginal): Events {
-    return mergePrototype(Events, value);
+    return strictProxyForce(value, Events);
   }
 
   public asOriginalType__(): EventsOriginal {

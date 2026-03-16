@@ -7,10 +7,7 @@ import type {
 import type { CreateConfiguredParams } from '../internal/create-configured-params.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { FileManager } from './FileManager.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { Keymap } from './Keymap.ts';
@@ -93,7 +90,7 @@ export class App {
   }
 
   public static fromOriginalType__(value: AppOriginal): App {
-    return mergePrototype(App, value);
+    return strictProxyForce(value, App);
   }
 
   public asOriginalType__(): AppOriginal {

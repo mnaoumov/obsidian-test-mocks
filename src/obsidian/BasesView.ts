@@ -3,10 +3,7 @@ import type { BasesView as BasesViewOriginal } from 'obsidian';
 import type { QueryController } from './QueryController.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 
 export abstract class BasesView extends Component {
@@ -18,7 +15,7 @@ export abstract class BasesView extends Component {
   }
 
   public static fromOriginalType2__(value: BasesViewOriginal): BasesView {
-    return mergePrototype(BasesView, value);
+    return strictProxyForce(value, BasesView);
   }
 
   public asOriginalType2__(): BasesViewOriginal {

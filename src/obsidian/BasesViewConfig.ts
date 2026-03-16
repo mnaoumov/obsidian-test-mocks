@@ -8,10 +8,7 @@ import type {
 import type { BasesView } from './BasesView.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { NullValue } from './NullValue.ts';
 
 export class BasesViewConfig {
@@ -33,7 +30,7 @@ export class BasesViewConfig {
   }
 
   public static fromOriginalType__(value: BasesViewConfigOriginal): BasesViewConfig {
-    return mergePrototype(BasesViewConfig, value);
+    return strictProxyForce(value, BasesViewConfig);
   }
 
   public asOriginalType__(): BasesViewConfigOriginal {

@@ -1,10 +1,7 @@
 import type { EditableFileView as EditableFileViewOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { FileView } from './FileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -17,7 +14,7 @@ export abstract class EditableFileView extends FileView {
   }
 
   public static fromOriginalType5__(value: EditableFileViewOriginal): EditableFileView {
-    return mergePrototype(EditableFileView, value);
+    return strictProxyForce(value, EditableFileView);
   }
 
   public asOriginalType5__(): EditableFileViewOriginal {

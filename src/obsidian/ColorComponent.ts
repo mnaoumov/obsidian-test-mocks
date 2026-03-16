@@ -5,10 +5,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 /* eslint-disable no-magic-numbers -- Color conversion constants. */
@@ -47,7 +44,7 @@ export class ColorComponent extends ValueComponent<string> {
   }
 
   public static fromOriginalType3__(value: ColorComponentOriginal): ColorComponent {
-    return mergePrototype(ColorComponent, value);
+    return strictProxyForce(value, ColorComponent);
   }
 
   public asOriginalType3__(): ColorComponentOriginal {

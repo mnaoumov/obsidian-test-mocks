@@ -3,10 +3,7 @@ import type { ListValue as ListValueOriginal } from 'obsidian';
 import type { Value } from './Value.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ListValue extends NotNullValue {
@@ -26,7 +23,7 @@ export class ListValue extends NotNullValue {
   }
 
   public static fromOriginalType3__(value: ListValueOriginal): ListValue {
-    return mergePrototype(ListValue, value);
+    return strictProxyForce(value, ListValue);
   }
 
   public asOriginalType3__(): ListValueOriginal {

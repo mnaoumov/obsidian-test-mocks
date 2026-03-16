@@ -4,10 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
@@ -27,7 +24,7 @@ export class ButtonComponent extends BaseComponent {
   }
 
   public static fromOriginalType2__(value: ButtonComponentOriginal): ButtonComponent {
-    return mergePrototype(ButtonComponent, value);
+    return strictProxyForce(value, ButtonComponent);
   }
 
   public asOriginalType2__(): ButtonComponentOriginal {

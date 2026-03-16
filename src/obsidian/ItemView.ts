@@ -4,10 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -23,7 +20,7 @@ export abstract class ItemView extends View {
   }
 
   public static fromOriginalType3__(value: ItemViewOriginal): ItemView {
-    return mergePrototype(ItemView, value);
+    return strictProxyForce(value, ItemView);
   }
 
   public addAction(_icon: IconNameOriginal, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {

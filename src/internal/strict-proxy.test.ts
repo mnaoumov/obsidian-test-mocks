@@ -41,13 +41,13 @@ describe('strictProxy', () => {
 
   it('should throw on unmocked property access', () => {
     const mock = strictProxy<MockTarget>({ name: 'test' });
-    expect(() => mock.fn()).toThrow('Unmocked property "fn" was accessed on mock object');
+    expect(() => mock.fn()).toThrow('Property "fn" is not mocked');
   });
 
   it('should recursively proxy nested plain objects', () => {
     const mock = strictProxy<MockTarget>({ nested: { value: TEST_VALUE } });
     expect(mock.nested.value).toBe(TEST_VALUE);
-    expect(() => mock.nested.deep).toThrow('Unmocked property "deep" was accessed on mock object');
+    expect(() => mock.nested.deep).toThrow('Property "deep" is not mocked');
   });
 
   it('should cache proxied children', () => {

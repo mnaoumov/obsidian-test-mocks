@@ -2,10 +2,7 @@ import type { CapacitorAdapter as CapacitorAdapterOriginal } from 'obsidian';
 
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class CapacitorAdapter extends InMemoryAdapter {
   protected constructor(basePath: string, _fs: unknown) {
@@ -20,7 +17,7 @@ export class CapacitorAdapter extends InMemoryAdapter {
   }
 
   public static fromOriginalType__(value: CapacitorAdapterOriginal): CapacitorAdapter {
-    return mergePrototype(CapacitorAdapter, value);
+    return strictProxyForce(value, CapacitorAdapter);
   }
 
   public asOriginalType__(): CapacitorAdapterOriginal {

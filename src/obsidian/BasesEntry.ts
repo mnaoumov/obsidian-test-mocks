@@ -8,10 +8,7 @@ import type {
 import type { TFile } from './TFile.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class BasesEntry implements FormulaContextOriginal {
   public file: TFile;
@@ -29,7 +26,7 @@ export class BasesEntry implements FormulaContextOriginal {
   }
 
   public static fromOriginalType__(value: BasesEntryOriginal): BasesEntry {
-    return mergePrototype(BasesEntry, value);
+    return strictProxyForce(value, BasesEntry);
   }
 
   public asOriginalType__(): BasesEntryOriginal {
