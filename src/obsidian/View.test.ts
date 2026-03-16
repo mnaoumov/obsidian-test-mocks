@@ -6,10 +6,16 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { App } from './App.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
-// Concrete subclass for testing the abstract View
+interface ViewWithProtectedMethods {
+  onClose(): Promise<void>;
+  onOpen(): Promise<void>;
+}
+
+// eslint-disable-next-line no-restricted-syntax -- View is abstract; extending it requires a top-level await dynamic import to define ConcreteView at module scope.
 class ConcreteView extends (await import('./View.ts')).View {
   public getDisplayText(): string {
     return 'Test View';
@@ -104,6 +110,7 @@ describe('View', () => {
 
   describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
+      // eslint-disable-next-line no-restricted-syntax -- View is abstract and must be dynamically imported to access the static method.
       const { View } = await import('./View.ts');
       const view = await createView();
       const mock = View.fromOriginalType2__(view.asOriginalType2__());
@@ -131,7 +138,7 @@ describe('View', () => {
     it('should resolve without error', async () => {
       const view = await createView();
       // Access protected method for coverage.
-      await expect((view as unknown as { onOpen(): Promise<void> }).onOpen()).resolves.toBeUndefined();
+      await expect(castTo<ViewWithProtectedMethods>(view).onOpen()).resolves.toBeUndefined();
     });
   });
 
@@ -139,7 +146,7 @@ describe('View', () => {
     it('should resolve without error', async () => {
       const view = await createView();
       // Access protected method for coverage.
-      await expect((view as unknown as { onClose(): Promise<void> }).onClose()).resolves.toBeUndefined();
+      await expect(castTo<ViewWithProtectedMethods>(view).onClose()).resolves.toBeUndefined();
     });
   });
 });

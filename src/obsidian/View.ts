@@ -32,7 +32,7 @@ export abstract class View extends Component {
 
   public constructor(leaf: WorkspaceLeaf) {
     super();
-    this.app = App.create__(FileSystemAdapter.create__('/mock-vault') as unknown as DataAdapterOriginal, '');
+    this.app = App.create__(castTo<DataAdapterOriginal>(FileSystemAdapter.create__('/mock-vault')), '');
     this.containerEl = createDiv();
     this.leaf = leaf;
     const self = strictMock(this);

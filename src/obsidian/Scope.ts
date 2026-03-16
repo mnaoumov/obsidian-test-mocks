@@ -42,13 +42,13 @@ export class Scope {
   }
 
   public register(modifiers: ModifierOriginal[] | null, key: null | string, _func: KeymapEventListenerOriginal): KeymapEventHandlerOriginal {
-    const handler = { key, modifiers: modifiers?.join(',') ?? null, scope: this } as unknown as KeymapEventHandlerOriginal;
-    this.keys.push(handler as unknown as MockKeyScope);
+    const handler = castTo<KeymapEventHandlerOriginal>({ key, modifiers: modifiers?.join(',') ?? null, scope: this });
+    this.keys.push(castTo<MockKeyScope>(handler));
     return handler;
   }
 
   public unregister(handler: KeymapEventHandlerOriginal): void {
-    const index = this.keys.indexOf(handler as unknown as MockKeyScope);
+    const index = this.keys.indexOf(castTo<MockKeyScope>(handler));
     if (index !== -1) {
       this.keys.splice(index, 1);
     }

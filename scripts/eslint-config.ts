@@ -168,6 +168,26 @@ function getEslintConfigs(): Linter.Config[] {
           {
             message: 'Do not use anonymous inline object types in type annotations. Define a named interface instead.',
             selector: 'TSTypeAnnotation TSTypeLiteral'
+          },
+          {
+            message: 'Do not use override on __ methods. Use a numbered variant instead, e.g., method2__() (L10).',
+            selector: 'MethodDefinition[override=true][key.name=/.*__$/]'
+          },
+          {
+            message: 'Do not use double type assertions (as X as Y). Use castTo<T>() from src/internal/cast.ts instead (G10e).',
+            selector: 'TSAsExpression > TSAsExpression'
+          },
+          {
+            message: 'Do not use _ prefix on methods or functions. The _ prefix is for unused parameters only (G10e).',
+            selector: 'MethodDefinition[key.name=/^_/]'
+          },
+          {
+            message: 'Do not use _ prefix on methods or functions. The _ prefix is for unused parameters only (G10e).',
+            selector: 'FunctionDeclaration[id.name=/^_/]'
+          },
+          {
+            message: 'Avoid dynamic import(). Use static imports instead. Only use dynamic imports for lazy/conditional loading (G10a).',
+            selector: 'ImportExpression'
           }
         ],
         'no-return-assign': 'error',
@@ -214,21 +234,31 @@ function getEslintConfigs(): Linter.Config[] {
       }
     },
     {
-      files: ['scripts/helpers/@types/markdownlint-cli2-config-schema.d.ts'],
-      rules: {
-        'no-restricted-syntax': 'off'
-      }
-    },
-    {
       files: ['src/obsidian/**/*.ts'],
       rules: {
-        'no-constructor-return': 'off'
+        'no-constructor-return': 'off',
+        'no-restricted-imports': ['error', {
+          paths: [{
+            message: 'Do not import obsidian-typings in src/obsidian/. Inline needed type shapes in src/internal/types.ts instead (L3).',
+            name: 'obsidian-typings'
+          }],
+          patterns: [{
+            group: ['obsidian-typings/*'],
+            message: 'Do not import obsidian-typings in src/obsidian/. Inline needed type shapes in src/internal/types.ts instead (L3).'
+          }]
+        }]
       }
     },
     {
       files: ['scripts/**/*.ts'],
       rules: {
         'no-console': 'off'
+      }
+    },
+    {
+      files: ['scripts/helpers/@types/markdownlint-cli2-config-schema.d.ts'],
+      rules: {
+        'no-restricted-syntax': 'off'
       }
     }
   ]);

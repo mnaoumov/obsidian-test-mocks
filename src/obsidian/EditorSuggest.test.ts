@@ -13,6 +13,7 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { EditorSuggest } from './EditorSuggest.ts';
@@ -52,7 +53,7 @@ describe('EditorSuggest', () => {
 
   it('should throw when accessing an unmocked property', async () => {
     const suggest = await createSuggest();
-    const record = suggest as unknown as Record<string, unknown>;
+    const record = castTo<Record<string, unknown>>(suggest);
     expect(() => record['nonExistentProperty']).toThrow();
   });
 

@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../../internal/cast.ts';
 import { iterateCacheRefs } from './iterateCacheRefs.ts';
 
 function makeRef(link: string): ReferenceCache {
@@ -68,7 +69,7 @@ describe('iterateCacheRefs', () => {
   it('should throw when ref is missing position property', () => {
     const links = [{ displayText: 'a', link: 'a', original: '[[a]]' }];
     expect(() => {
-      iterateCacheRefs({ links: links as unknown as ReferenceCache[] }, () => undefined);
+      iterateCacheRefs({ links: castTo<ReferenceCache[]>(links) }, () => undefined);
     }).toThrow('Should be ReferenceCache, but position property is missing');
   });
 });

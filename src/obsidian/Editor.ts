@@ -303,7 +303,7 @@ export abstract class Editor {
     }
 
     if (tx.selections) {
-      this.setSelections(tx.selections as unknown as EditorSelectionOrCaretOriginal[]);
+      this.setSelections(castTo<EditorSelectionOrCaretOriginal[]>(tx.selections));
     }
   }
 

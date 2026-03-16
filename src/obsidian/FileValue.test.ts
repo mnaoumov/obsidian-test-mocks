@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/cast.ts';
 import { App } from './App.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { FileValue } from './FileValue.ts';
@@ -14,7 +15,7 @@ import { Vault } from './Vault.ts';
 
 describe('FileValue', () => {
   function createFileValue(): FileValue {
-    const adapter = FileSystemAdapter.create__('/mock') as unknown as DataAdapter;
+    const adapter = castTo<DataAdapter>(FileSystemAdapter.create__('/mock'));
     const app = App.create__(adapter, '');
     const vault = Vault.create2__(adapter);
     const file = TFile.create__(vault, 'test.md');
@@ -33,7 +34,7 @@ describe('FileValue', () => {
 
   describe('create__', () => {
     it('should create an instance via factory method', () => {
-      const adapter = FileSystemAdapter.create__('/mock') as unknown as DataAdapter;
+      const adapter = castTo<DataAdapter>(FileSystemAdapter.create__('/mock'));
       const app = App.create__(adapter, '');
       const vault = Vault.create2__(adapter);
       const file = TFile.create__(vault, 'test.md');
