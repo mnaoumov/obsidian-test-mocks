@@ -4,15 +4,15 @@ import type { RenderContext } from './RenderContext.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export abstract class Value {
   public static type: string;
 
   public constructor() {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__();
     return self;
   }
@@ -25,7 +25,7 @@ export abstract class Value {
   }
 
   public static fromOriginalType__(value: ValueOriginal): Value {
-    return bridgeType<Value>(value);
+    return mergePrototype(Value, value);
   }
 
   public static looseEquals(a: null | Value, b: null | Value): boolean {
@@ -36,7 +36,7 @@ export abstract class Value {
   }
 
   public asOriginalType__(): ValueOriginal {
-    return bridgeType<ValueOriginal>(this);
+    return strictProxyForce<ValueOriginal>(this);
   }
 
   public constructor__(): void {

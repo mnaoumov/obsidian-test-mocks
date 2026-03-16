@@ -5,8 +5,8 @@ import type { Vault } from './Vault.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
@@ -22,17 +22,17 @@ export abstract class TAbstractFile {
     this.path = path;
     const parts = path.split('/');
     this.name = ensureNonNullable(parts[parts.length - 1]);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(vault, path);
     return self;
   }
 
   public static fromOriginalType__(value: TAbstractFileOriginal): TAbstractFile {
-    return bridgeType<TAbstractFile>(value);
+    return mergePrototype(TAbstractFile, value);
   }
 
   public asOriginalType__(): TAbstractFileOriginal {
-    return bridgeType<TAbstractFileOriginal>(this);
+    return strictProxyForce<TAbstractFileOriginal>(this);
   }
 
   public constructor__(_vault: Vault, _path: string): void {

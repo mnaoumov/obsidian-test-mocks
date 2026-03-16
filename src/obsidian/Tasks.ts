@@ -2,15 +2,15 @@ import type { Tasks as TasksOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export class Tasks {
   private readonly promises: Promise<unknown>[] = [];
 
   protected constructor() {
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__();
     return self;
   }
@@ -20,7 +20,7 @@ export class Tasks {
   }
 
   public static fromOriginalType__(value: TasksOriginal): Tasks {
-    return bridgeType<Tasks>(value);
+    return mergePrototype(Tasks, value);
   }
 
   public add(callback: () => Promise<unknown>): void {
@@ -32,7 +32,7 @@ export class Tasks {
   }
 
   public asOriginalType__(): TasksOriginal {
-    return bridgeType<TasksOriginal>(this);
+    return strictProxyForce<TasksOriginal>(this);
   }
 
   public constructor__(): void {

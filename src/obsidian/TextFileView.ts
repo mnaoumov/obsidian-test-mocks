@@ -7,8 +7,8 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { EditableFileView } from './EditableFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -18,17 +18,17 @@ export abstract class TextFileView extends EditableFileView {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor6__(leaf);
     return self;
   }
 
   public static fromOriginalType6__(value: TextFileViewOriginal): TextFileView {
-    return bridgeType<TextFileView>(value);
+    return mergePrototype(TextFileView, value);
   }
 
   public asOriginalType6__(): TextFileViewOriginal {
-    return bridgeType<TextFileViewOriginal>(this);
+    return strictProxyForce<TextFileViewOriginal>(this);
   }
 
   public abstract clear(): void;

@@ -7,8 +7,8 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { SearchComponent } from './SearchComponent.ts';
@@ -20,7 +20,7 @@ export class SettingGroup {
   public constructor(containerEl: HTMLElement) {
     this.listEl__ = createDiv();
     containerEl.appendChild(this.listEl__);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(containerEl);
     return self;
   }
@@ -30,7 +30,7 @@ export class SettingGroup {
   }
 
   public static fromOriginalType__(value: SettingGroupOriginal): SettingGroup {
-    return bridgeType<SettingGroup>(value);
+    return mergePrototype(SettingGroup, value);
   }
 
   public addClass(cls: string): this {
@@ -57,7 +57,7 @@ export class SettingGroup {
   }
 
   public asOriginalType__(): SettingGroupOriginal {
-    return bridgeType<SettingGroupOriginal>(this);
+    return strictProxyForce<SettingGroupOriginal>(this);
   }
 
   public constructor__(_containerEl: HTMLElement): void {

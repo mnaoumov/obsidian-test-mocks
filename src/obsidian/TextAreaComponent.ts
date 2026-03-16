@@ -2,15 +2,15 @@ import type { TextAreaComponent as TextAreaComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement> {
   public constructor(_containerEl: HTMLElement) {
     super(createEl('textarea'));
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__(_containerEl);
     return self;
   }
@@ -20,11 +20,11 @@ export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement
   }
 
   public static fromOriginalType4__(value: TextAreaComponentOriginal): TextAreaComponent {
-    return bridgeType<TextAreaComponent>(value);
+    return mergePrototype(TextAreaComponent, value);
   }
 
   public asOriginalType4__(): TextAreaComponentOriginal {
-    return bridgeType<TextAreaComponentOriginal>(this);
+    return strictProxyForce<TextAreaComponentOriginal>(this);
   }
 
   public constructor4__(_containerEl: HTMLElement): void {

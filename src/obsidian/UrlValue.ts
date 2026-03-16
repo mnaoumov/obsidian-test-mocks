@@ -2,15 +2,15 @@ import type { UrlValue as UrlValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 export class UrlValue extends StringValue {
   public constructor(value: string, display?: null | string) {
     super(value);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor5__(value, display);
     return self;
   }
@@ -20,11 +20,11 @@ export class UrlValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: UrlValueOriginal): UrlValue {
-    return bridgeType<UrlValue>(value);
+    return mergePrototype(UrlValue, value);
   }
 
   public asOriginalType5__(): UrlValueOriginal {
-    return bridgeType<UrlValueOriginal>(this);
+    return strictProxyForce<UrlValueOriginal>(this);
   }
 
   public constructor5__(_value: string, _display?: null | string): void {

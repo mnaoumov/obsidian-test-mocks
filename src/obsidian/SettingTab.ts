@@ -8,8 +8,8 @@ import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 
 export abstract class SettingTab {
@@ -20,17 +20,17 @@ export abstract class SettingTab {
   public constructor(app: App, setting?: SettingOriginal) {
     this.app = app;
     this.containerEl = createDiv();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor__(app, setting);
     return self;
   }
 
   public static fromOriginalType__(value: SettingTabOriginal): SettingTab {
-    return bridgeType<SettingTab>(value);
+    return mergePrototype(SettingTab, value);
   }
 
   public asOriginalType__(): SettingTabOriginal {
-    return bridgeType<SettingTabOriginal>(this);
+    return strictProxyForce<SettingTabOriginal>(this);
   }
 
   public constructor__(_app: App, _setting?: SettingOriginal): void {

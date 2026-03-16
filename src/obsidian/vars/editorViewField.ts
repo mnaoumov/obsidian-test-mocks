@@ -5,12 +5,12 @@ import type {
 
 import { StateField } from '@codemirror/state';
 
-import { bridgeType } from '../../internal/strict-proxy.ts';
+import { strictProxy } from '../../internal/strict-proxy.ts';
 
 export const editorViewField: StateField<MarkdownFileInfoOriginal> = StateField.define({
   create(): MarkdownFileInfoOriginal {
     return {
-      app: bridgeType<AppOriginal>({}),
+      app: strictProxy<AppOriginal>({}),
       file: null,
       hoverPopover: null
     };

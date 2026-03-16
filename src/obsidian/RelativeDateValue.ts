@@ -2,15 +2,15 @@ import type { RelativeDateValue as RelativeDateValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { DateValue } from './DateValue.ts';
 
 export class RelativeDateValue extends DateValue {
   public constructor(date: Date, showTime?: boolean) {
     super(date, showTime);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__(date, showTime);
     return self;
   }
@@ -20,11 +20,11 @@ export class RelativeDateValue extends DateValue {
   }
 
   public static fromOriginalType4__(value: RelativeDateValueOriginal): RelativeDateValue {
-    return bridgeType<RelativeDateValue>(value);
+    return mergePrototype(RelativeDateValue, value);
   }
 
   public asOriginalType4__(): RelativeDateValueOriginal {
-    return bridgeType<RelativeDateValueOriginal>(this);
+    return strictProxyForce<RelativeDateValueOriginal>(this);
   }
 
   public constructor4__(_date: unknown, _showTime?: boolean): void {

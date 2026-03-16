@@ -8,8 +8,8 @@ import type { TAbstractFile } from './TAbstractFile.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
@@ -29,7 +29,7 @@ export class Vault extends Events {
     this.fileMap['/'] = root;
     this.fileMapLowerCase['/'] = root;
     root.deleted__ = false;
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor2__(adapter);
     return self;
   }
@@ -39,7 +39,7 @@ export class Vault extends Events {
   }
 
   public static fromOriginalType2__(value: VaultOriginal): Vault {
-    return bridgeType<Vault>(value);
+    return mergePrototype(Vault, value);
   }
 
   public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {
@@ -56,8 +56,13 @@ export class Vault extends Events {
     this.trigger('modify', file);
   }
 
+  public async appendBinary(file: TFile, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
+    await this.adapter.appendBinary(file.path, data, options);
+    this.trigger('modify', file);
+  }
+
   public asOriginalType2__(): VaultOriginal {
-    return bridgeType<VaultOriginal>(this);
+    return strictProxyForce<VaultOriginal>(this);
   }
 
   public async cachedRead(file: TFile): Promise<string> {

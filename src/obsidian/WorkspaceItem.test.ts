@@ -38,6 +38,15 @@ describe('WorkspaceItem', () => {
     });
   });
 
+  describe('parent', () => {
+    it('should be assignable on concrete subclasses', () => {
+      const item = WorkspaceFloating.create2__();
+      const parent = WorkspaceFloating.create2__();
+      item.parent = parent;
+      expect(item.parent).toBe(parent);
+    });
+  });
+
   describe('getContainer()', () => {
     it('should return the instance cast as WorkspaceContainer', () => {
       const item = WorkspaceFloating.create2__();

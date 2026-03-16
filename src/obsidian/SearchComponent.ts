@@ -2,8 +2,8 @@ import type { SearchComponent as SearchComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
@@ -14,7 +14,7 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     super(createEl('input'));
     this.inputEl.type = 'search';
     this.clearButtonEl = createDiv();
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__(_containerEl);
     return self;
   }
@@ -24,11 +24,11 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public static fromOriginalType4__(value: SearchComponentOriginal): SearchComponent {
-    return bridgeType<SearchComponent>(value);
+    return mergePrototype(SearchComponent, value);
   }
 
   public asOriginalType4__(): SearchComponentOriginal {
-    return bridgeType<SearchComponentOriginal>(this);
+    return strictProxyForce<SearchComponentOriginal>(this);
   }
 
   public constructor4__(_containerEl: HTMLElement): void {

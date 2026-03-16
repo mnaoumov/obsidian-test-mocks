@@ -5,8 +5,8 @@ import type { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 import { noop } from '../internal/noop.ts';
 import {
-  bridgeType,
-  strictProxy
+  mergePrototype,
+  strictProxyForce
 } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
@@ -15,7 +15,7 @@ export class WorkspaceTabs extends WorkspaceParent {
 
   protected constructor(_workspace: Workspace, _id?: string) {
     super(_workspace, _id);
-    const self = strictProxy(this);
+    const self = strictProxyForce(this);
     self.constructor4__(_workspace, _id);
     return self;
   }
@@ -25,11 +25,11 @@ export class WorkspaceTabs extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceTabsOriginal): WorkspaceTabs {
-    return bridgeType<WorkspaceTabs>(value);
+    return mergePrototype(WorkspaceTabs, value);
   }
 
   public asOriginalType4__(): WorkspaceTabsOriginal {
-    return bridgeType<WorkspaceTabsOriginal>(this);
+    return strictProxyForce<WorkspaceTabsOriginal>(this);
   }
 
   public constructor4__(_workspace: Workspace, _id?: string): void {
