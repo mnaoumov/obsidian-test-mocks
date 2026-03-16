@@ -3,10 +3,7 @@ import type { Modal as ModalOriginal } from 'obsidian';
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Scope } from './Scope.ts';
 
 export class Modal {
@@ -37,7 +34,7 @@ export class Modal {
   }
 
   public static fromOriginalType__(value: ModalOriginal): Modal {
-    return mergePrototype(Modal, value);
+    return strictProxyForce(value, Modal);
   }
 
   public asOriginalType__(): ModalOriginal {

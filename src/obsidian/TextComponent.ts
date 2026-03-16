@@ -1,10 +1,7 @@
 import type { TextComponent as TextComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
@@ -32,7 +29,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   public static fromOriginalType4__(value: TextComponentOriginal): TextComponent {
-    return mergePrototype(TextComponent, value);
+    return strictProxyForce(value, TextComponent);
   }
 
   public asOriginalType4__(): TextComponentOriginal {

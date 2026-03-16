@@ -1,10 +1,7 @@
 import type { MomentFormatComponent as MomentFormatComponentOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { TextComponent } from './TextComponent.ts';
 
 export class MomentFormatComponent extends TextComponent {
@@ -24,7 +21,7 @@ export class MomentFormatComponent extends TextComponent {
   }
 
   public static fromOriginalType5__(value: MomentFormatComponentOriginal): MomentFormatComponent {
-    return mergePrototype(MomentFormatComponent, value);
+    return strictProxyForce(value, MomentFormatComponent);
   }
 
   public asOriginalType5__(): MomentFormatComponentOriginal {

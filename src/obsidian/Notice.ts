@@ -1,10 +1,7 @@
 import type { Notice as NoticeOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class Notice {
   public containerEl: HTMLElement;
@@ -33,7 +30,7 @@ export class Notice {
   }
 
   public static fromOriginalType__(value: NoticeOriginal): Notice {
-    return mergePrototype(Notice, value);
+    return strictProxyForce(value, Notice);
   }
 
   public asOriginalType__(): NoticeOriginal {

@@ -4,10 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ToggleComponent extends ValueComponent<boolean> {
@@ -29,7 +26,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
   }
 
   public static fromOriginalType3__(value: ToggleComponentOriginal): ToggleComponent {
-    return mergePrototype(ToggleComponent, value);
+    return strictProxyForce(value, ToggleComponent);
   }
 
   public asOriginalType3__(): ToggleComponentOriginal {

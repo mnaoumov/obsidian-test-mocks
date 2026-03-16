@@ -1,10 +1,7 @@
 import type { TagValue as TagValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 export class TagValue extends StringValue {
@@ -20,7 +17,7 @@ export class TagValue extends StringValue {
   }
 
   public static fromOriginalType5__(value: TagValueOriginal): TagValue {
-    return mergePrototype(TagValue, value);
+    return strictProxyForce(value, TagValue);
   }
 
   public asOriginalType5__(): TagValueOriginal {

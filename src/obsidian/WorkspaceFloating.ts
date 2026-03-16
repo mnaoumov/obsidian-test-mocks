@@ -1,10 +1,7 @@
 import type { WorkspaceFloating as WorkspaceFloatingOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 export class WorkspaceFloating extends WorkspaceParent {
@@ -22,7 +19,7 @@ export class WorkspaceFloating extends WorkspaceParent {
   }
 
   public static fromOriginalType4__(value: WorkspaceFloatingOriginal): WorkspaceFloating {
-    return mergePrototype(WorkspaceFloating, value);
+    return strictProxyForce(value, WorkspaceFloating);
   }
 
   public asOriginalType4__(): WorkspaceFloatingOriginal {

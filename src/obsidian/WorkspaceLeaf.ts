@@ -16,10 +16,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 let nextLeafId = 1;
@@ -57,7 +54,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public static fromOriginalType3__(value: WorkspaceLeafOriginal): WorkspaceLeaf {
-    return mergePrototype(WorkspaceLeaf, value);
+    return strictProxyForce(value, WorkspaceLeaf);
   }
 
   public asOriginalType3__(): WorkspaceLeafOriginal {

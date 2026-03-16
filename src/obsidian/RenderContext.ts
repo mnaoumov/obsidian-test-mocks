@@ -6,10 +6,7 @@ import type {
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 
 export class RenderContext {
   public hoverPopover: HoverPopoverOriginal | null = null;
@@ -25,7 +22,7 @@ export class RenderContext {
   }
 
   public static fromOriginalType__(value: RenderContextOriginal): RenderContext {
-    return mergePrototype(RenderContext, value);
+    return strictProxyForce(value, RenderContext);
   }
 
   public asOriginalType__(): RenderContextOriginal {

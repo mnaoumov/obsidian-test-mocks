@@ -6,10 +6,7 @@ import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { EditableFileView } from './EditableFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -24,7 +21,7 @@ export abstract class TextFileView extends EditableFileView {
   }
 
   public static fromOriginalType6__(value: TextFileViewOriginal): TextFileView {
-    return mergePrototype(TextFileView, value);
+    return strictProxyForce(value, TextFileView);
   }
 
   public asOriginalType6__(): TextFileViewOriginal {

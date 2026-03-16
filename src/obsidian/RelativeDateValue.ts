@@ -1,10 +1,7 @@
 import type { RelativeDateValue as RelativeDateValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { DateValue } from './DateValue.ts';
 
 export class RelativeDateValue extends DateValue {
@@ -20,7 +17,7 @@ export class RelativeDateValue extends DateValue {
   }
 
   public static fromOriginalType4__(value: RelativeDateValueOriginal): RelativeDateValue {
-    return mergePrototype(RelativeDateValue, value);
+    return strictProxyForce(value, RelativeDateValue);
   }
 
   public asOriginalType4__(): RelativeDateValueOriginal {

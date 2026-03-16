@@ -1,10 +1,7 @@
 import type { StringValue as StringValueOriginal } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 export class StringValue extends PrimitiveValue<string> {
@@ -20,7 +17,7 @@ export class StringValue extends PrimitiveValue<string> {
   }
 
   public static fromOriginalType4__(value: StringValueOriginal): StringValue {
-    return mergePrototype(StringValue, value);
+    return strictProxyForce(value, StringValue);
   }
 
   public asOriginalType4__(): StringValueOriginal {

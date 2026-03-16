@@ -3,10 +3,7 @@ import type { TFolder as TFolderOriginal } from 'obsidian';
 import type { Vault } from './Vault.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { TAbstractFile } from './TAbstractFile.ts';
 
 export class TFolder extends TAbstractFile {
@@ -24,7 +21,7 @@ export class TFolder extends TAbstractFile {
   }
 
   public static fromOriginalType2__(value: TFolderOriginal): TFolder {
-    return mergePrototype(TFolder, value);
+    return strictProxyForce(value, TFolder);
   }
 
   public asOriginalType2__(): TFolderOriginal {

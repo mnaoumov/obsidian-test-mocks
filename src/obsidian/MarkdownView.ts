@@ -4,10 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Editor } from './Editor.ts';
 import { TextFileView } from './TextFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -79,7 +76,7 @@ export class MarkdownView extends TextFileView {
   }
 
   public static fromOriginalType7__(value: MarkdownViewOriginal): MarkdownView {
-    return mergePrototype(MarkdownView, value);
+    return strictProxyForce(value, MarkdownView);
   }
 
   public asOriginalType7__(): MarkdownViewOriginal {

@@ -4,10 +4,7 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 
 export class QueryController extends Component {
@@ -23,7 +20,7 @@ export class QueryController extends Component {
   }
 
   public static fromOriginalType2__(value: QueryControllerOriginal): QueryController {
-    return mergePrototype(QueryController, value);
+    return strictProxyForce(value, QueryController);
   }
 
   public asOriginalType2__(): QueryControllerOriginal {

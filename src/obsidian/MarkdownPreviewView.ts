@@ -4,10 +4,7 @@ import type { MarkdownView } from './MarkdownView.ts';
 import type { TFile } from './TFile.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { MarkdownRenderer } from './MarkdownRenderer.ts';
 
@@ -34,7 +31,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public static fromOriginalType4__(value: MarkdownPreviewViewOriginal): MarkdownPreviewView {
-    return mergePrototype(MarkdownPreviewView, value);
+    return strictProxyForce(value, MarkdownPreviewView);
   }
 
   public applyScroll(_scroll: number): void {

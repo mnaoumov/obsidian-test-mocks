@@ -3,10 +3,7 @@ import type { WorkspaceParent as WorkspaceParentOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 export abstract class WorkspaceParent extends WorkspaceItem {
@@ -18,7 +15,7 @@ export abstract class WorkspaceParent extends WorkspaceItem {
   }
 
   public static fromOriginalType3__(value: WorkspaceParentOriginal): WorkspaceParent {
-    return mergePrototype(WorkspaceParent, value);
+    return strictProxyForce(value, WorkspaceParent);
   }
 
   public asOriginalType3__(): WorkspaceParentOriginal {

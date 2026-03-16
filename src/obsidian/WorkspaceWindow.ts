@@ -3,10 +3,7 @@ import type { WorkspaceWindow as WorkspaceWindowOriginal } from 'obsidian';
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
-import {
-  mergePrototype,
-  strictProxyForce
-} from '../internal/strict-proxy.ts';
+import { strictProxyForce } from '../internal/strict-proxy.ts';
 import { WorkspaceContainer } from './WorkspaceContainer.ts';
 
 export class WorkspaceWindow extends WorkspaceContainer {
@@ -30,7 +27,7 @@ export class WorkspaceWindow extends WorkspaceContainer {
   }
 
   public static fromOriginalType6__(value: WorkspaceWindowOriginal): WorkspaceWindow {
-    return mergePrototype(WorkspaceWindow, value);
+    return strictProxyForce(value, WorkspaceWindow);
   }
 
   public asOriginalType6__(): WorkspaceWindowOriginal {
