@@ -16,31 +16,31 @@ class ConcretePluginSettingTab extends PluginSettingTab {
 }
 
 describe('PluginSettingTab', () => {
-  it('should create an instance', async () => {
-    const app = await App.createConfigured__();
+  it('should create an instance', () => {
+    const app = App.createConfigured__();
     // Create a minimal plugin mock
     const plugin = { app } as never;
     const tab = new ConcretePluginSettingTab(app, plugin);
     expect(tab).toBeInstanceOf(PluginSettingTab);
   });
 
-  it('should have plugin property', async () => {
-    const app = await App.createConfigured__();
+  it('should have plugin property', () => {
+    const app = App.createConfigured__();
     const plugin = { app } as never;
     const tab = new ConcretePluginSettingTab(app, plugin);
     expect(tab.plugin).toBe(plugin);
   });
 
-  it('should have app property', async () => {
-    const app = await App.createConfigured__();
+  it('should have app property', () => {
+    const app = App.createConfigured__();
     const plugin = { app } as never;
     const tab = new ConcretePluginSettingTab(app, plugin);
     expect(tab.app).toBe(app);
   });
 
   describe('asOriginalType2__', () => {
-    it('should return the same instance typed as the original', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the original', () => {
+      const app = App.createConfigured__();
       const plugin = { app } as never;
       const tab = new ConcretePluginSettingTab(app, plugin);
       const original: PluginSettingTabOriginal = tab.asOriginalType2__();
@@ -49,8 +49,8 @@ describe('PluginSettingTab', () => {
   });
 
   describe('fromOriginalType2__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the mock type', () => {
+      const app = App.createConfigured__();
       const plugin = { app } as never;
       const tab = new ConcretePluginSettingTab(app, plugin);
       const mock = PluginSettingTab.fromOriginalType2__(tab.asOriginalType2__());

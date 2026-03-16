@@ -6,6 +6,7 @@ export const config = defineConfig({
       exclude: [
         'src/**/*.test.ts',
         'src/**/index.ts',
+        'src/globals/setup.ts',
         'src/internal/types.ts'
       ],
       include: ['src/**/*.ts'],
@@ -17,6 +18,6 @@ export const config = defineConfig({
     exclude: ['node_modules', 'dist'],
     globals: false,
     include: ['src/**/*.test.ts'],
-    setupFiles: ['src/globals/index.ts']
+    setupFiles: ['src/globals/setup.ts']
   }
 });

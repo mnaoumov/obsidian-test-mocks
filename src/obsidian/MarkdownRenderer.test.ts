@@ -28,7 +28,7 @@ class ConcreteMarkdownRenderer extends MarkdownRenderer {
 describe('MarkdownRenderer', () => {
   describe('render', () => {
     it('should resolve without error', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const el = createDiv();
       const component = new (class extends Component {})();
       await expect(MarkdownRenderer.render(app, '# Hello', el, '', component)).resolves.toBeUndefined();
@@ -44,8 +44,8 @@ describe('MarkdownRenderer', () => {
   });
 
   describe('asOriginalType3__', () => {
-    it('should return the same instance typed as the original', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the original', () => {
+      const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const mdView = MarkdownView.create2__(leaf);
       const renderer = MarkdownPreviewView.create3__(mdView);
@@ -53,8 +53,8 @@ describe('MarkdownRenderer', () => {
       expect(original).toBe(renderer);
     });
 
-    it('should return the same instance via MarkdownRenderer base class', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance via MarkdownRenderer base class', () => {
+      const app = App.createConfigured__();
       const renderer = new ConcreteMarkdownRenderer(app, createDiv());
       const original: MarkdownRendererOriginal = renderer.asOriginalType3__();
       expect(original).toBe(renderer);
@@ -62,8 +62,8 @@ describe('MarkdownRenderer', () => {
   });
 
   describe('fromOriginalType3__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the mock type', () => {
+      const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const mdView = MarkdownView.create2__(leaf);
       const renderer = MarkdownPreviewView.create3__(mdView);
@@ -73,8 +73,8 @@ describe('MarkdownRenderer', () => {
   });
 
   describe('constructor3__', () => {
-    it('should be callable without throwing', async () => {
-      const app = await App.createConfigured__();
+    it('should be callable without throwing', () => {
+      const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const mdView = MarkdownView.create2__(leaf);
       const renderer = MarkdownPreviewView.create3__(mdView);

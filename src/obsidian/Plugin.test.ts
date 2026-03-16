@@ -30,16 +30,16 @@ class ConcretePlugin extends Plugin {
 }
 
 describe('Plugin', () => {
-  it('should create an instance with app and manifest', async () => {
-    const app = await App.createConfigured__();
+  it('should create an instance with app and manifest', () => {
+    const app = App.createConfigured__();
     const plugin = new ConcretePlugin(app, MANIFEST);
     expect(plugin.app).toBe(app);
     expect(plugin.manifest).toBe(MANIFEST);
   });
 
   describe('addCommand', () => {
-    it('should store and return the command', async () => {
-      const app = await App.createConfigured__();
+    it('should store and return the command', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const cmd = { id: 'my-cmd', name: 'My Command' };
       const result = plugin.addCommand(cmd);
@@ -49,8 +49,8 @@ describe('Plugin', () => {
   });
 
   describe('removeCommand', () => {
-    it('should remove the command by id', async () => {
-      const app = await App.createConfigured__();
+    it('should remove the command by id', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       plugin.addCommand({ id: 'cmd1', name: 'Cmd 1' });
       plugin.removeCommand('cmd1');
@@ -59,8 +59,8 @@ describe('Plugin', () => {
   });
 
   describe('addRibbonIcon', () => {
-    it('should return an element and track it', async () => {
-      const app = await App.createConfigured__();
+    it('should return an element and track it', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const el = plugin.addRibbonIcon('star', 'My Action', vi.fn());
       expect(el).toBeInstanceOf(HTMLElement);
@@ -69,8 +69,8 @@ describe('Plugin', () => {
   });
 
   describe('addSettingTab', () => {
-    it('should track the setting tab', async () => {
-      const app = await App.createConfigured__();
+    it('should track the setting tab', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const mockTab = {} as PluginOriginal extends { addSettingTab(tab: infer T): void } ? T : never;
       plugin.addSettingTab(mockTab);
@@ -79,8 +79,8 @@ describe('Plugin', () => {
   });
 
   describe('addStatusBarItem', () => {
-    it('should return an element and track it', async () => {
-      const app = await App.createConfigured__();
+    it('should return an element and track it', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const el = plugin.addStatusBarItem();
       expect(el).toBeInstanceOf(HTMLElement);
@@ -90,14 +90,14 @@ describe('Plugin', () => {
 
   describe('loadData / saveData', () => {
     it('should default to empty object', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const data = await plugin.loadData();
       expect(data).toEqual({});
     });
 
     it('should persist saved data', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       await plugin.saveData({ foo: 'bar' });
       const data = await plugin.loadData();
@@ -106,8 +106,8 @@ describe('Plugin', () => {
   });
 
   describe('onUserEnable', () => {
-    it('should not throw', async () => {
-      const app = await App.createConfigured__();
+    it('should not throw', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       expect(() => {
         plugin.onUserEnable();
@@ -116,8 +116,8 @@ describe('Plugin', () => {
   });
 
   describe('registerExtensions', () => {
-    it('should register extensions for a view type', async () => {
-      const app = await App.createConfigured__();
+    it('should register extensions for a view type', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       plugin.registerExtensions(['csv', 'tsv'], 'table-view');
       expect(plugin.extensions__.get('csv')).toBe('table-view');
@@ -126,8 +126,8 @@ describe('Plugin', () => {
   });
 
   describe('registerHoverLinkSource', () => {
-    it('should register a hover link source', async () => {
-      const app = await App.createConfigured__();
+    it('should register a hover link source', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const info = { defaultMod: true, display: 'Test' };
       plugin.registerHoverLinkSource('test-id', info);
@@ -136,8 +136,8 @@ describe('Plugin', () => {
   });
 
   describe('registerMarkdownCodeBlockProcessor', () => {
-    it('should register handler and return a post processor', async () => {
-      const app = await App.createConfigured__();
+    it('should register handler and return a post processor', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const handler = vi.fn();
       const processor = plugin.registerMarkdownCodeBlockProcessor('mermaid', handler);
@@ -147,7 +147,7 @@ describe('Plugin', () => {
     });
 
     it('should return a noop processor that does not throw when called', async () => {
-      const app = await App.createConfigured__();
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const processor = plugin.registerMarkdownCodeBlockProcessor('lang', vi.fn());
       const result = processor(createDiv(), {} as never);
@@ -157,8 +157,8 @@ describe('Plugin', () => {
   });
 
   describe('registerMarkdownPostProcessor', () => {
-    it('should register and return the processor', async () => {
-      const app = await App.createConfigured__();
+    it('should register and return the processor', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const processor = vi.fn();
       const result = plugin.registerMarkdownPostProcessor(processor);
@@ -168,8 +168,8 @@ describe('Plugin', () => {
   });
 
   describe('registerView', () => {
-    it('should register a view creator', async () => {
-      const app = await App.createConfigured__();
+    it('should register a view creator', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const creator = vi.fn();
       plugin.registerView('my-view', creator);
@@ -178,8 +178,8 @@ describe('Plugin', () => {
   });
 
   describe('asOriginalType2__', () => {
-    it('should return the same instance typed as the original', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the original', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const original: PluginOriginal = plugin.asOriginalType2__();
       expect(original).toBe(plugin);
@@ -187,8 +187,8 @@ describe('Plugin', () => {
   });
 
   describe('fromOriginalType2__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the mock type', () => {
+      const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const mock = Plugin.fromOriginalType2__(plugin.asOriginalType2__());
       expect(mock).toBe(plugin);

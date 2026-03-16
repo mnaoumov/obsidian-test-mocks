@@ -13,13 +13,11 @@ import { BasesEntry } from './BasesEntry.ts';
 import { BasesEntryGroup } from './BasesEntryGroup.ts';
 import { BasesQueryResult } from './BasesQueryResult.ts';
 import { BasesViewConfig } from './BasesViewConfig.ts';
-import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { TFile } from './TFile.ts';
 
 describe('BasesQueryResult', () => {
   function createResult(): BasesQueryResult {
-    const adapter = FileSystemAdapter.create__('/mock').asOriginalType__();
-    const app = App.create__(adapter, '');
+    const app = App.createConfigured__();
     const config = BasesViewConfig.create__('', '', '');
     return BasesQueryResult.create__(app, config, [], []);
   }

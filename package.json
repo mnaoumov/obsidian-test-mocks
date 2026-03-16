@@ -21,14 +21,14 @@
   "author": "Michael Naumov",
   "type": "module",
   "exports": {
-    "./globals": {
+    "./setup": {
       "import": {
-        "types": "./dist/lib/esm/globals/index.d.mts",
-        "default": "./dist/lib/esm/globals/index.mjs"
+        "types": "./dist/lib/esm/globals/setup.d.mts",
+        "default": "./dist/lib/esm/globals/setup.mjs"
       },
       "require": {
-        "types": "./dist/lib/cjs/globals/index.d.cts",
-        "default": "./dist/lib/cjs/globals/index.cjs"
+        "types": "./dist/lib/cjs/globals/setup.d.cts",
+        "default": "./dist/lib/cjs/globals/setup.cjs"
       }
     },
     "./obsidian": {

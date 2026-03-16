@@ -22,17 +22,18 @@ import { WorkspaceItem } from './WorkspaceItem.ts';
 let nextLeafId = 1;
 
 export class WorkspaceLeaf extends WorkspaceItem {
+  public readonly app__: App;
   public hoverPopover: HoverPopoverOriginal | null = null;
   public id__: string;
   public readonly isDeferred = false;
   public override parent: WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal = strictProxy<WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal>({});
+
   public view: null | ViewOriginal = null;
 
   public get file__(): null | TFile {
     return this.file;
   }
 
-  private readonly app: App;
   private ephemeralState: Record<string, unknown> = {};
   private file: null | TFile = null;
   private group: null | string = null;
@@ -42,7 +43,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
 
   protected constructor(app: App, id?: string) {
     super(app.workspace, id);
-    this.app = app;
+    this.app__ = app;
     this.id__ = id ?? String(nextLeafId++);
     const self = strictProxy(this);
     self.constructor3__(app, id);
@@ -66,7 +67,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public detach(): void {
-    this.app.workspace.removeLeaf__(this);
+    this.app__.workspace.removeLeaf__(this);
   }
 
   public getDisplayText(): string {

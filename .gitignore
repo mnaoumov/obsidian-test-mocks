@@ -25,6 +25,7 @@ dist
 coverage
 
 index.ts
+src/globals/setup.ts
 
 /tsconfig.tsbuildinfo
 /.env

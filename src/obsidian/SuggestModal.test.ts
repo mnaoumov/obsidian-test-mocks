@@ -23,27 +23,27 @@ class ConcreteSuggestModal extends SuggestModal<string> {
 }
 
 describe('SuggestModal', () => {
-  it('should create an instance', async () => {
-    const app = await App.createConfigured__();
+  it('should create an instance', () => {
+    const app = App.createConfigured__();
     const modal = new ConcreteSuggestModal(app);
     expect(modal).toBeInstanceOf(SuggestModal);
   });
 
-  it('should have an inputEl', async () => {
-    const app = await App.createConfigured__();
+  it('should have an inputEl', () => {
+    const app = App.createConfigured__();
     const modal = new ConcreteSuggestModal(app);
     expect(modal.inputEl).toBeInstanceOf(HTMLInputElement);
   });
 
-  it('should have a resultContainerEl', async () => {
-    const app = await App.createConfigured__();
+  it('should have a resultContainerEl', () => {
+    const app = App.createConfigured__();
     const modal = new ConcreteSuggestModal(app);
     expect(modal.resultContainerEl).toBeInstanceOf(HTMLElement);
   });
 
   describe('setPlaceholder', () => {
-    it('should set the input placeholder', async () => {
-      const app = await App.createConfigured__();
+    it('should set the input placeholder', () => {
+      const app = App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);
       modal.setPlaceholder('Search...');
       expect(modal.inputEl.placeholder).toBe('Search...');
@@ -51,8 +51,8 @@ describe('SuggestModal', () => {
   });
 
   describe('setInstructions', () => {
-    it('should set instructions', async () => {
-      const app = await App.createConfigured__();
+    it('should set instructions', () => {
+      const app = App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);
       const instructions = [{ command: 'Enter', purpose: 'Select' }];
       modal.setInstructions(instructions);
@@ -61,8 +61,8 @@ describe('SuggestModal', () => {
   });
 
   describe('selectSuggestion', () => {
-    it('should call onChooseSuggestion and close', async () => {
-      const app = await App.createConfigured__();
+    it('should call onChooseSuggestion and close', () => {
+      const app = App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);
       const closeSpy = vi.spyOn(modal, 'close');
       const event = new MouseEvent('click');
@@ -73,8 +73,8 @@ describe('SuggestModal', () => {
   });
 
   describe('onNoSuggestion', () => {
-    it('should not throw', async () => {
-      const app = await App.createConfigured__();
+    it('should not throw', () => {
+      const app = App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);
       expect(() => {
         modal.onNoSuggestion();
@@ -83,8 +83,8 @@ describe('SuggestModal', () => {
   });
 
   describe('asOriginalType2__', () => {
-    it('should return the same instance typed as the original', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the original', () => {
+      const app = App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);
       const original: SuggestModalOriginal<string> = modal.asOriginalType2__();
       expect(original).toBe(modal);
@@ -92,8 +92,8 @@ describe('SuggestModal', () => {
   });
 
   describe('fromOriginalType2__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the mock type', () => {
+      const app = App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);
       const mock = SuggestModal.fromOriginalType2__(modal.asOriginalType2__());
       expect(mock).toBe(modal);

@@ -12,50 +12,50 @@ import { App } from './App.ts';
 import { FileManager } from './FileManager.ts';
 
 describe('FileManager', () => {
-  async function createApp(files?: Record<string, string>): Promise<App> {
+  function createApp(files?: Record<string, string>): App {
     return files ? App.createConfigured__({ files }) : App.createConfigured__();
   }
 
   describe('asOriginalType__', () => {
-    it('should return the same instance typed as the original obsidian type', async () => {
-      const app = await createApp();
+    it('should return the same instance typed as the original obsidian type', () => {
+      const app = createApp();
       const original: FileManagerOriginal = app.fileManager.asOriginalType__();
       expect(original).toBe(app.fileManager);
     });
   });
 
   describe('fromOriginalType__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const app = await createApp();
+    it('should return the same instance typed as the mock type', () => {
+      const app = createApp();
       const mock = FileManager.fromOriginalType__(app.fileManager.asOriginalType__());
       expect(mock).toBe(app.fileManager);
     });
   });
 
   describe('generateMarkdownLink', () => {
-    it('should generate a simple wiki link', async () => {
-      const app = await createApp({ 'note.md': '' });
+    it('should generate a simple wiki link', () => {
+      const app = createApp({ 'note.md': '' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       const link = app.fileManager.generateMarkdownLink(file, '');
       expect(link).toBe('[[note]]');
     });
 
-    it('should include subpath when provided', async () => {
-      const app = await createApp({ 'note.md': '' });
+    it('should include subpath when provided', () => {
+      const app = createApp({ 'note.md': '' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       const link = app.fileManager.generateMarkdownLink(file, '', 'heading');
       expect(link).toBe('[[note#heading]]');
     });
 
-    it('should include alias when provided', async () => {
-      const app = await createApp({ 'note.md': '' });
+    it('should include alias when provided', () => {
+      const app = createApp({ 'note.md': '' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       const link = app.fileManager.generateMarkdownLink(file, '', undefined, 'display');
       expect(link).toBe('[[note|display]]');
     });
 
-    it('should include both subpath and alias', async () => {
-      const app = await createApp({ 'note.md': '' });
+    it('should include both subpath and alias', () => {
+      const app = createApp({ 'note.md': '' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       const link = app.fileManager.generateMarkdownLink(file, '', 'heading', 'display');
       expect(link).toBe('[[note#heading|display]]');
@@ -64,33 +64,33 @@ describe('FileManager', () => {
 
   describe('getAvailablePathForAttachment', () => {
     it('should return the filename as-is', async () => {
-      const app = await createApp();
+      const app = createApp();
       const path = await app.fileManager.getAvailablePathForAttachment('image.png');
       expect(path).toBe('image.png');
     });
   });
 
   describe('getNewFileParent', () => {
-    it('should return the parent folder when source path has a parent', async () => {
-      const app = await createApp({ 'notes/file.md': '' });
+    it('should return the parent folder when source path has a parent', () => {
+      const app = createApp({ 'notes/file.md': '' });
       const folder = app.fileManager.getNewFileParent('notes/file.md');
       expect(folder.path).toBe('notes');
     });
 
-    it('should return root when source path has no parent', async () => {
-      const app = await createApp();
+    it('should return root when source path has no parent', () => {
+      const app = createApp();
       const folder = app.fileManager.getNewFileParent('file.md');
       expect(folder.path).toBe('/');
     });
 
-    it('should return root when parent folder does not exist', async () => {
-      const app = await createApp();
+    it('should return root when parent folder does not exist', () => {
+      const app = createApp();
       const folder = app.fileManager.getNewFileParent('nonexistent/file.md');
       expect(folder.path).toBe('/');
     });
 
-    it('should return root when slash is at position 0', async () => {
-      const app = await createApp();
+    it('should return root when slash is at position 0', () => {
+      const app = createApp();
       const folder = app.fileManager.getNewFileParent('/file.md');
       expect(folder.path).toBe('/');
     });
@@ -98,7 +98,7 @@ describe('FileManager', () => {
 
   describe('processFrontMatter', () => {
     it('should parse existing frontmatter and pass it to the callback', async () => {
-      const app = await createApp({ 'note.md': '---\ntitle: Hello\n---\nBody' });
+      const app = createApp({ 'note.md': '---\ntitle: Hello\n---\nBody' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       const cb = vi.fn();
       await app.fileManager.processFrontMatter(file, cb);
@@ -106,7 +106,7 @@ describe('FileManager', () => {
     });
 
     it('should create frontmatter when none exists', async () => {
-      const app = await createApp({ 'note.md': 'Body content' });
+      const app = createApp({ 'note.md': 'Body content' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       await app.fileManager.processFrontMatter(file, (fm) => {
         fm['tags'] = ['test'];
@@ -116,7 +116,7 @@ describe('FileManager', () => {
     });
 
     it('should write modified frontmatter back to the file', async () => {
-      const app = await createApp({ 'note.md': '---\ntitle: Old\n---\nBody' });
+      const app = createApp({ 'note.md': '---\ntitle: Old\n---\nBody' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       await app.fileManager.processFrontMatter(file, (fm) => {
         fm['title'] = 'New';
@@ -126,7 +126,7 @@ describe('FileManager', () => {
     });
 
     it('should preserve body content after frontmatter update', async () => {
-      const app = await createApp({ 'note.md': '---\ntitle: Test\n---\nBody text' });
+      const app = createApp({ 'note.md': '---\ntitle: Test\n---\nBody text' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       await app.fileManager.processFrontMatter(file, (fm) => {
         fm['added'] = true;
@@ -136,7 +136,7 @@ describe('FileManager', () => {
     });
 
     it('should handle file with no body after frontmatter', async () => {
-      const app = await createApp({ 'note.md': '---\ntitle: Only\n---\n' });
+      const app = createApp({ 'note.md': '---\ntitle: Only\n---\n' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       await app.fileManager.processFrontMatter(file, (fm) => {
         fm['extra'] = 'value';
@@ -146,7 +146,7 @@ describe('FileManager', () => {
     });
 
     it('should handle file with empty body by producing trailing newline', async () => {
-      const app = await createApp({ 'note.md': '---\ntitle: Only\n---' });
+      const app = createApp({ 'note.md': '---\ntitle: Only\n---' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       await app.fileManager.processFrontMatter(file, (fm) => {
         fm['extra'] = 'value';
@@ -157,7 +157,7 @@ describe('FileManager', () => {
     });
 
     it('should handle YAML that parses to a non-object by using empty object', async () => {
-      const app = await createApp({ 'note.md': '---\njust a string\n---\nBody' });
+      const app = createApp({ 'note.md': '---\njust a string\n---\nBody' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       const cb = vi.fn();
       await app.fileManager.processFrontMatter(file, cb);
@@ -168,7 +168,7 @@ describe('FileManager', () => {
 
   describe('promptForDeletion', () => {
     it('should trash the file', async () => {
-      const app = await createApp({ 'delete-me.md': '' });
+      const app = createApp({ 'delete-me.md': '' });
       const file = ensureNonNullable(app.vault.getFileByPath('delete-me.md'));
       await app.fileManager.promptForDeletion(file);
       expect(app.vault.getFileByPath('delete-me.md')).toBeNull();
@@ -177,7 +177,7 @@ describe('FileManager', () => {
 
   describe('renameFile', () => {
     it('should rename the file', async () => {
-      const app = await createApp({ 'old.md': 'content' });
+      const app = createApp({ 'old.md': 'content' });
       const file = ensureNonNullable(app.vault.getFileByPath('old.md'));
       await app.fileManager.renameFile(file, 'new.md');
       expect(app.vault.getFileByPath('old.md')).toBeNull();
@@ -187,7 +187,7 @@ describe('FileManager', () => {
 
   describe('trashFile', () => {
     it('should trash the file', async () => {
-      const app = await createApp({ 'trash-me.md': '' });
+      const app = createApp({ 'trash-me.md': '' });
       const file = ensureNonNullable(app.vault.getFileByPath('trash-me.md'));
       await app.fileManager.trashFile(file);
       expect(app.vault.getFileByPath('trash-me.md')).toBeNull();

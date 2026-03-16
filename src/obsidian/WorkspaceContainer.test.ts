@@ -23,15 +23,15 @@ class BareWorkspaceContainer extends WorkspaceContainer {
 
 describe('WorkspaceContainer', () => {
   describe('asOriginalType5__()', () => {
-    it('should return the same instance typed as the original', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the original', () => {
+      const app = App.createConfigured__();
       const container = WorkspaceRoot.create3__(app.workspace, 'vertical');
       const original: WorkspaceContainerOriginal = container.asOriginalType5__();
       expect(original).toBe(container);
     });
 
-    it('should return the same instance via WorkspaceContainer base class', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance via WorkspaceContainer base class', () => {
+      const app = App.createConfigured__();
       const container = new BareWorkspaceContainer(app.workspace);
       const original: WorkspaceContainerOriginal = container.asOriginalType5__();
       expect(original).toBe(container);
@@ -39,8 +39,8 @@ describe('WorkspaceContainer', () => {
   });
 
   describe('fromOriginalType5__', () => {
-    it('should return the same instance typed as the mock type', async () => {
-      const app = await App.createConfigured__();
+    it('should return the same instance typed as the mock type', () => {
+      const app = App.createConfigured__();
       const container = WorkspaceRoot.create3__(app.workspace, 'vertical');
       const mock = WorkspaceContainer.fromOriginalType5__(container.asOriginalType5__());
       expect(mock).toBe(container);
@@ -48,8 +48,8 @@ describe('WorkspaceContainer', () => {
   });
 
   describe('constructor5__()', () => {
-    it('should be callable without throwing', async () => {
-      const app = await App.createConfigured__();
+    it('should be callable without throwing', () => {
+      const app = App.createConfigured__();
       const container = WorkspaceRoot.create3__(app.workspace, 'vertical');
       expect(() => {
         container.constructor5__(app.workspace, 'vertical');
