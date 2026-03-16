@@ -92,6 +92,7 @@
     "@eslint/js": "latest",
     "@stylistic/eslint-plugin": "latest",
     "@tsconfig/strictest": "latest",
+    "@typescript-eslint/utils": "latest",
     "@types/markdown-it": "latest",
     "@types/semver": "latest",
     "@types/turndown": "latest",
