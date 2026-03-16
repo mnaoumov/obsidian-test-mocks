@@ -1,4 +1,7 @@
-import type { Events as EventsOriginal } from 'obsidian';
+import type {
+  EventRef as EventRefOriginal,
+  Events as EventsOriginal
+} from 'obsidian';
 
 import {
   describe,
@@ -107,6 +110,14 @@ describe('Events', () => {
       events.trigger('test-event');
       expect(cb).not.toHaveBeenCalled();
     });
+
+    it('should not throw when event ref has no name or fn', () => {
+      const events = Events.create__();
+      const emptyRef = {} as EventRefOriginal;
+      expect(() => {
+        events.offref(emptyRef);
+      }).not.toThrow();
+    });
   });
 
   describe('tryTrigger', () => {
@@ -116,6 +127,14 @@ describe('Events', () => {
       const ref = events.on('test-event', cb);
       events.tryTrigger(ref, ['data1', 'data2']);
       expect(cb).toHaveBeenCalledWith('data1', 'data2');
+    });
+
+    it('should not throw when event ref has no fn or e', () => {
+      const events = Events.create__();
+      const emptyRef = {} as EventRefOriginal;
+      expect(() => {
+        events.tryTrigger(emptyRef, ['data']);
+      }).not.toThrow();
     });
   });
 });

@@ -661,6 +661,17 @@ describe('Editor core methods', () => {
       expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, CH_2));
       expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_5));
     });
+
+    it('should use from as head when selections have no to', () => {
+      const editor = createEditor('hello world');
+      editor.transaction({
+        selections: [
+          { from: pos(LINE_1, CH_3) }
+        ]
+      });
+      expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, CH_3));
+      expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_3));
+    });
   });
 
   describe('getScrollInfo / scrollTo', () => {

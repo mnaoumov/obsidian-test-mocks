@@ -6,12 +6,11 @@ import {
   it
 } from 'vitest';
 
-import { noopAsync } from '../internal/noop.ts';
 import { App } from './App.ts';
+import { View } from './View.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
-// eslint-disable-next-line no-restricted-syntax -- View is abstract; extending it requires a top-level await dynamic import to define ConcreteView at module scope.
-class ConcreteView extends (await import('./View.ts')).View {
+class ConcreteView extends View {
   public getDisplayText(): string {
     return 'Test View';
   }
@@ -21,11 +20,29 @@ class ConcreteView extends (await import('./View.ts')).View {
   }
 
   public override async onClose(): Promise<void> {
-    await noopAsync();
+    await super.onClose();
   }
 
   public override async onOpen(): Promise<void> {
-    await noopAsync();
+    await super.onOpen();
+  }
+}
+
+class MinimalView extends View {
+  public getDisplayText(): string {
+    return 'Minimal View';
+  }
+
+  public getViewType(): string {
+    return 'minimal';
+  }
+
+  public override async onClose(): Promise<void> {
+    await super.onClose();
+  }
+
+  public override async onOpen(): Promise<void> {
+    await super.onOpen();
   }
 }
 
@@ -113,8 +130,6 @@ describe('View', () => {
 
   describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', async () => {
-      // eslint-disable-next-line no-restricted-syntax -- View is abstract and must be dynamically imported to access the static method.
-      const { View } = await import('./View.ts');
       const view = await createView();
       const mock = View.fromOriginalType2__(view.asOriginalType2__());
       expect(mock).toBe(view);
@@ -148,6 +163,26 @@ describe('View', () => {
     it('should resolve without error', async () => {
       const view = await createView();
       await expect(view.onClose()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('base onOpen', () => {
+    it('should resolve without error when not overridden', async () => {
+      const app = await App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const view = new MinimalView(leaf);
+      const onOpen = view.onOpen.bind(view);
+      await expect(onOpen()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('base onClose', () => {
+    it('should resolve without error when not overridden', async () => {
+      const app = await App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const view = new MinimalView(leaf);
+      const onClose = view.onClose.bind(view);
+      await expect(onClose()).resolves.toBeUndefined();
     });
   });
 });
