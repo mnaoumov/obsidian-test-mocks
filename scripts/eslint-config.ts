@@ -1,6 +1,5 @@
 import type { Linter } from 'eslint';
 
-/* eslint-disable no-magic-numbers -- We disabled magic numbers because they are used all over the configs. */
 import commentsConfigs from '@eslint-community/eslint-plugin-eslint-comments/configs';
 import { includeIgnoreFile } from '@eslint/compat';
 import eslint from '@eslint/js';
@@ -274,6 +273,12 @@ function getEslintConfigs(): Linter.Config[] {
       rules: {
         'no-restricted-syntax': 'off'
       }
+    },
+    {
+      files: ['**/*.test.ts', 'scripts/eslint-config.ts'],
+      rules: {
+        'no-magic-numbers': 'off'
+      }
     }
   ]);
 }
@@ -476,5 +481,3 @@ function getTseslintConfigs(): Linter.Config[] {
     }
   ]);
 }
-
-/* eslint-enable no-magic-numbers -- We disabled magic numbers because they are used all over the configs. */
