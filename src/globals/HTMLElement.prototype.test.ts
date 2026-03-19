@@ -88,11 +88,11 @@ describe('HTMLElement.prototype extensions', () => {
       expect(el.style.display).toBe('');
     });
 
-    it('should report shown state', () => {
+    it('should report shown state based on offsetParent', () => {
       const el = document.createElement('div');
-      expect(isShown.call(el)).toBe(true);
-      hide.call(el);
       expect(isShown.call(el)).toBe(false);
+      Object.defineProperty(el, 'offsetParent', { configurable: true, value: document.body });
+      expect(isShown.call(el)).toBe(true);
     });
 
     it('should toggle display', () => {

@@ -6,8 +6,7 @@ export const config = defineConfig({
       exclude: [
         'src/**/*.test.ts',
         'src/**/index.ts',
-        'src/globals/setup.ts',
-        'src/internal/types.ts'
+        'src/globals/setup.ts'
       ],
       include: ['src/**/*.ts'],
       provider: 'v8',
