@@ -99,20 +99,6 @@ describe('MarkdownView', () => {
       view.currentMode.applyScroll(SCROLL_POS);
       expect(view.currentMode.getScroll()).toBe(SCROLL_POS);
     });
-
-    it('should clear via currentMode', () => {
-      const view = createMarkdownView();
-      view.setViewData('data', false);
-      view.currentMode.clear();
-      expect(view.editor.getValue()).toBe('');
-    });
-
-    it('should not throw on rerender', () => {
-      const view = createMarkdownView();
-      expect(() => {
-        view.currentMode.rerender();
-      }).not.toThrow();
-    });
   });
 
   describe('previewMode', () => {

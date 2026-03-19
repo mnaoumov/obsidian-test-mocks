@@ -8,7 +8,7 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
   public eventListeners__: Record<string, ((...args: unknown[]) => void)[]> = {};
 
   public constructor(containerEl: HTMLElement) {
-    super(createEl('input'));
+    super(containerEl.createEl('input'));
     const eventListeners = this.eventListeners__;
     const origAddEventListener = this.inputEl.addEventListener.bind(this.inputEl);
     this.inputEl.addEventListener = function addEventListenerWrapper(this: HTMLInputElement, ...args: Parameters<HTMLInputElement['addEventListener']>): void {

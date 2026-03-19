@@ -13,10 +13,15 @@ import { Setting } from './Setting.ts';
 
 export class SettingGroup {
   public listEl__: HTMLDivElement;
+  private readonly groupEl: HTMLDivElement;
+  private readonly headerEl: HTMLDivElement;
+  private readonly headerInnerEl: HTMLDivElement;
 
   public constructor(containerEl: HTMLElement) {
-    this.listEl__ = createDiv();
-    containerEl.appendChild(this.listEl__);
+    this.groupEl = containerEl.createDiv();
+    this.headerEl = createDiv();
+    this.headerInnerEl = this.headerEl.createDiv();
+    this.listEl__ = this.groupEl.createDiv();
     const self = strictProxy(this);
     self.constructor__(containerEl);
     return self;
@@ -62,11 +67,14 @@ export class SettingGroup {
   }
 
   public setHeading(text: DocumentFragment | string): this {
-    if (typeof text === 'string') {
-      const heading = createEl('h3');
-      heading.textContent = text;
-      this.listEl__.prepend(heading);
+    this.headerInnerEl.setText(text);
+
+    if (text && !this.headerEl.isShown()) {
+      this.groupEl.prepend(this.headerEl);
+    } else if (!text && this.headerEl.isShown()) {
+      this.headerEl.detach();
     }
+
     return this;
   }
 }

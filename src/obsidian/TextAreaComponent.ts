@@ -6,7 +6,7 @@ import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextAreaComponent extends AbstractTextComponent<HTMLTextAreaElement> {
   public constructor(containerEl: HTMLElement) {
-    super(createEl('textarea'));
+    super(containerEl.createEl('textarea'));
     const self = strictProxy(this);
     self.constructor4__(containerEl);
     return self;

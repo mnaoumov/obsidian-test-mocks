@@ -12,14 +12,14 @@ export class Notice {
 
   public constructor(message: DocumentFragment | string, duration?: number) {
     this.containerEl = createDiv();
-    this.messageEl = createDiv();
-    this.noticeEl = createDiv();
+    this.messageEl = this.containerEl.createDiv();
+    this.noticeEl = this.containerEl.createDiv();
     if (typeof message === 'string') {
       this.messageEl.textContent = message;
     } else {
       this.messageEl.appendChild(message.cloneNode(true));
     }
-    (this as { duration__: number }).duration__ = duration ?? 0;
+    this.duration__ = duration ?? 0;
     const self = strictProxy(this);
     self.constructor__(message, duration);
     return self;

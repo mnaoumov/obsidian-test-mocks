@@ -8,9 +8,9 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   public clearButtonEl: HTMLElement;
 
   public constructor(containerEl: HTMLElement) {
-    super(createEl('input'));
+    super(containerEl.createEl('input'));
     this.inputEl.type = 'search';
-    this.clearButtonEl = createDiv();
+    this.clearButtonEl = containerEl.createDiv();
     const self = strictProxy(this);
     self.constructor4__(containerEl);
     return self;

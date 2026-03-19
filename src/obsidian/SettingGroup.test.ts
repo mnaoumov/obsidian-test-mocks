@@ -65,13 +65,33 @@ describe('SettingGroup', () => {
     it('should prepend a heading element for string text', () => {
       const group = SettingGroup.create__(createDiv());
       const result = group.setHeading('My Heading');
-      const heading = group.listEl__.querySelector('h3');
-      expect(heading).not.toBeNull();
-      expect(heading?.textContent).toBe('My Heading');
+      const groupEl = group.listEl__.parentElement;
+      expect(groupEl).not.toBeNull();
+      const headerEl = groupEl?.firstElementChild;
+      expect(headerEl).not.toBeNull();
+      expect(headerEl?.textContent).toBe('My Heading');
       expect(result).toBe(group);
     });
 
-    it('should return this for non-string text', () => {
+    it('should not prepend header when text is empty', () => {
+      const group = SettingGroup.create__(createDiv());
+      group.setHeading('');
+      const groupEl = group.listEl__.parentElement;
+      expect(groupEl?.children).toHaveLength(1);
+    });
+
+    it('should detach header when clearing text after setting it', () => {
+      const group = SettingGroup.create__(createDiv());
+      group.setHeading('Heading');
+      const groupEl = group.listEl__.parentElement;
+      expect(groupEl?.children).toHaveLength(2);
+      const headerEl = groupEl?.firstElementChild;
+      Object.defineProperty(headerEl, 'offsetParent', { configurable: true, value: groupEl });
+      group.setHeading('');
+      expect(groupEl?.children).toHaveLength(1);
+    });
+
+    it('should return this for DocumentFragment text', () => {
       const group = SettingGroup.create__(createDiv());
       const fragment = document.createDocumentFragment();
       fragment.append('Fragment heading');

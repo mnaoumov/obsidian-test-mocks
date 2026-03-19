@@ -20,10 +20,10 @@ export class Modal {
   public constructor(app: App) {
     this.app = app;
     this.containerEl = createDiv();
-    this.contentEl = createDiv();
-    this.modalEl = createDiv();
+    this.modalEl = this.containerEl.createDiv();
+    this.contentEl = this.modalEl.createDiv();
+    this.titleEl = this.modalEl.createDiv();
     this.scope = Scope.create__();
-    this.titleEl = createDiv();
     const self = strictProxy(this);
     self.constructor__(app);
     return self;

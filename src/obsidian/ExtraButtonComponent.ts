@@ -10,7 +10,7 @@ export class ExtraButtonComponent extends BaseComponent {
 
   public constructor(containerEl: HTMLElement) {
     super();
-    this.extraSettingsEl = createDiv();
+    this.extraSettingsEl = containerEl.createDiv();
     const self = strictProxy(this);
     self.constructor2__(containerEl);
     return self;

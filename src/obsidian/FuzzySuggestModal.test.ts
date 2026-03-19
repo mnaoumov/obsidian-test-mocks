@@ -1,4 +1,7 @@
-import type { FuzzySuggestModal as FuzzySuggestModalOriginal } from 'obsidian';
+import type {
+  FuzzyMatch as FuzzyMatchOriginal,
+  FuzzySuggestModal as FuzzySuggestModalOriginal
+} from 'obsidian';
 
 import {
   describe,
@@ -14,24 +17,36 @@ import { FuzzySuggestModal } from './FuzzySuggestModal.ts';
 
 class ConcreteFuzzySuggestModal extends FuzzySuggestModal<string> {
   public override getItems(): string[] {
-    return ['alpha', 'beta', 'gamma'];
+    const items = super.getItems();
+    items.push('alpha', 'beta', 'gamma');
+    return items;
   }
 
   public override getItemText(item: string): string {
     return item;
   }
 
-  public override onChooseItem(_item: string, _evt: KeyboardEvent | MouseEvent): void {
+  public override getSuggestions(_query: string): FuzzyMatchOriginal<string>[] | Promise<FuzzyMatchOriginal<string>[]> {
+    return [];
+  }
+
+  public override renderSuggestion(_value: FuzzyMatchOriginal<string>, _el: HTMLElement): void {
     noop();
   }
 }
 
-// Tests the base class default implementations
-class DefaultFuzzySuggestModal extends FuzzySuggestModal<string> {
+class MinimalFuzzySuggestModal extends FuzzySuggestModal<string> {
+  public override getSuggestions(_query: string): FuzzyMatchOriginal<string>[] | Promise<FuzzyMatchOriginal<string>[]> {
+    return [];
+  }
+
+  public override renderSuggestion(_value: FuzzyMatchOriginal<string>, _el: HTMLElement): void {
+    noop();
+  }
 }
 
 describe('FuzzySuggestModal', () => {
-  function createModal(): ConcreteFuzzySuggestModal {
+  function createModal(): FuzzySuggestModal<string> {
     const app = App.createConfigured__();
     return new ConcreteFuzzySuggestModal(app);
   }
@@ -55,7 +70,7 @@ describe('FuzzySuggestModal', () => {
   describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original obsidian type', () => {
       const modal = createModal();
-      const original: FuzzySuggestModalOriginal<string> = modal.asOriginalType2__();
+      const original: FuzzySuggestModalOriginal<string> = modal.asOriginalType3__();
       expect(original).toBe(modal);
     });
   });
@@ -65,6 +80,23 @@ describe('FuzzySuggestModal', () => {
       const modal = createModal();
       const mock = FuzzySuggestModal.fromOriginalType2__(modal.asOriginalType2__());
       expect(mock).toBe(modal);
+    });
+  });
+
+  describe('fromOriginalType3__', () => {
+    it('should return the same instance typed as the mock type', () => {
+      const modal = createModal();
+      const mock = FuzzySuggestModal.fromOriginalType3__(modal.asOriginalType3__());
+      expect(mock).toBe(modal);
+    });
+  });
+
+  describe('constructor3__', () => {
+    it('should be callable and spyable', () => {
+      const spy = vi.spyOn(ConcreteFuzzySuggestModal.prototype, 'constructor3__');
+      createModal();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
     });
   });
 
@@ -107,19 +139,19 @@ describe('FuzzySuggestModal', () => {
   describe('base class defaults', () => {
     it('should return empty array from getItems', () => {
       const app = App.createConfigured__();
-      const modal = new DefaultFuzzySuggestModal(app);
+      const modal = new MinimalFuzzySuggestModal(app);
       expect(modal.getItems()).toEqual([]);
     });
 
     it('should return empty string from getItemText', () => {
       const app = App.createConfigured__();
-      const modal = new DefaultFuzzySuggestModal(app);
+      const modal = new MinimalFuzzySuggestModal(app);
       expect(modal.getItemText('anything')).toBe('');
     });
 
     it('should not throw from onChooseItem', () => {
       const app = App.createConfigured__();
-      const modal = new DefaultFuzzySuggestModal(app);
+      const modal = new MinimalFuzzySuggestModal(app);
       expect(() => {
         modal.onChooseItem('anything', new MouseEvent('click'));
       }).not.toThrow();

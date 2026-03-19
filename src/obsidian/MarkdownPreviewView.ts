@@ -16,6 +16,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
 
   private data = '';
   private readonly markdownView: MarkdownView;
+  private scroll = 0;
 
   public constructor(markdownView: MarkdownView) {
     super(markdownView.app, markdownView.containerEl);
@@ -34,8 +35,8 @@ export class MarkdownPreviewView extends MarkdownRenderer {
     return strictProxy(value, MarkdownPreviewView);
   }
 
-  public applyScroll(_scroll: number): void {
-    noop();
+  public applyScroll(scroll: number): void {
+    this.scroll = scroll;
   }
 
   public asOriginalType4__(): MarkdownPreviewViewOriginal {
@@ -55,7 +56,7 @@ export class MarkdownPreviewView extends MarkdownRenderer {
   }
 
   public getScroll(): number {
-    return 0;
+    return this.scroll;
   }
 
   public rerender(_full?: boolean): void {
