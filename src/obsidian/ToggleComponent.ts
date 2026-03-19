@@ -15,7 +15,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
 
   public constructor(containerEl: HTMLElement) {
     super();
-    this.toggleEl = createDiv();
+    this.toggleEl = containerEl.createDiv();
     const self = strictProxy(this);
     self.constructor3__(containerEl);
     return self;

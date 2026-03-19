@@ -7,28 +7,25 @@ import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { Modal } from './Modal.ts';
+import { SuggestModal } from './SuggestModal.ts';
 
-export abstract class FuzzySuggestModal<T> extends Modal {
-  public inputEl: HTMLInputElement;
-
+export abstract class FuzzySuggestModal<T> extends SuggestModal<FuzzyMatchOriginal<T>> {
   public constructor(app: App) {
     super(app);
-    this.inputEl = createEl('input');
     const self = strictProxy(this);
-    self.constructor2__(app);
+    self.constructor3__(app);
     return self;
   }
 
-  public static fromOriginalType2__<T>(value: FuzzySuggestModalOriginal<T>): FuzzySuggestModal<T> {
+  public static fromOriginalType3__<T>(value: FuzzySuggestModalOriginal<T>): FuzzySuggestModal<T> {
     return strictProxy<FuzzySuggestModal<T>>(value);
   }
 
-  public asOriginalType2__(): FuzzySuggestModalOriginal<T> {
+  public asOriginalType3__(): FuzzySuggestModalOriginal<T> {
     return strictProxy<FuzzySuggestModalOriginal<T>>(this);
   }
 
-  public constructor2__(_app: App): void {
+  public constructor3__(_app: App): void {
     noop();
   }
 
@@ -44,12 +41,7 @@ export abstract class FuzzySuggestModal<T> extends Modal {
     noop();
   }
 
-  public selectSuggestion(value: FuzzyMatchOriginal<T>, evt: KeyboardEvent | MouseEvent): void {
-    this.onChooseItem(value.item, evt);
-    this.close();
-  }
-
-  public setPlaceholder(placeholder: string): void {
-    this.inputEl.placeholder = placeholder;
+  public override onChooseSuggestion(item: FuzzyMatchOriginal<T>, evt: KeyboardEvent | MouseEvent): void {
+    this.onChooseItem(item.item, evt);
   }
 }

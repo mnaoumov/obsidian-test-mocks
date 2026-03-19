@@ -10,7 +10,7 @@ export class MomentFormatComponent extends TextComponent {
 
   public constructor(containerEl: HTMLElement) {
     super(containerEl);
-    this.sampleEl = createDiv();
+    this.sampleEl = containerEl.createDiv();
     const self = strictProxy(this);
     self.constructor5__(containerEl);
     return self;

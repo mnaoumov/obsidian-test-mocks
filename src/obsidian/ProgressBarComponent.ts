@@ -11,7 +11,7 @@ export class ProgressBarComponent extends ValueComponent<number> {
 
   public constructor(containerEl: HTMLElement) {
     super();
-    this.progressBar__ = createDiv();
+    this.progressBar__ = containerEl.createDiv();
     const self = strictProxy(this);
     self.constructor3__(containerEl);
     return self;

@@ -39,16 +39,11 @@ export class Setting {
   public settingEl: HTMLElement;
 
   public constructor(containerEl: HTMLElement) {
-    this.controlEl = createDiv();
-    this.descEl = createDiv();
-    this.infoEl = createDiv();
-    this.nameEl = createDiv();
-    this.settingEl = createDiv();
-    this.settingEl.appendChild(this.infoEl);
-    this.infoEl.appendChild(this.nameEl);
-    this.infoEl.appendChild(this.descEl);
-    this.settingEl.appendChild(this.controlEl);
-    containerEl.appendChild(this.settingEl);
+    this.settingEl = containerEl.createDiv();
+    this.controlEl = this.settingEl.createDiv();
+    this.infoEl = this.settingEl.createDiv();
+    this.nameEl = this.infoEl.createDiv();
+    this.descEl = this.infoEl.createDiv();
     const self = strictProxy(this);
     self.constructor__(containerEl);
     return self;

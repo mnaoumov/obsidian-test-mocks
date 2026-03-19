@@ -17,7 +17,7 @@ export class SliderComponent extends ValueComponent<number> {
 
   public constructor(containerEl: HTMLElement) {
     super();
-    this.sliderEl = createEl('input');
+    this.sliderEl = containerEl.createEl('input');
     this.sliderEl.type = 'range';
     const self = strictProxy(this);
     self.constructor3__(containerEl);

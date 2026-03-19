@@ -1,71 +1,36 @@
 import type {
   HoverPopover as HoverPopoverOriginal,
+  MarkdownSubView as MarkdownSubViewOriginal,
   MarkdownView as MarkdownViewOriginal
 } from 'obsidian';
 
+import { MarkdownSubViewImpl } from '../internal/markdown-sub-view-impl.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { Editor } from './Editor.ts';
+import { MarkdownPreviewView } from './MarkdownPreviewView.ts';
 import { TextFileView } from './TextFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 class MockEditor extends Editor {}
 
 export class MarkdownView extends TextFileView {
-  public editor: Editor;
-  private currentModeScroll = 0;
+  public currentMode: MarkdownSubViewOriginal;
 
-  public currentMode = {
-    applyScroll: (scroll: number): void => {
-      this.currentModeScroll = scroll;
-    },
-    clear: (): void => {
-      this.editor.setValue('');
-    },
-    get: (): string => {
-      return this.editor.getValue();
-    },
-    getScroll: (): number => {
-      return this.currentModeScroll;
-    },
-    rerender: (): void => {
-      noop();
-    },
-    set: (data: string, _clear: boolean): void => {
-      this.editor.setValue(data);
-    }
-  };
+  public editor: Editor;
 
   public hoverPopover: HoverPopoverOriginal | null = null;
 
-  private previewModeScroll = 0;
-  public previewMode = {
-    applyScroll: (scroll: number): void => {
-      this.previewModeScroll = scroll;
-    },
-    clear: (): void => {
-      this.data = '';
-    },
-    containerEl: createDiv(),
-    get: (): string => {
-      return this.data;
-    },
-    getScroll: (): number => {
-      return this.previewModeScroll;
-    },
-    rerender: (): void => {
-      noop();
-    },
-    set: (data: string, _clear: boolean): void => {
-      this.data = data;
-    }
-  };
+  public previewMode: MarkdownPreviewView;
 
   private readonly mode: 'preview' | 'source' = 'source';
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
     this.editor = new MockEditor();
+    this.currentMode = new MarkdownSubViewImpl();
+    this.previewMode = MarkdownPreviewView.create3__(this);
+
     const self = strictProxy(this);
     self.constructor7__(leaf);
     return self;

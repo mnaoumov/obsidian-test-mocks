@@ -13,7 +13,7 @@ export abstract class ItemView extends View {
 
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    this.contentEl = createDiv();
+    this.contentEl = this.containerEl.createDiv();
     const self = strictProxy(this);
     self.constructor3__(leaf);
     return self;

@@ -20,8 +20,8 @@ export abstract class SuggestModal<T> extends Modal {
 
   public constructor(app: App) {
     super(app);
-    this.inputEl = createEl('input');
-    this.resultContainerEl = createDiv();
+    this.inputEl = this.modalEl.createEl('input');
+    this.resultContainerEl = this.modalEl.createDiv();
     const self = strictProxy(this);
     self.constructor2__(app);
     return self;
