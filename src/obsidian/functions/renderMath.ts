@@ -1,3 +1,3 @@
-export function renderMath(_source: string, _display: boolean): HTMLElement {
-  return document.createElement('span');
+export function renderMath(source: string, _display: boolean): HTMLElement {
+  return createSpan({ text: source });
 }

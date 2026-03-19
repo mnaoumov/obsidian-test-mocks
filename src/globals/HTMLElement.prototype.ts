@@ -35,7 +35,7 @@ export function innerWidth(this: HTMLElement): number {
 }
 
 export function isShown(this: HTMLElement): boolean {
-  return this.style.display !== 'none';
+  return !!this.offsetParent;
 }
 
 export function off(
