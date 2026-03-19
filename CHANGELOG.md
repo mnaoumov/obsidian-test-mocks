@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.0.11
+
+- fix: nested createEl re #1
+- refactor: simplify
+- chore: allow magic numbers in tests
+- chore: update issue templates
+
 ## 1.0.10
 
 - fix: tests
