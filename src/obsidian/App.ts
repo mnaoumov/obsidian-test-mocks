@@ -25,7 +25,7 @@ export class App {
   public vault: Vault;
   public workspace: Workspace;
 
-  private readonly localStorage = new Map<string, unknown>();
+  private readonly localStorage = new Map<string>();
 
   protected constructor(adapter: DataAdapterOriginal, appId: string) {
     this.vault = Vault.create2__(adapter);

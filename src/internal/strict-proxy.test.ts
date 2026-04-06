@@ -23,14 +23,6 @@ interface Nested {
   value: number;
 }
 
-interface WithData {
-  data: Map<string, number>;
-}
-
-interface WithItems {
-  items: number[];
-}
-
 const TEST_VALUE = 42;
 
 describe('strictProxy', () => {
@@ -64,14 +56,14 @@ describe('strictProxy', () => {
   });
 
   it('should pass through arrays without proxying', () => {
-    const mock = strictProxy<WithItems>({ items: [1, 0, -1] });
+    const mock = strictProxy({ items: [1, 0, -1] });
     expect(mock.items).toEqual([1, 0, -1]);
   });
 
   it('should pass through class instances without proxying', () => {
     const map = new Map<string, number>();
     map.set('a', 1);
-    const mock = strictProxy<WithData>({ data: map });
+    const mock = strictProxy({ data: map });
     expect(mock.data.get('a')).toBe(1);
   });
 

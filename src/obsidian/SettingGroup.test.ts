@@ -86,7 +86,9 @@ describe('SettingGroup', () => {
       const groupEl = group.listEl__.parentElement;
       expect(groupEl?.children).toHaveLength(2);
       const headerEl = groupEl?.firstElementChild;
-      Object.defineProperty(headerEl, 'offsetParent', { configurable: true, value: groupEl });
+      if (headerEl) {
+        Object.defineProperty(headerEl, 'offsetParent', { configurable: true, value: groupEl });
+      }
       group.setHeading('');
       expect(groupEl?.children).toHaveLength(1);
     });
