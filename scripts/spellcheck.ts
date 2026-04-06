@@ -1,4 +1,4 @@
-import { execFromRoot } from './helpers/exec.ts';
+import { execFromRoot } from './helpers/root.ts';
 
 async function main(): Promise<void> {
   const [, , ...paths] = process.argv;

@@ -13,7 +13,7 @@ import {
   join
 } from 'node:path';
 
-import { execFromRoot } from './helpers/exec.ts';
+import { execFromRoot } from './helpers/root.ts';
 
 const ESM_DIR = 'dist/lib/esm';
 const CJS_DIR = 'dist/lib/cjs';

@@ -4,7 +4,7 @@ import { assertNonNullable } from '../../src/internal/type-guards.ts';
 import {
   execFromRoot,
   getRootFolder
-} from './exec.ts';
+} from './root.ts';
 
 interface FormatParams {
   paths?: string[] | undefined;
