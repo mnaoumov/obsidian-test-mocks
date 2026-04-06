@@ -13,7 +13,7 @@ import { NullValue } from './NullValue.ts';
 
 export class BasesViewConfig {
   public name: string;
-  private readonly config = new Map<string, unknown>();
+  private readonly config = new Map<string>();
   private readonly displayNames = new Map<BasesPropertyIdOriginal, string>();
   private order: BasesPropertyIdOriginal[] = [];
   private sort: BasesSortConfigOriginal[] = [];

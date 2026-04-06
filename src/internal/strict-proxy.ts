@@ -69,7 +69,7 @@ function wrapProxy<T>(value: unknown, mockClass?: MockClassRef): T {
   const isClass = !isPlainObject(value);
   const className = mockClass?.name ?? (isClass ? value.constructor.name : '');
   const mockProto = mockClass ? ensureGenericObject(mockClass.prototype) : null;
-  const proxiedChildren = isClass ? null : new Map<string | symbol, unknown>();
+  const proxiedChildren = isClass ? null : new Map<string | symbol>();
 
   return new Proxy(value, {
     get(target, prop, receiver): unknown {
