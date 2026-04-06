@@ -30,4 +30,5 @@ src/globals/setup.ts
 /tsconfig.tsbuildinfo
 /.env
 
-/.claude
+.claude/settings.local.json
+

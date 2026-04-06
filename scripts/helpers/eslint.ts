@@ -1,4 +1,4 @@
-import { execFromRoot } from './exec.ts';
+import { execFromRoot } from './root.ts';
 
 interface LintParams {
   paths?: string[] | undefined;

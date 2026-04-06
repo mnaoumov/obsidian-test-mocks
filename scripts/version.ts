@@ -29,7 +29,7 @@ import {
   execFromRoot,
   getRootFolder,
   toPosixPath
-} from './helpers/exec.ts';
+} from './helpers/root.ts';
 
 const DEFAULT_PREID = 'beta';
 
