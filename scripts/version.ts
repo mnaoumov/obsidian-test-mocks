@@ -429,5 +429,5 @@ function resolvePathFromRootSafe(path: string, cwd?: string): string {
 
 async function writeJson(path: string, data: unknown): Promise<void> {
   const JSON_INDENT = 2;
-  await writeFile(path, `${JSON.stringify(data, null, JSON_INDENT)}\n`);
+  await writeFile(path, `${ensureNonNullable(JSON.stringify(data, null, JSON_INDENT))}\n`);
 }
