@@ -171,7 +171,7 @@ function getEslintConfigs(): Linter.Config[] {
             selector: 'TSTypeAnnotation TSTypeLiteral'
           },
           {
-            message: 'Do not use override on __ methods. Use a numbered variant instead, e.g., method2__() (L10).',
+            message: 'Do not use override on __ methods. Use a numbered variant instead, e.g., method2__().',
             selector: 'MethodDefinition[override=true][key.name=/.*__$/]'
           },
           {
@@ -252,12 +252,12 @@ function getEslintConfigs(): Linter.Config[] {
         'no-constructor-return': 'off',
         'no-restricted-imports': ['error', {
           paths: [{
-            message: 'Do not import obsidian-typings in src/obsidian/. Inline needed type shapes in src/internal/types.ts instead (L3).',
+            message: 'Do not import obsidian-typings in src/obsidian/. Inline needed type shapes in src/internal/types.ts instead.',
             name: 'obsidian-typings'
           }],
           patterns: [{
             group: ['obsidian-typings/*'],
-            message: 'Do not import obsidian-typings in src/obsidian/. Inline needed type shapes in src/internal/types.ts instead (L3).'
+            message: 'Do not import obsidian-typings in src/obsidian/. Inline needed type shapes in src/internal/types.ts instead.'
           }]
         }]
       }
