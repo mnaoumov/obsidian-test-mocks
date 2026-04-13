@@ -31,6 +31,10 @@ import {
   toPosixPath
 } from './helpers/root.ts';
 
+interface NpmPackResult {
+  filename: string;
+}
+
 const DEFAULT_PREID = 'beta';
 
 enum VersionUpdateType {
@@ -159,7 +163,7 @@ async function main(): Promise<void> {
 
 async function publishGitHubRelease(newVersion: string): Promise<void> {
   const resultOutput = await execFromRoot(['npm', 'pack', '--pack-destination', 'dist', '--json'], { isQuiet: true });
-  const result = JSON.parse(resultOutput) as [{ filename: string }];
+  const result = JSON.parse(resultOutput) as [NpmPackResult];
   let filePaths = [
     join('dist', result[0].filename)
   ];
