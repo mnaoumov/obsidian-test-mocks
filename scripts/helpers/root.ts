@@ -9,11 +9,11 @@ import process from 'node:process';
 export type CommandPart = ExecArg | string;
 
 export interface ExecArg {
-  batchedArgs: string[];
+  readonly batchedArgs: readonly string[];
 }
 
 interface ExecDetailedOptions extends ExecOption {
-  withDetails: true;
+  readonly shouldIncludeDetails: true;
 }
 
 interface ExecOption {
@@ -27,14 +27,14 @@ interface ExecOption {
 }
 
 interface ExecResult {
-  exitCode: null | number;
-  exitSignal: NodeJS.Signals | null;
-  stderr: string;
-  stdout: string;
+  readonly exitCode: null | number;
+  readonly exitSignal: NodeJS.Signals | null;
+  readonly stderr: string;
+  readonly stdout: string;
 }
 
 interface ExecSimpleOptions extends ExecOption {
-  withDetails?: false;
+  readonly shouldIncludeDetails?: false;
 }
 
 export async function execFromRoot(command: CommandPart[] | string, options?: ExecSimpleOptions): Promise<string>;
@@ -103,7 +103,7 @@ function execString(command: string, options: ExecOption = {}): Promise<ExecResu
     cwd = process.cwd(),
     isQuiet: quiet = false,
     shouldIgnoreExitCode: ignoreExitCode = false,
-    shouldIncludeDetails: withDetails = false,
+    shouldIncludeDetails = false,
     stdin = ''
   } = options;
 
@@ -152,7 +152,7 @@ function execString(command: string, options: ExecOption = {}): Promise<ExecResu
         return;
       }
 
-      if (!withDetails) {
+      if (!shouldIncludeDetails) {
         resolve(stdout);
         return;
       }
@@ -170,7 +170,7 @@ function execString(command: string, options: ExecOption = {}): Promise<ExecResu
         return;
       }
 
-      if (!withDetails) {
+      if (!shouldIncludeDetails) {
         resolve(stdout);
         return;
       }
