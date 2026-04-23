@@ -228,7 +228,7 @@ function parseFrontmatter(
 
   const parsed = info.frontmatter.trim() ? parseYaml(info.frontmatter) : null;
   if (parsed && typeof parsed === 'object') {
-    cache.frontmatter = parsed as FrontMatterCache;
+    cache.frontmatter = parsed;
   } else {
     cache.frontmatter = strictProxy<FrontMatterCache>({});
   }
