@@ -3,10 +3,10 @@
   "compilerOptions": {
     "declaration": true,
     "declarationDir": "./dist/lib/esm",
-    "declarationMap": true,
     "emitDeclarationOnly": true,
     "noEmit": false,
-    "outDir": "./dist/lib/esm"
+    "outDir": "./dist/lib/esm",
+    "rootDir": "./src"
   },
   "include": [
     "./src/**/*.ts"
