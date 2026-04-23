@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.1.0
+
+- chore: set rootDir
+- feat: bypassStrictProxy
+
 ## 1.0.11
 
 - fix: nested createEl re #1
