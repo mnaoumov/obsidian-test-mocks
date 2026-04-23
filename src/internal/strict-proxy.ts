@@ -20,7 +20,7 @@ import type { PartialDeep } from 'type-fest';
 
 import { ensureGenericObject } from './type-guards.ts';
 
-const STRICT_PROXY_MARKER = Symbol('strictProxy');
+const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
 
 const PASSTHROUGH_PROPS = new Set<string | symbol>([
   Symbol.iterator,
@@ -37,6 +37,21 @@ interface MockClassRef {
   prototype: object;
 }
 
+/**
+ * Bypasses strict proxy.
+ *
+ * @param obj - The object to bypass.
+ * @returns The object with the bypass accessor.
+ */
+export function bypassStrictProxy<T>(obj: T): T {
+  if (!isObjectLike(obj)) {
+    return obj;
+  }
+  if (!(STRICT_PROXY_TARGET_SYMBOL in obj)) {
+    return obj;
+  }
+  return obj[STRICT_PROXY_TARGET_SYMBOL] as T;
+}
 // eslint-disable-next-line @typescript-eslint/unified-signatures -- This overload infers T from mockClass; the `unknown` overload below requires explicit T. Cannot be combined.
 export function strictProxy<T>(value: unknown, mockClass: MockClassLike<T>): T;
 export function strictProxy<T extends object>(value: T): T;
@@ -61,10 +76,10 @@ function wrapProxy<T>(value: unknown, mockClass?: MockClassRef): T {
     return value as T;
   }
 
-  if (STRICT_PROXY_MARKER in value) {
+  if (STRICT_PROXY_TARGET_SYMBOL in value) {
     return value as T;
   }
-  Object.defineProperty(value, STRICT_PROXY_MARKER, { value: true });
+  Object.defineProperty(value, STRICT_PROXY_TARGET_SYMBOL, { value });
 
   const isClass = !isPlainObject(value);
   const className = mockClass?.name ?? (isClass ? value.constructor.name : '');

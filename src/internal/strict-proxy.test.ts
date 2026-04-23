@@ -5,7 +5,10 @@ import {
   vi
 } from 'vitest';
 
-import { strictProxy } from './strict-proxy.ts';
+import {
+  bypassStrictProxy,
+  strictProxy
+} from './strict-proxy.ts';
 import { ensureGenericObject } from './type-guards.ts';
 
 interface DeepNested {
@@ -135,5 +138,31 @@ describe('strictProxy with mockClass', () => {
     const value = { name: 'test' };
     const proxied = strictProxy(value, MockClass);
     expect(ensureGenericObject(proxied)['flag__']).toBe('proto-value');
+  });
+});
+
+describe('bypassStrictProxy', () => {
+  it('should return the unwrapped object', () => {
+    const original = { name: 'test' };
+    const proxied = strictProxy<MockTarget>(original);
+    const unwrapped = bypassStrictProxy(proxied);
+    expect(unwrapped).toBe(original);
+  });
+
+  it('should allow accessing unmocked properties on the unwrapped object', () => {
+    const mock = strictProxy<MockTarget>({ name: 'test' });
+    const unwrapped = bypassStrictProxy(mock);
+    expect(ensureGenericObject(unwrapped)['unmocked']).toBeUndefined();
+  });
+
+  it('should return primitives as-is', () => {
+    expect(bypassStrictProxy('hello')).toBe('hello');
+    expect(bypassStrictProxy(TEST_VALUE)).toBe(TEST_VALUE);
+    expect(bypassStrictProxy(null)).toBeNull();
+  });
+
+  it('should return non-proxy objects as-is', () => {
+    const obj = { name: 'test' };
+    expect(bypassStrictProxy(obj)).toBe(obj);
   });
 });
