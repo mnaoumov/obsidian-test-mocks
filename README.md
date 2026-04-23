@@ -230,6 +230,54 @@ it('uses the overridden apiVersion', () => {
 });
 ```
 
+### Overriding `requestUrl` in Vitest
+
+`requestUrl` is provided as a plain mock implementation, not a `vi.fn()`. By default it resolves to a minimal success-shaped response:
+
+```typescript
+const response = await requestUrl('https://example.com');
+expect(response).toEqual({
+  status: 200,
+  json: null,
+  text: '',
+  headers: {},
+  arrayBuffer: expect.any(ArrayBuffer),
+});
+```
+
+If you want to assert calls or control the returned payload, replace it with your own hoisted Vitest mock:
+
+```typescript
+import { vi } from 'vitest';
+
+const { requestUrlMock } = vi.hoisted(() => ({
+  requestUrlMock: vi.fn(),
+}));
+
+vi.mock('obsidian', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('obsidian')>()),
+  requestUrl: requestUrlMock,
+}));
+
+import { requestUrl } from 'obsidian';
+
+it('overrides requestUrl', async () => {
+  requestUrlMock.mockResolvedValue({
+    status: 201,
+    text: '{"created":true}',
+    json: { created: true },
+  });
+
+  await requestUrl({ url: 'https://example.com/items' });
+
+  expect(requestUrlMock).toHaveBeenCalledWith({
+    url: 'https://example.com/items',
+  });
+});
+```
+
+`vi.hoisted()` is important here because `vi.mock()` factories are hoisted. A top-level `const requestUrlMock = vi.fn()` will be referenced before initialization.
+
 ## Using with `obsidian-typings`
 
 This package does **not** depend on [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings), but it works seamlessly if your project uses it.
