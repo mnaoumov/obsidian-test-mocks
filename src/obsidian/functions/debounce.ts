@@ -17,7 +17,7 @@ export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, tim
         cb(...args);
       }, timeout);
     }
-    return debouncer as DebouncerOriginal<T, V>;
+    return debouncer;
   }
 
   debouncer.cancel = (): DebouncerOriginal<T, V> => {
@@ -25,7 +25,7 @@ export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, tim
       clearTimeout(timerId);
       timerId = undefined;
     }
-    return debouncer as DebouncerOriginal<T, V>;
+    return debouncer;
   };
 
   debouncer.run = (): MaybeReturn<V> => {
@@ -34,9 +34,9 @@ export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, tim
       timerId = undefined;
     }
     if (lastArgs) {
-      return cb(...lastArgs) as MaybeReturn<V>;
+      return cb(...lastArgs);
     }
   };
 
-  return debouncer as DebouncerOriginal<T, V>;
+  return debouncer;
 }

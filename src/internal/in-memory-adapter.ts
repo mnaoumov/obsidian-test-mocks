@@ -295,7 +295,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
         mtime: 0,
         size: 0,
         type: 'folder'
-      } as StatOriginal;
+      };
     }
 
     const meta = this.fileMeta.get(normalizedPath);
@@ -308,7 +308,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       mtime: meta.mtime,
       size: meta.size,
       type: 'file'
-    } as StatOriginal;
+    };
   }
 
   public async trashLocal(normalizedPath: string): Promise<void> {

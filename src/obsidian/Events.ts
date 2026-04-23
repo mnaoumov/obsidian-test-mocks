@@ -47,7 +47,7 @@ export class Events {
       return;
     }
 
-    const fn = entry.fn as (...data: unknown[]) => unknown;
+    const fn = entry.fn;
     this.off(entry.name, fn);
   }
 

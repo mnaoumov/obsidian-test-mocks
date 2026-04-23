@@ -36,7 +36,7 @@ describe('assert', () => {
 describe('assertNonNullable', () => {
   it('should not throw for non-null value', () => {
     expect(() => {
-      assertNonNullable('hello' as null | string);
+      assertNonNullable<null | string>('hello');
     }).not.toThrow();
   });
 
@@ -68,7 +68,7 @@ describe('assertNonNullable', () => {
 
 describe('ensureNonNullable', () => {
   it('should return the value when non-null', () => {
-    const result = ensureNonNullable('hello' as null | string);
+    const result = ensureNonNullable<null | string>('hello');
     expect(result).toBe('hello');
   });
 
