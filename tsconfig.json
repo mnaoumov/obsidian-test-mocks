@@ -16,6 +16,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noEmit": true,
+    "rootDir": ".",
     "skipLibCheck": false,
     "target": "ES2024",
     "types": [
