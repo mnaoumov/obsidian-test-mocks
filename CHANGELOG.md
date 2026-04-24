@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.1
+
+- fix: build
+
 ## 1.1.0
 
 - chore: set rootDir
