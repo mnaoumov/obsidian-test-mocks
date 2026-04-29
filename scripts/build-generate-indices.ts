@@ -25,7 +25,10 @@ async function collectTsFiles(dir: string): Promise<TsFileEntry[]> {
     if ((await stat(full)).isDirectory()) {
       continue;
     }
-    if (entry.endsWith('.ts') && !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts') && entry !== 'index.ts' && entry !== 'setup.ts') {
+    if (
+      entry.endsWith('.ts') && !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts') && !entry.endsWith('-setup.ts') && entry !== 'index.ts'
+      && entry !== 'setup.ts'
+    ) {
       results.push({ fullPath: full, name: entry });
     }
   }
@@ -92,6 +95,7 @@ async function generateBarrelIndexWithClaimedNames(dir: string): Promise<BarrelR
 async function generateGlobalsIndex(dir: string): Promise<string> {
   const importLines: string[] = [];
   const registrationLines: string[] = [];
+  const teardownLines: string[] = [];
   const globalNamespaces: string[] = [];
 
   const POST_SETUP = 'post-setup.ts';
@@ -105,11 +109,13 @@ async function generateGlobalsIndex(dir: string): Promise<string> {
       const className = file.name.replace('.prototype.ts', '');
       importLines.push(`import * as ${namespaceId} from '${modulePath}';`);
       registrationLines.push(`Object.assign(${className}.prototype, ${namespaceId});`);
+      teardownLines.push(`deleteKeys(${className}.prototype, ${namespaceId});`);
     } else {
       const className = file.name.replace('.ts', '');
       const nsId = `${namespaceId}_`;
       importLines.push(`import * as ${nsId} from '${modulePath}';`);
       registrationLines.push(`Object.assign(${className}, ${nsId});`);
+      teardownLines.push(`deleteKeys(${className}, ${nsId});`);
     }
   }
 
@@ -132,18 +138,32 @@ async function generateGlobalsIndex(dir: string): Promise<string> {
     }
   }
 
-  // Register all global functions and vars on globalThis.
+  // Register/teardown all global functions and vars on globalThis.
   for (const ns of globalNamespaces) {
     registrationLines.push(`Object.assign(globalThis, ${ns});`);
+    teardownLines.push(`deleteKeys(globalThis, ${ns});`);
   }
 
-  importLines.push(`import { postSetup } from './${POST_SETUP}';`);
+  importLines.push(`import { postSetup, postTeardown } from './${POST_SETUP}';`);
 
   const lines: string[] = [];
   lines.push(...importLines.sort());
   lines.push('');
-  lines.push(registrationLines.sort().join('\n'));
-  lines.push('postSetup();');
+  lines.push('function deleteKeys(target: object, source: object): void {');
+  lines.push('  for (const key of Object.keys(source)) {');
+  lines.push('    delete (target as Record<string, unknown>)[key];');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+  lines.push('export function setup(): void {');
+  lines.push(`  ${registrationLines.sort().join('\n  ')}`);
+  lines.push('  postSetup();');
+  lines.push('}');
+  lines.push('');
+  lines.push('export function teardown(): void {');
+  lines.push(`  ${teardownLines.sort().join('\n  ')}`);
+  lines.push('  postTeardown();');
+  lines.push('}');
   lines.push('');
 
   return lines.join('\n');
