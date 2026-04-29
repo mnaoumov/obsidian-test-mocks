@@ -1,6 +1,11 @@
 import { glob } from 'node:fs/promises';
+import { relative } from 'node:path';
+import process from 'node:process';
 
-import { execFromRoot } from './root.ts';
+import {
+  execFromRoot,
+  toPosixPath
+} from './root.ts';
 
 interface LintParams {
   paths?: string[] | undefined;
@@ -13,7 +18,7 @@ export async function lint(params?: LintParams): Promise<void> {
   await execFromRoot(['npx', 'markdownlint-cli2', ...(shouldFix ? ['--fix'] : []), { batchedArgs: targets }]);
 
   const mdFiles = paths?.length
-    ? paths
+    ? paths.map((p) => toPosixPath(relative(process.cwd(), p)))
     : await toArray(glob(['**/*.md'], {
       exclude: [
         '.git/**',
