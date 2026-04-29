@@ -16,7 +16,7 @@ export const config = defineConfig({
       reportsDirectory: './coverage'
     },
     environment: 'jsdom',
-    exclude: ['node_modules', 'dist'],
+    exclude: ['node_modules', 'dist', 'src/jest'],
     globals: false,
     include: ['src/**/*.test.ts'],
     setupFiles: ['src/globals/vitest-setup.ts']

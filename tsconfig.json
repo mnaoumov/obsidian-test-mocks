@@ -28,6 +28,7 @@
     "./.markdownlint-cli2.mts",
     "./commitlint.config.ts",
     "./eslint.config.*ts",
+    "./jest.config.ts",
     "./scripts/**/*.ts",
     "./src/**/*.ts",
     "./vitest.config.ts"

@@ -23,7 +23,7 @@ Peer dependencies: `obsidian`
 | `obsidian-test-mocks/obsidian`       | Mocks for every class/function in `obsidian.d.ts`                         |
 | `obsidian-test-mocks/setup`          | Exports `setup()` / `teardown()` for prototype extensions and globals     |
 | `obsidian-test-mocks/vitest-setup`   | One-stop Vitest setup file: calls `setup()` + mocks the `obsidian` module |
-| `obsidian-test-mocks/jest-setup`     | One-stop Jest setup file: calls `setup()` + mocks the `obsidian` module   |
+| `obsidian-test-mocks/jest-setup`     | Jest setup file: calls `setup()` for prototype extensions and globals     |
 
 ## Usage with Vitest
 
@@ -41,13 +41,19 @@ export default defineConfig({
 
 ## Usage with Jest
 
-Add the Jest setup file in your `jest.config.js`:
+Add the Jest setup file and `moduleNameMapper` to alias the `obsidian` module:
 
 ```javascript
 module.exports = {
+  moduleNameMapper: {
+    '^obsidian$': 'obsidian-test-mocks/obsidian',
+  },
   setupFiles: ['obsidian-test-mocks/jest-setup'],
 };
 ```
+
+> [!NOTE]
+> Unlike Vitest, Jest requires `moduleNameMapper` because the `obsidian` npm package is types-only (no JS runtime) and `jest.mock` in setup files cannot resolve it.
 
 ## Usage with Other Frameworks
 
@@ -62,17 +68,13 @@ The `vitest-setup` and `jest-setup` entry points already handle prototype/global
    afterAll(() => teardown());
    ```
 
-2. **Module aliasing** — redirect `import ... from 'obsidian'` to the mocks so that your production code under test receives mock implementations. For reference, here is what the built-in entry points do:
+2. **Module aliasing** — redirect `import ... from 'obsidian'` to the mocks so that your production code under test receives mock implementations. For reference, here is what `vitest-setup` does:
 
    ```typescript
-   // vitest-setup
    vi.mock('obsidian', async () => await import('obsidian-test-mocks/obsidian'));
-
-   // jest-setup
-   jest.mock('obsidian', () => require('obsidian-test-mocks/obsidian'));
    ```
 
-   Write something similar using your framework's module mocking API, or configure module resolution at the bundler/config level.
+   Write something similar using your framework's module mocking API, or configure module resolution at the config level (as shown in the [Jest example](#usage-with-jest) with `moduleNameMapper`).
 
 > [!WARNING]
 >
