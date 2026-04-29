@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.0.0
+
+- feat!: add support for jest
+
 ## 1.1.1
 
 - fix: build
