@@ -21,14 +21,14 @@
   "author": "Michael Naumov",
   "type": "module",
   "exports": {
-    "./setup": {
+    "./jest-setup": {
       "import": {
-        "types": "./dist/lib/esm/globals/setup.d.mts",
-        "default": "./dist/lib/esm/globals/setup.mjs"
+        "types": "./dist/lib/esm/globals/jest-setup.d.mts",
+        "default": "./dist/lib/esm/globals/jest-setup.mjs"
       },
       "require": {
-        "types": "./dist/lib/cjs/globals/setup.d.cts",
-        "default": "./dist/lib/cjs/globals/setup.cjs"
+        "types": "./dist/lib/cjs/globals/jest-setup.d.cts",
+        "default": "./dist/lib/cjs/globals/jest-setup.cjs"
       }
     },
     "./obsidian": {
@@ -39,6 +39,26 @@
       "require": {
         "types": "./dist/lib/cjs/obsidian/index.d.cts",
         "default": "./dist/lib/cjs/obsidian/index.cjs"
+      }
+    },
+    "./setup": {
+      "import": {
+        "types": "./dist/lib/esm/globals/setup.d.mts",
+        "default": "./dist/lib/esm/globals/setup.mjs"
+      },
+      "require": {
+        "types": "./dist/lib/cjs/globals/setup.d.cts",
+        "default": "./dist/lib/cjs/globals/setup.cjs"
+      }
+    },
+    "./vitest-setup": {
+      "import": {
+        "types": "./dist/lib/esm/globals/vitest-setup.d.mts",
+        "default": "./dist/lib/esm/globals/vitest-setup.mjs"
+      },
+      "require": {
+        "types": "./dist/lib/cjs/globals/vitest-setup.d.cts",
+        "default": "./dist/lib/cjs/globals/vitest-setup.cjs"
       }
     }
   },
@@ -81,7 +101,17 @@
     "yaml": "latest"
   },
   "peerDependencies": {
-    "obsidian": "latest"
+    "jest": "*",
+    "obsidian": "latest",
+    "vitest": "*"
+  },
+  "peerDependenciesMeta": {
+    "jest": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@commitlint/cli": "latest",

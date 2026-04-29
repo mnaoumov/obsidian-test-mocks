@@ -6,7 +6,9 @@ export const config = defineConfig({
       exclude: [
         'src/**/*.test.ts',
         'src/**/index.ts',
-        'src/globals/setup.ts'
+        'src/globals/jest-setup.ts',
+        'src/globals/setup.ts',
+        'src/globals/vitest-setup.ts'
       ],
       include: ['src/**/*.ts'],
       provider: 'v8',
@@ -17,6 +19,6 @@ export const config = defineConfig({
     exclude: ['node_modules', 'dist'],
     globals: false,
     include: ['src/**/*.test.ts'],
-    setupFiles: ['src/globals/setup.ts']
+    setupFiles: ['src/globals/vitest-setup.ts']
   }
 });

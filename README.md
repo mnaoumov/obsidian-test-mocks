@@ -18,27 +18,67 @@ Peer dependencies: `obsidian`
 
 ## Entry Points
 
-| Import path                    | Description                                                               |
-| ------------------------------ | ------------------------------------------------------------------------- |
-| `obsidian-test-mocks/obsidian` | Mocks for every class/function in `obsidian.d.ts`                         |
-| `obsidian-test-mocks/setup`    | Prototype extensions (`HTMLElement`, `Document`, `Array`, `String`, etc.) |
+| Import path                          | Description                                                               |
+| ------------------------------------ | ------------------------------------------------------------------------- |
+| `obsidian-test-mocks/obsidian`       | Mocks for every class/function in `obsidian.d.ts`                         |
+| `obsidian-test-mocks/setup`          | Exports `setup()` / `teardown()` for prototype extensions and globals     |
+| `obsidian-test-mocks/vitest-setup`   | One-stop Vitest setup file: calls `setup()` + mocks the `obsidian` module |
+| `obsidian-test-mocks/jest-setup`     | One-stop Jest setup file: calls `setup()` + mocks the `obsidian` module   |
 
 ## Usage with Vitest
 
-In your `vitest.config.ts`, alias the `obsidian` module to the mock entry point:
+Add the Vitest setup file — it patches prototypes/globals and mocks `obsidian` automatically:
 
 ```typescript
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    alias: {
-      obsidian: 'obsidian-test-mocks/obsidian',
-    },
-    setupFiles: ['obsidian-test-mocks/setup'],
+    setupFiles: ['obsidian-test-mocks/vitest-setup'],
   },
 });
 ```
+
+## Usage with Jest
+
+Add the Jest setup file in your `jest.config.js`:
+
+```javascript
+module.exports = {
+  setupFiles: ['obsidian-test-mocks/jest-setup'],
+};
+```
+
+## Usage with Other Frameworks
+
+The `vitest-setup` and `jest-setup` entry points already handle prototype/global patching and `obsidian` module aliasing. If you use a different test framework, you need to do both manually using the generic `setup` entry point:
+
+1. **Prototype/global patching** — call `setup()` / `teardown()` in your lifecycle hooks:
+
+   ```typescript
+   import { setup, teardown } from 'obsidian-test-mocks/setup';
+
+   beforeAll(() => setup());
+   afterAll(() => teardown());
+   ```
+
+2. **Module aliasing** — redirect `import ... from 'obsidian'` to the mocks so that your production code under test receives mock implementations. For reference, here is what the built-in entry points do:
+
+   ```typescript
+   // vitest-setup
+   vi.mock('obsidian', async () => await import('obsidian-test-mocks/obsidian'));
+
+   // jest-setup
+   jest.mock('obsidian', () => require('obsidian-test-mocks/obsidian'));
+   ```
+
+   Write something similar using your framework's module mocking API, or configure module resolution at the bundler/config level.
+
+> [!WARNING]
+>
+> If your test framework does not support module mocking or aliasing, it cannot be used with this library.
+>
+> Production code under test does `import { ... } from 'obsidian'`, and without module aliasing those imports will not resolve to the mocks.
 
 ## Creating Mock Instances
 
