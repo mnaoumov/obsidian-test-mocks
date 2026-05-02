@@ -58,7 +58,7 @@ function rewriteExtensionsPlugin(ext: string): Plugin {
         const contents = await readFile(args.path, 'utf8');
         return {
           contents: contents.replace(
-            /(?<prefix>from\s+['"])(?<path>[^'"]*?)\.ts(?<quote>['"])/g,
+            /(?<prefix>(?:from|import\()\s*['"])(?<path>[^'"]*?)\.ts(?<quote>['"])/g,
             `$<prefix>$<path>${ext}$<quote>`
           ),
           loader: 'ts'
