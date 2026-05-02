@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.0.1
+
+- fix(build): rewrite .ts extension in dynamic import() calls
+
 ## 2.0.0
 
 - feat!: add support for jest
