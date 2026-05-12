@@ -12,6 +12,7 @@ export const config: MarkdownlintCli2ConfigurationSchema = {
     'MD052': {
       // eslint-disable-next-line camelcase -- That's how it is defined in the schema.
       ignored_labels: [
+        '!important',
         '!note',
         '!warning'
       ],

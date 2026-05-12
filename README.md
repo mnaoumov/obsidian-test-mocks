@@ -88,12 +88,41 @@ The `vitest-setup` and `jest-setup` entry points already handle prototype/global
 >
 > Production code under test does `import { ... } from 'obsidian'`, and without module aliasing those imports will not resolve to the mocks.
 
+## Importing in Test Files
+
+Module aliasing (via `vi.mock`, `moduleNameMapper`, etc.) redirects `import ... from 'obsidian'` to the mocks **at runtime**, but TypeScript still resolves types from `obsidian.d.ts` at compile time. This means mock-only members like `create__()`, `asOriginalType__()`, and `simulateClick__()` are not visible when importing from `'obsidian'`.
+
+To access mock-specific APIs, import directly from `'obsidian-test-mocks/obsidian'` in your test files:
+
+```typescript
+// Test file — gets mock types with create__(), asOriginalType__(), etc.
+import { App } from 'obsidian-test-mocks/obsidian';
+
+const app = App.createConfigured__();
+```
+
+Use `import type ... from 'obsidian'` when you need the original obsidian type (e.g., for function parameter annotations):
+
+```typescript
+import type { App as AppOriginal } from 'obsidian';
+import { App } from 'obsidian-test-mocks/obsidian';
+
+const app = App.createConfigured__();
+
+function pluginInit(app: AppOriginal): void { /* ... */ }
+pluginInit(app.asOriginalType__());
+```
+
+> [!IMPORTANT]
+>
+> The `vi.mock` / `moduleNameMapper` aliasing is still required — it ensures your **production code under test** (which does `import { ... } from 'obsidian'`) receives mock implementations at runtime. But in test files where you call `create__()` and other `__` members, import from `'obsidian-test-mocks/obsidian'` so TypeScript can see those members.
+
 ## Creating Mock Instances
 
 Classes whose constructors are not public in `obsidian.d.ts` expose a static `create__()` factory method:
 
 ```typescript
-import { App } from 'obsidian';
+import { App } from 'obsidian-test-mocks/obsidian';
 
 const app = App.create__();
 ```
@@ -106,7 +135,7 @@ The `create__()` pattern makes all instance creation spyable:
 
 ```typescript
 import { vi } from 'vitest';
-import { WorkspaceLeaf } from 'obsidian';
+import { WorkspaceLeaf } from 'obsidian-test-mocks/obsidian';
 
 const spy = vi.spyOn(WorkspaceLeaf, 'create2__');
 
@@ -120,7 +149,7 @@ expect(spy).toHaveBeenCalledTimes(2);
 Use `App.createConfigured__()` for a fully wired `App` instance. Parent folders are created automatically from file paths:
 
 ```typescript
-import { App } from 'obsidian';
+import { App } from 'obsidian-test-mocks/obsidian';
 
 const app = App.createConfigured__({
   files: {
@@ -211,7 +240,7 @@ Mock types and original obsidian types are structurally different — you cannot
 
 ```typescript
 import type { App as AppOriginal } from 'obsidian';
-import { App } from 'obsidian';
+import { App } from 'obsidian-test-mocks/obsidian';
 
 const app = App.createConfigured__();
 
@@ -230,7 +259,7 @@ The inverse of `asOriginalType__()`. Every mock class provides a static `fromOri
 
 ```typescript
 import type { App as AppOriginal } from 'obsidian';
-import { App, Vault } from 'obsidian';
+import { App, Vault } from 'obsidian-test-mocks/obsidian';
 
 const app: AppOriginal = App.createConfigured__().asOriginalType__();
 
@@ -288,7 +317,7 @@ Use `asOriginalType__()` to bridge the gap when passing mocks to code that expec
 
 ```typescript
 import type { App as AppOriginal } from 'obsidian';
-import { App } from 'obsidian';
+import { App } from 'obsidian-test-mocks/obsidian';
 
 function myPluginHelper(app: AppOriginal): void { /* ... */ }
 
