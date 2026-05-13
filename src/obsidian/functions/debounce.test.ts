@@ -6,6 +6,7 @@ import {
   vi
 } from 'vitest';
 
+import { noop } from '../../internal/noop.ts';
 import { debounce } from './debounce.ts';
 
 const DEBOUNCE_DELAY = 50;
@@ -76,7 +77,7 @@ describe('debounce', () => {
 
   it('cancel should return the debouncer', () => {
     const fn = debounce(() => {
-      // Noop
+      noop();
     }, DEBOUNCE_DELAY);
     fn();
     const result = fn.cancel();
@@ -85,7 +86,7 @@ describe('debounce', () => {
 
   it('cancel should be safe to call when no timer is pending', () => {
     const fn = debounce(() => {
-      // Noop
+      noop();
     }, DEBOUNCE_DELAY);
     expect(() => {
       fn.cancel();
@@ -112,7 +113,7 @@ describe('debounce', () => {
 
   it('should return the debouncer when called', () => {
     const fn = debounce(() => {
-      // Noop
+      noop();
     }, DEBOUNCE_DELAY);
     const result = fn();
     expect(result).toBe(fn);

@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 import { Scope } from './Scope.ts';
@@ -16,11 +17,11 @@ class ConcretePopoverSuggest extends PopoverSuggest<string> {
   }
 
   public renderSuggestion(_value: string, _el: HTMLElement): void {
-    // Noop
+    noop();
   }
 
   public selectSuggestion(_value: string, _evt: KeyboardEvent | MouseEvent): void {
-    // Noop
+    noop();
   }
 }
 

@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { SuggestModal } from './SuggestModal.ts';
 
@@ -18,7 +19,7 @@ class ConcreteSuggestModal extends SuggestModal<string> {
   }
 
   public renderSuggestion(_value: string, _el: HTMLElement): void {
-    // Noop
+    noop();
   }
 }
 
