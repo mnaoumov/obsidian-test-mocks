@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2.0.2
+
+- docs: add CONTRIBUTING
+- chore: add attestation
+- refactor: noop
+- docs: update README
+
 ## 2.0.1
 
 - fix(build): rewrite .ts extension in dynamic import() calls
