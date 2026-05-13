@@ -7,10 +7,11 @@ import {
   it
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { MarkdownPreviewRenderer } from './MarkdownPreviewRenderer.ts';
 
 function postProcessor(): void {
-  // Noop
+  noop();
 }
 
 afterEach(() => {

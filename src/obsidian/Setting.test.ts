@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { Setting } from './Setting.ts';
 
 describe('Setting', () => {
@@ -97,7 +98,7 @@ describe('Setting', () => {
     it('should clear components', () => {
       const setting = Setting.create__(createDiv());
       setting.addText(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBeGreaterThan(0);
       setting.clear();
@@ -116,7 +117,7 @@ describe('Setting', () => {
     it('should return this', () => {
       const setting = Setting.create__(createDiv());
       expect(setting.then(() => {
-        // Noop
+        noop();
       })).toBe(setting);
     });
   });
@@ -125,7 +126,7 @@ describe('Setting', () => {
     it('should add a button component', () => {
       const setting = Setting.create__(createDiv());
       setting.addButton(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -133,7 +134,7 @@ describe('Setting', () => {
     it('should add a color picker component', () => {
       const setting = Setting.create__(createDiv());
       setting.addColorPicker(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -141,7 +142,7 @@ describe('Setting', () => {
     it('should add a dropdown component', () => {
       const setting = Setting.create__(createDiv());
       setting.addDropdown(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -149,7 +150,7 @@ describe('Setting', () => {
     it('should add an extra button component', () => {
       const setting = Setting.create__(createDiv());
       setting.addExtraButton(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -157,7 +158,7 @@ describe('Setting', () => {
     it('should add a moment format component', () => {
       const setting = Setting.create__(createDiv());
       setting.addMomentFormat(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -165,7 +166,7 @@ describe('Setting', () => {
     it('should add a progress bar component', () => {
       const setting = Setting.create__(createDiv());
       setting.addProgressBar(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -173,7 +174,7 @@ describe('Setting', () => {
     it('should add a search component', () => {
       const setting = Setting.create__(createDiv());
       setting.addSearch(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -181,7 +182,7 @@ describe('Setting', () => {
     it('should add a slider component', () => {
       const setting = Setting.create__(createDiv());
       setting.addSlider(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -189,7 +190,7 @@ describe('Setting', () => {
     it('should add a text component', () => {
       const setting = Setting.create__(createDiv());
       setting.addText(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -197,7 +198,7 @@ describe('Setting', () => {
     it('should add a text area component', () => {
       const setting = Setting.create__(createDiv());
       setting.addTextArea(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });
@@ -205,7 +206,7 @@ describe('Setting', () => {
     it('should add a toggle component', () => {
       const setting = Setting.create__(createDiv());
       setting.addToggle(() => {
-        // Noop
+        noop();
       });
       expect(setting.components.length).toBe(1);
     });

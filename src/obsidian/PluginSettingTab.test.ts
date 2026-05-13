@@ -6,12 +6,13 @@ import {
   it
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { PluginSettingTab } from './PluginSettingTab.ts';
 
 class ConcretePluginSettingTab extends PluginSettingTab {
   public display(): void {
-    // Noop
+    noop();
   }
 }
 

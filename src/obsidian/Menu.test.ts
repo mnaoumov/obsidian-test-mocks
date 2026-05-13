@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { Menu } from './Menu.ts';
 
 describe('Menu', () => {
@@ -34,7 +35,7 @@ describe('Menu', () => {
     it('should add the item to items__', () => {
       const menu = Menu.create2__();
       menu.addItem(() => {
-        // Noop
+        noop();
       });
       expect(menu.items__.length).toBe(1);
     });
@@ -42,7 +43,7 @@ describe('Menu', () => {
     it('should return this for chaining', () => {
       const menu = Menu.create2__();
       const result = menu.addItem(() => {
-        // Noop
+        noop();
       });
       expect(result).toBe(menu);
     });

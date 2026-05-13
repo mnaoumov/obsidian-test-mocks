@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { ItemView } from './ItemView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -41,7 +42,7 @@ describe('ItemView', () => {
     it('should return an HTMLElement', () => {
       const view = createItemView();
       const el = view.addAction('star', 'Star', () => {
-        // Noop
+        noop();
       });
       expect(el).toBeInstanceOf(HTMLElement);
     });

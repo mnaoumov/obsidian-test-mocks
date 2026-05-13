@@ -11,6 +11,7 @@ import {
   vi
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { Plugin } from './Plugin.ts';
@@ -27,7 +28,7 @@ const MANIFEST: PluginManifestOriginal = {
 
 class ConcretePlugin extends Plugin {
   public override onload(): void {
-    // Noop
+    noop();
   }
 }
 
