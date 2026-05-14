@@ -81,11 +81,11 @@
     "commit": "jiti scripts/commit.ts",
     "format": "jiti scripts/format.ts",
     "format:check": "jiti scripts/format-check.ts",
+    "postinstall": "node scripts/postinstall.mjs",
     "lint": "jiti scripts/lint.ts",
     "lint:fix": "jiti scripts/lint-fix.ts",
     "lint:md": "jiti scripts/lint-md.ts",
     "lint:md:fix": "jiti scripts/lint-md-fix.ts",
-    "postinstall": "node scripts/postinstall.mjs",
     "prepare": "jiti scripts/prepare.ts",
     "spellcheck": "jiti scripts/spellcheck.ts",
     "test": "jiti scripts/test.ts",
@@ -94,25 +94,18 @@
     "test:watch": "jiti scripts/test-watch.ts",
     "version": "jiti scripts/version.ts"
   },
+  "overrides": {
+    "eslint": "^10.3.0",
+    "eslint-plugin-import": "$eslint-plugin-import-x",
+    "type-fest": "^5.6.0",
+    "typescript": "^6.0.3"
+  },
   "dependencies": {
     "@codemirror/state": "6.5.0",
     "@codemirror/view": "6.38.6",
     "moment": "2.29.4",
     "turndown": "^7.2.4",
     "yaml": "^2.8.4"
-  },
-  "peerDependencies": {
-    "jest": "*",
-    "obsidian": "^1.12.3",
-    "vitest": "*"
-  },
-  "peerDependenciesMeta": {
-    "jest": {
-      "optional": true
-    },
-    "vitest": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@commitlint/cli": "^20.5.3",
@@ -132,9 +125,8 @@
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/runner": "4.1.0",
     "better-typescript-lib": "^2.12.0",
-    "commitizen": "^4.3.1",
     "cspell": "^10.0.0",
-    "cz-conventional-changelog": "^3.3.0",
+    "czg": "^4.3.1",
     "dprint": "^0.54.0",
     "esbuild": "^0.28.0",
     "eslint": "^10.3.0",
@@ -160,10 +152,17 @@
     "typescript-eslint": "^8.59.2",
     "vitest": "^4.1.5"
   },
-  "overrides": {
-    "eslint": "^10.3.0",
-    "eslint-plugin-import": "$eslint-plugin-import-x",
-    "type-fest": "^5.6.0",
-    "typescript": "^6.0.3"
+  "peerDependencies": {
+    "jest": "*",
+    "obsidian": "^1.12.3",
+    "vitest": "*"
+  },
+  "peerDependenciesMeta": {
+    "jest": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    }
   }
 }
