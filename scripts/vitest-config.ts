@@ -15,7 +15,12 @@ export const config = defineConfig({
       reporter: ['text', 'lcov', 'html'],
       reportsDirectory: './coverage'
     },
-    environment: 'jsdom',
+    server: {
+      deps: {
+        inline: ['@obsidian-typings', 'obsidian-dev-utils']
+      }
+    },
+        environment: 'jsdom',
     exclude: ['node_modules', 'dist', 'src/jest'],
     globals: false,
     include: ['src/**/*.test.ts'],
