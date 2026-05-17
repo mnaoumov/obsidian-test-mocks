@@ -33,17 +33,19 @@ Add the Vitest setup file — it patches prototypes/globals and mocks `obsidian`
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  ssr: {
-    noExternal: ['obsidian-dev-utils', 'obsidian-typings']
-  },
   test: {
+    server: {
+      deps: {
+        inline: ['@obsidian-typings', 'obsidian-dev-utils']
+      }
+    },
     setupFiles: ['obsidian-test-mocks/vitest-setup'],
   },
 });
 ```
 
 > [!NOTE]
-> The `ssr.noExternal` setting tells Vite to bundle `obsidian-dev-utils` and `obsidian-typings` instead of treating them as external Node.js imports. Without this, Vitest's SSR transform may fail to resolve these transitive dependencies at runtime. Add any other packages that cause `Cannot find module` errors during test setup to this list.
+> The `server.deps.inline` setting tells Vitest to bundle `@obsidian-typings` and `obsidian-dev-utils` into the test transform pipeline instead of treating them as external Node.js imports. Without this, Vitest may fail to resolve these transitive dependencies at runtime. Add any other packages that cause `Cannot find module` errors during test setup to this list.
 
 ## Usage with Jest
 
