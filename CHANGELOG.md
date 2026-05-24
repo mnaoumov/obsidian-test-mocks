@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.0.4
+
+- chore: update libs
+- refactor: migrate to @obsidian-typings/obsidian-public-latest
+
 ## 2.0.3
 
 - chore: update libs
