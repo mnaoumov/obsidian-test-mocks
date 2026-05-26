@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-`obsidian-test-mocks` is a standalone npm package providing comprehensive test mocks for the Obsidian plugin API. It publishes as a dual-format (ESM + CJS) package with four entry points: `obsidian`, `setup` (generic), `vitest-setup`, and `jest-setup`.
+`obsidian-test-mocks` is a standalone npm package providing comprehensive test mocks for the Obsidian plugin API. It publishes as a dual-format (ESM + CJS) package with seven entry points: `obsidian`, `setup`, `vitest-setup`, `jest-setup`, `obsidian-typings/setup`, `obsidian-typings/vitest-setup`, and `obsidian-typings/jest-setup`.
 
 ## Commands
 
@@ -25,6 +25,7 @@
 ### Directory Structure
 
 - `src/obsidian/` — mocks for every class/function in `obsidian.d.ts`
+- `src/obsidian-typings/` — optional bridges mapping obsidian-typings internal property names to mock `__`-suffixed members
 - `src/globals/` — prototype extensions Obsidian adds to DOM/JS builtins (HTMLElement, Document, Array, String, etc.)
 - `src/internal/` — shared implementation details NOT exported from the package
 
@@ -34,7 +35,7 @@ L1. **Only expose what `obsidian.d.ts` defines.** The package must mock exactly 
 
 L2. **Meaningful implementations first.** Mocks should have real in-memory behavior (state tracking, callback invocation, data storage). Only use `noop()` (sync) or `await noopAsync()` (async) from `src/internal/noop.ts` for methods whose bodies would otherwise be completely empty (pure UI operations with no meaningful implementation, e.g., rendering, focus). If a method already has any logic in its body, do not add `noop()` or `await noopAsync()` — they are only for otherwise-empty methods.
 
-L3. **No `obsidian-typings` imports in `src/obsidian/`.** The `obsidian-typings` package uses `declare module 'obsidian'` augmentation which activates globally on import. To avoid side effects, all needed type shapes are inlined in `src/internal/Types.ts`.
+L3. **No `obsidian-typings` imports in `src/obsidian/`.** The `obsidian-typings` package uses `declare module 'obsidian'` augmentation which activates globally on import. To avoid side effects, all needed type shapes are inlined in `src/internal/Types.ts`. The `src/obsidian-typings/` directory is exempt from this rule — it may import obsidian-typings types for validation (via `type-validation.test.ts`, excluded from the main tsconfig).
 
 L4. **`__` suffix for mock-only public members.** Any public member (field, method, static) that does not exist in `obsidian.d.ts` must end with `__` to signal it is mock-only. This includes factory methods (`create__()`), type bridges (`asOriginalType__()`), test helpers (`simulateClick__()`), and internal tracking fields (`_items__`, `_cache__`). Members that exist in `obsidian.d.ts` must NOT have the `__` suffix.
 

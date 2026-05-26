@@ -18,12 +18,15 @@ Peer dependencies: `obsidian`
 
 ## Entry Points
 
-| Import path                          | Description                                                               |
-| ------------------------------------ | ------------------------------------------------------------------------- |
-| `obsidian-test-mocks/obsidian`       | Mocks for every class/function in `obsidian.d.ts`                         |
-| `obsidian-test-mocks/setup`          | Exports `setup()` / `teardown()` for prototype extensions and globals     |
-| `obsidian-test-mocks/vitest-setup`   | One-stop Vitest setup file: calls `setup()` + mocks the `obsidian` module |
-| `obsidian-test-mocks/jest-setup`     | Jest setup file: calls `setup()` for prototype extensions and globals     |
+| Import path                                          | Description                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------------- |
+| `obsidian-test-mocks/obsidian`                       | Mocks for every class/function in `obsidian.d.ts`                         |
+| `obsidian-test-mocks/setup`                          | Exports `setup()` / `teardown()` for prototype extensions and globals     |
+| `obsidian-test-mocks/vitest-setup`                   | One-stop Vitest setup file: calls `setup()` + mocks the `obsidian` module |
+| `obsidian-test-mocks/jest-setup`                     | Jest setup file: calls `setup()` for prototype extensions and globals     |
+| `obsidian-test-mocks/obsidian-typings/setup`         | Exports `setup()` / `teardown()` for `obsidian-typings` bridges           |
+| `obsidian-test-mocks/obsidian-typings/vitest-setup`  | Vitest setup file: auto-calls `obsidian-typings` bridge `setup()`         |
+| `obsidian-test-mocks/obsidian-typings/jest-setup`    | Jest setup file: auto-calls `obsidian-typings` bridge `setup()`           |
 
 ## Usage with Vitest
 
@@ -311,11 +314,79 @@ it('uses the overridden apiVersion', () => {
 
 ## Using with `obsidian-typings`
 
-This package does **not** depend on [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings), but it works seamlessly if your project uses it.
+This package does **not** have a runtime dependency on [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings), but it works seamlessly if your project uses it.
 
 `obsidian-typings` uses `declare module 'obsidian'` to augment obsidian types with dozens of internal properties (e.g., `App.internalPlugins`, `App.commands`). This makes `import('obsidian').App` a superset of what `obsidian.d.ts` alone declares. The mock types only implement the public API from `obsidian.d.ts`, so the two are structurally incompatible.
 
-Use `asOriginalType__()` to bridge the gap when passing mocks to code that expects obsidian types:
+### Automatic bridging with `obsidian-typings` entry points
+
+The `obsidian-test-mocks/obsidian-typings/*` entry points automatically bridge commonly used `obsidian-typings` internal properties to their mock counterparts. Add the appropriate setup file to your test runner **after** the main setup:
+
+**Vitest:**
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    setupFiles: [
+      'obsidian-test-mocks/vitest-setup',
+      'obsidian-test-mocks/obsidian-typings/vitest-setup',
+    ],
+  },
+});
+```
+
+**Jest:**
+
+```javascript
+module.exports = {
+  moduleNameMapper: {
+    '^obsidian$': 'obsidian-test-mocks/obsidian',
+  },
+  setupFiles: [
+    'obsidian-test-mocks/jest-setup',
+    'obsidian-test-mocks/obsidian-typings/jest-setup',
+  ],
+};
+```
+
+**Other frameworks** — use the generic `setup` entry point:
+
+```typescript
+import { setup, teardown } from 'obsidian-test-mocks/obsidian-typings/setup';
+
+beforeAll(() => setup());
+afterAll(() => teardown());
+```
+
+This bridges the following properties:
+
+| Class               | obsidian-typings property              | Mock property                          |
+| ------------------- | -------------------------------------- | -------------------------------------- |
+| `CapacitorAdapter`  | `insensitive`                          | `insensitive__`                        |
+| `Component`         | `_loaded`                              | `loaded__`                             |
+| `Component`         | `_children`                            | `children__`                           |
+| `FileSystemAdapter` | `insensitive`                          | `insensitive__`                        |
+| `SettingGroup`      | `listEl`                               | `listEl__`                             |
+| `TAbstractFile`     | `deleted`                              | `deleted__`                            |
+| `Vault`             | `exists`                               | (delegates to adapter/file map)        |
+| `Vault`             | `getAbstractFileByPathInsensitive`     | `getAbstractFileByPathInsensitive__()` |
+| `Vault`             | `getAvailablePath`                     | (stub: returns `basePath.extension`)   |
+
+After setup, code using `obsidian-typings` property names works transparently through the [strict proxy](#strict-mocks):
+
+```typescript
+const component = Component.create__();
+component.load();
+// With obsidian-typings/vitest-setup, this works instead of throwing:
+console.log(component._loaded); // true
+```
+
+The entry point also exports `teardown()` to remove all bridges.
+
+### Manual property assignment
+
+For properties not covered by the automatic bridging, use `asOriginalType__()` to bridge the gap when passing mocks to code that expects obsidian types:
 
 ```typescript
 import type { App as AppOriginal } from 'obsidian';
@@ -344,14 +415,14 @@ const app = App.createConfigured__();
 (app as unknown as Record<string, unknown>)['internalPlugins'] = { manifests: {} };
 ```
 
-Remember that accessing any property not assigned on the mock will throw a [strict mock](#strict-mocks) error at runtime, regardless of whether `obsidian-typings` makes it compile.
+Remember that accessing any property not assigned on the mock (and not covered by the automatic bridging) will throw a [strict mock](#strict-mocks) error at runtime, regardless of whether `obsidian-typings` makes it compile.
 
 ## Design Principles
 
-- **Only `obsidian.d.ts`** — mocks expose exactly the public API, nothing extra
+- **Only `obsidian.d.ts`** — core mocks expose exactly the public API; optional `obsidian-typings/*` entry points bridge `obsidian-typings` internals
 - **Meaningful implementations** — real in-memory behavior (state tracking, callbacks, data storage), not empty stubs
 - **Spyable** — all instance creation routes through `create__()` so `vi.spyOn()` works everywhere
-- **No `obsidian-typings` dependency** — type shapes are inlined to avoid global module augmentation side effects
+- **No `obsidian-typings` runtime dependency** — type shapes are inlined to avoid global module augmentation side effects; `obsidian-typings` is a dev dependency used only for bridge type validation
 
 ## Support
 

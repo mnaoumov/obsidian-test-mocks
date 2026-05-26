@@ -8,7 +8,10 @@ export const config = defineConfig({
         'src/**/index.ts',
         'src/globals/jest-setup.ts',
         'src/globals/setup.ts',
-        'src/globals/vitest-setup.ts'
+        'src/globals/vitest-setup.ts',
+        'src/obsidian-typings/jest-setup.ts',
+        'src/obsidian-typings/setup.ts',
+        'src/obsidian-typings/vitest-setup.ts'
       ],
       include: ['src/**/*.ts'],
       provider: 'v8',
