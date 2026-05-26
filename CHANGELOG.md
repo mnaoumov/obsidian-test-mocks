@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.0.0
+
+- feat: add obsidian-typings bridges
+
 ## 2.0.4
 
 - chore: update libs
