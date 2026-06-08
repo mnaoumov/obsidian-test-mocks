@@ -179,7 +179,7 @@ function getEslintConfigs(): Linter.Config[] {
             selector: 'MethodDefinition[override=true][key.name=/.*__$/]'
           },
           {
-            message: 'Do not use double type assertions (as X as Y). Use createMockOf<T>() from src/internal/cast.ts instead.',
+            message: 'Do not use double type assertions (as X as Y). Use castTo<T>() from src/internal/castTo.ts instead.',
             selector: 'TSAsExpression > TSAsExpression'
           },
           {
@@ -199,7 +199,7 @@ function getEslintConfigs(): Linter.Config[] {
             selector: 'ImportExpression'
           },
           {
-            message: 'Do not use `{} as T`. Use `createMockOf<T>()` from src/internal/cast.ts instead.',
+            message: 'Do not use `{} as T`. Use `castTo<T>()` from src/internal/castTo.ts instead.',
             selector: 'TSAsExpression > ObjectExpression[properties.length=0]'
           },
           {
