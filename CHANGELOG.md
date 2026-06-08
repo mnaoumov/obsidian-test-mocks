@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 3.1.0
+
+- refactor: introduce castTo\<T\> type-bridging helper
+- test: cover createDiv non-div guard
+- fix: refine Component
+
 ## 3.0.0
 
 - feat: add obsidian-typings bridges
