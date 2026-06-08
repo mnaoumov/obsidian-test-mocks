@@ -42,7 +42,10 @@ export default defineConfig({
         inline: ['@obsidian-typings', 'obsidian-dev-utils']
       }
     },
-    setupFiles: ['obsidian-test-mocks/vitest-setup'],
+    setupFiles: [
+      'obsidian-test-mocks/vitest-setup',
+      'obsidian-test-mocks/obsidian-typings/vitest-setup'
+    ],
   },
 });
 ```
