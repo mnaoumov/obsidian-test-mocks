@@ -1,5 +1,6 @@
 import type { Workspace as WorkspaceOriginal } from 'obsidian';
 
+import { View } from 'obsidian';
 import {
   describe,
   expect,
@@ -115,9 +116,17 @@ describe('Workspace', () => {
   describe('getActiveViewOfType()', () => {
     it('should return null', () => {
       const app = App.createConfigured__();
-      // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- Need a constructor for testing.
-      class DummyView {}
-      expect(app.workspace.getActiveViewOfType(DummyView as never)).toBeNull();
+
+      class DummyView extends View {
+        public override getDisplayText(): string {
+          return 'DummyView';
+        }
+
+        public override getViewType(): string {
+          return 'DummyView';
+        }
+      }
+      expect(app.workspace.getActiveViewOfType(DummyView)).toBeNull();
     });
   });
 

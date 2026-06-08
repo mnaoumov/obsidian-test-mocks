@@ -8,7 +8,21 @@ import {
 } from 'vitest';
 
 import { noop } from '../internal/noop.ts';
+import { BaseComponent } from './BaseComponent.ts';
 import { Setting } from './Setting.ts';
+
+class TestComponent extends BaseComponent {
+  public override disabled = false;
+
+  public constructor() {
+    super();
+  }
+
+  public override then(cb: (component: this) => unknown): this {
+    cb(this);
+    return this;
+  }
+}
 
 describe('Setting', () => {
   it('should create an instance via create__', () => {
@@ -213,9 +227,7 @@ describe('Setting', () => {
 
     it('should add a custom component via addComponent', () => {
       const setting = Setting.create__(createDiv());
-      setting.addComponent((_el) => {
-        return { disabled: false, then: (cb: unknown) => cb } as never;
-      });
+      setting.addComponent(() => new TestComponent());
       expect(setting.components.length).toBe(1);
     });
   });
