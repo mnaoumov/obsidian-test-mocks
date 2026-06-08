@@ -69,6 +69,13 @@ describe('Node.prototype extensions', () => {
       createDiv.call(parent, undefined, callback);
       expect(callback).toHaveBeenCalledOnce();
     });
+
+    it('should throw when the created element is not a div', () => {
+      const parent = document.createElement('div');
+      const span = document.createElement('span');
+      vi.spyOn(document, 'createElement').mockReturnValueOnce(span);
+      expect(() => createDiv.call(parent)).toThrow('Expected a div element, but got span');
+    });
   });
 
   describe('createEl', () => {
