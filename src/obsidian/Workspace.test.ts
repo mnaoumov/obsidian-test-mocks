@@ -1,6 +1,9 @@
-import type { Workspace as WorkspaceOriginal } from 'obsidian';
+import type {
+  Constructor as ConstructorOriginal,
+  View as ViewOriginal,
+  Workspace as WorkspaceOriginal
+} from 'obsidian';
 
-import { View } from 'obsidian';
 import {
   describe,
   expect,
@@ -8,7 +11,9 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { App } from './App.ts';
+import { View } from './View.ts';
 import { Workspace } from './Workspace.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 import { WorkspaceWindow } from './WorkspaceWindow.ts';
@@ -126,7 +131,7 @@ describe('Workspace', () => {
           return 'DummyView';
         }
       }
-      expect(app.workspace.getActiveViewOfType(DummyView)).toBeNull();
+      expect(app.workspace.getActiveViewOfType(castTo<ConstructorOriginal<ViewOriginal>>(DummyView))).toBeNull();
     });
   });
 
