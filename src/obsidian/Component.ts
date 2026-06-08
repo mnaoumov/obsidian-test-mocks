@@ -3,6 +3,8 @@ import type {
   EventRef as EventRefOriginal
 } from 'obsidian';
 
+import type { EventsEntry } from '../internal/types.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
@@ -44,8 +46,14 @@ export class Component {
   }
 
   public load(): void {
+    if (this.loaded__) {
+      return;
+    }
     this.loaded__ = true;
     this.onload();
+    for (const child of [...this.children__]) {
+      child.load();
+    }
   }
 
   public onload(): void {
@@ -92,10 +100,17 @@ export class Component {
 
   public registerEvent(ref: EventRefOriginal): void {
     this.events__.push(ref);
+    this.register(() => {
+      const entry = ref as Partial<EventsEntry>;
+      entry.e?.offref(ref);
+    });
   }
 
   public registerInterval(id: number): number {
     this.intervals__.push(id);
+    this.register(() => {
+      clearInterval(id);
+    });
     return id;
   }
 
@@ -112,25 +127,21 @@ export class Component {
     if (!this.loaded__) {
       return;
     }
-    this.onunload();
+    this.loaded__ = false;
 
-    for (const child of [...this.children__]) {
-      this.removeChild(child);
+    for (const child of [...this.children__].reverse()) {
+      child.unload();
     }
     this.children__ = [];
 
-    this.events__ = [];
-
-    for (const cleanup of this.cleanups__) {
+    for (const cleanup of [...this.cleanups__].reverse()) {
       cleanup();
     }
     this.cleanups__ = [];
 
-    for (const id of this.intervals__) {
-      clearInterval(id);
-    }
+    this.events__ = [];
     this.intervals__ = [];
 
-    this.loaded__ = false;
+    this.onunload();
   }
 }

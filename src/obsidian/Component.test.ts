@@ -9,6 +9,7 @@ import {
 
 import { ensureGenericObject } from '../internal/type-guards.ts';
 import { Component } from './Component.ts';
+import { Events } from './Events.ts';
 
 describe('Component', () => {
   it('should create an instance via create__', () => {
@@ -53,6 +54,22 @@ describe('Component', () => {
       component.load();
       expect(spy).toHaveBeenCalled();
     });
+
+    it('should not reload when already loaded', () => {
+      const component = Component.create__();
+      component.load();
+      const spy = vi.spyOn(component, 'onload');
+      component.load();
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('should load children that were added before loading', () => {
+      const parent = Component.create__();
+      const child = Component.create__();
+      parent.addChild(child);
+      parent.load();
+      expect(child.loaded__).toBe(true);
+    });
   });
 
   describe('unload', () => {
@@ -92,7 +109,8 @@ describe('Component', () => {
       component.load();
       const child = Component.create__();
       component.addChild(child);
-      component.registerEvent({ e: component.asOriginalType__(), fn: vi.fn(), name: 'test' });
+      const events = Events.create__();
+      component.registerEvent({ e: events.asOriginalType__(), fn: vi.fn(), name: 'test' });
       component.register(vi.fn());
       component.registerInterval(0);
       component.unload();
@@ -111,6 +129,26 @@ describe('Component', () => {
       component.unload();
       expect(clearSpy).toHaveBeenCalledWith(intervalId);
       clearSpy.mockRestore();
+    });
+
+    it('should offref registered events on unload', () => {
+      const component = Component.create__();
+      component.load();
+      const events = Events.create__();
+      const offrefSpy = vi.spyOn(events, 'offref');
+      const ref = { e: events.asOriginalType__(), fn: vi.fn(), name: 'test' };
+      component.registerEvent(ref);
+      component.unload();
+      expect(offrefSpy).toHaveBeenCalledWith(ref);
+    });
+
+    it('should not throw when unloading an event ref without e', () => {
+      const component = Component.create__();
+      component.load();
+      component.registerEvent({ fn: vi.fn(), name: 'test' });
+      expect(() => {
+        component.unload();
+      }).not.toThrow();
     });
   });
 
