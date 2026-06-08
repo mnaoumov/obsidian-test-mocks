@@ -1,4 +1,7 @@
-import type { WorkspaceLeaf as WorkspaceLeafOriginal } from 'obsidian';
+import type {
+  View,
+  WorkspaceLeaf as WorkspaceLeafOriginal
+} from 'obsidian';
 
 import {
   describe,
@@ -7,6 +10,7 @@ import {
   vi
 } from 'vitest';
 
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
@@ -96,7 +100,7 @@ describe('WorkspaceLeaf', () => {
     it('should return the view display text when view is set', () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      leaf.view = { getDisplayText: () => 'My View', getIcon: () => '', onResize: vi.fn() } as never;
+      leaf.view = strictProxy<View>({ getDisplayText: () => 'My View', getIcon: () => '', onResize: vi.fn() });
       expect(leaf.getDisplayText()).toBe('My View');
     });
   });
@@ -152,7 +156,7 @@ describe('WorkspaceLeaf', () => {
     it('should return the view icon when view is set', () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      leaf.view = { getDisplayText: () => '', getIcon: () => 'star', onResize: vi.fn() } as never;
+      leaf.view = strictProxy<View>({ getDisplayText: () => '', getIcon: () => 'star', onResize: vi.fn() });
       expect(leaf.getIcon()).toBe('star');
     });
   });
@@ -243,7 +247,7 @@ describe('WorkspaceLeaf', () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       const onResize = vi.fn();
-      leaf.view = { getDisplayText: () => '', getIcon: () => '', onResize } as never;
+      leaf.view = strictProxy<View>({ getDisplayText: () => '', getIcon: () => '', onResize });
       leaf.onResize();
       expect(onResize).toHaveBeenCalled();
     });

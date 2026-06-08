@@ -17,7 +17,12 @@ export function createDiv(
   o?: DomElementInfo | string,
   callback?: (el: HTMLDivElement) => void
 ): HTMLDivElement {
-  return createEl.call(this, 'div', o, callback as never) as HTMLDivElement;
+  return createEl.call(this, 'div', o, (el: HTMLElement) => {
+    if (!(el instanceof HTMLDivElement)) {
+      throw new Error(`Expected a div element, but got ${el.tagName.toLowerCase()}`);
+    }
+    callback?.(el);
+  }) as HTMLDivElement;
 }
 
 // Node.prototype element creation helpers.

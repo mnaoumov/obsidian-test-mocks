@@ -7,7 +7,9 @@ import {
 } from 'vitest';
 
 import { noop } from '../internal/noop.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
+import { Plugin } from './Plugin.ts';
 import { PluginSettingTab } from './PluginSettingTab.ts';
 
 class ConcretePluginSettingTab extends PluginSettingTab {
@@ -20,21 +22,21 @@ describe('PluginSettingTab', () => {
   it('should create an instance', () => {
     const app = App.createConfigured__();
     // Create a minimal plugin mock
-    const plugin = { app } as never;
+    const plugin = strictProxy<Plugin>({ app });
     const tab = new ConcretePluginSettingTab(app, plugin);
     expect(tab).toBeInstanceOf(PluginSettingTab);
   });
 
   it('should have plugin property', () => {
     const app = App.createConfigured__();
-    const plugin = { app } as never;
+    const plugin = strictProxy<Plugin>({ app });
     const tab = new ConcretePluginSettingTab(app, plugin);
     expect(tab.plugin).toBe(plugin);
   });
 
   it('should have app property', () => {
     const app = App.createConfigured__();
-    const plugin = { app } as never;
+    const plugin = strictProxy<Plugin>({ app });
     const tab = new ConcretePluginSettingTab(app, plugin);
     expect(tab.app).toBe(app);
   });
@@ -42,7 +44,7 @@ describe('PluginSettingTab', () => {
   describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', () => {
       const app = App.createConfigured__();
-      const plugin = { app } as never;
+      const plugin = strictProxy<Plugin>({ app });
       const tab = new ConcretePluginSettingTab(app, plugin);
       const original: PluginSettingTabOriginal = tab.asOriginalType2__();
       expect(original).toBe(tab);
@@ -52,7 +54,7 @@ describe('PluginSettingTab', () => {
   describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', () => {
       const app = App.createConfigured__();
-      const plugin = { app } as never;
+      const plugin = strictProxy<Plugin>({ app });
       const tab = new ConcretePluginSettingTab(app, plugin);
       const mock = PluginSettingTab.fromOriginalType2__(tab.asOriginalType2__());
       expect(mock).toBe(tab);
