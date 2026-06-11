@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.1.1
+
+- chore: remove patches
+- feat: replace patch-package with manual type validation
+
 ## 3.1.0
 
 - refactor: introduce castTo\<T\> type-bridging helper
