@@ -39,13 +39,9 @@ export class DateValue extends NotNullValue {
     const HOUR_FORMAT_LENGTH = 2;
     const MINUTE_FORMAT_LENGTH = 2;
     const SECOND_FORMAT_LENGTH = 2;
-    let str = `${this.date.getFullYear().toString().padStart(YEAR_FORMAT_LENGTH, '0')}-${this.date.getMonth().toString().padStart(MONTH_FORMAT_LENGTH, '0')}-${
-      this.date.getDate().toString().padStart(DAY_FORMAT_LENGTH, '0')
-    }`;
+    let str = `${this.date.getFullYear().toString().padStart(YEAR_FORMAT_LENGTH, '0')}-${this.date.getMonth().toString().padStart(MONTH_FORMAT_LENGTH, '0')}-${this.date.getDate().toString().padStart(DAY_FORMAT_LENGTH, '0')}`;
     if (this.showTime) {
-      str += `T${this.date.getHours().toString().padStart(HOUR_FORMAT_LENGTH, '0')}:${this.date.getMinutes().toString().padStart(MINUTE_FORMAT_LENGTH, '0')}:${
-        this.date.getSeconds().toString().padStart(SECOND_FORMAT_LENGTH, '0')
-      }`;
+      str += `T${this.date.getHours().toString().padStart(HOUR_FORMAT_LENGTH, '0')}:${this.date.getMinutes().toString().padStart(MINUTE_FORMAT_LENGTH, '0')}:${this.date.getSeconds().toString().padStart(SECOND_FORMAT_LENGTH, '0')}`;
     }
     return str;
   }
