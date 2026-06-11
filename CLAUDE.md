@@ -63,7 +63,16 @@ L10. **Never `override` a `__` method — always use numbered variants.** Any mo
 ## TypeScript
 
 - Extends `@tsconfig/strictest`
-- Target: ES2024, Module: NodeNext
+- Target: es2022, Module: node16
+
+### Type Validation (manual `skipLibCheck` wrapper)
+
+`tsconfig.json` sets `skipLibCheck: true`. This is a deliberate exception to the usual "never weaken `@tsconfig/strictest`" stance: it lets `tsc` type-check our `.ts` files without failing on broken upstream `.d.ts` files we do not control (e.g. a given version's `@vitest/runner` declarations, which ship optional properties that violate `exactOptionalPropertyTypes`). This replaces the old `patch-package` workaround — there is no longer a `patches/` directory or a `postinstall` hook.
+
+The declarations we author are still fully validated. `scripts/build-compile-typescript.ts` (run by `build:compile:typescript`) does two passes:
+
+1. `tsc --build --force` — the normal compile, with `skipLibCheck: true`.
+2. An in-memory re-check via `checkProjectTypes()` (`scripts/helpers/check-project-types.ts`) with `skipLibCheck: false`, reporting **only** diagnostics whose source file is under the project root and outside `node_modules`. It prints `Ignored N diagnostic(s) outside the validated set.` — when upstream is fixed and `N` reaches `0`, the workaround is no longer doing anything and `skipLibCheck` can go back to `false`.
 
 ## Testing
 
