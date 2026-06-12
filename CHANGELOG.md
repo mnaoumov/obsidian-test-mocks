@@ -59,7 +59,6 @@
 
 - fix: tests
 - chore: improve as checks
-- docs: update CLAUDE
 - refactor: rename globals entry point to setup
 - feat: make App.create... sync
 - feat: add local ESLint rule no-used-underscore-params
