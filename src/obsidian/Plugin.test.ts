@@ -75,7 +75,7 @@ describe('Plugin', () => {
     it('should track the setting tab', () => {
       const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
-      type MockTab = PluginOriginal extends { addSettingTab(tab: infer T): void } ? T : never;
+      type MockTab = Parameters<PluginOriginal['addSettingTab']>[0];
       const mockTab = strictProxy<MockTab>({});
       plugin.addSettingTab(mockTab);
       expect(plugin.settingTabs__).toContain(mockTab);
