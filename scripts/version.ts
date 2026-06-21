@@ -32,7 +32,7 @@ import {
 } from './helpers/root.ts';
 
 interface NpmPackResult {
-  filename: string;
+  readonly filename: string;
 }
 
 const DEFAULT_PREID = 'beta';

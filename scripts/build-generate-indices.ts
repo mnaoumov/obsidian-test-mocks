@@ -9,13 +9,13 @@ import { join } from 'node:path';
 const EXPORT_PATTERN = /^export\s+(?:(?:abstract\s+)?class|(?:async\s+)?function|const|enum|interface|let|type|var)\s+(?<name>\w+)/gm;
 
 interface BarrelResult {
-  claimedNames: Set<string>;
-  content: string;
+  readonly claimedNames: Set<string>;
+  readonly content: string;
 }
 
 interface TsFileEntry {
-  fullPath: string;
-  name: string;
+  readonly fullPath: string;
+  readonly name: string;
 }
 
 async function collectTsFiles(dir: string): Promise<TsFileEntry[]> {
