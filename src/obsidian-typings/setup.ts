@@ -15,6 +15,10 @@ import {
   unbridgeFileSystemAdapter
 } from './bridges/file-system-adapter-bridge.ts';
 import {
+  bridgeSetting,
+  unbridgeSetting
+} from './bridges/setting-bridge.ts';
+import {
   bridgeSettingGroup,
   unbridgeSettingGroup
 } from './bridges/setting-group-bridge.ts';
@@ -26,15 +30,21 @@ import {
   bridgeVault,
   unbridgeVault
 } from './bridges/vault-bridge.ts';
+import {
+  bridgeWorkspaceLeaf,
+  unbridgeWorkspaceLeaf
+} from './bridges/workspace-leaf-bridge.ts';
 
 export function setup(): void {
   bridgeAbstractInputSuggest();
   bridgeCapacitorAdapter();
   bridgeComponent();
   bridgeFileSystemAdapter();
+  bridgeSetting();
   bridgeSettingGroup();
   bridgeTAbstractFile();
   bridgeVault();
+  bridgeWorkspaceLeaf();
 }
 
 export function teardown(): void {
@@ -42,7 +52,9 @@ export function teardown(): void {
   unbridgeCapacitorAdapter();
   unbridgeComponent();
   unbridgeFileSystemAdapter();
+  unbridgeSetting();
   unbridgeSettingGroup();
   unbridgeTAbstractFile();
   unbridgeVault();
+  unbridgeWorkspaceLeaf();
 }
