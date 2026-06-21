@@ -1,4 +1,8 @@
 import {
+  bridgeAbstractInputSuggest,
+  unbridgeAbstractInputSuggest
+} from './bridges/abstract-input-suggest-bridge.ts';
+import {
   bridgeCapacitorAdapter,
   unbridgeCapacitorAdapter
 } from './bridges/capacitor-adapter-bridge.ts';
@@ -24,6 +28,7 @@ import {
 } from './bridges/vault-bridge.ts';
 
 export function setup(): void {
+  bridgeAbstractInputSuggest();
   bridgeCapacitorAdapter();
   bridgeComponent();
   bridgeFileSystemAdapter();
@@ -33,6 +38,7 @@ export function setup(): void {
 }
 
 export function teardown(): void {
+  unbridgeAbstractInputSuggest();
   unbridgeCapacitorAdapter();
   unbridgeComponent();
   unbridgeFileSystemAdapter();
