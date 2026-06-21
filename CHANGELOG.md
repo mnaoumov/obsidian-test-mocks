@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 3.2.0
+
+- chore: normalize TypeScript lib casing to ES2022
+- feat: add no-unused-params-members ESLint rule
+- feat: expose AbstractInputSuggest.textInputEl via bridge
+- feat(eslint): enforce readonly Params/Options/Result members
+- feat(eslint): migrate recent obsidian-dev-utils eslint changes
+
 ## 3.1.1
 
 - chore: remove patches
