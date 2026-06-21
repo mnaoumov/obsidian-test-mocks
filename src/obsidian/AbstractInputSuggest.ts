@@ -7,10 +7,10 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 
 export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
-  private readonly inputEl: HTMLDivElement | HTMLInputElement;
+  public readonly textInputEl__: HTMLDivElement | HTMLInputElement;
   public constructor(app: App, textInputEl: HTMLDivElement | HTMLInputElement) {
     super(app);
-    this.inputEl = textInputEl;
+    this.textInputEl__ = textInputEl;
     const self = strictProxy(this);
     self.constructor2__(app, textInputEl);
     return self;
@@ -29,17 +29,17 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   }
 
   public getValue(): string {
-    if (this.inputEl instanceof HTMLInputElement) {
-      return this.inputEl.value;
+    if (this.textInputEl__ instanceof HTMLInputElement) {
+      return this.textInputEl__.value;
     }
-    return this.inputEl.textContent;
+    return this.textInputEl__.textContent;
   }
 
   public setValue(value: string): void {
-    if (this.inputEl instanceof HTMLInputElement) {
-      this.inputEl.value = value;
+    if (this.textInputEl__ instanceof HTMLInputElement) {
+      this.textInputEl__.value = value;
     } else {
-      this.inputEl.textContent = value;
+      this.textInputEl__.textContent = value;
     }
   }
 }
