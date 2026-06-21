@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.3.0
+
+- feat: more bridges
+
 ## 3.2.0
 
 - chore: normalize TypeScript lib casing to ES2022
