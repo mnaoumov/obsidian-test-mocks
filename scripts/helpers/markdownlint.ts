@@ -8,8 +8,8 @@ import {
 } from './root.ts';
 
 interface LintParams {
-  paths?: string[] | undefined;
-  shouldFix?: boolean | undefined;
+  readonly paths?: string[] | undefined;
+  readonly shouldFix?: boolean | undefined;
 }
 
 export async function lint(params?: LintParams): Promise<void> {
