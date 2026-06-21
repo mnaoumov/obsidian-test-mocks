@@ -1,14 +1,14 @@
 import type { Events } from 'obsidian';
 
 export interface AjaxOptions {
-  data?: ArrayBuffer | object | string;
-  error?: (error: unknown, req: XMLHttpRequest) => unknown;
-  headers?: Record<string, string>;
-  method?: 'GET' | 'POST';
-  req?: XMLHttpRequest;
-  success?: (response: unknown, req: XMLHttpRequest) => unknown;
-  url: string;
-  withCredentials?: boolean;
+  readonly data?: ArrayBuffer | object | string;
+  readonly error?: (error: unknown, req: XMLHttpRequest) => unknown;
+  readonly headers?: Record<string, string>;
+  readonly method?: 'GET' | 'POST';
+  readonly req?: XMLHttpRequest;
+  readonly success?: (response: unknown, req: XMLHttpRequest) => unknown;
+  readonly url: string;
+  readonly withCredentials?: boolean;
 }
 
 export interface CoordsLeftTop {
@@ -17,10 +17,10 @@ export interface CoordsLeftTop {
 }
 
 export interface EnsureSideLeafOptions {
-  active?: boolean;
-  reveal?: boolean;
-  split?: boolean;
-  state?: unknown;
+  readonly active?: boolean;
+  readonly reveal?: boolean;
+  readonly split?: boolean;
+  readonly state?: unknown;
 }
 
 export interface EventsEntry {
@@ -46,7 +46,7 @@ export interface ParsedLinktext {
 }
 
 export interface SetActiveLeafParams {
-  focus?: boolean;
+  readonly focus?: boolean;
 }
 
 export interface SvgElementInfo {

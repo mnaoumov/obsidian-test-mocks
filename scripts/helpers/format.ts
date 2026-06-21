@@ -7,8 +7,8 @@ import {
 } from './root.ts';
 
 interface FormatParams {
-  paths?: string[] | undefined;
-  rewrite?: boolean | undefined;
+  readonly paths?: string[] | undefined;
+  readonly rewrite?: boolean | undefined;
 }
 
 export async function format(params?: FormatParams): Promise<void> {
