@@ -18,7 +18,7 @@ export async function lint(params?: LintParams): Promise<void> {
   await execFromRoot(['npx', 'markdownlint-cli2', ...(shouldFix ? ['--fix'] : []), { batchedArgs: targets }]);
 
   const mdFiles = paths?.length
-    ? paths.map((p) => toPosixPath(relative(process.cwd(), p)))
+    ? paths.map((p) => toPosixPath(relative(process.cwd(), p)) || p)
     : await toArray(glob(['**/*.md'], {
       exclude: [
         '.git/**',
