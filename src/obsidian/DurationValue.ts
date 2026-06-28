@@ -7,17 +7,17 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
-const MILLISECONDS_PER_SECOND = 1000;
-const SECONDS_PER_MINUTE = 60;
-const MINUTES_PER_HOUR = 60;
-const HOURS_PER_DAY = 24;
-const DAYS_PER_MONTH = 30;
-const DAYS_PER_YEAR = 365;
-const MILLISECONDS_PER_MINUTE = MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE;
-const MILLISECONDS_PER_HOUR = MILLISECONDS_PER_MINUTE * MINUTES_PER_HOUR;
-const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * HOURS_PER_DAY;
-const MILLISECONDS_PER_MONTH = MILLISECONDS_PER_DAY * DAYS_PER_MONTH;
-const MILLISECONDS_PER_YEAR = MILLISECONDS_PER_DAY * DAYS_PER_YEAR;
+const MILLISECONDS_IN_SECOND = 1000;
+const SECONDS_IN_MINUTE = 60;
+const MINUTES_IN_HOUR = 60;
+const HOURS_IN_DAY = 24;
+const DAYS_IN_MONTH = 30;
+const DAYS_IN_YEAR = 365;
+const MILLISECONDS_IN_MINUTE = MILLISECONDS_IN_SECOND * SECONDS_IN_MINUTE;
+const MILLISECONDS_IN_HOUR = MILLISECONDS_IN_MINUTE * MINUTES_IN_HOUR;
+const MILLISECONDS_IN_DAY = MILLISECONDS_IN_HOUR * HOURS_IN_DAY;
+const MILLISECONDS_IN_MONTH = MILLISECONDS_IN_DAY * DAYS_IN_MONTH;
+const MILLISECONDS_IN_YEAR = MILLISECONDS_IN_DAY * DAYS_IN_YEAR;
 
 export class DurationValue extends NotNullValue {
   public constructor(
@@ -81,12 +81,12 @@ export class DurationValue extends NotNullValue {
 
   public getMilliseconds(): number {
     return this.milliseconds
-      + this.seconds * MILLISECONDS_PER_SECOND
-      + this.minutes * MILLISECONDS_PER_MINUTE
-      + this.hours * MILLISECONDS_PER_HOUR
-      + this.days * MILLISECONDS_PER_DAY
-      + this.months * MILLISECONDS_PER_MONTH
-      + this.years * MILLISECONDS_PER_YEAR;
+      + this.seconds * MILLISECONDS_IN_SECOND
+      + this.minutes * MILLISECONDS_IN_MINUTE
+      + this.hours * MILLISECONDS_IN_HOUR
+      + this.days * MILLISECONDS_IN_DAY
+      + this.months * MILLISECONDS_IN_MONTH
+      + this.years * MILLISECONDS_IN_YEAR;
   }
 
   public isTruthy(): boolean {
