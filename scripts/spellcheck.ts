@@ -1,3 +1,5 @@
+import process from 'node:process';
+
 import { execFromRoot } from './helpers/root.ts';
 
 async function main(): Promise<void> {
