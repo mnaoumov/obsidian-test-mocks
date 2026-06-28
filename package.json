@@ -171,6 +171,7 @@
     "jest-environment-jsdom": "^30.4.1",
     "jiti": "^2.7.0",
     "jsdom": "^29.1.1",
+    "linkinator": "^7.6.1",
     "markdownlint": "^0.41.0",
     "markdownlint-cli2": "^0.22.1",
     "markdownlint-rule-relative-links": "^5.1.0",
