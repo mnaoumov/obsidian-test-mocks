@@ -27,11 +27,11 @@ describe('PluginSettingTab', () => {
     expect(tab).toBeInstanceOf(PluginSettingTab);
   });
 
-  it('should have plugin property', () => {
+  it('should have plugin__ property', () => {
     const app = App.createConfigured__();
     const plugin = strictProxy<Plugin>({ app });
     const tab = new ConcretePluginSettingTab(app, plugin);
-    expect(tab.plugin).toBe(plugin);
+    expect(tab.plugin__).toBe(plugin);
   });
 
   it('should have app property', () => {
