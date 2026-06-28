@@ -13,7 +13,7 @@ import { join } from 'node:path/posix';
 // eslint-disable-next-line import-x/no-rename-default -- The default export name `_default` is too confusing.
 import tseslint from 'typescript-eslint';
 
-import { localPlugin } from './helpers/eslint/local-plugin.ts';
+import { obsidianDevUtilsPlugin } from './helpers/eslint-rules/obsidian-dev-utils-plugin.ts';
 import { getRootFolder } from './helpers/root.ts';
 
 const typeScriptFiles = [
@@ -348,12 +348,12 @@ function getLocalPluginConfigs(): Linter.Config[] {
   return defineConfig([{
     files: typeScriptFiles,
     plugins: {
-      local: localPlugin
+      'obsidian-dev-utils': obsidianDevUtilsPlugin
     },
     rules: {
-      'local/no-unused-params-members': 'error',
-      'local/no-used-underscore-params': 'error',
-      'local/readonly-params-options-result-members': 'error'
+      'obsidian-dev-utils/no-unused-params-members': 'error',
+      'obsidian-dev-utils/no-used-underscore-variables': 'error',
+      'obsidian-dev-utils/readonly-params-options-result-members': 'error'
     }
   }]);
 }
