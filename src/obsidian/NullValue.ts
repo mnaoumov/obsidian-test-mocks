@@ -5,6 +5,8 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { Value } from './Value.ts';
 
 export class NullValue extends Value {
+  public static value: NullValue = NullValue.create__();
+
   public constructor() {
     super();
     const self = strictProxy(this);

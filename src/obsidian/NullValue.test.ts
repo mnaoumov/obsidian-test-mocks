@@ -24,6 +24,12 @@ describe('NullValue', () => {
     expect(String(val)).toBe('');
   });
 
+  describe('value', () => {
+    it('should expose a shared NullValue singleton', () => {
+      expect(NullValue.value).toBeInstanceOf(NullValue);
+    });
+  });
+
   describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', () => {
       const val = NullValue.create__();

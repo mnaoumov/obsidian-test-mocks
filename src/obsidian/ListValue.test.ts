@@ -57,4 +57,44 @@ describe('ListValue', () => {
       expect(mock).toBe(val);
     });
   });
+
+  describe('length', () => {
+    it('should return the number of values', () => {
+      const val = new ListValue([]);
+      val.values__.push(new StringValue('a'), new StringValue('b'));
+      expect(val.length()).toBe(2);
+    });
+  });
+
+  describe('get', () => {
+    it('should return the value at the given index', () => {
+      const val = new ListValue([]);
+      const item = new StringValue('a');
+      val.values__.push(item);
+      expect(val.get(0)).toBe(item);
+    });
+  });
+
+  describe('includes', () => {
+    it('should report membership by reference', () => {
+      const val = new ListValue([]);
+      const item = new StringValue('a');
+      val.values__.push(item);
+      expect(val.includes(item)).toBe(true);
+      expect(val.includes(new StringValue('b'))).toBe(false);
+    });
+  });
+
+  describe('concat', () => {
+    it('should return a new ListValue with both sets of values', () => {
+      const a = new ListValue([]);
+      a.values__.push(new StringValue('a'));
+      const b = new ListValue([]);
+      b.values__.push(new StringValue('b'));
+      const result = a.concat(b);
+      expect(result).toBeInstanceOf(ListValue);
+      expect(result.values__).toHaveLength(2);
+      expect(String(result)).toBe('a, b');
+    });
+  });
 });
