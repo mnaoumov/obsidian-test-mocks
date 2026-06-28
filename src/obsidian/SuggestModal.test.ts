@@ -61,6 +61,16 @@ describe('SuggestModal', () => {
     });
   });
 
+  describe('selectActiveSuggestion', () => {
+    it('should not throw', () => {
+      const app = App.createConfigured__();
+      const modal = new ConcreteSuggestModal(app);
+      expect(() => {
+        modal.selectActiveSuggestion(new MouseEvent('click'));
+      }).not.toThrow();
+    });
+  });
+
   describe('selectSuggestion', () => {
     it('should call onChooseSuggestion and close', () => {
       const app = App.createConfigured__();

@@ -73,6 +73,13 @@ describe('EditorSuggest', () => {
     });
   });
 
+  describe('context', () => {
+    it('should default to null', () => {
+      const suggest = createSuggest();
+      expect(suggest.context).toBeNull();
+    });
+  });
+
   describe('limit', () => {
     it('should default to 100', () => {
       const suggest = createSuggest();

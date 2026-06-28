@@ -1,4 +1,7 @@
-import type { MarkdownPreviewRenderer as MarkdownPreviewRendererOriginal } from 'obsidian';
+import type {
+  MarkdownPostProcessorContext as MarkdownPostProcessorContextOriginal,
+  MarkdownPreviewRenderer as MarkdownPreviewRendererOriginal
+} from 'obsidian';
 
 import {
   afterEach,
@@ -8,6 +11,7 @@ import {
 } from 'vitest';
 
 import { noop } from '../internal/noop.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { MarkdownPreviewRenderer } from './MarkdownPreviewRenderer.ts';
 
 function postProcessor(): void {
@@ -31,6 +35,16 @@ describe('MarkdownPreviewRenderer', () => {
       MarkdownPreviewRenderer.registerPostProcessor(postProcessor);
       expect(() => {
         MarkdownPreviewRenderer.unregisterPostProcessor(postProcessor);
+      }).not.toThrow();
+    });
+  });
+
+  describe('createCodeBlockPostProcessor', () => {
+    it('should return a post processor function that does not throw when called', () => {
+      const processor = MarkdownPreviewRenderer.createCodeBlockPostProcessor('mermaid', postProcessor);
+      expect(typeof processor).toBe('function');
+      expect(() => {
+        processor(createDiv(), strictProxy<MarkdownPostProcessorContextOriginal>({}));
       }).not.toThrow();
     });
   });

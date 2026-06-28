@@ -110,6 +110,12 @@ export class WorkspaceLeaf extends WorkspaceItem {
     }
   }
 
+  public async open(view: ViewOriginal): Promise<ViewOriginal> {
+    await noopAsync();
+    this.view = view;
+    return view;
+  }
+
   public async openFile(file: TFile, _openState?: OpenViewStateOriginal): Promise<void> {
     await noopAsync();
     this.file = file;

@@ -4,9 +4,11 @@ import type {
 } from 'obsidian';
 
 import type { MarkdownView } from './MarkdownView.ts';
+import type { TFile } from './TFile.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { Editor } from './Editor.ts';
 
@@ -17,11 +19,18 @@ export class MarkdownEditView {
   public editor__: Editor;
   public hoverPopover: HoverPopoverOriginal | null = null;
 
+  public get file(): TFile {
+    return ensureNonNullable(this.view.file);
+  }
+
   private scroll = 0;
+
+  private readonly view: MarkdownView;
 
   public constructor(view: MarkdownView) {
     this.app = view.app;
     this.editor__ = new MockEditor();
+    this.view = view;
     const self = strictProxy(this);
     self.constructor__(view);
     return self;

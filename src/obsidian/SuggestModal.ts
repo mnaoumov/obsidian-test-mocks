@@ -53,6 +53,10 @@ export abstract class SuggestModal<T> extends Modal {
 
   public abstract renderSuggestion(value: T, _el: HTMLElement): void;
 
+  public selectActiveSuggestion(_evt: KeyboardEvent | MouseEvent): void {
+    noop();
+  }
+
   public selectSuggestion(value: T, evt: KeyboardEvent | MouseEvent): void {
     this.onChooseSuggestion(value, evt);
     this.close();

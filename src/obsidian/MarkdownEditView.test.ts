@@ -9,6 +9,7 @@ import {
 import { App } from './App.ts';
 import { MarkdownEditView } from './MarkdownEditView.ts';
 import { MarkdownView } from './MarkdownView.ts';
+import { TFile } from './TFile.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 function createEditView(): MarkdownEditView {
@@ -43,6 +44,18 @@ describe('MarkdownEditView', () => {
       editView.set('content', false);
       editView.clear();
       expect(editView.get()).toBe('');
+    });
+  });
+
+  describe('file', () => {
+    it('should return the underlying view file', () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const mdView = MarkdownView.create2__(leaf);
+      const file = TFile.create__(app.vault, 'test.md');
+      mdView.file = file;
+      const editView = MarkdownEditView.create__(mdView);
+      expect(editView.file).toBe(file);
     });
   });
 
