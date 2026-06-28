@@ -3,6 +3,7 @@ import type { DateValue as DateValueOriginal } from 'obsidian';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
+import { moment } from './vars/moment.ts';
 
 export class DateValue extends NotNullValue {
   public constructor(private readonly date: Date, private readonly showTime?: boolean) {
@@ -42,7 +43,7 @@ export class DateValue extends NotNullValue {
   }
 
   public relative(): string {
-    return this.toString();
+    return moment(this.date).fromNow();
   }
 
   public toString(): string {
