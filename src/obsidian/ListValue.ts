@@ -4,6 +4,7 @@ import type { Value } from './Value.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
 export class ListValue extends NotNullValue {
@@ -30,13 +31,31 @@ export class ListValue extends NotNullValue {
     return strictProxy<ListValueOriginal>(this);
   }
 
+  public concat(other: ListValue): ListValue {
+    const result = ListValue.create__([]);
+    result.values__ = [...this.values__, ...other.values__];
+    return result;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Matches obsidian-typings signature.
   public constructor3__(_value: (unknown | Value)[]): void {
     noop();
   }
 
+  public get(index: number): Value {
+    return ensureNonNullable(this.values__[index]);
+  }
+
+  public includes(value: Value): boolean {
+    return this.values__.includes(value);
+  }
+
   public isTruthy(): boolean {
     return this.values__.length > 0;
+  }
+
+  public length(): number {
+    return this.values__.length;
   }
 
   public toString(): string {

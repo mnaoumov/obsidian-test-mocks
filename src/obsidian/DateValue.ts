@@ -20,6 +20,11 @@ export class DateValue extends NotNullValue {
     return strictProxy(value, DateValue);
   }
 
+  public static parseFromString(input: string): DateValue | null {
+    const date = new Date(input);
+    return Number.isNaN(date.getTime()) ? null : DateValue.create__(date);
+  }
+
   public asOriginalType3__(): DateValueOriginal {
     return strictProxy<DateValueOriginal>(this);
   }
@@ -28,8 +33,16 @@ export class DateValue extends NotNullValue {
     noop();
   }
 
+  public dateOnly(): DateValue {
+    return DateValue.create__(this.date, false);
+  }
+
   public isTruthy(): boolean {
     return true;
+  }
+
+  public relative(): string {
+    return this.toString();
   }
 
   public toString(): string {

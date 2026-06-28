@@ -46,6 +46,32 @@ describe('DateValue', () => {
     });
   });
 
+  describe('dateOnly', () => {
+    it('should return a DateValue without time', () => {
+      const val = DateValue.create__(new Date('2024-01-15T10:30:00'), true);
+      const result = val.dateOnly();
+      expect(result).toBeInstanceOf(DateValue);
+      expect(String(result)).not.toContain('T');
+    });
+  });
+
+  describe('relative', () => {
+    it('should return the formatted date string', () => {
+      const val = DateValue.create__(new Date('2024-01-15'));
+      expect(val.relative()).toBe(String(val));
+    });
+  });
+
+  describe('parseFromString', () => {
+    it('should parse a valid date string', () => {
+      expect(DateValue.parseFromString('2024-01-15')).toBeInstanceOf(DateValue);
+    });
+
+    it('should return null for an invalid date string', () => {
+      expect(DateValue.parseFromString('not a date')).toBeNull();
+    });
+  });
+
   describe('asOriginalType3__', () => {
     it('should return the same instance', () => {
       const val = DateValue.create__(new Date());
