@@ -77,14 +77,13 @@ const PROJECT_ROOT = process.cwd();
 const MOCK_INDEX_PATH = join(PROJECT_ROOT, 'src', 'obsidian', 'index.ts');
 
 /**
- * Burn-down backlog: known conformance gaps that pre-date this test. Each entry is
- * a verbatim violation message that is temporarily tolerated so the test can enforce
- * against NEW drift immediately. Remove an entry as soon as its gap is mocked; the
- * goal is an empty set (full obsidian.d.ts conformance).
+ * Burn-down backlog: conformance gaps that are temporarily tolerated so the test can
+ * still enforce against NEW drift while a known gap is being mocked. Each entry is a
+ * verbatim violation message. This set is currently EMPTY — the mocks are in full
+ * conformance with `obsidian.d.ts`. Add an entry here only as a short-lived allowance
+ * while implementing a newly-discovered gap, and remove it as soon as the gap is mocked.
  */
-const CONFORMANCE_BACKLOG = new Set<string>([
-  'PluginSettingTab: extra member "plugin" must end with "__"'
-]);
+const CONFORMANCE_BACKLOG = new Set<string>([]);
 
 const VALUE_FLAG_LIST = [
   SymbolFlags.BlockScopedVariable,

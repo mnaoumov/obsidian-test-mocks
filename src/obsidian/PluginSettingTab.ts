@@ -8,11 +8,11 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { SettingTab } from './SettingTab.ts';
 
 export abstract class PluginSettingTab extends SettingTab {
-  public plugin: Plugin;
+  public plugin__: Plugin;
 
   public constructor(app: App, plugin: Plugin) {
     super(app);
-    this.plugin = plugin;
+    this.plugin__ = plugin;
     const self = strictProxy(this);
     self.constructor2__(app, plugin);
     return self;
