@@ -85,10 +85,10 @@ describe('MenuItem', () => {
     });
   });
 
-  describe('setSubmenu', () => {
+  describe('setSubmenu__', () => {
     it('should return a new Menu', () => {
       const item = MenuItem.create__(null);
-      const submenu = item.setSubmenu();
+      const submenu = item.setSubmenu__();
       expect(submenu).toBeInstanceOf(Menu);
     });
   });

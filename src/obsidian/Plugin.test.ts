@@ -55,7 +55,7 @@ describe('Plugin', () => {
       const cmd = { id: 'my-cmd', name: 'My Command' };
       const result = plugin.addCommand(cmd);
       expect(result).toBe(cmd);
-      expect(plugin.commands.get('my-cmd')).toBe(cmd);
+      expect(plugin.commands__.get('my-cmd')).toBe(cmd);
     });
   });
 
@@ -65,7 +65,7 @@ describe('Plugin', () => {
       const plugin = new ConcretePlugin(app, MANIFEST);
       plugin.addCommand({ id: 'cmd1', name: 'Cmd 1' });
       plugin.removeCommand('cmd1');
-      expect(plugin.commands.has('cmd1')).toBe(false);
+      expect(plugin.commands__.has('cmd1')).toBe(false);
     });
   });
 

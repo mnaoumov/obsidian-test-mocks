@@ -5,7 +5,7 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { TextComponent } from './TextComponent.ts';
 
 export class MomentFormatComponent extends TextComponent {
-  public defaultFormat = '';
+  public defaultFormat__ = '';
   public sampleEl: HTMLElement;
 
   public constructor(containerEl: HTMLElement) {
@@ -33,7 +33,7 @@ export class MomentFormatComponent extends TextComponent {
   }
 
   public setDefaultFormat(defaultFormat: string): this {
-    this.defaultFormat = defaultFormat;
+    this.defaultFormat__ = defaultFormat;
     return this;
   }
 

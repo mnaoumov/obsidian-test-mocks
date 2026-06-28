@@ -57,6 +57,20 @@ describe('FileSystemAdapter', () => {
     });
   });
 
+  describe('getFullPath', () => {
+    it('should return base path joined with normalized path', () => {
+      const adapter = createAdapter();
+      expect(adapter.getFullPath('notes/file.md')).toBe('/mock-vault/notes/file.md');
+    });
+  });
+
+  describe('readLocalFile', () => {
+    it('should resolve to an ArrayBuffer', async () => {
+      const buffer = await FileSystemAdapter.readLocalFile('any/path');
+      expect(buffer).toBeInstanceOf(ArrayBuffer);
+    });
+  });
+
   describe('inherited InMemoryAdapter methods', () => {
     it('should write and read text files', async () => {
       const adapter = createAdapter();

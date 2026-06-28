@@ -20,7 +20,7 @@ import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
   public app: App;
-  public commands = new Map<string, CommandOriginal>();
+  public commands__ = new Map<string, CommandOriginal>();
   public data__: unknown = {};
   public extensions__ = new Map<string, string>();
   public hoverLinkSources__ = new Map<string, HoverLinkSourceOriginal>();
@@ -47,7 +47,7 @@ export abstract class Plugin extends Component {
   }
 
   public addCommand(command: CommandOriginal): CommandOriginal {
-    this.commands.set(command.id, command);
+    this.commands__.set(command.id, command);
     return command;
   }
 
@@ -118,7 +118,7 @@ export abstract class Plugin extends Component {
   }
 
   public removeCommand(commandId: string): void {
-    this.commands.delete(commandId);
+    this.commands__.delete(commandId);
   }
 
   public async saveData(data: unknown): Promise<void> {

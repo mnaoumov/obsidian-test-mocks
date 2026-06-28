@@ -21,14 +21,14 @@ describe('MomentFormatComponent', () => {
 
   it('should have empty defaultFormat initially', () => {
     const comp = MomentFormatComponent.create2__(createDiv());
-    expect(comp.defaultFormat).toBe('');
+    expect(comp.defaultFormat__).toBe('');
   });
 
   describe('setDefaultFormat', () => {
     it('should set defaultFormat and return this', () => {
       const comp = MomentFormatComponent.create2__(createDiv());
       const result = comp.setDefaultFormat('YYYY-MM-DD');
-      expect(comp.defaultFormat).toBe('YYYY-MM-DD');
+      expect(comp.defaultFormat__).toBe('YYYY-MM-DD');
       expect(result).toBe(comp);
     });
   });
