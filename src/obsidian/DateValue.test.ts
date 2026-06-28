@@ -5,6 +5,7 @@ import {
 } from 'vitest';
 
 import { DateValue } from './DateValue.ts';
+import { moment } from './vars/moment.ts';
 
 describe('DateValue', () => {
   it('should always be truthy', () => {
@@ -56,9 +57,10 @@ describe('DateValue', () => {
   });
 
   describe('relative', () => {
-    it('should return the formatted date string', () => {
-      const val = DateValue.create__(new Date('2024-01-15'));
-      expect(val.relative()).toBe(String(val));
+    it('should return a moment-relative-from-now string matching moment.fromNow', () => {
+      const date = new Date('2020-01-01T00:00:00Z');
+      const val = DateValue.create__(date);
+      expect(val.relative()).toBe(moment(date).fromNow());
     });
   });
 

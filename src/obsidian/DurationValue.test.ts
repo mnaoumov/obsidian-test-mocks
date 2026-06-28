@@ -55,8 +55,54 @@ describe('DurationValue', () => {
   });
 
   describe('parseFromString', () => {
-    it('should return null', () => {
-      expect(DurationValue.parseFromString('1d')).toBeNull();
+    const MILLISECONDS_IN_DAY = 86_400_000;
+    const MILLISECONDS_IN_HOUR = 3_600_000;
+    const MILLISECONDS_IN_MINUTE = 60_000;
+    const MILLISECONDS_IN_SECOND = 1_000;
+    const MILLISECONDS_IN_WEEK = 604_800_000;
+    const MILLISECONDS_IN_YEAR = 31_536_000_000;
+    const MILLISECONDS_IN_30_DAY_MONTH = 2_592_000_000;
+
+    it('should parse an abbreviated day unit', () => {
+      expect(DurationValue.parseFromString('1d')?.getMilliseconds()).toBe(MILLISECONDS_IN_DAY);
+    });
+
+    it('should parse a full unit word separated by a space', () => {
+      expect(DurationValue.parseFromString('1 day')?.getMilliseconds()).toBe(MILLISECONDS_IN_DAY);
+    });
+
+    it('should parse hours', () => {
+      expect(DurationValue.parseFromString('1h')?.getMilliseconds()).toBe(MILLISECONDS_IN_HOUR);
+    });
+
+    it('should parse minutes', () => {
+      expect(DurationValue.parseFromString('1m')?.getMilliseconds()).toBe(MILLISECONDS_IN_MINUTE);
+    });
+
+    it('should parse seconds', () => {
+      expect(DurationValue.parseFromString('1s')?.getMilliseconds()).toBe(MILLISECONDS_IN_SECOND);
+    });
+
+    it('should parse weeks as seven days', () => {
+      expect(DurationValue.parseFromString('1w')?.getMilliseconds()).toBe(MILLISECONDS_IN_WEEK);
+    });
+
+    it('should parse years', () => {
+      expect(DurationValue.parseFromString('1y')?.getMilliseconds()).toBe(MILLISECONDS_IN_YEAR);
+    });
+
+    it('should parse a month into the months component', () => {
+      expect(DurationValue.parseFromString('1month')?.getMilliseconds()).toBe(MILLISECONDS_IN_30_DAY_MONTH);
+    });
+
+    it('should parse a negative value', () => {
+      expect(DurationValue.parseFromString('-1d')?.getMilliseconds()).toBe(-MILLISECONDS_IN_DAY);
+    });
+
+    it('should return null for unsupported units and malformed input', () => {
+      for (const input of ['1mo', '100ms', '2h30m', '1.5d', 'abc', '5', '']) {
+        expect(DurationValue.parseFromString(input)).toBeNull();
+      }
     });
   });
 
