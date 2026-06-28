@@ -1,10 +1,10 @@
 import { join } from 'node:path/posix';
 
-import { assertNonNullable } from '../../src/internal/type-guards.ts';
 import {
   execFromRoot,
   getRootFolder
 } from './root.ts';
+import { assertNonNullable } from './type-guards.ts';
 
 interface FormatParams {
   readonly paths?: string[] | undefined;
