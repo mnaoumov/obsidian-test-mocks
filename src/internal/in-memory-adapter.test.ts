@@ -303,17 +303,17 @@ describe('InMemoryAdapter', () => {
     });
   });
 
-  describe('getFilePath()', () => {
+  describe('getFullPath()', () => {
     it('should return basePath joined with the normalized path', () => {
       const adapter = createAdapter();
 
-      expect(adapter.getFilePath('notes/file.md')).toBe('/vault/notes/file.md');
+      expect(adapter.getFullPath('notes/file.md')).toBe('/vault/notes/file.md');
     });
 
     it('should return basePath joined with the normalized path via base class', () => {
       const adapter = createAdapter();
 
-      expect(InMemoryAdapter.prototype.getFilePath.call(adapter, 'test')).toBe('/vault/test');
+      expect(InMemoryAdapter.prototype.getFullPath.call(adapter, 'test')).toBe('/vault/test');
     });
   });
 

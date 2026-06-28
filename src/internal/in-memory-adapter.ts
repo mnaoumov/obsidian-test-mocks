@@ -112,7 +112,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     return this.lowerCaseKeys.has(normalizedPath.toLowerCase());
   }
 
-  public getFilePath(normalizedPath: string): string {
+  public getFullPath(normalizedPath: string): string {
     return `${this.basePath}/${normalizedPath}`;
   }
 

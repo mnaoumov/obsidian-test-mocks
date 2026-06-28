@@ -1,7 +1,10 @@
 import type { FileSystemAdapter as FileSystemAdapterOriginal } from 'obsidian';
 
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
-import { noop } from '../internal/noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class FileSystemAdapter extends InMemoryAdapter {
@@ -20,6 +23,11 @@ export class FileSystemAdapter extends InMemoryAdapter {
     return strictProxy(value, FileSystemAdapter);
   }
 
+  public static async readLocalFile(_path: string): Promise<ArrayBuffer> {
+    await noopAsync();
+    return new ArrayBuffer(0);
+  }
+
   public asOriginalType__(): FileSystemAdapterOriginal {
     return strictProxy<FileSystemAdapterOriginal>(this);
   }
@@ -32,7 +40,11 @@ export class FileSystemAdapter extends InMemoryAdapter {
     return this.basePath;
   }
 
-  public override getFilePath(normalizedPath: string): string {
+  public getFilePath(normalizedPath: string): string {
+    return `${this.basePath}/${normalizedPath}`;
+  }
+
+  public override getFullPath(normalizedPath: string): string {
     return `${this.basePath}/${normalizedPath}`;
   }
 }

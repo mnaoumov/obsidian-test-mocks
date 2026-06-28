@@ -28,7 +28,7 @@ export class CapacitorAdapter extends InMemoryAdapter {
     noop();
   }
 
-  public getFullPath(normalizedPath: string): string {
+  public override getFullPath(normalizedPath: string): string {
     return `${this.basePath}/${normalizedPath}`;
   }
 }

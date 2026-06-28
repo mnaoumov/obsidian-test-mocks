@@ -69,7 +69,7 @@ export class MenuItem {
     return this;
   }
 
-  public setSubmenu(): Menu {
+  public setSubmenu__(): Menu {
     return Menu.create2__();
   }
 
