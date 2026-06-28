@@ -69,7 +69,7 @@ const GLOBAL_TARGETS: Record<string, () => object | undefined> = {
   SVGElement: () => SVGElement.prototype,
   Touch: () => (typeof Touch === 'undefined' ? undefined : Touch.prototype),
   UIEvent: () => UIEvent.prototype,
-  Window: () => Window.prototype
+  Window: () => globalThis
 };
 
 const MOCK_SUFFIX = '__';
@@ -99,16 +99,6 @@ const CONFORMANCE_BACKLOG = new Set<string>([
   'FileSystemAdapter: missing member "getFullPath"',
   'FileSystemAdapter: missing member "readLocalFile"',
   'FuzzySuggestModal: missing member "selectActiveSuggestion"',
-  'global Document: missing member "_EVENTS"',
-  'global HTMLElement: missing member "_EVENTS"',
-  'global UIEvent: missing member "doc"',
-  'global UIEvent: missing member "instanceOf"',
-  'global UIEvent: missing member "targetNode"',
-  'global UIEvent: missing member "win"',
-  'global Window: missing member "activeDocument"',
-  'global Window: missing member "activeWindow"',
-  'global Window: missing member "nextFrame"',
-  'global Window: missing member "sleep"',
   'MarkdownEditView: missing member "file"',
   'MarkdownPreviewRenderer: missing member "createCodeBlockPostProcessor"',
   'MenuItem: extra member "setSubmenu" must end with "__"',
@@ -285,7 +275,8 @@ function globalAugmentations(sourceFile: SourceFile): Map<string, Set<string>> {
       const members = augmentations.get(interfaceName) ?? new Set<string>();
       for (const member of statement.members) {
         const name = member.name?.getText(sourceFile);
-        if (name && !name.startsWith('[')) {
+        // Skip index signatures and obsidian-internal `_`-prefixed members (not part of the public API).
+        if (name && !name.startsWith('[') && !stripQuotes(name).startsWith('_')) {
           members.add(stripQuotes(name));
         }
       }
