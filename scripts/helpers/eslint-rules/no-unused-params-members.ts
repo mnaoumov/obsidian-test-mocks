@@ -35,7 +35,7 @@ import type {
   Scope
 } from 'eslint';
 
-import { ensureNonNullable } from '../../../src/internal/type-guards.ts';
+import { ensureNonNullable } from '../type-guards.ts';
 
 const PARAMS_OPTIONS_SUFFIX_PATTERN = /(?:Params|Options)$/;
 

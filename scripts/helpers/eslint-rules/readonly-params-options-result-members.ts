@@ -10,6 +10,8 @@
  */
 import type { Rule } from 'eslint';
 
+import { ensureNonNullable } from '../type-guards.ts';
+
 export const MESSAGE_ID = 'readonlyParamsOptionsResultMembers';
 
 interface PropertySignatureNode {
@@ -31,11 +33,7 @@ export const readonlyParamsOptionsResultMembers: Rule.RuleModule = {
       const propertyNode = node as Partial<PropertySignatureNode>;
       ctx.report({
         fix(fixer) {
-          const { key } = propertyNode;
-          if (!key) {
-            throw new Error('Property signature is missing its key.');
-          }
-          return fixer.insertTextBefore(key, 'readonly ');
+          return fixer.insertTextBefore(ensureNonNullable(propertyNode.key), 'readonly ');
         },
         messageId: MESSAGE_ID,
         node
