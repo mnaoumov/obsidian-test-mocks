@@ -53,6 +53,10 @@ export class SliderComponent extends ValueComponent<number> {
     return this;
   }
 
+  public setDisplayFormat(_format: (value: number) => string): this {
+    return this;
+  }
+
   public setDynamicTooltip(): this {
     return this;
   }
@@ -75,9 +79,5 @@ export class SliderComponent extends ValueComponent<number> {
     this.value = value;
     this._onChange?.(value);
     return this;
-  }
-
-  public showTooltip(): void {
-    noop();
   }
 }

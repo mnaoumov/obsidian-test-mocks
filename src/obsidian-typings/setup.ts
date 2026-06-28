@@ -19,10 +19,6 @@ import {
   unbridgeSetting
 } from './bridges/setting-bridge.ts';
 import {
-  bridgeSettingGroup,
-  unbridgeSettingGroup
-} from './bridges/setting-group-bridge.ts';
-import {
   bridgeTAbstractFile,
   unbridgeTAbstractFile
 } from './bridges/t-abstract-file-bridge.ts';
@@ -41,7 +37,6 @@ export function setup(): void {
   bridgeComponent();
   bridgeFileSystemAdapter();
   bridgeSetting();
-  bridgeSettingGroup();
   bridgeTAbstractFile();
   bridgeVault();
   bridgeWorkspaceLeaf();
@@ -53,7 +48,6 @@ export function teardown(): void {
   unbridgeComponent();
   unbridgeFileSystemAdapter();
   unbridgeSetting();
-  unbridgeSettingGroup();
   unbridgeTAbstractFile();
   unbridgeVault();
   unbridgeWorkspaceLeaf();

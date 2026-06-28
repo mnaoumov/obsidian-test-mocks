@@ -92,12 +92,10 @@ describe('SliderComponent', () => {
     });
   });
 
-  describe('showTooltip', () => {
-    it('should not throw', () => {
+  describe('setDisplayFormat', () => {
+    it('should return this', () => {
       const slider = SliderComponent.create__(createDiv());
-      expect(() => {
-        slider.showTooltip();
-      }).not.toThrow();
+      expect(slider.setDisplayFormat((value) => String(value))).toBe(slider);
     });
   });
 

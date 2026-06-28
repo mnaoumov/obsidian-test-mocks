@@ -40,6 +40,14 @@ describe('Plugin', () => {
     expect(plugin.manifest).toBe(MANIFEST);
   });
 
+  it('should allow assigning settings', () => {
+    const app = App.createConfigured__();
+    const plugin = new ConcretePlugin(app, MANIFEST);
+    expect(plugin.settings).toBeUndefined();
+    plugin.settings = { foo: 'bar' };
+    expect(plugin.settings).toEqual({ foo: 'bar' });
+  });
+
   describe('addCommand', () => {
     it('should store and return the command', () => {
       const app = App.createConfigured__();

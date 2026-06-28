@@ -87,6 +87,13 @@ describe('Menu', () => {
     });
   });
 
+  describe('setParentElement', () => {
+    it('should return this', () => {
+      const menu = Menu.create2__();
+      expect(menu.setParentElement(createDiv())).toBe(menu);
+    });
+  });
+
   describe('setUseNativeMenu', () => {
     it('should return this', () => {
       const menu = Menu.create2__();

@@ -9,8 +9,10 @@ import {
 import { App } from './App.ts';
 import { SettingTab } from './SettingTab.ts';
 
+class BareSettingTab extends SettingTab {}
+
 class ConcreteSettingTab extends SettingTab {
-  public display(): void {
+  public override display(): void {
     this.containerEl.textContent = 'displayed';
   }
 }
@@ -43,6 +45,63 @@ describe('SettingTab', () => {
       expect(tab.containerEl.textContent).toBe('displayed');
       tab.hide();
       expect(tab.containerEl.innerHTML).toBe('');
+    });
+  });
+
+  it('should default settingItems to an empty array', () => {
+    const app = App.createConfigured__();
+    const tab = new ConcreteSettingTab(app);
+    expect(tab.settingItems).toEqual([]);
+  });
+
+  it('should have a no-op base display', () => {
+    const app = App.createConfigured__();
+    const tab = new BareSettingTab(app);
+    expect(() => {
+      tab.display();
+    }).not.toThrow();
+  });
+
+  describe('getSettingDefinitions', () => {
+    it('should return an empty array by default', () => {
+      const app = App.createConfigured__();
+      const tab = new ConcreteSettingTab(app);
+      expect(tab.getSettingDefinitions()).toEqual([]);
+    });
+  });
+
+  describe('getControlValue / setControlValue', () => {
+    it('should return undefined for any key by default', () => {
+      const app = App.createConfigured__();
+      const tab = new ConcreteSettingTab(app);
+      expect(tab.getControlValue('key')).toBeUndefined();
+    });
+
+    it('should not throw when setting a control value', () => {
+      const app = App.createConfigured__();
+      const tab = new ConcreteSettingTab(app);
+      expect(() => {
+        tab.setControlValue('key', 'value');
+      }).not.toThrow();
+    });
+  });
+
+  describe('refreshDomState', () => {
+    it('should not throw', () => {
+      const app = App.createConfigured__();
+      const tab = new ConcreteSettingTab(app);
+      expect(() => {
+        tab.refreshDomState();
+      }).not.toThrow();
+    });
+  });
+
+  describe('update', () => {
+    it('should store the result of getSettingDefinitions in settingItems', () => {
+      const app = App.createConfigured__();
+      const tab = new ConcreteSettingTab(app);
+      tab.update();
+      expect(tab.settingItems).toEqual(tab.getSettingDefinitions());
     });
   });
 
