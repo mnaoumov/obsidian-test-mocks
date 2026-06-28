@@ -1,4 +1,5 @@
 import type {
+  MarkdownPostProcessorContext as MarkdownPostProcessorContextOriginal,
   MarkdownPostProcessor as MarkdownPostProcessorOriginal,
   MarkdownPreviewRenderer as MarkdownPreviewRendererOriginal
 } from 'obsidian';
@@ -13,6 +14,16 @@ export class MarkdownPreviewRenderer {
     const self = strictProxy(this);
     self.constructor__(owner, containerEl, parentEl, workerPath, observeInsertion);
     return self;
+  }
+
+  public static createCodeBlockPostProcessor(
+    _language: string,
+    _handler: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => unknown
+  ): (el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => void {
+    // eslint-disable-next-line func-names -- Mock implementation.
+    return function (_el: HTMLElement, _ctx: MarkdownPostProcessorContextOriginal): void {
+      noop();
+    };
   }
 
   public static fromOriginalType__(value: MarkdownPreviewRendererOriginal): MarkdownPreviewRenderer {

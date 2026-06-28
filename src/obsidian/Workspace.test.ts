@@ -1,5 +1,6 @@
 import type {
   Constructor as ConstructorOriginal,
+  Menu as MenuOriginal,
   View as ViewOriginal,
   Workspace as WorkspaceOriginal
 } from 'obsidian';
@@ -12,6 +13,7 @@ import {
 } from 'vitest';
 
 import { castTo } from '../internal/castTo.ts';
+import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { View } from './View.ts';
 import { Workspace } from './Workspace.ts';
@@ -34,6 +36,14 @@ describe('Workspace', () => {
       const app = App.createConfigured__();
       const mock = Workspace.fromOriginalType2__(app.workspace.asOriginalType2__());
       expect(mock).toBe(app.workspace);
+    });
+  });
+
+  describe('handleLinkContextMenu()', () => {
+    it('should return false', () => {
+      const app = App.createConfigured__();
+      const menu = strictProxy<MenuOriginal>({});
+      expect(app.workspace.handleLinkContextMenu(menu, 'linktext', 'source.md')).toBe(false);
     });
   });
 

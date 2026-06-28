@@ -6,14 +6,23 @@ import {
   it
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import { ensureGenericObject } from '../internal/type-guards.ts';
 import { App } from './App.ts';
+import { BasesQueryResult } from './BasesQueryResult.ts';
 import { BasesView } from './BasesView.ts';
+import { BasesViewConfig } from './BasesViewConfig.ts';
 import { QueryController } from './QueryController.ts';
 
 class ConcreteBasesView extends BasesView {
+  public readonly type = 'concrete';
+
   public constructor(controller: QueryController) {
     super(controller);
+  }
+
+  public onDataUpdated(): void {
+    noop();
   }
 }
 
@@ -33,6 +42,57 @@ describe('BasesView', () => {
     const view = createBasesView();
     const record = ensureGenericObject(view);
     expect(() => record['nonExistentProperty']).toThrow();
+  });
+
+  describe('type', () => {
+    it('should expose the concrete view type', () => {
+      const view = createBasesView();
+      expect(view.type).toBe('concrete');
+    });
+  });
+
+  describe('app', () => {
+    it('should expose an App instance', () => {
+      const view = createBasesView();
+      expect(view.app).toBeInstanceOf(App);
+    });
+  });
+
+  describe('config', () => {
+    it('should expose a BasesViewConfig instance', () => {
+      const view = createBasesView();
+      expect(view.config).toBeInstanceOf(BasesViewConfig);
+    });
+  });
+
+  describe('allProperties', () => {
+    it('should default to an empty array', () => {
+      const view = createBasesView();
+      expect(view.allProperties).toEqual([]);
+    });
+  });
+
+  describe('data', () => {
+    it('should expose a BasesQueryResult instance', () => {
+      const view = createBasesView();
+      expect(view.data).toBeInstanceOf(BasesQueryResult);
+    });
+  });
+
+  describe('onDataUpdated', () => {
+    it('should not throw', () => {
+      const view = createBasesView();
+      expect(() => {
+        view.onDataUpdated();
+      }).not.toThrow();
+    });
+  });
+
+  describe('createFileForView', () => {
+    it('should resolve', async () => {
+      const view = createBasesView();
+      await expect(view.createFileForView()).resolves.toBeUndefined();
+    });
   });
 
   describe('asOriginalType2__', () => {

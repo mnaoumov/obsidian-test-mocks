@@ -1,6 +1,7 @@
 import type {
   Constructor as ConstructorOriginal,
   MarkdownFileInfo as MarkdownFileInfoOriginal,
+  Menu as MenuOriginal,
   OpenViewState as OpenViewStateOriginal,
   PaneType as PaneTypeOriginal,
   Side as SideOriginal,
@@ -200,6 +201,10 @@ export class Workspace extends Events {
     const leaf = WorkspaceLeaf.create2__(this.app);
     this.leaves.push(leaf);
     return leaf;
+  }
+
+  public handleLinkContextMenu(_menu: MenuOriginal, _linktext: string, _sourcePath: string, _leaf?: WorkspaceLeaf): boolean {
+    return false;
   }
 
   public iterateAllLeaves(callback: (leaf: WorkspaceLeaf) => unknown): void {

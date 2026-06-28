@@ -83,25 +83,7 @@ const MOCK_INDEX_PATH = join(PROJECT_ROOT, 'src', 'obsidian', 'index.ts');
  * goal is an empty set (full obsidian.d.ts conformance).
  */
 const CONFORMANCE_BACKLOG = new Set<string>([
-  'AbstractInputSuggest: missing member "limit"',
-  'AbstractInputSuggest: missing member "onSelect"',
-  'App: missing member "renderContext"',
-  'App: missing member "secretStorage"',
-  'BasesView: missing member "allProperties"',
-  'BasesView: missing member "app"',
-  'BasesView: missing member "config"',
-  'BasesView: missing member "createFileForView"',
-  'BasesView: missing member "data"',
-  'BasesView: missing member "onDataUpdated"',
-  'BasesView: missing member "type"',
-  'EditorSuggest: missing member "context"',
-  'FuzzySuggestModal: missing member "selectActiveSuggestion"',
-  'MarkdownEditView: missing member "file"',
-  'MarkdownPreviewRenderer: missing member "createCodeBlockPostProcessor"',
-  'PluginSettingTab: extra member "plugin" must end with "__"',
-  'SuggestModal: missing member "selectActiveSuggestion"',
-  'Workspace: missing member "handleLinkContextMenu"',
-  'WorkspaceLeaf: missing member "open"'
+  'PluginSettingTab: extra member "plugin" must end with "__"'
 ]);
 
 const VALUE_FLAG_LIST = [

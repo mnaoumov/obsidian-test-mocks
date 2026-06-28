@@ -9,6 +9,8 @@ import {
 import { ensureGenericObject } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
+import { RenderContext } from './RenderContext.ts';
+import { SecretStorage } from './SecretStorage.ts';
 
 describe('App', () => {
   it('should create an instance via createConfigured__', () => {
@@ -134,6 +136,20 @@ describe('App', () => {
       const app = App.createConfigured__();
       const mock = App.fromOriginalType__(app.asOriginalType__());
       expect(mock).toBe(app);
+    });
+  });
+
+  describe('renderContext', () => {
+    it('should expose a RenderContext instance', () => {
+      const app = App.createConfigured__();
+      expect(app.renderContext).toBeInstanceOf(RenderContext);
+    });
+  });
+
+  describe('secretStorage', () => {
+    it('should expose a SecretStorage instance', () => {
+      const app = App.createConfigured__();
+      expect(app.secretStorage).toBeInstanceOf(SecretStorage);
     });
   });
 });

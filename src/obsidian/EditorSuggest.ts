@@ -17,6 +17,7 @@ import { PopoverSuggest } from './PopoverSuggest.ts';
 const DEFAULT_LIMIT = 100;
 
 export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
+  public context: EditorSuggestContextOriginal | null = null;
   public instructions__: InstructionOriginal[] = [];
   public limit = DEFAULT_LIMIT;
 

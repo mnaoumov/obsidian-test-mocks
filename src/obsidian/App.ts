@@ -12,7 +12,9 @@ import { FileManager } from './FileManager.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { Keymap } from './Keymap.ts';
 import { MetadataCache } from './MetadataCache.ts';
+import { RenderContext } from './RenderContext.ts';
 import { Scope } from './Scope.ts';
+import { SecretStorage } from './SecretStorage.ts';
 import { Vault } from './Vault.ts';
 import { Workspace } from './Workspace.ts';
 
@@ -21,7 +23,9 @@ export class App {
   public keymap: Keymap;
   public lastEvent: null | UserEventOriginal = null;
   public metadataCache: MetadataCache;
+  public renderContext: RenderContext;
   public scope: Scope;
+  public secretStorage: SecretStorage;
   public vault: Vault;
   public workspace: Workspace;
 
@@ -34,6 +38,8 @@ export class App {
     this.metadataCache = MetadataCache.create2__(this, this.vault);
     this.scope = Scope.create__();
     this.workspace = Workspace.create2__(this, createDiv());
+    this.renderContext = RenderContext.create__(this);
+    this.secretStorage = SecretStorage.create2__(this);
     const self = strictProxy(this);
     self.constructor__(adapter, appId);
     return self;

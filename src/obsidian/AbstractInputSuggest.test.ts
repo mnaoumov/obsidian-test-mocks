@@ -74,6 +74,28 @@ describe('AbstractInputSuggest', () => {
     });
   });
 
+  describe('limit', () => {
+    it('should default to 100', () => {
+      const input = createEl('input');
+      const suggest = createSuggestWithInput(input);
+      const DEFAULT_LIMIT = 100;
+      expect(suggest.limit).toBe(DEFAULT_LIMIT);
+    });
+  });
+
+  describe('onSelect', () => {
+    it('should store the callback and return this', () => {
+      const input = createEl('input');
+      const suggest = createSuggestWithInput(input);
+      function callback(): void {
+        noop();
+      }
+      const result = suggest.onSelect(callback);
+      expect(result).toBe(suggest);
+      expect(suggest.onSelectCallback__).toBe(callback);
+    });
+  });
+
   describe('setValue', () => {
     it('should set value on HTMLInputElement', () => {
       const input = createEl('input');

@@ -253,6 +253,17 @@ describe('WorkspaceLeaf', () => {
     });
   });
 
+  describe('open()', () => {
+    it('should set the view and return it', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const view = strictProxy<View>({});
+      const result = await leaf.open(view);
+      expect(result).toBe(view);
+      expect(leaf.view).toBe(view);
+    });
+  });
+
   describe('openFile()', () => {
     it('should set the file', async () => {
       const app = App.createConfigured__({ files: { 'note.md': 'content' } });
