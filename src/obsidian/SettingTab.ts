@@ -1,5 +1,6 @@
 import type {
   IconName as IconNameOriginal,
+  SettingDefinitionItem as SettingDefinitionItemOriginal,
   Setting as SettingOriginal,
   SettingTab as SettingTabOriginal
 } from 'obsidian';
@@ -13,6 +14,7 @@ export abstract class SettingTab {
   public app: App;
   public containerEl: HTMLDivElement;
   public icon: IconNameOriginal = '';
+  public settingItems: SettingDefinitionItemOriginal[] = [];
 
   public constructor(app: App, setting?: SettingOriginal) {
     this.app = app;
@@ -34,9 +36,31 @@ export abstract class SettingTab {
     noop();
   }
 
-  public abstract display(): void;
+  public display(): void {
+    noop();
+  }
+
+  public getControlValue(_key: string): unknown {
+    return undefined;
+  }
+
+  public getSettingDefinitions(): SettingDefinitionItemOriginal[] {
+    return [];
+  }
 
   public hide(): void {
     this.containerEl.innerHTML = '';
+  }
+
+  public refreshDomState(): void {
+    noop();
+  }
+
+  public setControlValue(_key: string, _value: unknown): void {
+    noop();
+  }
+
+  public update(): void {
+    this.settingItems = this.getSettingDefinitions();
   }
 }

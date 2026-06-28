@@ -92,6 +92,38 @@ describe('Setting', () => {
     });
   });
 
+  describe('setErrorMessage', () => {
+    it('should create errorEl with the message and add is-invalid class', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setErrorMessage('Something is wrong');
+      expect(setting.errorEl?.textContent).toBe('Something is wrong');
+      expect(setting.settingEl.classList.contains('is-invalid')).toBe(true);
+    });
+
+    it('should clear errorEl and remove is-invalid class when message is null', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setErrorMessage('error');
+      setting.setErrorMessage(null);
+      expect(setting.errorEl).toBeNull();
+      expect(setting.settingEl.classList.contains('is-invalid')).toBe(false);
+    });
+
+    it('should return this for chaining', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.setErrorMessage('x')).toBe(setting);
+    });
+  });
+
+  describe('addDisplayValue', () => {
+    it('should invoke the callback with a component and return this', () => {
+      const setting = Setting.create__(createDiv());
+      const cb = vi.fn();
+      const result = setting.addDisplayValue(cb);
+      expect(cb).toHaveBeenCalledOnce();
+      expect(result).toBe(setting);
+    });
+  });
+
   describe('setHeading', () => {
     it('should add heading class', () => {
       const setting = Setting.create__(createDiv());

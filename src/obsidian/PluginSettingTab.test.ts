@@ -13,7 +13,7 @@ import { Plugin } from './Plugin.ts';
 import { PluginSettingTab } from './PluginSettingTab.ts';
 
 class ConcretePluginSettingTab extends PluginSettingTab {
-  public display(): void {
+  public override display(): void {
     noop();
   }
 }

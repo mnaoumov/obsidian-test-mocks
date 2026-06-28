@@ -12,7 +12,7 @@ import { SearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
 
 export class SettingGroup {
-  public listEl__: HTMLDivElement;
+  public listEl: HTMLDivElement;
   private readonly groupEl: HTMLDivElement;
   private readonly headerEl: HTMLDivElement;
   private readonly headerInnerEl: HTMLDivElement;
@@ -21,7 +21,7 @@ export class SettingGroup {
     this.groupEl = containerEl.createDiv();
     this.headerEl = createDiv();
     this.headerInnerEl = this.headerEl.createDiv();
-    this.listEl__ = this.groupEl.createDiv();
+    this.listEl = this.groupEl.createDiv();
     const self = strictProxy(this);
     self.constructor__(containerEl);
     return self;
@@ -35,25 +35,25 @@ export class SettingGroup {
     return strictProxy(value, SettingGroup);
   }
 
-  public addClass(cls: string): this {
-    this.listEl__.classList.add(cls);
+  public addClass(...classes: string[]): this {
+    this.listEl.classList.add(...classes);
     return this;
   }
 
   public addExtraButton(cb: (component: ExtraButtonComponentOriginal) => unknown): this {
-    const comp = ExtraButtonComponent.create__(this.listEl__);
+    const comp = ExtraButtonComponent.create__(this.listEl);
     cb(comp.asOriginalType2__());
     return this;
   }
 
   public addSearch(cb: (component: SearchComponentOriginal) => unknown): this {
-    const comp = SearchComponent.create__(this.listEl__);
+    const comp = SearchComponent.create__(this.listEl);
     cb(comp.asOriginalType4__());
     return this;
   }
 
   public addSetting(cb: (setting: SettingOriginal) => void): this {
-    const setting = Setting.create__(this.listEl__);
+    const setting = Setting.create__(this.listEl);
     cb(setting.asOriginalType__());
     return this;
   }

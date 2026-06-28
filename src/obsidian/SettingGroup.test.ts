@@ -16,18 +16,25 @@ describe('SettingGroup', () => {
     expect(group).toBeInstanceOf(SettingGroup);
   });
 
-  it('should append listEl__ to containerEl', () => {
+  it('should append listEl to containerEl', () => {
     const container = createDiv();
     const group = SettingGroup.create__(container);
-    expect(container.contains(group.listEl__)).toBe(true);
+    expect(container.contains(group.listEl)).toBe(true);
   });
 
   describe('addClass', () => {
-    it('should add class to listEl__ and return this', () => {
+    it('should add class to listEl and return this', () => {
       const group = SettingGroup.create__(createDiv());
       const result = group.addClass('my-class');
-      expect(group.listEl__.classList.contains('my-class')).toBe(true);
+      expect(group.listEl.classList.contains('my-class')).toBe(true);
       expect(result).toBe(group);
+    });
+
+    it('should add multiple classes', () => {
+      const group = SettingGroup.create__(createDiv());
+      group.addClass('a', 'b');
+      expect(group.listEl.classList.contains('a')).toBe(true);
+      expect(group.listEl.classList.contains('b')).toBe(true);
     });
   });
 
@@ -65,7 +72,7 @@ describe('SettingGroup', () => {
     it('should prepend a heading element for string text', () => {
       const group = SettingGroup.create__(createDiv());
       const result = group.setHeading('My Heading');
-      const groupEl = group.listEl__.parentElement;
+      const groupEl = group.listEl.parentElement;
       expect(groupEl).not.toBeNull();
       const headerEl = groupEl?.firstElementChild;
       expect(headerEl).not.toBeNull();
@@ -76,14 +83,14 @@ describe('SettingGroup', () => {
     it('should not prepend header when text is empty', () => {
       const group = SettingGroup.create__(createDiv());
       group.setHeading('');
-      const groupEl = group.listEl__.parentElement;
+      const groupEl = group.listEl.parentElement;
       expect(groupEl?.children).toHaveLength(1);
     });
 
     it('should detach header when clearing text after setting it', () => {
       const group = SettingGroup.create__(createDiv());
       group.setHeading('Heading');
-      const groupEl = group.listEl__.parentElement;
+      const groupEl = group.listEl.parentElement;
       expect(groupEl?.children).toHaveLength(2);
       const headerEl = groupEl?.firstElementChild;
       if (headerEl) {

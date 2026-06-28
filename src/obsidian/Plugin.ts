@@ -28,6 +28,7 @@ export abstract class Plugin extends Component {
   public markdownCodeBlockProcessors__ = new Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => unknown>();
   public markdownPostProcessors__: MarkdownPostProcessorOriginal[] = [];
   public ribbonActions__: HTMLElement[] = [];
+  public settings?: unknown;
   public settingTabs__: PluginSettingTabOriginal[] = [];
   public statusBarItems__: HTMLElement[] = [];
   public views__ = new Map<string, ViewCreatorOriginal>();

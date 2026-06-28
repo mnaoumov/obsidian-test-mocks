@@ -1,6 +1,7 @@
 import type {
   ButtonComponent as ButtonComponentOriginal,
   ColorComponent as ColorComponentOriginal,
+  DisplayValueComponent as DisplayValueComponentOriginal,
   DropdownComponent as DropdownComponentOriginal,
   ExtraButtonComponent as ExtraButtonComponentOriginal,
   MomentFormatComponent as MomentFormatComponentOriginal,
@@ -20,6 +21,7 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ButtonComponent } from './ButtonComponent.ts';
 import { ColorComponent } from './ColorComponent.ts';
+import { DisplayValueComponent } from './DisplayValueComponent.ts';
 import { DropdownComponent } from './DropdownComponent.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
 import { MomentFormatComponent } from './MomentFormatComponent.ts';
@@ -34,6 +36,7 @@ export class Setting {
   public components: BaseComponent[] = [];
   public controlEl: HTMLElement;
   public descEl: HTMLElement;
+  public errorEl: HTMLElement | null = null;
   public infoEl: HTMLElement;
   public nameEl: HTMLElement;
   public settingEl: HTMLElement;
@@ -74,6 +77,12 @@ export class Setting {
   public addComponent(cb: (el: HTMLElement) => BaseComponent): this {
     const component = cb(this.controlEl);
     this.components.push(component);
+    return this;
+  }
+
+  public addDisplayValue(cb: (component: DisplayValueComponentOriginal) => unknown): this {
+    const comp = DisplayValueComponent.create__(this.controlEl);
+    cb(comp.asOriginalType__());
     return this;
   }
 
@@ -169,6 +178,19 @@ export class Setting {
 
   public setDisabled(disabled: boolean): this {
     this.settingEl.classList.toggle('is-disabled', disabled);
+    return this;
+  }
+
+  public setErrorMessage(message: null | string): this {
+    if (message) {
+      this.errorEl ??= this.controlEl.createDiv();
+      this.errorEl.textContent = message;
+      this.settingEl.addClass('is-invalid');
+    } else {
+      this.errorEl?.detach();
+      this.errorEl = null;
+      this.settingEl.removeClass('is-invalid');
+    }
     return this;
   }
 

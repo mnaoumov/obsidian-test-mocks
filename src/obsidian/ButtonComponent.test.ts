@@ -91,6 +91,33 @@ describe('ButtonComponent', () => {
     });
   });
 
+  describe('setDestructive', () => {
+    it('should add mod-destructive class to buttonEl', () => {
+      const button = createButton();
+      button.setDestructive();
+      expect(button.buttonEl.classList.contains('mod-destructive')).toBe(true);
+    });
+
+    it('should return this for chaining', () => {
+      const button = createButton();
+      expect(button.setDestructive()).toBe(button);
+    });
+  });
+
+  describe('removeDestructive', () => {
+    it('should remove mod-destructive class from buttonEl', () => {
+      const button = createButton();
+      button.setDestructive();
+      button.removeDestructive();
+      expect(button.buttonEl.classList.contains('mod-destructive')).toBe(false);
+    });
+
+    it('should return this for chaining', () => {
+      const button = createButton();
+      expect(button.removeDestructive()).toBe(button);
+    });
+  });
+
   describe('setWarning', () => {
     it('should add mod-warning class to buttonEl', () => {
       const button = createButton();

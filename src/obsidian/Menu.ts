@@ -71,6 +71,10 @@ export class Menu extends Component {
     return this;
   }
 
+  public setParentElement(_el: HTMLElement): this {
+    return this;
+  }
+
   public setUseNativeMenu(_useNativeMenu: boolean): this {
     return this;
   }

@@ -45,6 +45,11 @@ export class ButtonComponent extends BaseComponent {
     return this;
   }
 
+  public removeDestructive(): this {
+    this.buttonEl.removeClass('mod-destructive');
+    return this;
+  }
+
   public setButtonText(name: string): this {
     this.buttonEl.textContent = name;
     return this;
@@ -57,6 +62,11 @@ export class ButtonComponent extends BaseComponent {
 
   public setCta(): this {
     this.buttonEl.addClass('mod-cta');
+    return this;
+  }
+
+  public setDestructive(): this {
+    this.buttonEl.addClass('mod-destructive');
     return this;
   }
 
