@@ -1,8 +1,13 @@
 import type {
+  BasesViewRegistration as BasesViewRegistrationOriginal,
+  CliFlags as CliFlagsOriginal,
+  CliHandler as CliHandlerOriginal,
   Command as CommandOriginal,
+  EditorSuggest as EditorSuggestOriginal,
   HoverLinkSource as HoverLinkSourceOriginal,
   MarkdownPostProcessorContext as MarkdownPostProcessorContextOriginal,
   MarkdownPostProcessor as MarkdownPostProcessorOriginal,
+  ObsidianProtocolHandler as ObsidianProtocolHandlerOriginal,
   PluginManifest as PluginManifestOriginal,
   Plugin as PluginOriginal,
   PluginSettingTab as PluginSettingTabOriginal,
@@ -20,13 +25,18 @@ import { Component } from './Component.ts';
 
 export abstract class Plugin extends Component {
   public app: App;
+  public basesViewRegistrations__ = new Map<string, BasesViewRegistrationOriginal>();
+  public cliHandlers__ = new Map<string, CliHandlerOriginal>();
   public commands__ = new Map<string, CommandOriginal>();
   public data__: unknown = {};
+  public editorExtensions__: unknown[] = [];
+  public editorSuggests__: EditorSuggestOriginal<unknown>[] = [];
   public extensions__ = new Map<string, string>();
   public hoverLinkSources__ = new Map<string, HoverLinkSourceOriginal>();
   public manifest: PluginManifestOriginal;
   public markdownCodeBlockProcessors__ = new Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => unknown>();
   public markdownPostProcessors__: MarkdownPostProcessorOriginal[] = [];
+  public obsidianProtocolHandlers__ = new Map<string, ObsidianProtocolHandlerOriginal>();
   public ribbonActions__: HTMLElement[] = [];
   public settings?: unknown;
   public settingTabs__: PluginSettingTabOriginal[] = [];
@@ -80,8 +90,29 @@ export abstract class Plugin extends Component {
     return this.data__;
   }
 
+  public onExternalSettingsChange(): void {
+    noop();
+  }
+
   public onUserEnable(): void {
     noop();
+  }
+
+  public registerBasesView(viewId: string, registration: BasesViewRegistrationOriginal): boolean {
+    this.basesViewRegistrations__.set(viewId, registration);
+    return true;
+  }
+
+  public registerCliHandler(command: string, _description: string, _flags: CliFlagsOriginal | null, handler: CliHandlerOriginal): void {
+    this.cliHandlers__.set(command, handler);
+  }
+
+  public registerEditorExtension(extension: unknown): void {
+    this.editorExtensions__.push(extension);
+  }
+
+  public registerEditorSuggest(editorSuggest: EditorSuggestOriginal<unknown>): void {
+    this.editorSuggests__.push(editorSuggest);
   }
 
   public registerExtensions(extensions: string[], viewType: string): void {
@@ -111,6 +142,10 @@ export abstract class Plugin extends Component {
   public registerMarkdownPostProcessor(postProcessor: MarkdownPostProcessorOriginal, _sortOrder?: number): MarkdownPostProcessorOriginal {
     this.markdownPostProcessors__.push(postProcessor);
     return postProcessor;
+  }
+
+  public registerObsidianProtocolHandler(action: string, handler: ObsidianProtocolHandlerOriginal): void {
+    this.obsidianProtocolHandlers__.set(action, handler);
   }
 
   public registerView(type: string, viewCreator: ViewCreatorOriginal): void {

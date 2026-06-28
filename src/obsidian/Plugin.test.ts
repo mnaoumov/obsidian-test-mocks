@@ -1,4 +1,6 @@
 import type {
+  BasesViewRegistration as BasesViewRegistrationOriginal,
+  EditorSuggest as EditorSuggestOriginal,
   MarkdownPostProcessorContext as MarkdownPostProcessorContextOriginal,
   PluginManifest as PluginManifestOriginal,
   Plugin as PluginOriginal
@@ -186,6 +188,67 @@ describe('Plugin', () => {
       const creator = vi.fn();
       plugin.registerView('my-view', creator);
       expect(plugin.views__.get('my-view')).toBe(creator);
+    });
+  });
+
+  describe('onExternalSettingsChange', () => {
+    it('should not throw', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      expect(() => {
+        plugin.onExternalSettingsChange();
+      }).not.toThrow();
+    });
+  });
+
+  describe('registerBasesView', () => {
+    it('should register and track a bases view registration', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      const registration = strictProxy<BasesViewRegistrationOriginal>({});
+      const result = plugin.registerBasesView('my-base-view', registration);
+      expect(result).toBe(true);
+      expect(plugin.basesViewRegistrations__.get('my-base-view')).toBe(registration);
+    });
+  });
+
+  describe('registerCliHandler', () => {
+    it('should register a cli handler by command', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      const handler = vi.fn();
+      plugin.registerCliHandler('my-command', 'description', null, handler);
+      expect(plugin.cliHandlers__.get('my-command')).toBe(handler);
+    });
+  });
+
+  describe('registerEditorExtension', () => {
+    it('should track the editor extension', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      const extension = {};
+      plugin.registerEditorExtension(extension);
+      expect(plugin.editorExtensions__).toContain(extension);
+    });
+  });
+
+  describe('registerEditorSuggest', () => {
+    it('should track the editor suggest', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      const editorSuggest = strictProxy<EditorSuggestOriginal<unknown>>({});
+      plugin.registerEditorSuggest(editorSuggest);
+      expect(plugin.editorSuggests__).toContain(editorSuggest);
+    });
+  });
+
+  describe('registerObsidianProtocolHandler', () => {
+    it('should register a protocol handler by action', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      const handler = vi.fn();
+      plugin.registerObsidianProtocolHandler('my-action', handler);
+      expect(plugin.obsidianProtocolHandlers__.get('my-action')).toBe(handler);
     });
   });
 
