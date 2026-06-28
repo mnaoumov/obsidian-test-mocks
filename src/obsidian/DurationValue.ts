@@ -7,17 +7,17 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 
-const MS_PER_SECOND = 1000;
+const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
 const MINUTES_PER_HOUR = 60;
 const HOURS_PER_DAY = 24;
 const DAYS_PER_MONTH = 30;
 const DAYS_PER_YEAR = 365;
-const MS_PER_MINUTE = MS_PER_SECOND * SECONDS_PER_MINUTE;
-const MS_PER_HOUR = MS_PER_MINUTE * MINUTES_PER_HOUR;
-const MS_PER_DAY = MS_PER_HOUR * HOURS_PER_DAY;
-const MS_PER_MONTH = MS_PER_DAY * DAYS_PER_MONTH;
-const MS_PER_YEAR = MS_PER_DAY * DAYS_PER_YEAR;
+const MILLISECONDS_PER_MINUTE = MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE;
+const MILLISECONDS_PER_HOUR = MILLISECONDS_PER_MINUTE * MINUTES_PER_HOUR;
+const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * HOURS_PER_DAY;
+const MILLISECONDS_PER_MONTH = MILLISECONDS_PER_DAY * DAYS_PER_MONTH;
+const MILLISECONDS_PER_YEAR = MILLISECONDS_PER_DAY * DAYS_PER_YEAR;
 
 export class DurationValue extends NotNullValue {
   public constructor(
@@ -81,12 +81,12 @@ export class DurationValue extends NotNullValue {
 
   public getMilliseconds(): number {
     return this.milliseconds
-      + this.seconds * MS_PER_SECOND
-      + this.minutes * MS_PER_MINUTE
-      + this.hours * MS_PER_HOUR
-      + this.days * MS_PER_DAY
-      + this.months * MS_PER_MONTH
-      + this.years * MS_PER_YEAR;
+      + this.seconds * MILLISECONDS_PER_SECOND
+      + this.minutes * MILLISECONDS_PER_MINUTE
+      + this.hours * MILLISECONDS_PER_HOUR
+      + this.days * MILLISECONDS_PER_DAY
+      + this.months * MILLISECONDS_PER_MONTH
+      + this.years * MILLISECONDS_PER_YEAR;
   }
 
   public isTruthy(): boolean {
