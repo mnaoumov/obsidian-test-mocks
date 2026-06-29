@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 3.4.0
+
+- feat(obsidian): faithful DateValue.relative and DurationValue.parseFromString
+- refactor(obsidian): suffix PluginSettingTab.plugin as plugin__
+- feat(obsidian): mock remaining missing members across views and suggests Add the obsidian.d.ts members flagged by the conformance test
+- feat(obsidian): mock Plugin registration methods for conformance
+- feat(obsidian): adapter getFullPath/readLocalFile, PopoverState, __ renames
+- feat(globals): mock UIEvent augmentation members; fix global conformance targets
+- refactor(obsidian): use \_IN\_ form for DurationValue time constants
+- refactor(obsidian): spell out Milliseconds in DurationValue constants
+- feat(obsidian): mock Bases value-type members for conformance
+- test(obsidian): add an automated obsidian.d.ts conformance test
+- chore: record obsidian 1.13.1 as the API baseline
+- feat(obsidian): implement the obsidian 1.13.1 API delta in the mocks
+- refactor(eslint): adopt obsidian-dev-utils baseline for custom rules
+- refactor(scripts): make format.ts helper self-contained
+- feat(scripts): add linkinator and unify markdownlint.ts link-checking
+- docs: require matching latest obsidian.d.ts API on each release (L11)
+- refactor(scripts): import process explicitly in spellcheck
+- feat(scripts): add isVerbose option to check-project-types
+- fix(scripts): make markdownlint schema Rule import type-only
+- chore: read .env and honor NANO_STAGED opt-out in nano-staged config
+- chore: update libs
+
 ## 3.3.0
 
 - feat: more bridges
