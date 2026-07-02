@@ -2,6 +2,7 @@ import type {
   CachedMetadata,
   EmbedCache,
   FrontMatterCache,
+  FrontmatterLinkCache,
   HeadingCache,
   LinkCache,
   ListItemCache,
@@ -141,6 +142,43 @@ function buildLineStarts(content: string): number[] {
   return starts;
 }
 
+function collectFrontmatterLinks(key: string, value: string, links: FrontmatterLinkCache[]): void {
+  const wikiRegex = /\[\[(?<link>[^\]|]+?)(?:\|(?<display>[^\]]*?))?\]\]/g;
+  let match = wikiRegex.exec(value);
+  while (match) {
+    const link = ensureNonNullable(match.groups?.['link']);
+    const display = match.groups?.['display'];
+    const entry: FrontmatterLinkCache = {
+      key,
+      link,
+      original: match[0]
+    };
+    if (display !== undefined) {
+      entry.displayText = display;
+    }
+    links.push(entry);
+    match = wikiRegex.exec(value);
+  }
+}
+
+function extractFrontmatterLinks(frontmatter: object): FrontmatterLinkCache[] {
+  const links: FrontmatterLinkCache[] = [];
+  for (const [key, rawValue] of Object.entries(frontmatter)) {
+    const value: unknown = rawValue;
+    if (typeof value === 'string') {
+      collectFrontmatterLinks(key, value, links);
+    } else if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const item: unknown = value[i];
+        if (typeof item === 'string') {
+          collectFrontmatterLinks(`${key}.${String(i)}`, item, links);
+        }
+      }
+    }
+  }
+  return links;
+}
+
 function isInCodeZone(zones: [number, number][], offset: number): boolean {
   return zones.some(([start, end]) => offset >= start && offset < end);
 }
@@ -229,6 +267,10 @@ function parseFrontmatter(
   const parsed = info.frontmatter.trim() ? parseYaml(info.frontmatter) : null;
   if (parsed && typeof parsed === 'object') {
     cache.frontmatter = parsed;
+    const frontmatterLinks = extractFrontmatterLinks(parsed);
+    if (frontmatterLinks.length > 0) {
+      cache.frontmatterLinks = frontmatterLinks;
+    }
   } else {
     cache.frontmatter = strictProxy<FrontMatterCache>({});
   }

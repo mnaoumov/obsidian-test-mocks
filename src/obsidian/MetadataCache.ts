@@ -90,11 +90,36 @@ export class MetadataCache extends Events {
     if (!(file instanceof TFileClass) || file.extension !== 'md') {
       return;
     }
-    const vaultFile = file;
-    this.app__.vault.cachedRead(vaultFile).then((content: string) => {
-      const cache = parseMarkdownContent(content);
-      this.cache__.set(vaultFile.path, cache);
-      this.trigger('changed', vaultFile, content, cache);
-    }).catch(console.error);
+    let content: string;
+    try {
+      content = this.app__.vault.readSync__(file);
+    } catch {
+      // The file was removed before indexing; leave the cache untouched.
+      return;
+    }
+    const cache = parseMarkdownContent(content);
+    this.cache__.set(file.path, cache);
+    this.updateLinks(file.path, cache);
+    this.trigger('changed', file, content, cache);
+  }
+
+  private updateLinks(sourcePath: string, cache: CachedMetadataOriginal): void {
+    const resolved: Record<string, number> = {};
+    const unresolved: Record<string, number> = {};
+    const references = [...cache.links ?? [], ...cache.embeds ?? [], ...cache.frontmatterLinks ?? []];
+    for (const reference of references) {
+      const linkpath = reference.link.split('#')[0] ?? '';
+      if (linkpath === '') {
+        continue;
+      }
+      const dest = this.getFirstLinkpathDest(linkpath, sourcePath);
+      if (dest) {
+        resolved[dest.path] = (resolved[dest.path] ?? 0) + 1;
+      } else {
+        unresolved[linkpath] = (unresolved[linkpath] ?? 0) + 1;
+      }
+    }
+    this.resolvedLinks[sourcePath] = resolved;
+    this.unresolvedLinks[sourcePath] = unresolved;
   }
 }

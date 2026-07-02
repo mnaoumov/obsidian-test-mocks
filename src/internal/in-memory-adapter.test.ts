@@ -425,6 +425,21 @@ describe('InMemoryAdapter', () => {
     });
   });
 
+  describe('readSync__()', () => {
+    it('should return file content synchronously', async () => {
+      const adapter = createAdapter();
+      await adapter.write('file.md', 'content');
+
+      expect(adapter.readSync__('file.md')).toBe('content');
+    });
+
+    it('should throw for a non-existent file', () => {
+      const adapter = createAdapter();
+
+      expect(() => adapter.readSync__('missing.md')).toThrow('File not found: missing.md');
+    });
+  });
+
   describe('readBinary()', () => {
     it('should return binary content', async () => {
       const adapter = createAdapter();

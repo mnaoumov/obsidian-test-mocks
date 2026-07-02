@@ -814,4 +814,19 @@ describe('Vault', () => {
       expect(() => vault.createSync__('file.md', 'content')).toThrow('createSync__ is only supported for in-memory adapters');
     });
   });
+
+  describe('readSync__', () => {
+    it('should read a file synchronously', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('sync-read.md', 'hello');
+      expect(app.vault.readSync__(file)).toBe('hello');
+    });
+
+    it('should throw for non-InMemoryAdapter', () => {
+      const fakeAdapter = strictProxy<DataAdapterOriginal>({});
+      const vault = Vault.create2__(fakeAdapter);
+      const file = TFile.create__(vault, 'file.md');
+      expect(() => vault.readSync__(file)).toThrow('readSync__ is only supported for in-memory adapters');
+    });
+  });
 });

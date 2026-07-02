@@ -83,6 +83,35 @@ describe('parseMarkdownContent', () => {
 
       expect(cache.frontmatter?.['key']).toBe('value');
     });
+
+    it('should extract wikilinks from a string frontmatter value', () => {
+      const content = '---\nrelated: "[[Other Note|Alias]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toHaveLength(1);
+      expect(cache.frontmatterLinks?.[0]?.key).toBe('related');
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('Other Note');
+      expect(cache.frontmatterLinks?.[0]?.displayText).toBe('Alias');
+      expect(cache.frontmatterLinks?.[0]?.original).toBe('[[Other Note|Alias]]');
+    });
+
+    it('should extract wikilinks from an array frontmatter value with indexed keys', () => {
+      const content = '---\nrefs:\n  - "[[A]]"\n  - "[[B]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toHaveLength(2);
+      expect(cache.frontmatterLinks?.[0]?.key).toBe('refs.0');
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('A');
+      expect(cache.frontmatterLinks?.[1]?.key).toBe('refs.1');
+      expect(cache.frontmatterLinks?.[1]?.link).toBe('B');
+    });
+
+    it('should not set frontmatterLinks when there are no links', () => {
+      const content = '---\ntitle: Plain\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
   });
 
   describe('headings', () => {

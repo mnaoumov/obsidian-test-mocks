@@ -97,29 +97,18 @@ Closing them would let consumers reach 100% unit coverage on those paths. (Surfa
 converting `obsidian-advanced-note-composer`'s composer/handler suites to the real-bridge pattern — real
 `App.createConfigured__()` + real `obsidian-dev-utils` `ResourceLockComponent`/`VaultTransaction`.)
 
-- **`MetadataCache` indexes body links, but not `resolvedLinks`/`unresolvedLinks` or `frontmatterLinks`.**
-  The mock DOES index: its constructor subscribes to vault `create`/`modify` and runs `parseMarkdownContent`
-  (`src/internal/markdown-parser.ts`), populating `cache__` with `links`, `embeds`, `headings`, `tags`,
-  `sections`, `listItems`, and `frontmatter`; `getFileCache`/`getCache`/`getFirstLinkpathDest` are all
-  functional, so body wikilinks and markdown links ARE resolvable. What is still missing:
-  (a) `resolvedLinks`/`unresolvedLinks` are declared but never populated, so any backlink-graph /
-  `getBacklinksForFile` path stays empty; (b) `frontmatterLinks` is not parsed, so links inside frontmatter
-  properties are invisible; (c) indexing is fire-and-forget async (`cachedRead().then(...)`), so a test must
-  `await vi.waitFor(...)` after a create/modify before reading the cache; (d) `MetadataCache.computeMetadataAsync`
-  is **not modeled** (a strict-proxy miss) — the mock `processFrontMatter` self-parses YAML and does NOT
-  trigger it, but any consumer that calls `computeMetadataAsync` directly throws unless the test stubs
-  `castTo<GenericObject>(app.metadataCache).computeMetadataAsync = vi.fn()`;
-  (e) `MetadataCache.fileCache` is **not modeled** — `obsidian-dev-utils` `getCacheSafe` reads
-  `app.metadataCache.fileCache`, a strict-proxy miss that throws `Property "fileCache" is not mocked`, so
-  `getCacheSafe` (and therefore `editLinks`) cannot run against the mock unless the test stubs
-  `getCacheSafe`'s return; (f) the indexer's write→index step is an **untracked** fire-and-forget
-  `cachedRead(file).then(...)` — it is NOT drained by `waitForAllAsyncOperations` (only a real tick drains
-  it) and it does not re-index synchronously after a write, so a write-then-read-metadata within one
-  synchronous flow (e.g. a merge's insert → fixBacklinks → editLinks) sees stale/missing links.
-  Net for consumers: a plain body `[[wikilink]]` DOES round-trip — `parseMarkdownContent` populates
-  `cache.links` and `getFirstLinkpathDest` resolves it, so `extractLinkFile` works — but the full merge
-  `editLinks` path is blocked by (e) and (f), NOT by `resolvedLinks`/`frontmatterLinks` (empirically
-  confirmed 2026-07-02).
+- **`MetadataCache.computeMetadataAsync` and `.fileCache` are not modeled.** The indexer itself is now
+  faithful and synchronous: its constructor subscribes to vault `create`/`modify` and runs
+  `parseMarkdownContent` (`src/internal/markdown-parser.ts`) via a synchronous `Vault.readSync__`,
+  populating `cache__` with `links`, `embeds`, `headings`, `tags`, `sections`, `listItems`, `frontmatter`,
+  and `frontmatterLinks`, and populating `resolvedLinks`/`unresolvedLinks` from the parsed references — so
+  `getFileCache`/`getCache`/`getFirstLinkpathDest` and the link graph all work with no tick needed. Still
+  missing: (a) `MetadataCache.computeMetadataAsync` — a strict-proxy miss; the mock `processFrontMatter`
+  self-parses YAML and does NOT trigger it, but any consumer that calls `computeMetadataAsync` directly
+  throws unless the test stubs `castTo<GenericObject>(app.metadataCache).computeMetadataAsync = vi.fn()`;
+  (b) `MetadataCache.fileCache` — `obsidian-dev-utils` `getCacheSafe` reads `app.metadataCache.fileCache`,
+  a strict-proxy miss that throws `Property "fileCache" is not mocked`, so `getCacheSafe` cannot run against
+  the mock unless the test stubs its return.
 - **Adapter-level moves do not sync the in-memory vault tree.** When code moves/deletes a file through
   `app.vault.adapter` (as `VaultTransaction` does for its dot-prefixed staging), the adapter reflects it
   but `vault.getAbstractFileByPath`/`getFileByPath` stay stale. Consumers must assert deletions/moves via

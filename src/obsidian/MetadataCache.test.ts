@@ -3,8 +3,7 @@ import type { MetadataCache as MetadataCacheOriginal } from 'obsidian';
 import {
   describe,
   expect,
-  it,
-  vi
+  it
 } from 'vitest';
 
 import { App } from './App.ts';
@@ -49,6 +48,14 @@ describe('MetadataCache', () => {
 
       const cache = app.metadataCache.getFileCache(file);
       expect(cache).toBeNull();
+    });
+
+    it('should populate cache synchronously (no tick needed)', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('sync.md', '# Sync');
+
+      const cache = app.metadataCache.getFileCache(file);
+      expect(cache?.headings?.[0]?.heading).toBe('Sync');
     });
   });
 
@@ -234,24 +241,68 @@ describe('MetadataCache', () => {
       expect(app.metadataCache.getCache('fake.md')).toBeNull();
     });
 
-    it('should catch error when file is removed before parsing', async () => {
+    it('should skip indexing when the file was removed before parsing', async () => {
       const app = App.createConfigured__();
       const file = await app.vault.create('will-remove.md', '# Title');
-      await flushMicrotasks();
 
-      // Remove the file from the adapter so cachedRead will fail
+      // Remove the file from the adapter so a synchronous read fails.
       await app.vault.adapter.remove(file.path);
 
-      // Spy on console.error to verify the catch path is hit
-      // eslint-disable-next-line @typescript-eslint/no-empty-function -- Suppressing console.error output during test.
-      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      // Re-triggering modify must not throw; indexing is skipped gracefully.
+      expect(() => {
+        app.vault.trigger('modify', file);
+      }).not.toThrow();
+    });
+  });
 
-      // Trigger modify event which calls parseFileMetadata
-      app.vault.trigger('modify', file);
-      await flushMicrotasks();
+  describe('resolvedLinks / unresolvedLinks', () => {
+    it('should populate resolvedLinks for a resolvable wikilink', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('target.md', '# Target');
+      app.vault.createSync__('source.md', 'See [[target]]');
 
-      expect(errorSpy).toHaveBeenCalled();
-      errorSpy.mockRestore();
+      expect(app.metadataCache.resolvedLinks['source.md']).toEqual({ 'target.md': 1 });
+      expect(app.metadataCache.unresolvedLinks['source.md']).toEqual({});
+    });
+
+    it('should populate unresolvedLinks for a missing target', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('source.md', 'See [[missing]]');
+
+      expect(app.metadataCache.resolvedLinks['source.md']).toEqual({});
+      expect(app.metadataCache.unresolvedLinks['source.md']).toEqual({ missing: 1 });
+    });
+
+    it('should count duplicate links', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('target.md', '# Target');
+      app.vault.createSync__('source.md', '[[target]] and [[target]] again');
+
+      expect(app.metadataCache.resolvedLinks['source.md']).toEqual({ 'target.md': 2 });
+    });
+
+    it('should ignore pure heading links', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('source.md', 'Jump to [[#Section]]');
+
+      expect(app.metadataCache.resolvedLinks['source.md']).toEqual({});
+      expect(app.metadataCache.unresolvedLinks['source.md']).toEqual({});
+    });
+
+    it('should resolve embeds', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('img.md', '# Img');
+      app.vault.createSync__('source.md', '![[img]]');
+
+      expect(app.metadataCache.resolvedLinks['source.md']).toEqual({ 'img.md': 1 });
+    });
+
+    it('should resolve frontmatter links', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('target.md', '# Target');
+      app.vault.createSync__('source.md', '---\nrel: "[[target]]"\n---\nBody');
+
+      expect(app.metadataCache.resolvedLinks['source.md']).toEqual({ 'target.md': 1 });
     });
   });
 

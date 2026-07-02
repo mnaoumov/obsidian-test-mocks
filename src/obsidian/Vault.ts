@@ -225,6 +225,13 @@ export class Vault extends Events {
     return this.adapter.readBinary(file.path);
   }
 
+  public readSync__(file: TFile): string {
+    if (!(this.adapter instanceof InMemoryAdapter)) {
+      throw new Error('readSync__ is only supported for in-memory adapters');
+    }
+    return this.adapter.readSync__(file.path);
+  }
+
   public async rename(file: TAbstractFile, newPath: string): Promise<void> {
     const oldPath = file.path;
     await this.adapter.rename(oldPath, newPath);

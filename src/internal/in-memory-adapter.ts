@@ -187,6 +187,14 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     return content;
   }
 
+  public readSync__(normalizedPath: string): string {
+    const content = this.textFiles.get(normalizedPath);
+    if (content === undefined) {
+      throw new Error(`File not found: ${normalizedPath}`);
+    }
+    return content;
+  }
+
   public async remove(normalizedPath: string): Promise<void> {
     await noopAsync();
     this.textFiles.delete(normalizedPath);
