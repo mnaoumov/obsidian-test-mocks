@@ -86,3 +86,38 @@ The declarations we author are still fully validated. `scripts/build-compile-typ
 ## Code Conventions
 
 - Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`) follow the global kebab-case convention.
+
+## Known modeling gaps (found consuming test-mocks)
+
+These are places where the mock diverges from real Obsidian behavior enough that a consumer plugin could
+not unit-test a code path against it and had to either stub the API or fall back to integration tests.
+Closing them would let consumers reach 100% unit coverage on those paths. (Surfaced 2026-07-02 while
+converting `obsidian-advanced-note-composer`'s composer/handler suites to the real-bridge pattern — real
+`App.createConfigured__()` + real `obsidian-dev-utils` `ResourceLockComponent`/`VaultTransaction`.)
+
+- **`Vault.getAvailablePath` is a non-functional stub** — it echoes its input (`` `${basePath}.${ext}` ``)
+  with no existence check, so it never de-duplicates. Real Obsidian appends `" N"` until the path is free.
+  Any code that relies on it to pick a free path (e.g. `VaultTransaction` staging, a swap's temp-path
+  shuffle) breaks; consumers must `vi.spyOn(app.vault, 'getAvailablePath', …)` with a faithful
+  existence-checking implementation. Modeling this properly would remove that per-test stub.
+- **`Vault.rename` does not cascade descendant paths on a FOLDER rename.** Real Obsidian, when a folder is
+  renamed/moved, updates the `.path` of every descendant `TFile`/`TFolder`; the mock only updates the
+  renamed node itself, so descendants keep their old paths and subsequent lookups throw "file not found".
+  This makes folder **moves/swaps with children** untestable — a nested folder-swap unit test throws
+  instead of exercising the real branch (advanced-note-composer had to `/* v8 ignore */` the nested-swap
+  lines and cover them via integration instead).
+- **`Vault.createFolder('a/b')` does not create/link intermediate ancestors.** It registers only the leaf,
+  so `folder.parent` is `undefined` and `join(folder.parent?.path ?? '', name)` resolves to the vault root.
+  Consumers must create each level explicitly (`createFolder('a')` then `createFolder('a/b')`) and cannot
+  rely on `.parent` chains.
+- **`MetadataCache` has no indexer.** `getFileCache`/link data is empty and `getFirstLinkpathDest`-style
+  resolution returns nothing, so `obsidian-dev-utils` `editLinks`/`extractLinkFile` find no links — any
+  backlink/link-rewrite path is untestable against the mock (needs real Obsidian or heavy return-value
+  stubbing of the whole resolution chain). Also `MetadataCache.computeMetadataAsync` is **not modeled** —
+  it is a strict-proxy miss, so any op that triggers a recompute (e.g. `processFrontMatter`) throws unless
+  the test stubs `castTo<GenericObject>(app.metadataCache).computeMetadataAsync = vi.fn()`.
+- **Adapter-level moves do not sync the in-memory vault tree.** When code moves/deletes a file through
+  `app.vault.adapter` (as `VaultTransaction` does for its dot-prefixed staging), the adapter reflects it
+  but `vault.getAbstractFileByPath`/`getFileByPath` stay stale. Consumers must assert deletions/moves via
+  `app.vault.adapter.exists`/`read`, not the in-memory tree. (This mirrors real Obsidian's async watcher
+  but with no eventual sync, so tests can't wait it out.)
