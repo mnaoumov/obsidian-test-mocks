@@ -541,6 +541,36 @@ describe('Vault', () => {
       expect(app.vault.getFolderByPath('old-dir')).toBeNull();
       expect(app.vault.getFolderByPath('new-dir')).not.toBeNull();
     });
+
+    it('should cascade descendant paths when a folder is renamed', async () => {
+      const app = App.createConfigured__({
+        files: {
+          'old-dir/child.md': 'child-content',
+          'old-dir/sub/deep.md': 'deep-content'
+        }
+      });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('old-dir'));
+      const child = ensureNonNullable(app.vault.getFileByPath('old-dir/child.md'));
+      const sub = ensureNonNullable(app.vault.getFolderByPath('old-dir/sub'));
+      const deep = ensureNonNullable(app.vault.getFileByPath('old-dir/sub/deep.md'));
+
+      await app.vault.rename(folder, 'new-dir');
+
+      // Same objects, updated paths, reachable at the new location.
+      expect(app.vault.getFileByPath('new-dir/child.md')).toBe(child);
+      expect(child.path).toBe('new-dir/child.md');
+      expect(app.vault.getFolderByPath('new-dir/sub')).toBe(sub);
+      expect(app.vault.getFileByPath('new-dir/sub/deep.md')).toBe(deep);
+      expect(deep.path).toBe('new-dir/sub/deep.md');
+
+      // Old descendant paths are gone.
+      expect(app.vault.getFileByPath('old-dir/child.md')).toBeNull();
+      expect(app.vault.getFileByPath('old-dir/sub/deep.md')).toBeNull();
+
+      // Tree links are preserved.
+      expect(deep.parent).toBe(sub);
+      expect(sub.parent).toBe(folder);
+    });
   });
 
   describe('create() at root', () => {

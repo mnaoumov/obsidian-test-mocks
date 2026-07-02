@@ -97,12 +97,6 @@ Closing them would let consumers reach 100% unit coverage on those paths. (Surfa
 converting `obsidian-advanced-note-composer`'s composer/handler suites to the real-bridge pattern — real
 `App.createConfigured__()` + real `obsidian-dev-utils` `ResourceLockComponent`/`VaultTransaction`.)
 
-- **`Vault.rename` does not cascade descendant paths on a FOLDER rename.** Real Obsidian, when a folder is
-  renamed/moved, updates the `.path` of every descendant `TFile`/`TFolder`; the mock only updates the
-  renamed node itself, so descendants keep their old paths and subsequent lookups throw "file not found".
-  This makes folder **moves/swaps with children** untestable — a nested folder-swap unit test throws
-  instead of exercising the real branch (advanced-note-composer had to `/* v8 ignore */` the nested-swap
-  lines and cover them via integration instead).
 - **`Vault.createFolder('a/b')` does not create/link intermediate ancestors.** It registers only the leaf,
   so `folder.parent` is `undefined` and `join(folder.parent?.path ?? '', name)` resolves to the vault root.
   Consumers must create each level explicitly (`createFolder('a')` then `createFolder('a/b')`) and cannot

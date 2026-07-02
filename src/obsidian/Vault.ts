@@ -235,6 +235,14 @@ export class Vault extends Events {
     const oldPath = file.path;
     await this.adapter.rename(oldPath, newPath);
 
+    // Capture descendants before mutating: a folder rename must cascade their paths.
+    const descendants: TAbstractFile[] = [];
+    if (file instanceof TFolder) {
+      Vault.recurseChildren(file, (child) => {
+        descendants.push(child);
+      });
+    }
+
     // Remove old entry from maps and parent's children
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
     delete this.fileMap__[oldPath];
@@ -259,6 +267,19 @@ export class Vault extends Events {
 
     // Re-register with new path and attach to new parent
     this.setVaultAbstractFile__(newPath, file);
+
+    // Cascade descendant paths: their tree links are unchanged, only the path prefix moves.
+    for (const descendant of descendants) {
+      const oldDescendantPath = descendant.path;
+      const newDescendantPath = newPath + oldDescendantPath.slice(oldPath.length);
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
+      delete this.fileMap__[oldDescendantPath];
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
+      delete this.fileMapLowerCase[oldDescendantPath.toLowerCase()];
+      descendant.path = newDescendantPath;
+      this.fileMap__[newDescendantPath] = descendant;
+      this.fileMapLowerCase[newDescendantPath.toLowerCase()] = descendant;
+    }
 
     this.trigger('rename', file, oldPath);
   }
