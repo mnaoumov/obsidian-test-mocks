@@ -79,6 +79,31 @@ describe('vault-bridge', () => {
       const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
       expect(fn.call(app.vault, 'note', '')).toBe('note');
     });
+
+    it('should append " N" when the path is taken', () => {
+      bridgeVault();
+      const app = App.createConfigured__();
+      app.vault.createSync__('note.md', 'content');
+      const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
+      expect(fn.call(app.vault, 'note', 'md')).toBe('note 1.md');
+    });
+
+    it('should increment until a free path is found', () => {
+      bridgeVault();
+      const app = App.createConfigured__();
+      app.vault.createSync__('note.md', 'content');
+      app.vault.createSync__('note 1.md', 'content');
+      const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
+      expect(fn.call(app.vault, 'note', 'md')).toBe('note 2.md');
+    });
+
+    it('should de-duplicate when extension is empty', () => {
+      bridgeVault();
+      const app = App.createConfigured__();
+      app.vault.createSync__('note', 'content');
+      const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
+      expect(fn.call(app.vault, 'note', '')).toBe('note 1');
+    });
   });
 
   it('should be idempotent', () => {

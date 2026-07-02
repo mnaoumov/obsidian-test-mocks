@@ -32,10 +32,14 @@ export function bridgeVault(): void {
 
   defineMissingProperty(Vault.prototype, GET_AVAILABLE_PATH_NAME, {
     value(this: Vault, basePath: string, extension: string): string {
-      if (extension) {
-        return `${basePath}.${extension}`;
+      const suffix = extension ? `.${extension}` : '';
+      let candidate = `${basePath}${suffix}`;
+      let index = 0;
+      while (this.getAbstractFileByPath(candidate)) {
+        index++;
+        candidate = `${basePath} ${String(index)}${suffix}`;
       }
-      return basePath;
+      return candidate;
     },
     writable: true
   });
