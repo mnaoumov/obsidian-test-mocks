@@ -3,6 +3,7 @@ import type {
   MetadataCache as MetadataCacheOriginal
 } from 'obsidian';
 
+import type { FileCacheEntry } from '../internal/types.ts';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
@@ -16,6 +17,8 @@ import { TFile as TFileClass } from './TFile.ts';
 export class MetadataCache extends Events {
   public app__: App;
   public cache__ = new Map<string, CachedMetadataOriginal>();
+  public fileCache__: Record<string, FileCacheEntry> = {};
+  public metadataByHash__: Record<string, CachedMetadataOriginal> = {};
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
@@ -99,6 +102,9 @@ export class MetadataCache extends Events {
     }
     const cache = parseMarkdownContent(content);
     this.cache__.set(file.path, cache);
+    const hash = hashContent(content);
+    this.fileCache__[file.path] = { hash, mtime: file.stat.mtime, size: file.stat.size };
+    this.metadataByHash__[hash] = cache;
     this.updateLinks(file.path, cache);
     this.trigger('changed', file, content, cache);
   }
@@ -108,7 +114,8 @@ export class MetadataCache extends Events {
     const unresolved: Record<string, number> = {};
     const references = [...cache.links ?? [], ...cache.embeds ?? [], ...cache.frontmatterLinks ?? []];
     for (const reference of references) {
-      const linkpath = reference.link.split('#')[0] ?? '';
+      const hashIndex = reference.link.indexOf('#');
+      const linkpath = hashIndex === -1 ? reference.link : reference.link.slice(0, hashIndex);
       if (linkpath === '') {
         continue;
       }
@@ -122,4 +129,21 @@ export class MetadataCache extends Events {
     this.resolvedLinks[sourcePath] = resolved;
     this.unresolvedLinks[sourcePath] = unresolved;
   }
+}
+
+const HASH_INITIAL = 5381;
+const HASH_MULTIPLIER = 33;
+const HASH_MODULUS = 2147483647;
+const HEX_RADIX = 16;
+
+/**
+ * Deterministic djb2-style hash of file content, used to key `metadataByHash__`.
+ * Uses modular arithmetic (no bitwise ops) to stay within a safe integer.
+ */
+function hashContent(content: string): string {
+  let hash = HASH_INITIAL;
+  for (let i = 0; i < content.length; i++) {
+    hash = (hash * HASH_MULTIPLIER + content.charCodeAt(i)) % HASH_MODULUS;
+  }
+  return hash.toString(HEX_RADIX);
 }

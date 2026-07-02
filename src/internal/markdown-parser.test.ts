@@ -112,6 +112,13 @@ describe('parseMarkdownContent', () => {
 
       expect(cache.frontmatterLinks).toBeUndefined();
     });
+
+    it('should ignore non-string frontmatter values and non-string array items', () => {
+      const content = '---\ncount: 5\nnums:\n  - 1\n  - 2\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
   });
 
   describe('headings', () => {

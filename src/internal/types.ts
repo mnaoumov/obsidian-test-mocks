@@ -30,6 +30,12 @@ export interface EventsEntry {
   name: string;
 }
 
+export interface FileCacheEntry {
+  hash: string;
+  mtime: number;
+  size: number;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Matches obsidian.d.ts return type pattern.
 export type MaybeReturn<T> = T | void;
 

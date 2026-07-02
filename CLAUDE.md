@@ -97,18 +97,6 @@ Closing them would let consumers reach 100% unit coverage on those paths. (Surfa
 converting `obsidian-advanced-note-composer`'s composer/handler suites to the real-bridge pattern — real
 `App.createConfigured__()` + real `obsidian-dev-utils` `ResourceLockComponent`/`VaultTransaction`.)
 
-- **`MetadataCache.computeMetadataAsync` and `.fileCache` are not modeled.** The indexer itself is now
-  faithful and synchronous: its constructor subscribes to vault `create`/`modify` and runs
-  `parseMarkdownContent` (`src/internal/markdown-parser.ts`) via a synchronous `Vault.readSync__`,
-  populating `cache__` with `links`, `embeds`, `headings`, `tags`, `sections`, `listItems`, `frontmatter`,
-  and `frontmatterLinks`, and populating `resolvedLinks`/`unresolvedLinks` from the parsed references — so
-  `getFileCache`/`getCache`/`getFirstLinkpathDest` and the link graph all work with no tick needed. Still
-  missing: (a) `MetadataCache.computeMetadataAsync` — a strict-proxy miss; the mock `processFrontMatter`
-  self-parses YAML and does NOT trigger it, but any consumer that calls `computeMetadataAsync` directly
-  throws unless the test stubs `castTo<GenericObject>(app.metadataCache).computeMetadataAsync = vi.fn()`;
-  (b) `MetadataCache.fileCache` — `obsidian-dev-utils` `getCacheSafe` reads `app.metadataCache.fileCache`,
-  a strict-proxy miss that throws `Property "fileCache" is not mocked`, so `getCacheSafe` cannot run against
-  the mock unless the test stubs its return.
 - **Adapter-level moves do not sync the in-memory vault tree.** When code moves/deletes a file through
   `app.vault.adapter` (as `VaultTransaction` does for its dot-prefixed staging), the adapter reflects it
   but `vault.getAbstractFileByPath`/`getFileByPath` stay stale. Consumers must assert deletions/moves via
