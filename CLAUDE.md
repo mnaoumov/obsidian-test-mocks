@@ -97,10 +97,6 @@ Closing them would let consumers reach 100% unit coverage on those paths. (Surfa
 converting `obsidian-advanced-note-composer`'s composer/handler suites to the real-bridge pattern — real
 `App.createConfigured__()` + real `obsidian-dev-utils` `ResourceLockComponent`/`VaultTransaction`.)
 
-- **`Vault.createFolder('a/b')` does not create/link intermediate ancestors.** It registers only the leaf,
-  so `folder.parent` is `undefined` and `join(folder.parent?.path ?? '', name)` resolves to the vault root.
-  Consumers must create each level explicitly (`createFolder('a')` then `createFolder('a/b')`) and cannot
-  rely on `.parent` chains.
 - **`MetadataCache` indexes body links, but not `resolvedLinks`/`unresolvedLinks` or `frontmatterLinks`.**
   The mock DOES index: its constructor subscribes to vault `create`/`modify` and runs `parseMarkdownContent`
   (`src/internal/markdown-parser.ts`), populating `cache__` with `links`, `embeds`, `headings`, `tags`,

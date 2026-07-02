@@ -202,6 +202,28 @@ describe('Vault', () => {
       const folder = await app.vault.createFolder('new-folder');
       expect(handler).toHaveBeenCalledWith(folder);
     });
+
+    it('should create and link intermediate ancestors', async () => {
+      const app = App.createConfigured__();
+      const leaf = await app.vault.createFolder('a/b/c');
+
+      const a = app.vault.getFolderByPath('a');
+      const b = app.vault.getFolderByPath('a/b');
+      expect(a).not.toBeNull();
+      expect(b).not.toBeNull();
+      expect(leaf.path).toBe('a/b/c');
+      expect(leaf.parent).toBe(b);
+      expect(b?.parent).toBe(a);
+      expect(a?.parent).toBe(app.vault.getRoot());
+    });
+
+    it('should reuse an existing ancestor instead of duplicating it', async () => {
+      const app = App.createConfigured__();
+      const a = await app.vault.createFolder('a');
+      const leaf = await app.vault.createFolder('a/b');
+      expect(leaf.parent).toBe(a);
+      expect(app.vault.getFolderByPath('a')).toBe(a);
+    });
   });
 
   describe('delete()', () => {

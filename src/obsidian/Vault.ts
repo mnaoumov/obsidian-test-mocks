@@ -97,10 +97,7 @@ export class Vault extends Events {
 
   public async createFolder(path: string): Promise<TFolder> {
     await this.adapter.mkdir(path);
-    const folder = TFolder.create__(this, path);
-    this.setVaultAbstractFile__(path, folder);
-    this.trigger('create', folder);
-    return folder;
+    return this.registerFolderTree(path);
   }
 
   public createFolderSync__(path: string): TFolder {
@@ -108,10 +105,7 @@ export class Vault extends Events {
       throw new Error('createFolderSync__ is only supported for in-memory adapters');
     }
     this.adapter.mkdirSync__(path);
-    const folder = TFolder.create__(this, path);
-    this.setVaultAbstractFile__(path, folder);
-    this.trigger('create', folder);
-    return folder;
+    return this.registerFolderTree(path);
   }
 
   public createSync__(path: string, content: string): TFile {
@@ -307,5 +301,23 @@ export class Vault extends Events {
     }
     this.deleteVaultAbstractFile__(file.path);
     this.trigger('delete', file);
+  }
+
+  private registerFolderTree(path: string): TFolder {
+    const segments = path.split('/');
+    let cumulative = '';
+    let folder = this.getRoot();
+    for (const segment of segments) {
+      cumulative = cumulative === '' ? segment : `${cumulative}/${segment}`;
+      const existing = this.fileMap__[cumulative];
+      if (existing instanceof TFolder) {
+        folder = existing;
+        continue;
+      }
+      folder = TFolder.create__(this, cumulative);
+      this.setVaultAbstractFile__(cumulative, folder);
+      this.trigger('create', folder);
+    }
+    return folder;
   }
 }
