@@ -97,8 +97,11 @@ Closing them would let consumers reach 100% unit coverage on those paths. (Surfa
 converting `obsidian-advanced-note-composer`'s composer/handler suites to the real-bridge pattern — real
 `App.createConfigured__()` + real `obsidian-dev-utils` `ResourceLockComponent`/`VaultTransaction`.)
 
-- **`Vault.getAvailablePath` is a non-functional stub** — it echoes its input (`` `${basePath}.${ext}` ``)
-  with no existence check, so it never de-duplicates. Real Obsidian appends `" N"` until the path is free.
+- **`Vault.getAvailablePath` is a non-functional stub** — it unconditionally returns
+  `` `${basePath}.${extension}` `` (or bare `basePath` when `extension` is empty), with no existence check,
+  so it never de-duplicates (`src/obsidian-typings/bridges/vault-bridge.ts`). For the collision-free case
+  that string is already the correct answer; the defect is purely the missing existence check.
+  Real Obsidian appends `" N"` until the path is free.
   Any code that relies on it to pick a free path (e.g. `VaultTransaction` staging, a swap's temp-path
   shuffle) breaks; consumers must `vi.spyOn(app.vault, 'getAvailablePath', …)` with a faithful
   existence-checking implementation. Modeling this properly would remove that per-test stub.
