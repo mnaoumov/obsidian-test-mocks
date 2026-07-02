@@ -35,7 +35,7 @@ L1. **Only expose what `obsidian.d.ts` defines.** The package must mock exactly 
 
 L2. **Meaningful implementations first.** Mocks should have real in-memory behavior (state tracking, callback invocation, data storage). Only use `noop()` (sync) or `await noopAsync()` (async) from `src/internal/noop.ts` for methods whose bodies would otherwise be completely empty (pure UI operations with no meaningful implementation, e.g., rendering, focus). If a method already has any logic in its body, do not add `noop()` or `await noopAsync()` — they are only for otherwise-empty methods.
 
-L3. **No `obsidian-typings` imports in `src/obsidian/`.** The `obsidian-typings` package uses `declare module 'obsidian'` augmentation which activates globally on import. To avoid side effects, all needed type shapes are inlined in `src/internal/Types.ts`. The `src/obsidian-typings/` directory is exempt from this rule — it may import obsidian-typings types for validation (via `type-validation.test.ts`, excluded from the main tsconfig).
+L3. **No `obsidian-typings` imports in `src/obsidian/`.** The `obsidian-typings` package uses `declare module 'obsidian'` augmentation which activates globally on import. To avoid side effects, all needed type shapes are inlined in `src/internal/types.ts`. The `src/obsidian-typings/` directory is exempt from this rule — it may import obsidian-typings types for validation (via `type-validation.test.ts`, excluded from the main tsconfig).
 
 L4. **`__` suffix for mock-only public members.** Any public member (field, method, static) that does not exist in `obsidian.d.ts` must end with `__` to signal it is mock-only. This includes factory methods (`create__()`), type bridges (`asOriginalType__()`), test helpers (`simulateClick__()`), and internal tracking fields (`_items__`, `_cache__`). Members that exist in `obsidian.d.ts` must NOT have the `__` suffix.
 
@@ -43,11 +43,11 @@ L5. **`create__()` factory pattern.** All mock classes have a static `create__()
 
 L6. **`castTo<T>()` for type bridging** (intentionally allows `as unknown as T` casts). When mock types need to satisfy obsidian's type system (e.g., `EventRef.e` expects `obsidian.Events`), use `castTo<ObsidianType>(this)` from `src/internal/castTo.ts`. Every mock class exposes `asOriginalType__()` (instance method, mock → real type) and `fromOriginalType__()` (static method, real → mock type). The import alias convention is `XxxOriginal` (e.g., `import type { App as AppOriginal } from 'obsidian'`). When a subclass `fromOriginalType__()` has an incompatible static signature with the base class (e.g., generic → non-generic), use numbered variants (`fromOriginalType2__()`, `fromOriginalType3__()`, etc.) following the same convention as L5.
 
-L7. **`DataAdapter` is an interface.** In `obsidian.d.ts`, `DataAdapter` is an interface, not a class. `FileSystemAdapter` and `CapacitorAdapter` implement it. The shared in-memory filesystem lives in `src/internal/InMemoryAdapter.ts`.
+L7. **`DataAdapter` is an interface.** In `obsidian.d.ts`, `DataAdapter` is an interface, not a class. `FileSystemAdapter` and `CapacitorAdapter` implement it. The shared in-memory filesystem lives in `src/internal/in-memory-adapter.ts`.
 
 L8. **Private fields that shadow obsidian-typings.** When `obsidian-typings` declares a field as public (e.g., `Events._`) but `obsidian.d.ts` does not, our mock keeps it private and uses `castTo` where needed for type compatibility.
 
-L9. **`strictMock` constructors with `constructor__()` hooks.** Every mock class (including abstract classes) must use `strictMock(this)` in its constructor and provide a spyable `constructorN__()` method. The pattern is: `constructor(args) { /* init */ const self = strictMock(this); self.constructorN__(args); return self; }` with a corresponding `public constructorN__(_args): void { noop(); }`. The `strictMock()` call prevents access to unmocked properties. The `constructorN__()` method enables spying on construction via `vi.spyOn(Class.prototype, 'constructorN__')`. Numbering follows inheritance depth: a root class uses `constructor__()`, its child uses `constructor2__()`, grandchild `constructor3__()`, etc. — each class in the chain gets the next available number.
+L9. **`strictProxy` constructors with `constructor__()` hooks.** Every mock class (including abstract classes) must use `strictProxy(this)` in its constructor and provide a spyable `constructorN__()` method. The pattern is: `constructor(args) { /* init */ const self = strictProxy(this); self.constructorN__(args); return self; }` with a corresponding `public constructorN__(_args): void { noop(); }`. The `strictProxy()` call prevents access to unmocked properties. The `constructorN__()` method enables spying on construction via `vi.spyOn(Class.prototype, 'constructorN__')`. Numbering follows inheritance depth: a root class uses `constructor__()`, its child uses `constructor2__()`, grandchild `constructor3__()`, etc. — each class in the chain gets the next available number.
 
 L10. **Never `override` a `__` method — always use numbered variants.** Any mock-only method ending with `__` must never use the `override` keyword. Instead, each subclass increments the numeric suffix: `methodName__()` → `methodName2__()` → `methodName3__()`, etc. This applies to all `__` methods: `create__`, `constructor__`, `asOriginalType__`, `fromOriginalType__`, and any future mock-only methods. The inherited base method remains callable at any level, returning the parent type.
 
@@ -59,6 +59,8 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `delegated-event-registry.ts` — WeakMap-based on/off event delegation shared by `Document.prototype` and `HTMLElement.prototype`
 - `icon-registry.ts` — shared `Map<string, string>` for icon storage (addIcon, removeIcon, getIcon, etc.)
 - `in-memory-adapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
+- `noop.ts` — `noop()` / `noopAsync()` helpers for otherwise-empty method bodies (see L2)
+- `strict-proxy.ts` — `strictProxy()` mock wrapper that throws on unmocked property access (see L9)
 - `types.ts` — inlined type shapes (from obsidian-typings) to avoid augmentation side effects
 - `type-guards.ts` — `assert()`, `ensureNonNullable()`, and similar guards
 
@@ -85,7 +87,7 @@ The declarations we author are still fully validated. `scripts/build-compile-typ
 
 ## Code Conventions
 
-- Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`) follow the global kebab-case convention.
+- Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`) follow the global kebab-case convention. Exception: `src/internal/castTo.ts` is camelCase to mirror its exported `castTo()` function.
 
 ## Known modeling gaps (found consuming test-mocks)
 
@@ -110,12 +112,19 @@ converting `obsidian-advanced-note-composer`'s composer/handler suites to the re
   so `folder.parent` is `undefined` and `join(folder.parent?.path ?? '', name)` resolves to the vault root.
   Consumers must create each level explicitly (`createFolder('a')` then `createFolder('a/b')`) and cannot
   rely on `.parent` chains.
-- **`MetadataCache` has no indexer.** `getFileCache`/link data is empty and `getFirstLinkpathDest`-style
-  resolution returns nothing, so `obsidian-dev-utils` `editLinks`/`extractLinkFile` find no links — any
-  backlink/link-rewrite path is untestable against the mock (needs real Obsidian or heavy return-value
-  stubbing of the whole resolution chain). Also `MetadataCache.computeMetadataAsync` is **not modeled** —
-  it is a strict-proxy miss, so any op that triggers a recompute (e.g. `processFrontMatter`) throws unless
-  the test stubs `castTo<GenericObject>(app.metadataCache).computeMetadataAsync = vi.fn()`.
+- **`MetadataCache` indexes body links, but not `resolvedLinks`/`unresolvedLinks` or `frontmatterLinks`.**
+  The mock DOES index: its constructor subscribes to vault `create`/`modify` and runs `parseMarkdownContent`
+  (`src/internal/markdown-parser.ts`), populating `cache__` with `links`, `embeds`, `headings`, `tags`,
+  `sections`, `listItems`, and `frontmatter`; `getFileCache`/`getCache`/`getFirstLinkpathDest` are all
+  functional, so body wikilinks and markdown links ARE resolvable. What is still missing:
+  (a) `resolvedLinks`/`unresolvedLinks` are declared but never populated, so any backlink-graph /
+  `getBacklinksForFile` path stays empty; (b) `frontmatterLinks` is not parsed, so links inside frontmatter
+  properties are invisible; (c) indexing is fire-and-forget async (`cachedRead().then(...)`), so a test must
+  `await vi.waitFor(...)` after a create/modify before reading the cache; (d) `MetadataCache.computeMetadataAsync`
+  is **not modeled** (a strict-proxy miss) — the mock `processFrontMatter` self-parses YAML and does NOT
+  trigger it, but any consumer that calls `computeMetadataAsync` directly throws unless the test stubs
+  `castTo<GenericObject>(app.metadataCache).computeMetadataAsync = vi.fn()`. Whether `obsidian-dev-utils`
+  `editLinks`/`extractLinkFile` resolve end-to-end against this indexer needs re-confirmation.
 - **Adapter-level moves do not sync the in-memory vault tree.** When code moves/deletes a file through
   `app.vault.adapter` (as `VaultTransaction` does for its dot-prefixed staging), the adapter reflects it
   but `vault.getAbstractFileByPath`/`getFileByPath` stay stale. Consumers must assert deletions/moves via
