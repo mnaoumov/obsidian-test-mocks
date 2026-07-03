@@ -5,6 +5,8 @@ import type {
   Stat as StatOriginal
 } from 'obsidian';
 
+import type { AdapterListing } from './types.ts';
+
 import {
   noop,
   noopAsync
@@ -148,6 +150,12 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       }
     }
 
+    return { files, folders };
+  }
+
+  public listAll__(): AdapterListing {
+    const files = [...this.textFiles.keys(), ...this.binaryFiles.keys()];
+    const folders = [...this.directories].filter((dir) => dir !== '');
     return { files, folders };
   }
 

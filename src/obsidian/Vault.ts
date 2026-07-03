@@ -232,6 +232,43 @@ export class Vault extends Events {
     return this.adapter.readSync__(file.path);
   }
 
+  public reconcile__(): void {
+    if (!(this.adapter instanceof InMemoryAdapter)) {
+      throw new Error('reconcile__ is only supported for in-memory adapters');
+    }
+    const { files, folders } = this.adapter.listAll__();
+    const keep = new Set<string>(['/']);
+
+    // Register folders shallowest-first so ancestors exist before their children.
+    const sortedFolders = folders
+      .filter((path) => !isDotPath(path))
+      .sort((a, b) => a.split('/').length - b.split('/').length);
+    for (const folderPath of sortedFolders) {
+      keep.add(folderPath);
+      if (!(this.fileMap__[folderPath] instanceof TFolder)) {
+        this.registerFolderTree(folderPath);
+      }
+    }
+
+    for (const filePath of files.filter((path) => !isDotPath(path))) {
+      keep.add(filePath);
+      if (!(this.fileMap__[filePath] instanceof TFile)) {
+        const file = TFile.create__(this, filePath);
+        this.setVaultAbstractFile__(filePath, file);
+        this.trigger('create', file);
+      }
+    }
+
+    // Remove tree entries the adapter no longer has.
+    for (const [path, existing] of Object.entries(this.fileMap__)) {
+      if (keep.has(path) || isDotPath(path)) {
+        continue;
+      }
+      this.deleteVaultAbstractFile__(path);
+      this.trigger('delete', existing);
+    }
+  }
+
   public async rename(file: TAbstractFile, newPath: string): Promise<void> {
     const oldPath = file.path;
     await this.adapter.rename(oldPath, newPath);
@@ -327,4 +364,12 @@ export class Vault extends Events {
     }
     return folder;
   }
+}
+
+/**
+ * Dot-prefixed paths (e.g. the `.obsidian` config dir) are not tracked in the
+ * vault tree, mirroring how real Obsidian excludes dotfiles/dotfolders.
+ */
+function isDotPath(path: string): boolean {
+  return path.split('/').some((segment) => segment.startsWith('.'));
 }

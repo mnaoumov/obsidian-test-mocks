@@ -1,5 +1,10 @@
 import type { Events } from 'obsidian';
 
+export interface AdapterListing {
+  files: string[];
+  folders: string[];
+}
+
 export interface AjaxOptions {
   readonly data?: ArrayBuffer | object | string;
   readonly error?: (error: unknown, req: XMLHttpRequest) => unknown;

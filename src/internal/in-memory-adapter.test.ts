@@ -375,6 +375,22 @@ describe('InMemoryAdapter', () => {
     });
   });
 
+  describe('listAll__()', () => {
+    it('should list all files and folders, excluding the root', async () => {
+      const adapter = createAdapter();
+      await adapter.write('a/b.md', 'x');
+      await adapter.writeBinary('c.bin', Uint8Array.of(1).buffer);
+      await adapter.mkdir('d');
+
+      const { files, folders } = adapter.listAll__();
+      expect(files).toContain('a/b.md');
+      expect(files).toContain('c.bin');
+      expect(folders).toContain('a');
+      expect(folders).toContain('d');
+      expect(folders).not.toContain('');
+    });
+  });
+
   describe('mkdir()', () => {
     it('should create a directory', async () => {
       const adapter = createAdapter();

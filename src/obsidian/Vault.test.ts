@@ -829,4 +829,97 @@ describe('Vault', () => {
       expect(() => vault.readSync__(file)).toThrow('readSync__ is only supported for in-memory adapters');
     });
   });
+
+  describe('reconcile__', () => {
+    it('should add a file created directly through the adapter', async () => {
+      const app = App.createConfigured__();
+      const handler = vi.fn();
+      app.vault.on('create', handler);
+      await app.vault.adapter.write('added.md', '# Added');
+
+      // Stale before reconcile.
+      expect(app.vault.getFileByPath('added.md')).toBeNull();
+
+      app.vault.reconcile__();
+      const file = app.vault.getFileByPath('added.md');
+      expect(file).not.toBeNull();
+      expect(handler).toHaveBeenCalledWith(file);
+    });
+
+    it('should add a folder created directly through the adapter', async () => {
+      const app = App.createConfigured__();
+      await app.vault.adapter.mkdir('fresh');
+
+      app.vault.reconcile__();
+      expect(app.vault.getFolderByPath('fresh')).not.toBeNull();
+    });
+
+    it('should remove a file deleted directly through the adapter', async () => {
+      const app = App.createConfigured__({ files: { 'gone.md': 'x' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('gone.md'));
+      const handler = vi.fn();
+      app.vault.on('delete', handler);
+      await app.vault.adapter.remove('gone.md');
+
+      app.vault.reconcile__();
+      expect(app.vault.getFileByPath('gone.md')).toBeNull();
+      expect(handler).toHaveBeenCalledWith(file);
+    });
+
+    it('should reflect an adapter directory rename', async () => {
+      const app = App.createConfigured__({ files: { 'old/child.md': 'x' } });
+      await app.vault.adapter.rename('old', 'new');
+
+      app.vault.reconcile__();
+      expect(app.vault.getFolderByPath('old')).toBeNull();
+      expect(app.vault.getFolderByPath('new')).not.toBeNull();
+      expect(app.vault.getFileByPath('new/child.md')).not.toBeNull();
+    });
+
+    it('should be a no-op when the tree already matches the adapter', () => {
+      const app = App.createConfigured__({ files: { 'a/b.md': 'x' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('a/b.md'));
+      const folder = ensureNonNullable(app.vault.getFolderByPath('a'));
+
+      app.vault.reconcile__();
+      // Existing entries are reused, not recreated.
+      expect(app.vault.getFileByPath('a/b.md')).toBe(file);
+      expect(app.vault.getFolderByPath('a')).toBe(folder);
+    });
+
+    it('should register nested folders shallowest-first', async () => {
+      const app = App.createConfigured__();
+      await app.vault.adapter.write('x/y/z.md', 'x');
+
+      app.vault.reconcile__();
+      expect(app.vault.getFolderByPath('x')).not.toBeNull();
+      expect(app.vault.getFolderByPath('x/y')).not.toBeNull();
+      expect(app.vault.getFileByPath('x/y/z.md')).not.toBeNull();
+    });
+
+    it('should ignore dot-prefixed adapter paths', async () => {
+      const app = App.createConfigured__();
+      await app.vault.adapter.write('.hidden/secret.md', 'x');
+
+      app.vault.reconcile__();
+      expect(app.vault.getFileByPath('.hidden/secret.md')).toBeNull();
+      expect(app.vault.getFolderByPath('.hidden')).toBeNull();
+    });
+
+    it('should not remove dot-prefixed tree entries', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('.keep.md', 'x');
+
+      app.vault.reconcile__();
+      expect(app.vault.getFileByPath('.keep.md')).toBe(file);
+    });
+
+    it('should throw for non-InMemoryAdapter', () => {
+      const fakeAdapter = strictProxy<DataAdapterOriginal>({});
+      const vault = Vault.create2__(fakeAdapter);
+      expect(() => {
+        vault.reconcile__();
+      }).toThrow('reconcile__ is only supported for in-memory adapters');
+    });
+  });
 });

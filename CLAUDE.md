@@ -89,16 +89,19 @@ The declarations we author are still fully validated. `scripts/build-compile-typ
 
 - Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`) follow the global kebab-case convention. Exception: `src/internal/castTo.ts` is camelCase to mirror its exported `castTo()` function.
 
-## Known modeling gaps (found consuming test-mocks)
+## Consuming notes
 
-These are places where the mock diverges from real Obsidian behavior enough that a consumer plugin could
-not unit-test a code path against it and had to either stub the API or fall back to integration tests.
-Closing them would let consumers reach 100% unit coverage on those paths. (Surfaced 2026-07-02 while
-converting `obsidian-advanced-note-composer`'s composer/handler suites to the real-bridge pattern — real
-`App.createConfigured__()` + real `obsidian-dev-utils` `ResourceLockComponent`/`VaultTransaction`.)
+The modeling gaps surfaced on 2026-07-02 (while converting `obsidian-advanced-note-composer` to the
+real-bridge pattern) are now closed. A few affordances worth knowing:
 
-- **Adapter-level moves do not sync the in-memory vault tree.** When code moves/deletes a file through
-  `app.vault.adapter` (as `VaultTransaction` does for its dot-prefixed staging), the adapter reflects it
-  but `vault.getAbstractFileByPath`/`getFileByPath` stay stale. Consumers must assert deletions/moves via
-  `app.vault.adapter.exists`/`read`, not the in-memory tree. (This mirrors real Obsidian's async watcher
-  but with no eventual sync, so tests can't wait it out.)
+- **`Vault.reconcile__()` syncs the in-memory tree from the adapter.** Direct `app.vault.adapter.*`
+  moves/deletes/writes do NOT update `getAbstractFileByPath`/`getFileByPath` (as in real Obsidian, whose
+  watcher is async). After such an op, call `app.vault.reconcile__()` to re-scan the adapter and
+  reconcile the tree (firing `create`/`delete` events). Dot-prefixed paths (e.g. `.obsidian`) are
+  excluded, mirroring real Obsidian.
+- **`MetadataCache` indexes synchronously** on `create`/`modify` via `Vault.readSync__`, populating
+  `cache__`, `resolvedLinks`/`unresolvedLinks`, and `frontmatterLinks`, plus the obsidian-typings-bridged
+  `fileCache`/`metadataCache`/`computeMetadataAsync` — so `getFileCache`, the link graph, and
+  `getCacheSafe` work with no tick needed.
+- **`Vault.getAvailablePath` de-duplicates**, folder renames cascade to descendants, and
+  `createFolder('a/b')` creates/links intermediate ancestors.

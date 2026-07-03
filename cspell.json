@@ -11,6 +11,7 @@
   "dictionaryDefinitions": [],
   "dictionaries": [],
   "words": [
+    "affordances",
     "backlink",
     "backlinks",
     "creatordate",
@@ -18,6 +19,7 @@
     "debouncer",
     "dmts",
     "Debouncer",
+    "dotfolders",
     "frontmatter",
     "Keymap",
     "linkinator",
