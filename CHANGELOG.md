@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.5.1
+
+- fix(obsidian): make markdown cache position end offsets exclusive
+- refactor: keep only first line of each commit in changelog
+
 ## 3.5.0
 
 - feat(obsidian): add Vault.reconcile__ to sync the tree from the adapter
