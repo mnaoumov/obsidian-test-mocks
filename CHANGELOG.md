@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 3.5.0
+
+- feat(obsidian): add Vault.reconcile__ to sync the tree from the adapter
+- feat(obsidian-typings): model MetadataCache fileCache and computeMetadataAsync
+- feat(obsidian): faithful synchronous MetadataCache indexing
+- feat(obsidian): createFolder creates and links intermediate ancestors
+- feat(obsidian): cascade descendant paths on folder rename
+- feat(obsidian-typings): getAvailablePath de-duplicates via existence check
+- docs: correct getAvailablePath stub description
+- docs: tighten MetadataCache gap with the two real editLinks frictions
+- docs: correct stale rule/module references and MetadataCache gap
+- docs: record modeling gaps that block consumer unit coverage
+
 ## 3.4.0
 
 - feat(obsidian): faithful DateValue.relative and DurationValue.parseFromString
