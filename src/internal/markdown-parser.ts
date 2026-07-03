@@ -82,7 +82,7 @@ function addGapSections(
     if (trimmed.length > 0) {
       const blockStart = content.indexOf(trimmed, offset);
       assert(blockStart >= 0, `Block not found in content at offset ${String(offset)}`);
-      const blockEnd = blockStart + trimmed.length - 1;
+      const blockEnd = blockStart + trimmed.length;
       let type = 'paragraph';
       if (trimmed.startsWith('>')) {
         type = 'blockquote';
@@ -96,7 +96,7 @@ function addGapSections(
         position: makePos(lineStarts, blockStart, blockEnd),
         type
       });
-      offset = blockEnd + 1;
+      offset = blockEnd;
     }
     offset += block.length + 1; // +1 for the split separator
   }
@@ -226,7 +226,7 @@ function parseEmbeds(
         displayText: display ?? link,
         link,
         original: match[0],
-        position: makePos(lineStarts, match.index, match.index + match[0].length - 1)
+        position: makePos(lineStarts, match.index, match.index + match[0].length)
       });
     }
     match = wikiRegex.exec(content);
@@ -244,7 +244,7 @@ function parseEmbeds(
         displayText,
         link,
         original: match[0],
-        position: makePos(lineStarts, match.index, match.index + match[0].length - 1)
+        position: makePos(lineStarts, match.index, match.index + match[0].length)
       });
     }
     match = mdRegex.exec(content);
@@ -275,11 +275,11 @@ function parseFrontmatter(
     cache.frontmatter = strictProxy<FrontMatterCache>({});
   }
 
-  cache.frontmatterPosition = makePos(lineStarts, 0, info.contentStart - 1);
+  cache.frontmatterPosition = makePos(lineStarts, 0, info.contentStart);
 
   sections.push({
     id: undefined,
-    position: makePos(lineStarts, 0, info.contentStart - 1),
+    position: makePos(lineStarts, 0, info.contentStart),
     type: 'yaml'
   });
 
@@ -302,7 +302,7 @@ function parseHeadings(
       const hashes = ensureNonNullable(match.groups?.['hashes']);
       const text = ensureNonNullable(match.groups?.['text']);
       const startOffset = match.index;
-      const endOffset = match.index + match[0].length - 1;
+      const endOffset = match.index + match[0].length;
       headings.push({
         heading: text.trim(),
         level: hashes.length,
@@ -339,7 +339,7 @@ function parseLinks(
         displayText: display ?? link,
         link,
         original: match[0],
-        position: makePos(lineStarts, match.index, match.index + match[0].length - 1)
+        position: makePos(lineStarts, match.index, match.index + match[0].length)
       };
       links.push(entry);
     }
@@ -358,7 +358,7 @@ function parseLinks(
         displayText,
         link,
         original: match[0],
-        position: makePos(lineStarts, match.index, match.index + match[0].length - 1)
+        position: makePos(lineStarts, match.index, match.index + match[0].length)
       });
     }
     match = mdRegex.exec(content);
@@ -391,7 +391,7 @@ function parseListItems(
       const indent = ensureNonNullable(match.groups?.['indent']);
       const taskChar = match.groups?.['task'];
       const startOffset = match.index;
-      const endOffset = match.index + match[0].length - 1;
+      const endOffset = match.index + match[0].length;
       const pos = makePos(lineStarts, startOffset, endOffset);
       const currentLine = pos.start.line;
 
@@ -464,7 +464,7 @@ function parseParagraphSections(
     if (gapStart < gapEnd) {
       addGapSections(content, gapStart, gapEnd, lineStarts, codeZones, existingSections);
     }
-    cursor = section.position.end.offset + 1;
+    cursor = section.position.end.offset;
   }
   // Trailing gap
   if (cursor < content.length) {
@@ -490,7 +490,7 @@ function parseTags(
     if (!isInCodeZone(codeZones, hashOffset)) {
       const tagLen = tagText.length + 1; // +1 for #
       tags.push({
-        position: makePos(lineStarts, hashOffset, hashOffset + tagLen - 1),
+        position: makePos(lineStarts, hashOffset, hashOffset + tagLen),
         tag: `#${tagText}`
       });
     }

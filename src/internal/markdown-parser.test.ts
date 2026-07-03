@@ -5,6 +5,7 @@ import {
 } from 'vitest';
 
 import { parseMarkdownContent } from './markdown-parser.ts';
+import { ensureNonNullable } from './type-guards.ts';
 
 const HEADING_COUNT_ALL = 6;
 const HEADING_LEVEL_2 = 2;
@@ -568,6 +569,64 @@ describe('parseMarkdownContent', () => {
     it('should handle empty content', () => {
       const cache = parseMarkdownContent('');
       expect(cache.sections).toBeUndefined();
+    });
+  });
+
+  describe('position end offset is exclusive', () => {
+    it('should make a wikilink position slice back to its original', () => {
+      const content = 'See [[Page Name]] for details';
+      const cache = parseMarkdownContent(content);
+
+      const link = ensureNonNullable(cache.links?.[0]);
+      expect(content.slice(link.position.start.offset, link.position.end.offset)).toBe(link.original);
+    });
+
+    it('should make a markdown link position slice back to its original', () => {
+      const content = 'Visit [Example](https://example.com) now';
+      const cache = parseMarkdownContent(content);
+
+      const link = ensureNonNullable(cache.links?.[0]);
+      expect(content.slice(link.position.start.offset, link.position.end.offset)).toBe(link.original);
+    });
+
+    it('should make a wiki embed position slice back to its original', () => {
+      const content = 'Before ![[image.png]] after';
+      const cache = parseMarkdownContent(content);
+
+      const embed = ensureNonNullable(cache.embeds?.[0]);
+      expect(content.slice(embed.position.start.offset, embed.position.end.offset)).toBe(embed.original);
+    });
+
+    it('should make a markdown embed position slice back to its original', () => {
+      const content = 'Before ![Alt text](image.png) after';
+      const cache = parseMarkdownContent(content);
+
+      const embed = ensureNonNullable(cache.embeds?.[0]);
+      expect(content.slice(embed.position.start.offset, embed.position.end.offset)).toBe(embed.original);
+    });
+
+    it('should make a heading position slice back to the whole heading line', () => {
+      const content = 'Some text\n# Heading\nMore text';
+      const cache = parseMarkdownContent(content);
+
+      const heading = ensureNonNullable(cache.headings?.[0]);
+      expect(content.slice(heading.position.start.offset, heading.position.end.offset)).toBe('# Heading');
+    });
+
+    it('should make a tag position slice back to the tag text', () => {
+      const content = 'Text #mytag rest';
+      const cache = parseMarkdownContent(content);
+
+      const tag = ensureNonNullable(cache.tags?.[0]);
+      expect(content.slice(tag.position.start.offset, tag.position.end.offset)).toBe(tag.tag);
+    });
+
+    it('should make a list item position slice back to the whole item line', () => {
+      const content = '- First item\n- Second item';
+      const cache = parseMarkdownContent(content);
+
+      const item = ensureNonNullable(cache.listItems?.[0]);
+      expect(content.slice(item.position.start.offset, item.position.end.offset)).toBe('- First item');
     });
   });
 

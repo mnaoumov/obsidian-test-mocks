@@ -105,3 +105,10 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   `getCacheSafe` work with no tick needed.
 - **`Vault.getAvailablePath` de-duplicates**, folder renames cascade to descendants, and
   `createFolder('a/b')` creates/links intermediate ancestors.
+
+- **Reference `position.end.offset` is exclusive.** `src/internal/markdown-parser.ts` reports every
+  cache position (links, embeds, headings, tags, list items, sections, frontmatter) with an
+  **exclusive** end offset (`start + length`), matching Obsidian, so
+  `content.slice(start.offset, end.offset)` reconstructs a reference's `original` exactly. This is what
+  lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
+  sliced source against `reference.original`.
