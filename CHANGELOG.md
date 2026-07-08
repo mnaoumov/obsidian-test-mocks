@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.6.0
+
+- feat: model SuggestModal instruction bar
+- chore: update libs
+
 ## 3.5.1
 
 - fix(obsidian): make markdown cache position end offsets exclusive
