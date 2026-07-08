@@ -4,47 +4,6 @@
 
 `obsidian-test-mocks` is a standalone npm package providing comprehensive test mocks for the Obsidian plugin API. It publishes as a dual-format (ESM + CJS) package with seven entry points: `obsidian`, `setup`, `vitest-setup`, `jest-setup`, `obsidian-typings/setup`, `obsidian-typings/vitest-setup`, and `obsidian-typings/jest-setup`.
 
-## Current Task
-
-**Model `SuggestModal`'s instruction bar (`instructionsEl` + faithful `setInstructions` rendering) so consumers can use the real `SuggestModalCommandBuilder` instead of hand-rolling a fake.**
-
-Context: `obsidian-dev-utils` now exports `SuggestModalCommandBuilder`
-(`obsidian/modals/suggest-modal-command-builder`). Plugins that consume it (e.g.
-`obsidian-advanced-note-composer`) cannot exercise the real builder in unit tests because the mock
-`SuggestModal` does not model the instruction bar. Removing a plugin's hand-rolled
-`MockSuggestModalCommandBuilder` and running the real `build()` throws:
-
-```
-Property "instructionsEl" is not mocked in <Modal>
-  at SuggestModalCommandBuilder.build (suggest-modal-command-builder.ts) — modal.instructionsEl.findAll('.prompt-instruction > span:nth-child(2)')
-```
-
-What the builder's `build()` needs from the modal (verify the exact DOM against real Obsidian via CDP
-before finalizing):
-
-1. **`instructionsEl`** — currently unmodeled. It is NOT in `obsidian.d.ts`; it is an
-   obsidian-typings internal (`SuggestModal.instructionsEl: HTMLElement`). Model it through the
-   obsidian-typings bridge with a `__`-suffixed backing member (same pattern as the other
-   obsidian-typings-only internals), created as a real container element in the constructor.
-2. **`setInstructions(instructions)`** — already public in `obsidian.d.ts` and already stores the
-   array in `instructions__`. Extend it to also render into `instructionsEl` the way real Obsidian
-   does: clear the container, then for each `Instruction` append a `.prompt-instruction` element whose
-   **first** child span holds the command/key text and whose **second** child span holds the purpose
-   text. The builder queries `.prompt-instruction > span:nth-child(2)` (the purpose span) and, for
-   checkbox/dropdown instructions, injects the input element into that span and registers the
-   option-toggle shortcut on `modal.scope`.
-3. **`scope.register`** — the mock `Scope` already satisfies the builder's shortcut registration (the
-   failure occurred only at `instructionsEl`); re-confirm once instruction rendering runs end-to-end.
-
-Follow-up (separate session, in `obsidian-advanced-note-composer` — do NOT do it from here): after a
-test-mocks release that models the above, bump its `obsidian-test-mocks` dependency (currently
-`^3.5.1`) and delete the four hand-rolled `MockSuggestModalCommandBuilder` `vi.mock(...)` blocks in
-`merge-file-modal.test.ts`, `merge-folder-modal.test.ts`, `split-file-modal.test.ts`, and
-`swap-folder-modal.test.ts`, letting the real builder run against the real mock modal. Those tests
-assert on lock/unlock + result (not on instruction DOM), so a present-and-faithfully-rendered
-`instructionsEl` is sufficient for them to pass; the faithful rendering additionally unlocks future
-instruction-bar assertions.
-
 ## Commands
 
 - `npm test` — run tests (Vitest)
@@ -153,3 +112,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   `content.slice(start.offset, end.offset)` reconstructs a reference's `original` exactly. This is what
   lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
   sliced source against `reference.original`.
+
+- **`SuggestModal`'s instruction bar is modeled**, so consumers can drive the real
+  `SuggestModalCommandBuilder` (`obsidian-dev-utils` `obsidian/modals/suggest-modal-command-builder`)
+  instead of hand-rolling a fake. `instructionsEl` is an obsidian-typings-only internal (not in
+  `obsidian.d.ts`) — it is a getter bridged (via `obsidian-typings/setup`) to the `__`-suffixed
+  backing member `SuggestModal.instructionsEl__`, a real `createDiv('prompt-instructions')` container
+  created in the constructor. `setInstructions(instructions)` renders faithfully to real Obsidian:
+  when non-empty it clears the container and appends one `.prompt-instruction` div per `Instruction`
+  whose **first** span (`.prompt-instruction-command`) holds `command` and **second** span holds
+  `purpose`, then attaches the container to `modalEl`; when empty it detaches the container. The
+  builder queries `.prompt-instruction > span:nth-child(2)` (the purpose span) to inject
+  checkbox/dropdown inputs and registers option-toggle shortcuts on the (already-modeled) `modal.scope`.

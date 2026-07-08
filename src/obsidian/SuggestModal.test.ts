@@ -42,6 +42,13 @@ describe('SuggestModal', () => {
     expect(modal.resultContainerEl).toBeInstanceOf(HTMLElement);
   });
 
+  it('should have an instructionsEl__', () => {
+    const app = App.createConfigured__();
+    const modal = new ConcreteSuggestModal(app);
+    expect(modal.instructionsEl__).toBeInstanceOf(HTMLDivElement);
+    expect(modal.instructionsEl__.classList.contains('prompt-instructions')).toBe(true);
+  });
+
   describe('setPlaceholder', () => {
     it('should set the input placeholder', () => {
       const app = App.createConfigured__();
@@ -58,6 +65,51 @@ describe('SuggestModal', () => {
       const instructions = [{ command: 'Enter', purpose: 'Select' }];
       modal.setInstructions(instructions);
       expect(modal.instructions__).toEqual(instructions);
+    });
+
+    it('should render each instruction as a prompt-instruction with command and purpose spans', () => {
+      const app = App.createConfigured__();
+      const modal = new ConcreteSuggestModal(app);
+      modal.setInstructions([
+        { command: '↑↓', purpose: 'to navigate' },
+        { command: '↵', purpose: 'to select' }
+      ]);
+
+      const promptInstructions = modal.instructionsEl__.findAll('.prompt-instruction');
+      expect(promptInstructions).toHaveLength(2);
+
+      const commandEls = modal.instructionsEl__.findAll('.prompt-instruction > span:nth-child(1)');
+      const purposeEls = modal.instructionsEl__.findAll('.prompt-instruction > span:nth-child(2)');
+      expect(commandEls.map((el) => el.textContent)).toEqual(['↑↓', '↵']);
+      expect(purposeEls.map((el) => el.textContent)).toEqual(['to navigate', 'to select']);
+      expect(commandEls.every((el) => el.classList.contains('prompt-instruction-command'))).toBe(true);
+    });
+
+    it('should attach instructionsEl to modalEl when instructions are present', () => {
+      const app = App.createConfigured__();
+      const modal = new ConcreteSuggestModal(app);
+      modal.setInstructions([{ command: 'Enter', purpose: 'Select' }]);
+      expect(modal.instructionsEl__.parentElement).toBe(modal.modalEl);
+    });
+
+    it('should re-render instructions on a subsequent call', () => {
+      const app = App.createConfigured__();
+      const modal = new ConcreteSuggestModal(app);
+      modal.setInstructions([{ command: 'Enter', purpose: 'Select' }]);
+      modal.setInstructions([{ command: 'Esc', purpose: 'Dismiss' }]);
+
+      const commandEls = modal.instructionsEl__.findAll('.prompt-instruction > span:nth-child(1)');
+      expect(commandEls.map((el) => el.textContent)).toEqual(['Esc']);
+    });
+
+    it('should detach instructionsEl when instructions are empty', () => {
+      const app = App.createConfigured__();
+      const modal = new ConcreteSuggestModal(app);
+      modal.setInstructions([{ command: 'Enter', purpose: 'Select' }]);
+      expect(modal.instructionsEl__.parentElement).toBe(modal.modalEl);
+
+      modal.setInstructions([]);
+      expect(modal.instructionsEl__.parentElement).toBeNull();
     });
   });
 

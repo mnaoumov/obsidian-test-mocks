@@ -23,6 +23,10 @@ import {
   unbridgeSetting
 } from './bridges/setting-bridge.ts';
 import {
+  bridgeSuggestModal,
+  unbridgeSuggestModal
+} from './bridges/suggest-modal-bridge.ts';
+import {
   bridgeTAbstractFile,
   unbridgeTAbstractFile
 } from './bridges/t-abstract-file-bridge.ts';
@@ -42,6 +46,7 @@ export function setup(): void {
   bridgeFileSystemAdapter();
   bridgeMetadataCache();
   bridgeSetting();
+  bridgeSuggestModal();
   bridgeTAbstractFile();
   bridgeVault();
   bridgeWorkspaceLeaf();
@@ -54,6 +59,7 @@ export function teardown(): void {
   unbridgeFileSystemAdapter();
   unbridgeMetadataCache();
   unbridgeSetting();
+  unbridgeSuggestModal();
   unbridgeTAbstractFile();
   unbridgeVault();
   unbridgeWorkspaceLeaf();
