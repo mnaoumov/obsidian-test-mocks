@@ -181,7 +181,7 @@
     "semver": "^7.8.5",
     "ts-jest": "^29.4.11",
     "type-fest": "^5.8.0",
-    "typescript": "^6.0.3",
+    "typescript": "6.0.3",
     "typescript-eslint": "^8.63.0",
     "vitest": "^4.1.10"
   },
