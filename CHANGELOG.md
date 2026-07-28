@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.8.0
+
+- feat(vault): model the attachment-path resolution surface
+- chore: update libs
+
 ## 3.7.0
 
 - fix(globals): make Keymap and value-typed augmented members faithful
