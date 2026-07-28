@@ -126,8 +126,8 @@
     "eslint": "$eslint",
     "eslint-plugin-import": "$eslint-plugin-import-x",
     "glob": "^13.0.6",
-    "js-yaml": "^4.2.0",
-    "markdown-it": "^14.2.0",
+    "js-yaml": "^5.2.2",
+    "markdown-it": "^14.3.0",
     "test-exclude": "^8.0.0",
     "type-fest": "$type-fest",
     "typescript": "$typescript"
