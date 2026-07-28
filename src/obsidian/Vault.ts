@@ -14,8 +14,23 @@ import { Events } from './Events.ts';
 import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
 
+/**
+ * The only vault setting the attachment-path resolution reads. Obsidian's own default is `/` (the
+ * vault root); `./` means "same folder as the note", `./sub` a sub-folder of it, and anything else a
+ * fixed folder. Confirmed against a real Obsidian 1.13.4.
+ */
+const ATTACHMENT_FOLDER_PATH_CONFIG_KEY = 'attachmentFolderPath';
+const DEFAULT_ATTACHMENT_FOLDER_PATH = '/';
+const RELATIVE_PATH_PREFIX = './';
+const ROOT_PATH = '/';
+
 export class Vault extends Events {
   public adapter: DataAdapterOriginal;
+  /**
+   * Backs `getConfig__` / `setConfig__`. Only `attachmentFolderPath` carries a modeled default —
+   * every other key reads as `undefined` until a test sets it.
+   */
+  public config__: Record<string, unknown> = { [ATTACHMENT_FOLDER_PATH_CONFIG_KEY]: DEFAULT_ATTACHMENT_FOLDER_PATH };
   public configDir = '.obsidian';
   public fileMap__: Record<string, TAbstractFile> = {};
   private fileMapLowerCase: Record<string, TAbstractFile> = {};
@@ -161,6 +176,68 @@ export class Vault extends Events {
 
   public getAllLoadedFiles(): TAbstractFile[] {
     return Object.values(this.fileMap__);
+  }
+
+  /**
+   * Obsidian's de-duplicator: the plain name first, then ` 1`, ` 2`, … until one is free.
+   *
+   * @param basePath - The desired path without extension.
+   * @param extension - The file extension without the leading dot.
+   * @returns A path that no existing file occupies.
+   */
+  public getAvailablePath__(basePath: string, extension: string): string {
+    const suffix = extension ? `.${extension}` : '';
+    let candidate = `${basePath}${suffix}`;
+    let index = 0;
+    while (this.getAbstractFileByPath(candidate)) {
+      index++;
+      candidate = `${basePath} ${String(index)}${suffix}`;
+    }
+    return candidate;
+  }
+
+  /**
+   * Resolves where an attachment of `file` goes, per the `attachmentFolderPath` setting, creating the
+   * target folder when it is missing. Confirmed against a real Obsidian 1.13.4: for a note
+   * `Docs/api/get.md` the setting `/` yields `img.png`, `./` yields `Docs/api/img.png`, `./assets`
+   * yields `Docs/api/assets/img.png` (creating `Docs/api/assets`), and `Files` yields `Files/img.png`
+   * (creating `Files`). A `null` file resolves as a root-level note does.
+   *
+   * @param fileName - The attachment base name without extension.
+   * @param extension - The attachment extension without the leading dot.
+   * @param file - The note the attachment belongs to, or `null`.
+   * @returns A {@link Promise} that resolves to the available attachment path.
+   */
+  public async getAvailablePathForAttachments__(fileName: string, extension: string, file: null | TFile): Promise<string> {
+    const rawSetting = this.getConfig__(ATTACHMENT_FOLDER_PATH_CONFIG_KEY);
+    const setting = typeof rawSetting === 'string' ? rawSetting : '';
+    let folderPath: string;
+    if (setting === '.' || setting === RELATIVE_PATH_PREFIX) {
+      folderPath = file?.parent?.path ?? '';
+    } else if (setting.startsWith(RELATIVE_PATH_PREFIX)) {
+      folderPath = (file?.parent?.getParentPrefix__() ?? '') + setting.slice(RELATIVE_PATH_PREFIX.length);
+    } else {
+      folderPath = setting;
+    }
+
+    folderPath = folderPath.replace(/\/+$/, '');
+    if (folderPath === '') {
+      folderPath = ROOT_PATH;
+    }
+
+    const existing = this.getAbstractFileByPathInsensitive__(folderPath);
+    const folder = existing instanceof TFolder ? existing : await this.createFolder(folderPath);
+    return this.getAvailablePath__(folder.getParentPrefix__() + fileName, extension);
+  }
+
+  /**
+   * Reads a vault setting.
+   *
+   * @param key - The setting key.
+   * @returns The setting value, or `undefined` when the key was never set.
+   */
+  public getConfig__(key: string): unknown {
+    return this.config__[key];
   }
 
   public getFileByPath(path: string): null | TFile {
@@ -320,6 +397,16 @@ export class Vault extends Events {
     }
 
     this.trigger('rename', file, oldPath);
+  }
+
+  /**
+   * Writes a vault setting.
+   *
+   * @param key - The setting key.
+   * @param value - The setting value.
+   */
+  public setConfig__(key: string, value: unknown): void {
+    this.config__[key] = value;
   }
 
   public setVaultAbstractFile__(path: string, file: TAbstractFile): void {

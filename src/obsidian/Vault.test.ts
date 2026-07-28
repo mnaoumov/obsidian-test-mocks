@@ -922,4 +922,148 @@ describe('Vault', () => {
       }).toThrow('reconcile__ is only supported for in-memory adapters');
     });
   });
+
+  describe('getConfig__() / setConfig__()', () => {
+    it('should default attachmentFolderPath to the vault root', () => {
+      const app = App.createConfigured__();
+      expect(app.vault.getConfig__('attachmentFolderPath')).toBe('/');
+    });
+
+    it('should return undefined for a key that was never set', () => {
+      const app = App.createConfigured__();
+      expect(app.vault.getConfig__('newLinkFormat')).toBeUndefined();
+    });
+
+    it('should round-trip a value written by setConfig__', () => {
+      const app = App.createConfigured__();
+      app.vault.setConfig__('attachmentFolderPath', './assets');
+      expect(app.vault.getConfig__('attachmentFolderPath')).toBe('./assets');
+    });
+
+    it('should not share config between vaults', () => {
+      const app1 = App.createConfigured__();
+      const app2 = App.createConfigured__();
+      app1.vault.setConfig__('attachmentFolderPath', 'Files');
+      expect(app2.vault.getConfig__('attachmentFolderPath')).toBe('/');
+    });
+  });
+
+  describe('getAvailablePath__()', () => {
+    it('should return the plain path when it is free', () => {
+      const app = App.createConfigured__();
+      expect(app.vault.getAvailablePath__('note', 'md')).toBe('note.md');
+    });
+
+    it('should omit the dot when the extension is empty', () => {
+      const app = App.createConfigured__();
+      expect(app.vault.getAvailablePath__('note', '')).toBe('note');
+    });
+
+    it('should append " 1" when the plain path is taken', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('note.md', 'content');
+      expect(app.vault.getAvailablePath__('note', 'md')).toBe('note 1.md');
+    });
+
+    it('should increment until a free path is found', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('note.md', 'content');
+      app.vault.createSync__('note 1.md', 'content');
+      expect(app.vault.getAvailablePath__('note', 'md')).toBe('note 2.md');
+    });
+
+    it('should de-duplicate when the extension is empty', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('note', 'content');
+      expect(app.vault.getAvailablePath__('note', '')).toBe('note 1');
+    });
+  });
+
+  describe('getAvailablePathForAttachments__()', () => {
+    function createFixture(attachmentFolderPath: string): App {
+      const app = App.createConfigured__();
+      app.vault.createFolderSync__('Docs/api');
+      app.vault.createSync__('Docs/api/get.md', 'content');
+      app.vault.createSync__('RootNote.md', 'content');
+      app.vault.setConfig__('attachmentFolderPath', attachmentFolderPath);
+      return app;
+    }
+
+    function nestedNote(app: App): TFile {
+      return ensureNonNullable(app.vault.getFileByPath('Docs/api/get.md'));
+    }
+
+    function rootNote(app: App): TFile {
+      return ensureNonNullable(app.vault.getFileByPath('RootNote.md'));
+    }
+
+    it('should put the attachment in the vault root for "/"', async () => {
+      const app = createFixture('/');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', nestedNote(app))).resolves.toBe('img.png');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', rootNote(app))).resolves.toBe('img.png');
+    });
+
+    it('should put the attachment next to the note for "./"', async () => {
+      const app = createFixture('./');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', nestedNote(app))).resolves.toBe('Docs/api/img.png');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', rootNote(app))).resolves.toBe('img.png');
+    });
+
+    it('should put the attachment in a sub-folder of the note folder for "./assets"', async () => {
+      const app = createFixture('./assets');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', nestedNote(app))).resolves.toBe('Docs/api/assets/img.png');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', rootNote(app))).resolves.toBe('assets/img.png');
+    });
+
+    it('should put the attachment in the fixed folder for "Files"', async () => {
+      const app = createFixture('Files');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', nestedNote(app))).resolves.toBe('Files/img.png');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', rootNote(app))).resolves.toBe('Files/img.png');
+    });
+
+    it('should create the target folder when it is missing', async () => {
+      const app = createFixture('./assets');
+      expect(app.vault.getFolderByPath('Docs/api/assets')).toBeNull();
+      await app.vault.getAvailablePathForAttachments__('img', 'png', nestedNote(app));
+      expect(app.vault.getFolderByPath('Docs/api/assets')).not.toBeNull();
+    });
+
+    it('should reuse an existing folder found case-insensitively', async () => {
+      const app = createFixture('files');
+      app.vault.createFolderSync__('Files');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', rootNote(app))).resolves.toBe('Files/img.png');
+    });
+
+    it('should treat a null file as a root-level note', async () => {
+      const app = createFixture('./');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', null)).resolves.toBe('img.png');
+    });
+
+    it('should treat a null file as a root-level note for a relative folder', async () => {
+      const app = createFixture('./assets');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', null)).resolves.toBe('assets/img.png');
+    });
+
+    it('should de-duplicate against an existing attachment', async () => {
+      const app = createFixture('/');
+      app.vault.createSync__('img.png', 'content');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', nestedNote(app))).resolves.toBe('img 1.png');
+    });
+
+    it('should treat "." like "./"', async () => {
+      const app = createFixture('.');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', nestedNote(app))).resolves.toBe('Docs/api/img.png');
+    });
+
+    it('should fall back to the vault root when the setting is unset', async () => {
+      const app = createFixture('/');
+      app.vault.setConfig__('attachmentFolderPath', undefined);
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', nestedNote(app))).resolves.toBe('img.png');
+    });
+
+    it('should ignore trailing slashes in a fixed folder', async () => {
+      const app = createFixture('Files/');
+      await expect(app.vault.getAvailablePathForAttachments__('img', 'png', rootNote(app))).resolves.toBe('Files/img.png');
+    });
+  });
 });

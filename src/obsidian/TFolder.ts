@@ -32,6 +32,16 @@ export class TFolder extends TAbstractFile {
     noop();
   }
 
+  /**
+   * The prefix every direct child's path carries: `''` for the root, `` `${path}/` `` otherwise.
+   * Confirmed against a real Obsidian 1.13.4.
+   *
+   * @returns The parent prefix.
+   */
+  public getParentPrefix__(): string {
+    return this.isRoot() ? '' : `${this.path}/`;
+  }
+
   public isRoot(): boolean {
     return this.path === '' || this.path === '/';
   }

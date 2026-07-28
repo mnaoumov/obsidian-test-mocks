@@ -5,6 +5,8 @@ import {
   it
 } from 'vitest';
 
+import type { TFile } from '../../obsidian/TFile.ts';
+
 import { ensureGenericObject } from '../../internal/type-guards.ts';
 import { App } from '../../obsidian/App.ts';
 import { Vault } from '../../obsidian/Vault.ts';
@@ -16,6 +18,9 @@ import {
 type ExistsFn = (this: Vault, path: string, isCaseSensitive?: boolean) => Promise<boolean>;
 type GetAbstractFileByPathInsensitiveFn = (this: Vault, path: string) => unknown;
 type GetAvailablePathFn = (this: Vault, path: string, ext: string) => string;
+type GetAvailablePathForAttachmentsFn = (this: Vault, fileName: string, ext: string, file: null | TFile) => Promise<string>;
+type GetConfigFn = (this: Vault, key: string) => unknown;
+type SetConfigFn = (this: Vault, key: string, value: unknown) => void;
 
 describe('vault-bridge', () => {
   afterEach(() => {
@@ -106,6 +111,50 @@ describe('vault-bridge', () => {
     });
   });
 
+  describe('getAvailablePathForAttachments', () => {
+    it('should resolve the attachment path for the configured folder', async () => {
+      bridgeVault();
+      const app = App.createConfigured__();
+      app.vault.createFolderSync__('Docs/api');
+      const note = app.vault.createSync__('Docs/api/get.md', 'content');
+      app.vault.setConfig__('attachmentFolderPath', './assets');
+      const fn = ensureGenericObject(app.vault)['getAvailablePathForAttachments'] as GetAvailablePathForAttachmentsFn;
+      await expect(fn.call(app.vault, 'img', 'png', note)).resolves.toBe('Docs/api/assets/img.png');
+    });
+
+    it('should expose no extended member by default', () => {
+      bridgeVault();
+      const app = App.createConfigured__();
+      const fn = ensureGenericObject(app.vault)['getAvailablePathForAttachments'] as GetAvailablePathForAttachmentsFn;
+      expect(ensureGenericObject(fn)['extended']).toBeUndefined();
+    });
+  });
+
+  describe('getConfig / setConfig', () => {
+    it('should read the modeled attachmentFolderPath default', () => {
+      bridgeVault();
+      const app = App.createConfigured__();
+      const fn = ensureGenericObject(app.vault)['getConfig'] as GetConfigFn;
+      expect(fn.call(app.vault, 'attachmentFolderPath')).toBe('/');
+    });
+
+    it('should return undefined for a key that was never set', () => {
+      bridgeVault();
+      const app = App.createConfigured__();
+      const fn = ensureGenericObject(app.vault)['getConfig'] as GetConfigFn;
+      expect(fn.call(app.vault, 'newLinkFormat')).toBeUndefined();
+    });
+
+    it('should round-trip a value written by setConfig', () => {
+      bridgeVault();
+      const app = App.createConfigured__();
+      const setFn = ensureGenericObject(app.vault)['setConfig'] as SetConfigFn;
+      const getFn = ensureGenericObject(app.vault)['getConfig'] as GetConfigFn;
+      setFn.call(app.vault, 'attachmentFolderPath', 'Files');
+      expect(getFn.call(app.vault, 'attachmentFolderPath')).toBe('Files');
+    });
+  });
+
   it('should be idempotent', () => {
     bridgeVault();
     bridgeVault();
@@ -121,5 +170,8 @@ describe('vault-bridge', () => {
     expect('exists' in app.vault).toBe(false);
     expect('getAbstractFileByPathInsensitive' in app.vault).toBe(false);
     expect('getAvailablePath' in app.vault).toBe(false);
+    expect('getAvailablePathForAttachments' in app.vault).toBe(false);
+    expect('getConfig' in app.vault).toBe(false);
+    expect('setConfig' in app.vault).toBe(false);
   });
 });
