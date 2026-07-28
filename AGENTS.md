@@ -106,6 +106,31 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **`Vault.getAvailablePath` de-duplicates**, folder renames cascade to descendants, and
   `createFolder('a/b')` creates/links intermediate ancestors.
 
+- **Attachment-path resolution is modeled end to end** (added 2026-07-28) — anything calling
+  `obsidian-dev-utils`' `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`
+  against the mocks used to die on a strict-proxy read, forcing every consumer to hand-seed the surface.
+  The backing members live on the mocks with the `__` suffix (all four are obsidian-typings internals,
+  not `obsidian.d.ts` members, so the un-suffixed names come from `obsidian-typings/setup`):
+  - **`Vault.getConfig__(key)` / `Vault.setConfig__(key, value)`**, backed by the `config__` bag. Only
+    `attachmentFolderPath` carries a modeled default (`/`, Obsidian's own); every other `ConfigItem`
+    reads as `undefined` until a test sets it — do NOT assume the bag mirrors Obsidian's full defaults.
+  - **`Vault.getAvailablePath__(basePath, extension)`** — Obsidian's de-duplicator (plain name, then a
+    `" 1"` / `" 2"` suffix, …). The logic moved here from the bridge, which now delegates; note ODU's own
+    `getAvailablePath(app, path)` helper DELEGATES to the bridged name, so a consumer cannot seed it by
+    calling that helper — it would recurse until the stack blows.
+  - **`Vault.getAvailablePathForAttachments__(fileName, extension, file)`** — the real resolution, not a
+    throwing placeholder. `/` → vault root, `./` (and `.`) → the note's own folder, `./sub` → a
+    sub-folder of the note's folder, anything else → that fixed folder; the target folder is **created
+    when missing** (real Obsidian does this), a `null` file resolves as a root-level note does, and the
+    result runs through `getAvailablePath__`. ODU only ever reads this function's `extended` member (an
+    attachment-location plugin installs it) and falls back to its own resolution when absent — so the
+    plain function is what a test exercises, and it now answers faithfully.
+  - **`TFolder.getParentPrefix__()`** — `''` for the root, `` `${path}/` `` otherwise. On the prototype,
+    because folders are created by the vault as fixtures are built, never handed to the test to seed.
+
+  Every path above was confirmed against a real Obsidian 1.13.4 over CDP; `Vault.test.ts` asserts that
+  table verbatim.
+
 - **Reference `position.end.offset` is exclusive.** `src/internal/markdown-parser.ts` reports every
   cache position (links, embeds, headings, tags, list items, sections, frontmatter) with an
   **exclusive** end offset (`start + length`), matching Obsidian, so

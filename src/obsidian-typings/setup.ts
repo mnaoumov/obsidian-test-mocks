@@ -31,6 +31,10 @@ import {
   unbridgeTAbstractFile
 } from './bridges/t-abstract-file-bridge.ts';
 import {
+  bridgeTFolder,
+  unbridgeTFolder
+} from './bridges/t-folder-bridge.ts';
+import {
   bridgeVault,
   unbridgeVault
 } from './bridges/vault-bridge.ts';
@@ -48,6 +52,7 @@ export function setup(): void {
   bridgeSetting();
   bridgeSuggestModal();
   bridgeTAbstractFile();
+  bridgeTFolder();
   bridgeVault();
   bridgeWorkspaceLeaf();
 }
@@ -61,6 +66,7 @@ export function teardown(): void {
   unbridgeSetting();
   unbridgeSuggestModal();
   unbridgeTAbstractFile();
+  unbridgeTFolder();
   unbridgeVault();
   unbridgeWorkspaceLeaf();
 }

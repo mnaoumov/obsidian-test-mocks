@@ -84,4 +84,24 @@ describe('TFolder', () => {
       expect(folder.isRoot()).toBe(false);
     });
   });
+
+  describe('getParentPrefix__', () => {
+    it('should return an empty string for the empty path', () => {
+      const vault = createVault();
+      const folder = TFolder.create__(vault, '');
+      expect(folder.getParentPrefix__()).toBe('');
+    });
+
+    it('should return an empty string for the root', () => {
+      const vault = createVault();
+      const folder = TFolder.create__(vault, '/');
+      expect(folder.getParentPrefix__()).toBe('');
+    });
+
+    it('should append a slash for a non-root folder', () => {
+      const vault = createVault();
+      const folder = TFolder.create__(vault, 'Docs/api');
+      expect(folder.getParentPrefix__()).toBe('Docs/api/');
+    });
+  });
 });
