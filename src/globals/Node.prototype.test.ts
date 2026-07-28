@@ -7,19 +7,16 @@ import {
 
 import {
   appendText,
-  constructorWin,
   createDiv,
   createEl,
   createSpan,
   createSvg,
   detach,
-  doc,
   empty,
   indexOf,
   insertAfter,
   instanceOf,
-  setChildrenInPlace,
-  win
+  setChildrenInPlace
 } from './Node.prototype.ts';
 
 describe('Node.prototype extensions', () => {
@@ -28,18 +25,6 @@ describe('Node.prototype extensions', () => {
       const el = document.createElement('div');
       appendText.call(el, 'hello');
       expect(el.textContent).toBe('hello');
-    });
-  });
-
-  describe('constructorWin', () => {
-    it('should return window', () => {
-      const el = document.createElement('div');
-      expect(constructorWin.call(el)).toBe(window);
-    });
-
-    it('should fall back to document when ownerDocument is null', () => {
-      // Document nodes have null ownerDocument
-      expect(constructorWin.call(document)).toBe(window);
     });
   });
 
@@ -192,18 +177,6 @@ describe('Node.prototype extensions', () => {
     });
   });
 
-  describe('doc', () => {
-    it('should return the owner document', () => {
-      const el = document.createElement('div');
-      expect(doc.call(el)).toBe(document);
-    });
-
-    it('should fall back to document when ownerDocument is null', () => {
-      // Document nodes have null ownerDocument
-      expect(doc.call(document)).toBe(document);
-    });
-  });
-
   describe('empty', () => {
     it('should remove all children', () => {
       const el = document.createElement('div');
@@ -270,18 +243,6 @@ describe('Node.prototype extensions', () => {
       expect(parent.childNodes).toHaveLength(newChildren.length);
       expect(parent.childNodes[0]).toBe(newChildren[0]);
       expect(parent.childNodes[1]).toBe(newChildren[1]);
-    });
-  });
-
-  describe('win', () => {
-    it('should return window', () => {
-      const el = document.createElement('div');
-      expect(win.call(el)).toBe(window);
-    });
-
-    it('should fall back to document when ownerDocument is null', () => {
-      // Document nodes have null ownerDocument
-      expect(win.call(document)).toBe(window);
     });
   });
 });

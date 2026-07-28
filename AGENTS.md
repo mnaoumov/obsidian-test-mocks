@@ -113,6 +113,20 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
   sliced source against `reference.original`.
 
+- **`Keymap.isModifier` / `Keymap.isModEvent` read the event.** They were unconditional `false` stubs
+  until 2026-07-27, which made every modifier-branching behavior untestable without a spy — and let a
+  test that forgot the spy silently exercise only the no-modifier path while looking green. Both now
+  mirror the real implementation: `Mod` resolves to `metaKey` when `Platform.isMacOS` (flip that mock
+  to exercise macOS) and `ctrlKey` otherwise; `isModEvent` returns `'tab'` for a middle click, `false`
+  without `Mod`, `'tab'` for `Mod`, `'split'` for `Mod`+`Alt`, and `'window'` for `Mod`+`Alt`+`Shift`.
+
+- **Value-typed global augmentations are properties, not methods** — `el.doc`, `el.win`,
+  `el.constructorWin`, `el.innerWidth` and `el.innerHeight` are read as values (`el.doc.body`),
+  matching how `obsidian.d.ts` declares them. `Object.assign` cannot define accessors, so these live in
+  dedicated `src/globals/*-setup.ts` modules (alongside the pre-existing `ui-event-setup.ts`) wired
+  through `post-setup.ts`, not in the `*.prototype.ts` modules. `conformance.test.ts` now enforces the
+  kind, so a value-typed member re-implemented as a method fails the gate.
+
 - **`SuggestModal`'s instruction bar is modeled**, so consumers can drive the real
   `SuggestModalCommandBuilder` (`obsidian-dev-utils` `obsidian/modals/suggest-modal-command-builder`)
   instead of hand-rolling a fake. `instructionsEl` is an obsidian-typings-only internal (not in

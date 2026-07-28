@@ -8,6 +8,9 @@
  *   equivalent member in the mocks.
  * - Reverse: any extra public mock member that is NOT in `obsidian.d.ts` must end
  *   with the `__` mock-only suffix.
+ * - Kind: a global-augmentation member declared as a value property (`doc: Document`)
+ *   must not be implemented as a method — a mock exposing it as a function compiles
+ *   against the real typings in consumers but blows up at runtime.
  *
  * This is a type-conformance meta-test: it deliberately reads the real
  * `obsidian.d.ts` via the TypeScript compiler API (not a behavioral unit test),
@@ -31,8 +34,10 @@ import process from 'node:process';
 import {
   createProgram,
   getCombinedModifierFlags,
+  isFunctionTypeNode,
   isInterfaceDeclaration,
   isModuleDeclaration,
+  isPropertySignature,
   ModifierFlags,
   NodeFlags,
   parseJsonConfigFileContent,
@@ -132,7 +137,7 @@ describe('obsidian.d.ts conformance', () => {
     expect(violations, formatViolations(violations)).toEqual([]);
   });
 
-  it('should implement every global member that obsidian.d.ts augments', () => {
+  it('should implement every global member that obsidian.d.ts augments, with the declared kind', () => {
     const violations: string[] = [];
 
     for (const [interfaceName, members] of globalAugmentations(obsidianSourceFile)) {
@@ -144,9 +149,13 @@ describe('obsidian.d.ts conformance', () => {
       if (!target) {
         continue;
       }
-      for (const member of members) {
+      for (const [member, isValueTyped] of members) {
         if (!(member in target)) {
           record(violations, `global ${interfaceName}: missing member "${member}"`);
+          continue;
+        }
+        if (isValueTyped && isImplementedAsMethod(target, member)) {
+          record(violations, `global ${interfaceName}: member "${member}" must be a value property, not a method`);
         }
       }
     }
@@ -228,8 +237,8 @@ function formatViolations(violations: string[]): string {
   return `${String(violations.length)} conformance violation(s):\n${violations.map((violation) => `  - ${violation}`).join('\n')}`;
 }
 
-function globalAugmentations(sourceFile: SourceFile): Map<string, Set<string>> {
-  const augmentations = new Map<string, Set<string>>();
+function globalAugmentations(sourceFile: SourceFile): Map<string, Map<string, boolean>> {
+  const augmentations = new Map<string, Map<string, boolean>>();
 
   sourceFile.forEachChild((node) => {
     if (!isModuleDeclaration(node) || !hasFlag(node.flags, NodeFlags.GlobalAugmentation) || !node.body || !('statements' in node.body)) {
@@ -240,13 +249,16 @@ function globalAugmentations(sourceFile: SourceFile): Map<string, Set<string>> {
         continue;
       }
       const interfaceName = statement.name.text;
-      const members = augmentations.get(interfaceName) ?? new Set<string>();
+      const members = augmentations.get(interfaceName) ?? new Map<string, boolean>();
       for (const member of statement.members) {
         const name = member.name?.getText(sourceFile);
         // Skip index signatures and obsidian-internal `_`-prefixed members (not part of the public API).
-        if (name && !name.startsWith('[') && !stripQuotes(name).startsWith('_')) {
-          members.add(stripQuotes(name));
+        if (!name || name.startsWith('[') || stripQuotes(name).startsWith('_')) {
+          continue;
         }
+        const memberName = stripQuotes(name);
+        const isValueTyped = isPropertySignature(member) && member.type !== undefined && !isFunctionTypeNode(member.type);
+        members.set(memberName, (members.get(memberName) ?? false) || isValueTyped);
       }
       augmentations.set(interfaceName, members);
     }
@@ -258,6 +270,16 @@ function globalAugmentations(sourceFile: SourceFile): Map<string, Set<string>> {
 function hasFlag(flags: number, mask: number): boolean {
   // eslint-disable-next-line no-bitwise -- Bitwise flag check against the TypeScript compiler's SymbolFlags / ModifierFlags / NodeFlags.
   return (flags & mask) !== 0;
+}
+
+function isImplementedAsMethod(target: object, member: string): boolean {
+  for (let current: null | object = target; current; current = Object.getPrototypeOf(current) as null | object) {
+    const descriptor = Object.getOwnPropertyDescriptor(current, member);
+    if (descriptor) {
+      return typeof descriptor.value === 'function';
+    }
+  }
+  return false;
 }
 
 function isPublic(symbol: TsSymbol): boolean {
