@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 3.7.0
+
+- fix(globals): make Keymap and value-typed augmented members faithful
+- docs: update
+- build: pin the dev Node version to 26 via .nvmrc
+- build: lock typescript to 6.0.3
+
 ## 3.6.0
 
 - feat: model SuggestModal instruction bar
