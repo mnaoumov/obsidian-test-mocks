@@ -1,15 +1,10 @@
 import type { SvgElementInfo } from '../internal/types.ts';
 
-import { ensureNonNullable } from '../internal/type-guards.ts';
 import { createEl as createElGlobal } from './functions/createEl.ts';
 import { createSvg as createSvgGlobal } from './functions/createSvg.ts';
 
 export function appendText(this: Node, val: string): void {
   this.appendChild(document.createTextNode(val));
-}
-
-export function constructorWin(this: Node): Window {
-  return ensureNonNullable((this.ownerDocument ?? document).defaultView);
 }
 
 export function createDiv(
@@ -56,10 +51,6 @@ export function detach(this: Node): void {
   this.parentNode?.removeChild(this);
 }
 
-export function doc(this: Node): Document {
-  return this.ownerDocument ?? document;
-}
-
 export function empty(this: Node): void {
   while (this.firstChild) {
     this.removeChild(this.firstChild);
@@ -92,8 +83,4 @@ export function setChildrenInPlace(this: Node, children: Node[]): void {
   for (const child of children) {
     this.appendChild(child);
   }
-}
-
-export function win(this: Node): Window {
-  return ensureNonNullable((this.ownerDocument ?? document).defaultView);
 }

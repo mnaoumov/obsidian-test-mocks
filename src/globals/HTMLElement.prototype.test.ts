@@ -11,8 +11,6 @@ import {
   findAll,
   findAllSelf,
   hide,
-  innerHeight,
-  innerWidth,
   isShown,
   off,
   on,
@@ -115,18 +113,6 @@ describe('HTMLElement.prototype extensions', () => {
       const el = document.createElement('div');
       toggleVisibility.call(el, false);
       expect(el.style.visibility).toBe('hidden');
-    });
-  });
-
-  describe('innerHeight / innerWidth', () => {
-    it('should return clientHeight', () => {
-      const el = document.createElement('div');
-      expect(innerHeight.call(el)).toBe(el.clientHeight);
-    });
-
-    it('should return clientWidth', () => {
-      const el = document.createElement('div');
-      expect(innerWidth.call(el)).toBe(el.clientWidth);
     });
   });
 

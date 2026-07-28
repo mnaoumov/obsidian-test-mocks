@@ -26,14 +26,6 @@ export function hide(this: HTMLElement): void {
   this.style.display = 'none';
 }
 
-export function innerHeight(this: HTMLElement): number {
-  return this.clientHeight;
-}
-
-export function innerWidth(this: HTMLElement): number {
-  return this.clientWidth;
-}
-
 export function isShown(this: HTMLElement): boolean {
   return !!this.offsetParent;
 }
