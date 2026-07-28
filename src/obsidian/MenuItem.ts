@@ -15,6 +15,7 @@ export class MenuItem {
   public isLabel__ = false;
   public onClick__: ((evt: KeyboardEvent | MouseEvent) => unknown) | null = null;
   public section__ = '';
+  public submenu__: Menu | null = null;
   public title__: DocumentFragment | string = '';
   public warning__ = false;
 
@@ -70,7 +71,8 @@ export class MenuItem {
   }
 
   public setSubmenu__(): Menu {
-    return Menu.create2__();
+    this.submenu__ ??= Menu.create2__();
+    return this.submenu__;
   }
 
   public setTitle(title: DocumentFragment | string): this {

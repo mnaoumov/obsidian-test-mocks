@@ -15,6 +15,10 @@ import {
   unbridgeFileSystemAdapter
 } from './bridges/file-system-adapter-bridge.ts';
 import {
+  bridgeMenuItem,
+  unbridgeMenuItem
+} from './bridges/menu-item-bridge.ts';
+import {
   bridgeMetadataCache,
   unbridgeMetadataCache
 } from './bridges/metadata-cache-bridge.ts';
@@ -48,6 +52,7 @@ export function setup(): void {
   bridgeCapacitorAdapter();
   bridgeComponent();
   bridgeFileSystemAdapter();
+  bridgeMenuItem();
   bridgeMetadataCache();
   bridgeSetting();
   bridgeSuggestModal();
@@ -62,6 +67,7 @@ export function teardown(): void {
   unbridgeCapacitorAdapter();
   unbridgeComponent();
   unbridgeFileSystemAdapter();
+  unbridgeMenuItem();
   unbridgeMetadataCache();
   unbridgeSetting();
   unbridgeSuggestModal();

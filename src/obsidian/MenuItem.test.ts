@@ -86,10 +86,21 @@ describe('MenuItem', () => {
   });
 
   describe('setSubmenu__', () => {
-    it('should return a new Menu', () => {
+    it('should have no submenu until one is created', () => {
+      const item = MenuItem.create__(null);
+      expect(item.submenu__).toBeNull();
+    });
+
+    it('should return a new Menu and record it', () => {
       const item = MenuItem.create__(null);
       const submenu = item.setSubmenu__();
       expect(submenu).toBeInstanceOf(Menu);
+      expect(item.submenu__).toBe(submenu);
+    });
+
+    it('should return the same Menu on subsequent calls', () => {
+      const item = MenuItem.create__(null);
+      expect(item.setSubmenu__()).toBe(item.setSubmenu__());
     });
   });
 
