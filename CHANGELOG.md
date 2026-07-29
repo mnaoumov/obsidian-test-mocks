@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.9.0
+
+- feat(menu-item): model the submenu surface
+
 ## 3.8.0
 
 - feat(vault): model the attachment-path resolution surface
