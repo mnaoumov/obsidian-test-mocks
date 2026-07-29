@@ -152,6 +152,19 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   through `post-setup.ts`, not in the `*.prototype.ts` modules. `conformance.test.ts` now enforces the
   kind, so a value-typed member re-implemented as a method fails the gate.
 
+- **A `Document`'s `.doc` / `.win` resolve to the MAIN document / window — deliberately** (verified
+  2026-07-29). `src/globals/node-setup.ts` falls back to the **global** `document`, not to `this`, because
+  that is Obsidian 1.13.4 verbatim — the shipped bundle defines each extension exactly once:
+  `n(Node.prototype, "doc", function () { return this.ownerDocument || document })` and
+  `n(Node.prototype, "win", function () { return this.doc.defaultView || window })`. A `Document` is the one
+  node whose `ownerDocument` is `null`, so `someDocument.doc` is the main document and `someDocument.win` the
+  main window **even for a pop-out** — in real Obsidian as much as here. This looks like a mock bug and is
+  not one: `obsidian-dev-utils`' `getDocumentWindow(doc)` exists precisely to work around it, so
+  pop-out-aware consumers must use that rather than reading `doc.win`. "Correcting" the fallback to
+  `?? this` would make the mock *more* correct than Obsidian and therefore lie — a pop-out unit test would
+  pass here while the real code resolved the main window. `node-setup.test.ts` pins both halves with a
+  second document in play, so the two candidate fallbacks are distinguishable and the wrong one fails.
+
 - **`MenuItem`'s submenu is modeled** (added 2026-07-28), so a plugin's real menu handler —
   `menu.addItem((item) => { const subMenu = item.setSubmenu(); … })`, the shape every plugin with a
   context submenu uses — runs against the mocks. Both names are obsidian-typings internals (neither
