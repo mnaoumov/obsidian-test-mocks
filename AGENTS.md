@@ -152,6 +152,18 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   through `post-setup.ts`, not in the `*.prototype.ts` modules. `conformance.test.ts` now enforces the
   kind, so a value-typed member re-implemented as a method fails the gate.
 
+- **`MenuItem`'s submenu is modeled** (added 2026-07-28), so a plugin's real menu handler —
+  `menu.addItem((item) => { const subMenu = item.setSubmenu(); … })`, the shape every plugin with a
+  context submenu uses — runs against the mocks. Both names are obsidian-typings internals (neither
+  `setSubmenu` nor `submenu` is in `obsidian.d.ts`), so the un-suffixed names come from
+  `obsidian-typings/setup`; the backing members are `MenuItem.setSubmenu__()` and
+  `MenuItem.submenu__`. `setSubmenu__()` **memoizes** — it creates the `Menu` on first call and
+  returns that same instance afterwards, mirroring real Obsidian's `this.submenu || (…)` — and
+  records it in `submenu__`, so a test can read back the items the plugin added to the submenu
+  (`item.submenu__?.items__`). Previously it built a fresh `Menu` and threw it away. The real
+  implementation's DOM side effects (the `has-submenu` class and the `menu-item-icon mod-submenu`
+  chevron) are NOT modeled — `MenuItem` has no `dom__`.
+
 - **`SuggestModal`'s instruction bar is modeled**, so consumers can drive the real
   `SuggestModalCommandBuilder` (`obsidian-dev-utils` `obsidian/modals/suggest-modal-command-builder`)
   instead of hand-rolling a fake. `instructionsEl` is an obsidian-typings-only internal (not in
