@@ -25,11 +25,14 @@ import {
   assertNonNullable,
   ensureNonNullable
 } from '../src/internal/type-guards.ts';
+import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
 import {
   execFromRoot,
   getRootFolder,
   toPosixPath
 } from './helpers/root.ts';
+
+exitIfScriptDisabled();
 
 interface NpmPackResult {
   readonly filename: string;

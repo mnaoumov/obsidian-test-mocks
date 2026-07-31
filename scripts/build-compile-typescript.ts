@@ -5,10 +5,13 @@ import {
   parseTsConfig,
   toCanonical
 } from './helpers/check-project-types.ts';
+import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
 import {
   execFromRoot,
   getRootFolder
 } from './helpers/root.ts';
+
+exitIfScriptDisabled();
 
 const NODE_MODULES_SEGMENT = '/node_modules/';
 
