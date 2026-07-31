@@ -13,7 +13,10 @@ import {
   join
 } from 'node:path';
 
+import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
 import { execFromRoot } from './helpers/root.ts';
+
+exitIfScriptDisabled();
 
 const ESM_DIR = 'dist/lib/esm';
 const CJS_DIR = 'dist/lib/cjs';

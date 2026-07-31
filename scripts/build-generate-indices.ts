@@ -6,6 +6,10 @@ import {
 } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
+
+exitIfScriptDisabled();
+
 const EXPORT_PATTERN = /^export\s+(?:(?:abstract\s+)?class|(?:async\s+)?function|const|enum|interface|let|type|var)\s+(?<name>\w+)/gm;
 
 interface BarrelResult {
