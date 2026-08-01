@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 3.10.0
+
+- feat(SettingTab): render declarative setting definitions the way Obsidian does
+- feat(scripts): add per-script env-var off switch
+- chore: update libs and clear the npm audit
+- test(node-setup): pin the doc getter's global-document fallback
+
 ## 3.9.0
 
 - feat(menu-item): model the submenu surface
