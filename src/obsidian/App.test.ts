@@ -6,7 +6,10 @@ import {
   it
 } from 'vitest';
 
-import { ensureGenericObject } from '../internal/type-guards.ts';
+import {
+  ensureGenericObject,
+  ensureNonNullable
+} from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { RenderContext } from './RenderContext.ts';
@@ -150,6 +153,27 @@ describe('App', () => {
     it('should expose a SecretStorage instance', () => {
       const app = App.createConfigured__();
       expect(app.secretStorage).toBeInstanceOf(SecretStorage);
+    });
+  });
+
+  // A note whose `%%` comment sits on its own line after a blank line is the ordinary Obsidian layout,
+  // And it used to be rejected on EVERY write — both seeding and `vault.modify` — because the markdown
+  // Parser computed the wrong offset for the second block of a gap. Asserted here, at the surface a
+  // Plugin's tests actually use, rather than only against the parser internals.
+  describe('a standalone comment block after a blank line', () => {
+    const CONTENT_WITH_COMMENT_BLOCK = 'text\n\n%% c %%\n';
+
+    it('should be accepted when seeding files', () => {
+      const app = App.createConfigured__({ files: { 'A.md': CONTENT_WITH_COMMENT_BLOCK } });
+      const file = ensureNonNullable(app.vault.getFileByPath('A.md'));
+      expect(app.metadataCache.getFileCache(file)).not.toBeNull();
+    });
+
+    it('should be accepted when modifying a note', async () => {
+      const app = App.createConfigured__({ files: { 'A.md': 'text\n' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('A.md'));
+      await app.vault.modify(file, CONTENT_WITH_COMMENT_BLOCK);
+      expect(await app.vault.read(file)).toBe(CONTENT_WITH_COMMENT_BLOCK);
     });
   });
 });

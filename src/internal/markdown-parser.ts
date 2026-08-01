@@ -15,10 +15,7 @@ import type {
 import { getFrontMatterInfo } from '../obsidian/functions/getFrontMatterInfo.ts';
 import { parseYaml } from '../obsidian/functions/parseYaml.ts';
 import { strictProxy } from './strict-proxy.ts';
-import {
-  assert,
-  ensureNonNullable
-} from './type-guards.ts';
+import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * Parses markdown content into a `CachedMetadata` object.
@@ -74,14 +71,19 @@ function addGapSections(
   sections: SectionCache[]
 ): void {
   const gapContent = content.slice(gapStart, gapEnd);
-  // Split by blank lines into paragraphs
-  const blocks = gapContent.split(/\n\s*\n/);
+  // Split by blank lines into paragraphs, CAPTURING the separators. Every part's own length then
+  // Advances the running offset, so each block's position is the one it actually occupies rather than
+  // One reconstructed from the block length plus a guessed single separator character. That
+  // Reconstruction both double-counted the block (the offset had already advanced to its end) and
+  // Assumed a one-character separator, while a blank line is at least two — so from the second block
+  // Of a gap onwards the lookup ran past the block and failed. A `%%` comment on its own line after a
+  // Blank line is the everyday shape that hit it.
+  const parts = gapContent.split(/(?<blankLine>\n\s*\n)/);
   let offset = gapStart;
-  for (const block of blocks) {
-    const trimmed = block.trim();
+  for (const part of parts) {
+    const trimmed = part.trim();
     if (trimmed.length > 0) {
-      const blockStart = content.indexOf(trimmed, offset);
-      assert(blockStart >= 0, `Block not found in content at offset ${String(offset)}`);
+      const blockStart = offset + part.indexOf(trimmed);
       const blockEnd = blockStart + trimmed.length;
       let type = 'paragraph';
       if (trimmed.startsWith('>')) {
@@ -96,9 +98,8 @@ function addGapSections(
         position: makePos(lineStarts, blockStart, blockEnd),
         type
       });
-      offset = blockEnd;
     }
-    offset += block.length + 1; // +1 for the split separator
+    offset += part.length;
   }
 }
 

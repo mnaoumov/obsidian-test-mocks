@@ -20,6 +20,11 @@ const HEADING_OFFSET = 10;
 const COMPLEX_HEADING_COUNT = 2;
 const COMPLEX_LIST_ITEM_COUNT = 2;
 const NESTED_LIST_TOTAL_COUNT = 4;
+const PARAGRAPH_COUNT_2 = 2;
+const PARAGRAPH_COUNT_3 = 3;
+const FIRST_BLOCK_END_OFFSET = 4;
+const SECOND_BLOCK_START_OFFSET = 6;
+const SECOND_BLOCK_LINE = 2;
 
 describe('parseMarkdownContent', () => {
   describe('empty document', () => {
@@ -466,6 +471,51 @@ describe('parseMarkdownContent', () => {
 
       const listSections = cache.sections?.filter((s) => s.type === 'list');
       expect(listSections).toHaveLength(LIST_ITEM_COUNT_2);
+    });
+
+    // Regression: a gap holding more than one block used to reconstruct the second block's offset from
+    // The first block's LENGTH plus a single separator character, on top of an offset that had already
+    // Advanced to the first block's end. The lookup then ran past the block and threw
+    // "Block not found in content". A standalone `%%` comment after a blank line is the everyday shape
+    // That hit it, and real Obsidian parses every shape below.
+    it('should parse a standalone comment block that follows a blank line', () => {
+      const content = 'text\n\n%% c %%\n';
+      const cache = parseMarkdownContent(content);
+
+      const paragraphs = cache.sections?.filter((section) => section.type === 'paragraph');
+      expect(paragraphs).toHaveLength(PARAGRAPH_COUNT_2);
+    });
+
+    it('should position each block of a multi-block gap at its own offset', () => {
+      const content = 'text\n\n%% c %%\n';
+      const cache = parseMarkdownContent(content);
+
+      const paragraphs = ensureNonNullable(cache.sections).filter((section) => section.type === 'paragraph');
+      const [first, second] = paragraphs;
+      expect(first?.position.start.offset).toBe(0);
+      expect(first?.position.end.offset).toBe(FIRST_BLOCK_END_OFFSET);
+      expect(second?.position.start.offset).toBe(SECOND_BLOCK_START_OFFSET);
+      expect(second?.position.start.line).toBe(SECOND_BLOCK_LINE);
+      expect(second?.position.start.col).toBe(0);
+    });
+
+    it('should parse blocks separated by a blank line that carries whitespace', () => {
+      const content = 'first paragraph\n   \nsecond paragraph';
+      const cache = parseMarkdownContent(content);
+
+      const paragraphs = ensureNonNullable(cache.sections).filter((section) => section.type === 'paragraph');
+      expect(paragraphs).toHaveLength(PARAGRAPH_COUNT_2);
+      expect(paragraphs[1]?.position.start.offset).toBe(content.indexOf('second'));
+    });
+
+    it('should parse three blocks separated by blank lines', () => {
+      const content = 'alpha\n\nbeta\n\ngamma\n';
+      const cache = parseMarkdownContent(content);
+
+      const paragraphs = ensureNonNullable(cache.sections).filter((section) => section.type === 'paragraph');
+      expect(paragraphs).toHaveLength(PARAGRAPH_COUNT_3);
+      expect(paragraphs[1]?.position.start.offset).toBe(content.indexOf('beta'));
+      expect(paragraphs[2]?.position.start.offset).toBe(content.indexOf('gamma'));
     });
   });
 
