@@ -5,9 +5,17 @@ import type {
   SettingTab as SettingTabOriginal
 } from 'obsidian';
 
+import type {
+  RenderedSettingGroup,
+  RenderedSettingRow
+} from '../internal/setting-definition-renderer.ts';
 import type { App } from './App.ts';
 
 import { noop } from '../internal/noop.ts';
+import {
+  applyDomState,
+  renderSettingDefinitions
+} from '../internal/setting-definition-renderer.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
 export abstract class SettingTab {
@@ -15,6 +23,7 @@ export abstract class SettingTab {
   public containerEl: HTMLDivElement;
   public icon: IconNameOriginal = '';
   public settingItems: SettingDefinitionItemOriginal[] = [];
+  private renderedGroups: RenderedSettingGroup[] = [];
 
   public constructor(app: App, setting?: SettingOriginal) {
     this.app = app;
@@ -44,16 +53,31 @@ export abstract class SettingTab {
     return undefined;
   }
 
+  public getRenderedRows__(): RenderedSettingRow[] {
+    return this.renderedGroups.flatMap((group) => group.children);
+  }
+
   public getSettingDefinitions(): SettingDefinitionItemOriginal[] {
     return [];
   }
 
   public hide(): void {
+    this.renderedGroups = [];
     this.containerEl.innerHTML = '';
   }
 
   public refreshDomState(): void {
-    noop();
+    applyDomState(this.renderedGroups);
+  }
+
+  public renderTab__(): void {
+    if (this.settingItems.length === 0) {
+      this.renderedGroups = [];
+      this.display();
+      return;
+    }
+
+    this.renderedGroups = renderSettingDefinitions(this.settingItems, this.containerEl);
   }
 
   public setControlValue(_key: string, _value: unknown): void {

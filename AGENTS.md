@@ -60,6 +60,7 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `icon-registry.ts` — shared `Map<string, string>` for icon storage (addIcon, removeIcon, getIcon, etc.)
 - `in-memory-adapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
 - `noop.ts` — `noop()` / `noopAsync()` helpers for otherwise-empty method bodies (see L2)
+- `setting-definition-renderer.ts` — renders declarative setting definitions the way Obsidian 1.13 does; drives `SettingTab.renderTab__()` / `refreshDomState()`
 - `strict-proxy.ts` — `strictProxy()` mock wrapper that throws on unmocked property access (see L9)
 - `types.ts` — inlined type shapes (from obsidian-typings) to avoid augmentation side effects
 - `type-guards.ts` — `assert()`, `ensureNonNullable()`, and similar guards
@@ -176,6 +177,35 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   (`item.submenu__?.items__`). Previously it built a fresh `Menu` and threw it away. The real
   implementation's DOM side effects (the `has-submenu` class and the `menu-item-icon mod-submenu`
   chevron) are NOT modeled — `MenuItem` has no `dom__`.
+
+- **Declarative settings tabs render for real** (added 2026-07-31). Obsidian 1.13 builds a tab from
+  `getSettingDefinitions()`, and nothing rendered those definitions in a unit test — so every plugin that
+  migrated hand-rolled its own mini-renderer, in four divergent shapes, most of which silently ignored the
+  `visible` / `disabled` predicates. `SettingTab.renderTab__()` (mock-only per L4; `renderTab` is the real
+  internal name) now does it, backed by `src/internal/setting-definition-renderer.ts`, which mirrors the
+  shipped Obsidian 1.13.x renderer function for function (`V2`/`Q2`/`$2`/`Z2`/`n6`/`U2`/`_2`/`z2`/`Y2`).
+  - **Usage:** `tab.update()` (the real API that stores the definitions in `settingItems`) then
+    `tab.renderTab__()`. From a consumer whose tab is typed against the real `PluginSettingTab`, bridge with
+    `SettingTab.fromOriginalType__(tab)` (L6). Read the result back with `getRenderedRows__()` — one entry per
+    rendered row: `{ cleanup, definition, isVisible, setting, settingEl }`. `refreshDomState()` re-evaluates
+    the predicates over the already-rendered tree, and `hide()` clears it.
+  - **A hidden row is RENDERED, then hidden** — `settingEl.toggle(visible)` — exactly as Obsidian does; it
+    never skips a row's `render` callback. A helper that skips invisible rows (the shape most plugins copied)
+    diverges from the app and leaves those callbacks uncovered. `disabled` is applied only when the definition
+    declares it, and a predicate that throws logs and falls back to its default, both verbatim from `app.js`.
+    Note `disabled` is honored on every definition kind at runtime even though `obsidian.d.ts` declares it
+    only on the action and control variants.
+  - **A group is hidden when its own predicate is false OR every row it owns is hidden**; a group that owns no
+    rows stays visible. Loose top-level rows are wrapped in an implicit headless group, so every row is
+    rendered inside a `SettingGroup` — which is what reaches a `render` callback's second argument (the
+    hand-rolled copies all passed `null` there).
+  - **Not modeled, deliberately:** `control` rows **throw** rather than render an empty row (no consumer uses
+    them; `G101` mandates `settingEx` instead); there is no keyed reconciliation, so each `renderTab__()`
+    rebuilds; group search inputs and the `list` add/delete/reorder affordances are absent (a `list` renders as
+    a group); and a `page` renders as its own name/desc row without navigation — render its `items` by passing
+    them in explicitly.
+  - `Setting.setDisabled` still does not propagate to the components on the row (it does in real Obsidian), so
+    assert the predicate, not `component.disabled`.
 
 - **`SuggestModal`'s instruction bar is modeled**, so consumers can drive the real
   `SuggestModalCommandBuilder` (`obsidian-dev-utils` `obsidian/modals/suggest-modal-command-builder`)
