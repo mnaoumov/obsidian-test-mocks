@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.10.1
+
+- fix(markdown-parser): locate every block of a multi-block gap at its own offset
+
 ## 3.10.0
 
 - feat(SettingTab): render declarative setting definitions the way Obsidian does
