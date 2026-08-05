@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.11.0
+
+- feat!: record separators in the Menu mock
+- feat(menu): bridge Menu.items and Menu.setSectionSubmenu
+
 ## 3.10.1
 
 - fix(markdown-parser): locate every block of a multi-block gap at its own offset
