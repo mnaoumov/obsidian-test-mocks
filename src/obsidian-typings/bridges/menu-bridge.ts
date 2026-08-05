@@ -27,9 +27,10 @@ interface SectionSubmenuConfig {
  * production code reading them can be unit-tested. Without this the strict proxy throws on the read
  * rather than returning `undefined`, which is what made `menu.items` untestable.
  *
- * `items` is a getter over the mock's own `items__`. NOTE that `Menu.addSeparator()` is a no-op in the
- * mock, so `items` never contains a `MenuSeparator` even though the real member can — a suite asserting
- * on separators needs the mock to record them first (see [[T344-P35]]).
+ * `items` is a getter over the mock's own `items__`, which holds both the added items and the separators
+ * `addSeparator()` records — so a count read through it matches what Obsidian reports, which is what
+ * production code branching on `menu.items.length` depends on. Reading a `MenuItem`-only member off an
+ * element requires narrowing; `Menu.menuItems__` does it for you.
  */
 export function bridgeMenu(): void {
   defineMissingProperty(Menu.prototype, ITEMS_NAME, {

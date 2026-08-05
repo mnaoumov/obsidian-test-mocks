@@ -58,7 +58,19 @@ describe('menu-bridge', () => {
 
       const items = readItems(menu.asOriginalType2__());
       expect(items).toHaveLength(2);
-      expect(menu.items__.map((item) => item.title__)).toEqual(['First', 'Second']);
+      expect(menu.menuItems__.map((item) => item.title__)).toEqual(['First', 'Second']);
+    });
+
+    it('should include separators, so a length check answers as Obsidian would', () => {
+      bridgeMenu();
+      const menu = Menu.create2__();
+      menu.addItem((item) => item.setTitle('First'));
+      menu.addSeparator();
+      menu.addItem((item) => item.setTitle('Second'));
+
+      // This is the case the bridge exists for: production code contributing to a menu branches on
+      // `menu.items.length`, and a mock that dropped separators gave it a different answer than Obsidian.
+      expect(readItems(menu.asOriginalType2__())).toHaveLength(3);
     });
 
     it('should track the mock\'s own items__, so a later addition shows through the same getter', () => {

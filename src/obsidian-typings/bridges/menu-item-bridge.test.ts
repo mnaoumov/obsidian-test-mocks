@@ -75,9 +75,9 @@ describe('menu-item-bridge', () => {
       });
     });
 
-    const item = menu.items__[0];
+    const item = menu.menuItems__[0];
     expect(item?.title__).toBe('Blueprint');
-    expect(item?.submenu__?.items__.map((subItem) => subItem.title__)).toEqual(['New blueprint']);
+    expect(item?.submenu__?.menuItems__.map((subItem) => subItem.title__)).toEqual(['New blueprint']);
   });
 
   it('should not overwrite if properties already exist', () => {

@@ -9,6 +9,7 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { Component } from './Component.ts';
 // eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
 import { MenuItem } from './MenuItem.ts';
+import { MenuSeparator } from './MenuSeparator.ts';
 
 /**
  * A section's submenu, as recorded by the bridged `Menu.setSectionSubmenu`.
@@ -20,8 +21,20 @@ export interface SectionSubmenu__ {
 
 export class Menu extends Component {
   public dom__: HTMLElement;
-  public items__: MenuItem[] = [];
+  public items__: (MenuItem | MenuSeparator)[] = [];
   public sectionSubmenus__ = new Map<string, SectionSubmenu__>();
+
+  /**
+   * The added items, separators excluded.
+   *
+   * `items__` mirrors the real `Menu.items` and so holds both kinds. Nearly every reader wants only the
+   * items — it is reading `title__` or `submenu__`, which a separator does not have — so this saves
+   * narrowing at each read. Use `items__` when the separators themselves matter (asserting on their
+   * positions, or on a count that has to match what Obsidian reports).
+   */
+  public get menuItems__(): MenuItem[] {
+    return this.items__.filter((item) => item instanceof MenuItem);
+  }
 
   private onHideCallback: (() => unknown) | null = null;
 
@@ -53,6 +66,7 @@ export class Menu extends Component {
   }
 
   public addSeparator(): this {
+    this.items__.push(MenuSeparator.create__(this));
     return this;
   }
 
