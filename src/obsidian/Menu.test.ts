@@ -9,6 +9,7 @@ import {
 
 import { noop } from '../internal/noop.ts';
 import { Menu } from './Menu.ts';
+import { MenuSeparator } from './MenuSeparator.ts';
 
 describe('Menu', () => {
   it('should create an instance via create2__', () => {
@@ -53,6 +54,45 @@ describe('Menu', () => {
     it('should return this for chaining', () => {
       const menu = Menu.create2__();
       expect(menu.addSeparator()).toBe(menu);
+    });
+
+    it('should record the separator in items__, so a count matches what Obsidian reports', () => {
+      const menu = Menu.create2__();
+      menu.addSeparator();
+      expect(menu.items__).toHaveLength(1);
+      expect(menu.items__[0]).toBeInstanceOf(MenuSeparator);
+    });
+
+    it('should interleave with items in insertion order', () => {
+      const menu = Menu.create2__();
+      menu.addItem((item) => item.setTitle('Before'));
+      menu.addSeparator();
+      menu.addItem((item) => item.setTitle('After'));
+
+      expect(menu.items__.map((item) => item instanceof MenuSeparator)).toEqual([false, true, false]);
+    });
+  });
+
+  describe('menuItems__', () => {
+    it('should be empty for a fresh menu', () => {
+      expect(Menu.create2__().menuItems__).toEqual([]);
+    });
+
+    it('should exclude separators, leaving the items readable without narrowing', () => {
+      const menu = Menu.create2__();
+      menu.addItem((item) => item.setTitle('First'));
+      menu.addSeparator();
+      menu.addItem((item) => item.setTitle('Second'));
+
+      expect(menu.menuItems__.map((item) => item.title__)).toEqual(['First', 'Second']);
+    });
+
+    it('should reflect a later addition, being a getter over items__', () => {
+      const menu = Menu.create2__();
+      expect(menu.menuItems__).toHaveLength(0);
+
+      menu.addItem((item) => item.setTitle('Added later'));
+      expect(menu.menuItems__).toHaveLength(1);
     });
   });
 
