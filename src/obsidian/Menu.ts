@@ -10,9 +10,18 @@ import { Component } from './Component.ts';
 // eslint-disable-next-line import-x/no-cycle -- Cannot break the circular dependency.
 import { MenuItem } from './MenuItem.ts';
 
+/**
+ * A section's submenu, as recorded by the bridged `Menu.setSectionSubmenu`.
+ */
+export interface SectionSubmenu__ {
+  readonly icon: string;
+  readonly title: string;
+}
+
 export class Menu extends Component {
   public dom__: HTMLElement;
   public items__: MenuItem[] = [];
+  public sectionSubmenus__ = new Map<string, SectionSubmenu__>();
 
   private onHideCallback: (() => unknown) | null = null;
 
