@@ -22,11 +22,11 @@ export function delegatedOff(
 export function delegatedOn<T extends EventTarget>(
   target: T,
   type: string,
-  listener: (this: T, ev: Event, delegateTarget: HTMLElement) => unknown,
+  listener: (this: T, event: Event, delegateTarget: HTMLElement) => unknown,
   options?: AddEventListenerOptions | boolean
 ): void {
-  function cb(ev: Event): void {
-    listener.call(target, ev, ev.target as HTMLElement);
+  function callback(event: Event): void {
+    listener.call(target, event, event.target as HTMLElement);
   }
   const map = getMap(target);
   let byType = map.get(type);
@@ -34,8 +34,8 @@ export function delegatedOn<T extends EventTarget>(
     byType = new Map();
     map.set(type, byType);
   }
-  byType.set(listener, cb);
-  target.addEventListener(type, cb, options);
+  byType.set(listener, callback);
+  target.addEventListener(type, callback, options);
 }
 
 function getMap(target: EventTarget): Map<string, Map<unknown, EventListener>> {

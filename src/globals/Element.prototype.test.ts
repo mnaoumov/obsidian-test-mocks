@@ -50,7 +50,7 @@ describe('Element.prototype extensions', () => {
       const parent = document.createElement('div');
       const child = document.createElement('span');
       child.className = 'target';
-      parent.appendChild(child);
+      parent.append(child);
       expect(find.call(parent, '.target')).toBe(child);
     });
 
@@ -66,7 +66,7 @@ describe('Element.prototype extensions', () => {
       const items = [document.createElement('span'), document.createElement('span')];
       for (const item of items) {
         item.className = 'item';
-        parent.appendChild(item);
+        parent.append(item);
       }
       expect(findAll.call(parent, '.item')).toHaveLength(items.length);
     });
@@ -85,7 +85,7 @@ describe('Element.prototype extensions', () => {
       const el = document.createElement('div');
       const child = document.createElement('span');
       child.className = 'target';
-      el.appendChild(child);
+      el.append(child);
       const results = findAllSelf.call(el, '.target');
       expect(results).toHaveLength(1);
       expect(results[0]).toBe(child);
@@ -139,9 +139,9 @@ describe('Element.prototype extensions', () => {
       grandparent.className = 'ancestor';
       const parent = document.createElement('div');
       const child = document.createElement('span');
-      grandparent.appendChild(parent);
-      parent.appendChild(child);
-      document.body.appendChild(grandparent);
+      grandparent.append(parent);
+      parent.append(child);
+      document.body.append(grandparent);
 
       const result = matchParent.call(child, '.ancestor');
       expect(result).toBe(grandparent);
@@ -152,8 +152,8 @@ describe('Element.prototype extensions', () => {
     it('should return null when no ancestor matches', () => {
       const parent = document.createElement('div');
       const child = document.createElement('span');
-      parent.appendChild(child);
-      document.body.appendChild(parent);
+      parent.append(child);
+      document.body.append(parent);
 
       expect(matchParent.call(child, '.nonexistent')).toBeNull();
 
@@ -165,9 +165,9 @@ describe('Element.prototype extensions', () => {
       grandparent.className = 'ancestor';
       const parent = document.createElement('div');
       const child = document.createElement('span');
-      grandparent.appendChild(parent);
-      parent.appendChild(child);
-      document.body.appendChild(grandparent);
+      grandparent.append(parent);
+      parent.append(child);
+      document.body.append(grandparent);
 
       // Stop at parent, so grandparent is not checked
       const result = matchParent.call(child, '.ancestor', parent);
@@ -238,7 +238,7 @@ describe('Element.prototype extensions', () => {
   describe('setText', () => {
     it('should set text content from a string', () => {
       const el = document.createElement('div');
-      el.appendChild(document.createElement('span'));
+      el.append(document.createElement('span'));
       setText.call(el, 'new text');
       expect(el.textContent).toBe('new text');
       expect(el.childNodes).toHaveLength(1);
@@ -248,7 +248,7 @@ describe('Element.prototype extensions', () => {
       const el = document.createElement('div');
       el.textContent = 'old';
       const frag = document.createDocumentFragment();
-      frag.appendChild(document.createTextNode('fragment content'));
+      frag.append(document.createTextNode('fragment content'));
       setText.call(el, frag);
       expect(el.textContent).toBe('fragment content');
     });
@@ -257,7 +257,7 @@ describe('Element.prototype extensions', () => {
   describe('getCssPropertyValue', () => {
     it('should return the computed style property value', () => {
       const el = document.createElement('div');
-      document.body.appendChild(el);
+      document.body.append(el);
       const result = getCssPropertyValue.call(el, 'display');
       expect(typeof result).toBe('string');
       document.body.removeChild(el);

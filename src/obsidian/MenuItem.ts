@@ -13,7 +13,7 @@ export class MenuItem {
   public disabled__ = false;
   public icon__: IconNameOriginal | null = null;
   public isLabel__ = false;
-  public onClick__: ((evt: KeyboardEvent | MouseEvent) => unknown) | null = null;
+  public onClick__: ((event: KeyboardEvent | MouseEvent) => unknown) | null = null;
   public section__ = '';
   public submenu__: Menu | null = null;
   public title__: DocumentFragment | string = '';
@@ -40,7 +40,7 @@ export class MenuItem {
     noop();
   }
 
-  public onClick(callback: (evt: KeyboardEvent | MouseEvent) => unknown): this {
+  public onClick(callback: (event: KeyboardEvent | MouseEvent) => unknown): this {
     this.onClick__ = callback;
     return this;
   }

@@ -12,48 +12,48 @@ const TEST_NUMBER = 7;
 
 describe('NumberValue', () => {
   it('should create an instance via create__', () => {
-    const val = NumberValue.create__();
-    expect(val).toBeInstanceOf(NumberValue);
+    const value = NumberValue.create__();
+    expect(value).toBeInstanceOf(NumberValue);
   });
 
   it('should default to 0', () => {
-    const val = new NumberValue();
-    expect(val.value__).toBe(0);
+    const value = new NumberValue();
+    expect(value.value__).toBe(0);
   });
 
   it('should accept a value', () => {
-    const val = new NumberValue(TEST_NUMBER);
-    expect(val.value__).toBe(TEST_NUMBER);
+    const value = new NumberValue(TEST_NUMBER);
+    expect(value.value__).toBe(TEST_NUMBER);
   });
 
   it('should return false for isTruthy when 0', () => {
-    const val = new NumberValue(0);
-    expect(val.isTruthy()).toBe(false);
+    const value = new NumberValue(0);
+    expect(value.isTruthy()).toBe(false);
   });
 
   it('should return true for isTruthy when non-zero', () => {
-    const val = new NumberValue(1);
-    expect(val.isTruthy()).toBe(true);
+    const value = new NumberValue(1);
+    expect(value.isTruthy()).toBe(true);
   });
 
   it('should convert to string', () => {
-    const val = new NumberValue(TEST_NUMBER);
-    expect(String(val)).toBe(String(TEST_NUMBER));
+    const value = new NumberValue(TEST_NUMBER);
+    expect(String(value)).toBe(String(TEST_NUMBER));
   });
 
   describe('asOriginalType4__', () => {
     it('should return the same instance typed as the original', () => {
-      const val = NumberValue.create__();
-      const original: NumberValueOriginal = val.asOriginalType4__();
-      expect(original).toBe(val);
+      const value = NumberValue.create__();
+      const original: NumberValueOriginal = value.asOriginalType4__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = NumberValue.create__();
-      const mock = NumberValue.fromOriginalType4__(val.asOriginalType4__());
-      expect(mock).toBe(val);
+      const value = NumberValue.create__();
+      const mock = NumberValue.fromOriginalType4__(value.asOriginalType4__());
+      expect(mock).toBe(value);
     });
   });
 });

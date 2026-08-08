@@ -103,8 +103,13 @@ export class DurationValue extends NotNullValue {
     if (WEEK_UNITS.has(unit)) {
       value *= DAYS_IN_WEEK;
     }
-    const components = { days: 0, hours: 0, minutes: 0, months: 0, seconds: 0, years: 0 };
-    components[component] = value;
+    /*
+     * The computed key has to come LAST: it names one of the six literal keys before it, so hoisting it to the
+     * front — as `unicorn/no-immediate-mutation`'s fixer does — lets the `0` that follows overwrite the parsed
+     * value. `perfectionist/sort-objects` cannot see that dependency and would sort it back into place.
+     */
+    // eslint-disable-next-line perfectionist/sort-objects -- See the note above: the computed key must stay last.
+    const components = { days: 0, hours: 0, minutes: 0, months: 0, seconds: 0, years: 0, [component]: value };
     return DurationValue.create__(components.years, components.months, components.days, components.hours, components.minutes, components.seconds, 0);
   }
 

@@ -26,7 +26,6 @@ describe('iterateCacheRefs', () => {
     const visited: string[] = [];
     iterateCacheRefs({ links }, (ref) => {
       visited.push(ref.link);
-      return undefined;
     });
     expect(visited).toEqual(['link1']);
   });
@@ -36,32 +35,31 @@ describe('iterateCacheRefs', () => {
     const visited: string[] = [];
     iterateCacheRefs({ embeds }, (ref) => {
       visited.push(ref.link);
-      return undefined;
     });
     expect(visited).toEqual(['embed1']);
   });
 
   it('should return true when callback returns true for a link', () => {
     const links = [makeRef('a')];
-    const result = iterateCacheRefs({ links }, () => true);
-    expect(result).toBe(true);
+    const isResult = iterateCacheRefs({ links }, () => true);
+    expect(isResult).toBe(true);
   });
 
   it('should return true when callback returns true for an embed', () => {
     const embeds = [makeRef('a')];
-    const result = iterateCacheRefs({ embeds }, () => true);
-    expect(result).toBe(true);
+    const isResult = iterateCacheRefs({ embeds }, () => true);
+    expect(isResult).toBe(true);
   });
 
   it('should return false when cache has no links or embeds', () => {
-    const result = iterateCacheRefs({}, () => true);
-    expect(result).toBe(false);
+    const isResult = iterateCacheRefs({}, () => true);
+    expect(isResult).toBe(false);
   });
 
   it('should check links before embeds', () => {
     const links = [makeRef('link')];
     const embeds = [makeRef('embed')];
-    const result = iterateCacheRefs({ embeds, links }, () => true);
-    expect(result).toBe(true);
+    const isResult = iterateCacheRefs({ embeds, links }, () => true);
+    expect(isResult).toBe(true);
   });
 });

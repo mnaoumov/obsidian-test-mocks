@@ -9,7 +9,7 @@ import { BaseComponent } from './BaseComponent.ts';
 
 export class ButtonComponent extends BaseComponent {
   public buttonEl: HTMLButtonElement;
-  private clickHandler?: (evt: MouseEvent) => unknown;
+  private clickHandler?: (event: MouseEvent) => unknown;
 
   public constructor(containerEl: HTMLElement) {
     super();
@@ -35,7 +35,7 @@ export class ButtonComponent extends BaseComponent {
     noop();
   }
 
-  public onClick(callback: (evt: MouseEvent) => unknown): this {
+  public onClick(callback: (event: MouseEvent) => unknown): this {
     this.clickHandler = callback;
     return this;
   }

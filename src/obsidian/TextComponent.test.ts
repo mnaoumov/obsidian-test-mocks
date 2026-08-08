@@ -49,10 +49,10 @@ describe('TextComponent', () => {
   describe('onChange', () => {
     it('should register an onChange callback', () => {
       const component = TextComponent.create__(createDiv());
-      const cb = vi.fn();
-      component.onChange(cb);
+      const callback = vi.fn();
+      component.onChange(callback);
       component.setValue('new value');
-      expect(cb).toHaveBeenCalledWith('new value');
+      expect(callback).toHaveBeenCalledWith('new value');
     });
 
     it('should return this', () => {

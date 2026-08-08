@@ -135,9 +135,10 @@ function buildCodeZones(content: string): [number, number][] {
  */
 function buildLineStarts(content: string): number[] {
   const starts: number[] = [0];
-  for (let i = 0; i < content.length; i++) {
-    if (content[i] === '\n') {
-      starts.push(i + 1);
+  // eslint-disable-next-line unicorn/no-for-loop -- `i` has to be a UTF-16 CODE UNIT offset, since that is what every other offset in the parser is. Iterating the string with `for…of` walks code POINTS, so a surrogate pair would shift every line start after it.
+  for (let index = 0; index < content.length; index++) {
+    if (content[index] === '\n') {
+      starts.push(index + 1);
     }
   }
   return starts;
@@ -169,10 +170,9 @@ function extractFrontmatterLinks(frontmatter: object): FrontmatterLinkCache[] {
     if (typeof value === 'string') {
       collectFrontmatterLinks(key, value, links);
     } else if (Array.isArray(value)) {
-      for (let i = 0; i < value.length; i++) {
-        const item: unknown = value[i];
+      for (const [index, item] of value.entries()) {
         if (typeof item === 'string') {
-          collectFrontmatterLinks(`${key}.${String(i)}`, item, links);
+          collectFrontmatterLinks(`${key}.${String(index)}`, item, links);
         }
       }
     }
@@ -384,7 +384,7 @@ function parseListItems(
   let listGroupEnd = -1;
   let listGroupFirstLine = -1;
   const PREV_LINE_INITIAL = -2;
-  let prevLine = PREV_LINE_INITIAL;
+  let previousLine = PREV_LINE_INITIAL;
 
   let match = regex.exec(content);
   while (match) {
@@ -397,7 +397,7 @@ function parseListItems(
       const currentLine = pos.start.line;
 
       // Track list groups for section generation
-      if (prevLine < 0 || currentLine > prevLine + 1) {
+      if (previousLine < 0 || currentLine > previousLine + 1) {
         // Start a new list group (flush previous if exists)
         if (listGroupStart >= 0) {
           sections.push({
@@ -410,18 +410,18 @@ function parseListItems(
         listGroupFirstLine = currentLine;
       }
       listGroupEnd = endOffset;
-      prevLine = currentLine;
+      previousLine = currentLine;
 
       // Determine parent: find previous item with strictly less indent
       let parent = -listGroupFirstLine; // Default: negative of first item's line in group
-      const indentLen = indent.length;
+      const indentLength = indent.length;
 
       // Walk backwards through items to find parent with strictly less indent
-      for (let i = items.length - 1; i >= 0; i--) {
-        const prevItem = ensureNonNullable(items[i]);
-        const prevIndent = prevItem.position.start.col;
-        if (prevIndent < indentLen) {
-          parent = prevItem.position.start.line;
+      for (let index = items.length - 1; index >= 0; index--) {
+        const previousItem = ensureNonNullable(items[index]);
+        const previousIndent = previousItem.position.start.col;
+        if (previousIndent < indentLength) {
+          parent = previousItem.position.start.line;
           break;
         }
       }
@@ -489,9 +489,9 @@ function parseTags(
     // The # character starts after any leading whitespace
     const hashOffset = match.index + fullMatch.indexOf('#');
     if (!isInCodeZone(codeZones, hashOffset)) {
-      const tagLen = tagText.length + 1; // +1 for #
+      const tagLength = tagText.length + 1; // +1 for #
       tags.push({
-        position: makePos(lineStarts, hashOffset, hashOffset + tagLen),
+        position: makePos(lineStarts, hashOffset, hashOffset + tagLength),
         tag: `#${tagText}`
       });
     }

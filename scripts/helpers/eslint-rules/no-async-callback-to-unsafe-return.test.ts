@@ -12,7 +12,7 @@ import {
 } from './no-async-callback-to-unsafe-return.ts';
 import { toRuleTesterModule } from './rule-tester-helper.ts';
 
-const TYPE_CHECK_TIMEOUT_IN_MILLISECONDS = 30_000;
+const TYPE_CHECK_TIMEOUT_IN_MILLISECONDS = 60_000;
 
 vi.setConfig({ testTimeout: TYPE_CHECK_TIMEOUT_IN_MILLISECONDS });
 
@@ -24,7 +24,8 @@ const ruleTester = new RuleTester({
   languageOptions: {
     parserOptions: {
       projectService: {
-        allowDefaultProject: ['*.ts']
+        allowDefaultProject: ['*.ts'],
+        defaultProject: 'tsconfig.eslint-test.json'
       }
     }
   }

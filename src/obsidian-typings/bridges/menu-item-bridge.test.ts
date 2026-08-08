@@ -18,7 +18,7 @@ import {
   unbridgeMenuItem
 } from './menu-item-bridge.ts';
 
-type SetSubmenuFn = (this: MenuItemOriginal) => MenuOriginal;
+type SetSubmenuFunction = (this: MenuItemOriginal) => MenuOriginal;
 
 describe('menu-item-bridge', () => {
   afterEach(() => {
@@ -26,8 +26,8 @@ describe('menu-item-bridge', () => {
   });
 
   function callSetSubmenu(item: MenuItemOriginal): MenuOriginal {
-    const fn = ensureGenericObject(item)['setSubmenu'] as SetSubmenuFn;
-    return fn.call(item);
+    const $function = ensureGenericObject(item)['setSubmenu'] as SetSubmenuFunction;
+    return $function.call(item);
   }
 
   function readSubmenu(item: MenuItemOriginal): unknown {

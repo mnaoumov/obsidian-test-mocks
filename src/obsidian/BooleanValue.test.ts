@@ -8,61 +8,61 @@ import { BooleanValue } from './BooleanValue.ts';
 
 describe('BooleanValue', () => {
   it('should default to false', () => {
-    const val = new BooleanValue();
-    expect(val.value__).toBe(false);
+    const value = new BooleanValue();
+    expect(value.value__).toBe(false);
   });
 
   it('should accept a value', () => {
-    const val = new BooleanValue(true);
-    expect(val.value__).toBe(true);
+    const value = new BooleanValue(true);
+    expect(value.value__).toBe(true);
   });
 
   it('should return false for isTruthy when false', () => {
-    const val = new BooleanValue(false);
-    expect(val.isTruthy()).toBe(false);
+    const value = new BooleanValue(false);
+    expect(value.isTruthy()).toBe(false);
   });
 
   it('should return true for isTruthy when true', () => {
-    const val = new BooleanValue(true);
-    expect(val.isTruthy()).toBe(true);
+    const value = new BooleanValue(true);
+    expect(value.isTruthy()).toBe(true);
   });
 
   it('should return "false" for toString when false', () => {
-    const val = new BooleanValue(false);
-    expect(String(val)).toBe('false');
+    const value = new BooleanValue(false);
+    expect(String(value)).toBe('false');
   });
 
   it('should return "true" for toString when true', () => {
-    const val = new BooleanValue(true);
-    expect(String(val)).toBe('true');
+    const value = new BooleanValue(true);
+    expect(String(value)).toBe('true');
   });
 
   describe('create__', () => {
     it('should create an instance via factory method', () => {
-      const val = BooleanValue.create__();
-      expect(val).toBeInstanceOf(BooleanValue);
-      expect(val.value__).toBe(false);
+      const value = BooleanValue.create__();
+      expect(value).toBeInstanceOf(BooleanValue);
+      expect(value.value__).toBe(false);
     });
 
     it('should create an instance with value via factory method', () => {
-      const val = BooleanValue.create__(true);
-      expect(val.value__).toBe(true);
+      const value = BooleanValue.create__(true);
+      expect(value.value__).toBe(true);
     });
   });
 
   describe('asOriginalType4__', () => {
     it('should return the same instance', () => {
-      const val = BooleanValue.create__();
-      const original = val.asOriginalType4__();
-      expect(original).toBe(val);
+      const value = BooleanValue.create__();
+      const original = value.asOriginalType4__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = BooleanValue.create__();
-      const mock = BooleanValue.fromOriginalType4__(val.asOriginalType4__());
-      expect(mock).toBe(val);
+      const value = BooleanValue.create__();
+      const mock = BooleanValue.fromOriginalType4__(value.asOriginalType4__());
+      expect(mock).toBe(value);
     });
   });
 });

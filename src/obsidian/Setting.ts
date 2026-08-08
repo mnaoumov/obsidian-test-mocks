@@ -60,92 +60,92 @@ export class Setting {
     return strictProxy(value, Setting);
   }
 
-  public addButton(cb: (component: ButtonComponentOriginal) => unknown): this {
+  public addButton(callback: (component: ButtonComponentOriginal) => unknown): this {
     const comp = ButtonComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType2__());
+    callback(comp.asOriginalType2__());
     return this;
   }
 
-  public addColorPicker(cb: (component: ColorComponentOriginal) => unknown): this {
+  public addColorPicker(callback: (component: ColorComponentOriginal) => unknown): this {
     const comp = ColorComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType3__());
+    callback(comp.asOriginalType3__());
     return this;
   }
 
-  public addComponent(cb: (el: HTMLElement) => BaseComponent): this {
-    const component = cb(this.controlEl);
+  public addComponent(callback: (el: HTMLElement) => BaseComponent): this {
+    const component = callback(this.controlEl);
     this.components.push(component);
     return this;
   }
 
-  public addDisplayValue(cb: (component: DisplayValueComponentOriginal) => unknown): this {
+  public addDisplayValue(callback: (component: DisplayValueComponentOriginal) => unknown): this {
     const comp = DisplayValueComponent.create__(this.controlEl);
-    cb(comp.asOriginalType__());
+    callback(comp.asOriginalType__());
     return this;
   }
 
-  public addDropdown(cb: (component: DropdownComponentOriginal) => unknown): this {
+  public addDropdown(callback: (component: DropdownComponentOriginal) => unknown): this {
     const comp = DropdownComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType3__());
+    callback(comp.asOriginalType3__());
     return this;
   }
 
-  public addExtraButton(cb: (component: ExtraButtonComponentOriginal) => unknown): this {
+  public addExtraButton(callback: (component: ExtraButtonComponentOriginal) => unknown): this {
     const comp = ExtraButtonComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType2__());
+    callback(comp.asOriginalType2__());
     return this;
   }
 
-  public addMomentFormat(cb: (component: MomentFormatComponentOriginal) => unknown): this {
+  public addMomentFormat(callback: (component: MomentFormatComponentOriginal) => unknown): this {
     const comp = MomentFormatComponent.create2__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType5__());
+    callback(comp.asOriginalType5__());
     return this;
   }
 
-  public addProgressBar(cb: (component: ProgressBarComponentOriginal) => unknown): this {
+  public addProgressBar(callback: (component: ProgressBarComponentOriginal) => unknown): this {
     const comp = ProgressBarComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType3__());
+    callback(comp.asOriginalType3__());
     return this;
   }
 
-  public addSearch(cb: (component: SearchComponentOriginal) => unknown): this {
+  public addSearch(callback: (component: SearchComponentOriginal) => unknown): this {
     const comp = SearchComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType4__());
+    callback(comp.asOriginalType4__());
     return this;
   }
 
-  public addSlider(cb: (component: SliderComponentOriginal) => unknown): this {
+  public addSlider(callback: (component: SliderComponentOriginal) => unknown): this {
     const comp = SliderComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType3__());
+    callback(comp.asOriginalType3__());
     return this;
   }
 
-  public addText(cb: (component: TextComponentOriginal) => unknown): this {
+  public addText(callback: (component: TextComponentOriginal) => unknown): this {
     const comp = TextComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType4__());
+    callback(comp.asOriginalType4__());
     return this;
   }
 
-  public addTextArea(cb: (component: TextAreaComponentOriginal) => unknown): this {
+  public addTextArea(callback: (component: TextAreaComponentOriginal) => unknown): this {
     const comp = TextAreaComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType4__());
+    callback(comp.asOriginalType4__());
     return this;
   }
 
-  public addToggle(cb: (component: ToggleComponentOriginal) => unknown): this {
+  public addToggle(callback: (component: ToggleComponentOriginal) => unknown): this {
     const comp = ToggleComponent.create__(this.controlEl);
     this.components.push(comp);
-    cb(comp.asOriginalType3__());
+    callback(comp.asOriginalType3__());
     return this;
   }
 
@@ -171,7 +171,7 @@ export class Setting {
     if (typeof desc === 'string') {
       this.descEl.textContent = desc;
     } else {
-      this.descEl.appendChild(desc);
+      this.descEl.append(desc);
     }
     return this;
   }
@@ -203,7 +203,7 @@ export class Setting {
     if (typeof name === 'string') {
       this.nameEl.textContent = name;
     } else {
-      this.nameEl.appendChild(name);
+      this.nameEl.append(name);
     }
     return this;
   }
@@ -213,8 +213,8 @@ export class Setting {
     return this;
   }
 
-  public then(cb: (setting: this) => unknown): this {
-    cb(this);
+  public then(callback: (setting: this) => unknown): this {
+    callback(this);
     return this;
   }
 }

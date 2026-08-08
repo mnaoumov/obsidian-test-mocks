@@ -21,8 +21,8 @@ describe('SecretComponent', () => {
     it('should register callback and return this', () => {
       const app = App.createConfigured__();
       const comp = SecretComponent.create__(app, createDiv());
-      const cb = vi.fn();
-      const result = comp.onChange(cb);
+      const callback = vi.fn();
+      const result = comp.onChange(callback);
       expect(result).toBe(comp);
     });
   });
@@ -31,10 +31,10 @@ describe('SecretComponent', () => {
     it('should invoke onChange callback with value', () => {
       const app = App.createConfigured__();
       const comp = SecretComponent.create__(app, createDiv());
-      const cb = vi.fn();
-      comp.onChange(cb);
+      const callback = vi.fn();
+      comp.onChange(callback);
       comp.setValue('secret123');
-      expect(cb).toHaveBeenCalledWith('secret123');
+      expect(callback).toHaveBeenCalledWith('secret123');
     });
 
     it('should return this', () => {

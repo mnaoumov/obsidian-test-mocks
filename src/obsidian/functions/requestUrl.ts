@@ -1,4 +1,4 @@
-import type { RequestUrlParam as RequestUrlParamOriginal } from 'obsidian';
+import type { RequestUrlParam as RequestUrlParameterOriginal } from 'obsidian';
 
 interface RequestUrlResponse {
   arrayBuffer: ArrayBuffer;
@@ -10,7 +10,7 @@ interface RequestUrlResponse {
 
 type RequestUrlResponsePromise = Promise<RequestUrlResponse> & RequestUrlResponse;
 
-export function requestUrl(_request: RequestUrlParamOriginal | string): RequestUrlResponsePromise {
+export function requestUrl(_request: RequestUrlParameterOriginal | string): RequestUrlResponsePromise {
   const HTTP_OK = 200;
   const response: RequestUrlResponse = {
     arrayBuffer: new ArrayBuffer(0),

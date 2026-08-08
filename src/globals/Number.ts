@@ -1,3 +1,3 @@
-export function isNumber(obj: unknown): obj is number {
-  return typeof obj === 'number' && !Number.isNaN(obj);
+export function isNumber(object: unknown): object is number {
+  return typeof object === 'number' && !Number.isNaN(object);
 }

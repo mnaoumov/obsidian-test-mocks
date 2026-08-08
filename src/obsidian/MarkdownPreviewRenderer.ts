@@ -18,10 +18,10 @@ export class MarkdownPreviewRenderer {
 
   public static createCodeBlockPostProcessor(
     _language: string,
-    _handler: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => unknown
-  ): (el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => void {
+    _handler: (source: string, el: HTMLElement, context: MarkdownPostProcessorContextOriginal) => unknown
+  ): (el: HTMLElement, context: MarkdownPostProcessorContextOriginal) => void {
     // eslint-disable-next-line func-names -- Mock implementation.
-    return function (_el: HTMLElement, _ctx: MarkdownPostProcessorContextOriginal): void {
+    return function (_el: HTMLElement, _context: MarkdownPostProcessorContextOriginal): void {
       noop();
     };
   }

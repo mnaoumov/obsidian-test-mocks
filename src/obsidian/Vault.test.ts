@@ -109,7 +109,7 @@ describe('Vault', () => {
       const APPEND_MARKER = 3;
       await app.vault.appendBinary(file, Uint8Array.of(APPEND_MARKER, BINARY_SIZE_MEDIUM).buffer);
       const result = new Uint8Array(await app.vault.readBinary(file));
-      expect(Array.from(result)).toEqual([1, BINARY_SIZE_SMALL, APPEND_MARKER, BINARY_SIZE_MEDIUM]);
+      expect([...result]).toEqual([1, BINARY_SIZE_SMALL, APPEND_MARKER, BINARY_SIZE_MEDIUM]);
     });
 
     it('should trigger modify event', async () => {
@@ -272,9 +272,9 @@ describe('Vault', () => {
       const file = ensureNonNullable(app.vault.getFileByPath('folder/file.md'));
       const parent = ensureNonNullable(app.vault.getFolderByPath('folder'));
       // Manually remove from parent.children so indexOf returns -1 in deleteVaultAbstractFile
-      const idx = parent.children.indexOf(file);
-      if (idx !== -1) {
-        parent.children.splice(idx, 1);
+      const index = parent.children.indexOf(file);
+      if (index !== -1) {
+        parent.children.splice(index, 1);
       }
       await app.vault.delete(file);
       expect(app.vault.getFileByPath('folder/file.md')).toBeNull();
@@ -544,9 +544,9 @@ describe('Vault', () => {
       const file = ensureNonNullable(app.vault.getFileByPath('folder/file.md'));
       const parent = ensureNonNullable(app.vault.getFolderByPath('folder'));
       // Manually remove from parent.children so indexOf returns -1
-      const idx = parent.children.indexOf(file);
-      if (idx !== -1) {
-        parent.children.splice(idx, 1);
+      const index = parent.children.indexOf(file);
+      if (index !== -1) {
+        parent.children.splice(index, 1);
       }
       await app.vault.rename(file, 'folder/renamed.md');
       expect(file.path).toBe('folder/renamed.md');

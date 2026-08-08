@@ -50,7 +50,7 @@ export class BasesQueryResult {
     noop();
   }
 
-  public getSummaryValue(_queryController: QueryController, _entries: BasesEntry[], _prop: BasesPropertyIdOriginal, _summaryKey: string): ValueOriginal {
+  public getSummaryValue(_queryController: QueryController, _entries: BasesEntry[], _property: BasesPropertyIdOriginal, _summaryKey: string): ValueOriginal {
     throw new Error('getSummaryValue is not implemented in mock');
   }
 

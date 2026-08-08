@@ -27,7 +27,7 @@ import {
 
 describe('HTMLElement.prototype extensions', () => {
   afterEach(() => {
-    document.body.innerHTML = '';
+    document.body.replaceChildren();
   });
 
   describe('find', () => {
@@ -35,7 +35,7 @@ describe('HTMLElement.prototype extensions', () => {
       const parent = document.createElement('div');
       const child = document.createElement('span');
       child.className = 'target';
-      parent.appendChild(child);
+      parent.append(child);
       expect(find.call(parent, '.target')).toBe(child);
     });
 
@@ -51,7 +51,7 @@ describe('HTMLElement.prototype extensions', () => {
       const items = [document.createElement('span'), document.createElement('span')];
       for (const item of items) {
         item.className = 'item';
-        parent.appendChild(item);
+        parent.append(item);
       }
       expect(findAll.call(parent, '.item')).toHaveLength(items.length);
     });

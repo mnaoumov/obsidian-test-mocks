@@ -5,19 +5,19 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
-  public eventListeners__: Record<string, ((...args: unknown[]) => void)[]> = {};
+  public eventListeners__: Record<string, ((...$arguments: unknown[]) => void)[]> = {};
 
   public constructor(containerEl: HTMLElement) {
     super(containerEl.createEl('input'));
     const eventListeners = this.eventListeners__;
     const origAddEventListener = this.inputEl.addEventListener.bind(this.inputEl);
-    this.inputEl.addEventListener = function addEventListenerWrapper(this: HTMLInputElement, ...args: Parameters<HTMLInputElement['addEventListener']>): void {
-      const [event, handler] = args;
+    this.inputEl.addEventListener = function addEventListenerWrapper(this: HTMLInputElement, ...$arguments: Parameters<HTMLInputElement['addEventListener']>): void {
+      const [event, handler] = $arguments;
       if (typeof handler === 'function') {
         eventListeners[event] ??= [];
         eventListeners[event].push(handler as (...a: unknown[]) => void);
       }
-      origAddEventListener(...args);
+      origAddEventListener(...$arguments);
     } as HTMLInputElement['addEventListener'];
     const self = strictProxy(this);
     self.constructor4__(containerEl);
@@ -40,13 +40,13 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     noop();
   }
 
-  public override onChange(cb: (value: string) => unknown): this {
-    return super.onChange(cb);
+  public override onChange(callback: (value: string) => unknown): this {
+    return super.onChange(callback);
   }
 
-  public simulateEvent__(event: string, ...args: unknown[]): void {
+  public simulateEvent__(event: string, ...$arguments: unknown[]): void {
     for (const handler of this.eventListeners__[event] ?? []) {
-      handler(...args);
+      handler(...$arguments);
     }
   }
 }

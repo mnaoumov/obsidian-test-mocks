@@ -23,7 +23,7 @@ describe('htmlToMarkdown', () => {
     const fragment = document.createDocumentFragment();
     const p = document.createElement('p');
     p.textContent = 'Fragment';
-    fragment.appendChild(p);
+    fragment.append(p);
     const result = htmlToMarkdown(fragment);
     expect(result).toContain('Fragment');
   });

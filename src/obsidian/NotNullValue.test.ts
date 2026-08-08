@@ -23,31 +23,31 @@ describe('NotNullValue', () => {
   describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', () => {
       // ObjectValue extends NotNullValue, so we test via ObjectValue
-      const val = ObjectValue.create__({});
-      const original: NotNullValueOriginal = val.asOriginalType2__();
-      expect(original).toBe(val);
+      const value = ObjectValue.create__({});
+      const original: NotNullValueOriginal = value.asOriginalType2__();
+      expect(original).toBe(value);
     });
 
     it('should return the same instance via NotNullValue base class', () => {
-      const val = new BareNotNullValue();
-      const original: NotNullValueOriginal = val.asOriginalType2__();
-      expect(original).toBe(val);
+      const value = new BareNotNullValue();
+      const original: NotNullValueOriginal = value.asOriginalType2__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType2__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = ObjectValue.create__({});
-      const mock = NotNullValue.fromOriginalType2__(val.asOriginalType2__());
-      expect(mock).toBe(val);
+      const value = ObjectValue.create__({});
+      const mock = NotNullValue.fromOriginalType2__(value.asOriginalType2__());
+      expect(mock).toBe(value);
     });
   });
 
   describe('constructor2__', () => {
     it('should be callable without throwing', () => {
-      const val = ObjectValue.create__({});
+      const value = ObjectValue.create__({});
       expect(() => {
-        val.constructor2__();
+        value.constructor2__();
       }).not.toThrow();
     });
   });

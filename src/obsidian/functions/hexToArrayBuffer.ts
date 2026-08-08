@@ -1,4 +1,4 @@
 export function hexToArrayBuffer(hex: string): ArrayBuffer {
-  const buf = Buffer.from(hex, 'hex');
-  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  const buffer = Buffer.from(hex, 'hex');
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 }

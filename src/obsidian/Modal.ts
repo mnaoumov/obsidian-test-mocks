@@ -76,7 +76,7 @@ export class Modal {
     if (typeof content === 'string') {
       this.contentEl.textContent = content;
     } else {
-      this.contentEl.appendChild(content);
+      this.contentEl.append(content);
     }
     return this;
   }

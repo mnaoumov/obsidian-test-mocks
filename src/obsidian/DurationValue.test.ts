@@ -9,42 +9,42 @@ import { DurationValue } from './DurationValue.ts';
 
 describe('DurationValue', () => {
   it('should always be truthy', () => {
-    const val = new DurationValue(0, 0, 0, 0, 0, 0, 0);
-    expect(val.isTruthy()).toBe(true);
+    const value = new DurationValue(0, 0, 0, 0, 0, 0, 0);
+    expect(value.isTruthy()).toBe(true);
   });
 
   it('should return empty string for toString', () => {
-    const val = new DurationValue(0, 0, 0, 0, 0, 0, 0);
-    expect(String(val)).toBe('');
+    const value = new DurationValue(0, 0, 0, 0, 0, 0, 0);
+    expect(String(value)).toBe('');
   });
 
   describe('create__', () => {
     it('should create an instance via factory method', () => {
-      const val = DurationValue.create__(1, 0, 0, 0, 0, 0, 0);
-      expect(val).toBeInstanceOf(DurationValue);
+      const value = DurationValue.create__(1, 0, 0, 0, 0, 0, 0);
+      expect(value).toBeInstanceOf(DurationValue);
     });
   });
 
   describe('asOriginalType3__', () => {
     it('should return the same instance', () => {
-      const val = DurationValue.create__(0, 0, 0, 0, 0, 0, 0);
-      const original = val.asOriginalType3__();
-      expect(original).toBe(val);
+      const value = DurationValue.create__(0, 0, 0, 0, 0, 0, 0);
+      const original = value.asOriginalType3__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = DurationValue.create__(0, 0, 0, 0, 0, 0, 0);
-      const mock = DurationValue.fromOriginalType3__(val.asOriginalType3__());
-      expect(mock).toBe(val);
+      const value = DurationValue.create__(0, 0, 0, 0, 0, 0, 0);
+      const mock = DurationValue.fromOriginalType3__(value.asOriginalType3__());
+      expect(mock).toBe(value);
     });
   });
 
   describe('getMilliseconds', () => {
     it('should sum all the duration components', () => {
-      const val = DurationValue.create__(0, 0, 0, 0, 0, 1, 500);
-      expect(val.getMilliseconds()).toBe(1500);
+      const value = DurationValue.create__(0, 0, 0, 0, 0, 1, 500);
+      expect(value.getMilliseconds()).toBe(1500);
     });
   });
 
@@ -58,7 +58,7 @@ describe('DurationValue', () => {
     const MILLISECONDS_IN_DAY = 86_400_000;
     const MILLISECONDS_IN_HOUR = 3_600_000;
     const MILLISECONDS_IN_MINUTE = 60_000;
-    const MILLISECONDS_IN_SECOND = 1_000;
+    const MILLISECONDS_IN_SECOND = 1000;
     const MILLISECONDS_IN_WEEK = 604_800_000;
     const MILLISECONDS_IN_YEAR = 31_536_000_000;
     const MILLISECONDS_IN_30_DAY_MONTH = 2_592_000_000;

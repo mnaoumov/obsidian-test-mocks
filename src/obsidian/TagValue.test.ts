@@ -10,38 +10,38 @@ import { TagValue } from './TagValue.ts';
 
 describe('TagValue', () => {
   it('should create an instance via create2__', () => {
-    const val = TagValue.create2__('#test');
-    expect(val).toBeInstanceOf(TagValue);
+    const value = TagValue.create2__('#test');
+    expect(value).toBeInstanceOf(TagValue);
   });
 
   it('should store the tag value', () => {
-    const val = new TagValue('#test');
-    expect(val.value__).toBe('#test');
+    const value = new TagValue('#test');
+    expect(value.value__).toBe('#test');
   });
 
   it('should return the tag for toString', () => {
-    const val = new TagValue('#example');
-    expect(String(val)).toBe('#example');
+    const value = new TagValue('#example');
+    expect(String(value)).toBe('#example');
   });
 
   it('should be truthy for non-empty tags', () => {
-    const val = new TagValue('#tag');
-    expect(val.isTruthy()).toBe(true);
+    const value = new TagValue('#tag');
+    expect(value.isTruthy()).toBe(true);
   });
 
   describe('asOriginalType5__', () => {
     it('should return the same instance typed as the original', () => {
-      const val = TagValue.create2__('#tag');
-      const original: TagValueOriginal = val.asOriginalType5__();
-      expect(original).toBe(val);
+      const value = TagValue.create2__('#tag');
+      const original: TagValueOriginal = value.asOriginalType5__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = TagValue.create2__('#tag');
-      const mock = TagValue.fromOriginalType5__(val.asOriginalType5__());
-      expect(mock).toBe(val);
+      const value = TagValue.create2__('#tag');
+      const mock = TagValue.fromOriginalType5__(value.asOriginalType5__());
+      expect(mock).toBe(value);
     });
   });
 });

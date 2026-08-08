@@ -10,38 +10,38 @@ import { UrlValue } from './UrlValue.ts';
 
 describe('UrlValue', () => {
   it('should create an instance via create2__', () => {
-    const val = UrlValue.create2__('https://example.com');
-    expect(val).toBeInstanceOf(UrlValue);
+    const value = UrlValue.create2__('https://example.com');
+    expect(value).toBeInstanceOf(UrlValue);
   });
 
   it('should store the value', () => {
-    const val = UrlValue.create2__('https://example.com');
-    expect(val.value__).toBe('https://example.com');
+    const value = UrlValue.create2__('https://example.com');
+    expect(value.value__).toBe('https://example.com');
   });
 
   it('should accept display parameter', () => {
-    const val = UrlValue.create2__('https://example.com', 'Example');
-    expect(val).toBeInstanceOf(UrlValue);
+    const value = UrlValue.create2__('https://example.com', 'Example');
+    expect(value).toBeInstanceOf(UrlValue);
   });
 
   it('should be truthy for non-empty urls', () => {
-    const val = UrlValue.create2__('https://example.com');
-    expect(val.isTruthy()).toBe(true);
+    const value = UrlValue.create2__('https://example.com');
+    expect(value.isTruthy()).toBe(true);
   });
 
   describe('asOriginalType5__', () => {
     it('should return the same instance typed as the original', () => {
-      const val = UrlValue.create2__('https://example.com');
-      const original: UrlValueOriginal = val.asOriginalType5__();
-      expect(original).toBe(val);
+      const value = UrlValue.create2__('https://example.com');
+      const original: UrlValueOriginal = value.asOriginalType5__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = UrlValue.create2__('https://example.com');
-      const mock = UrlValue.fromOriginalType5__(val.asOriginalType5__());
-      expect(mock).toBe(val);
+      const value = UrlValue.create2__('https://example.com');
+      const mock = UrlValue.fromOriginalType5__(value.asOriginalType5__());
+      expect(mock).toBe(value);
     });
   });
 });

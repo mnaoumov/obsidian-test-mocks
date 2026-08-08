@@ -8,7 +8,7 @@ import { normalizePath } from './normalizePath.ts';
 
 describe('normalizePath', () => {
   it('should replace backslashes with forward slashes', () => {
-    expect(normalizePath('a\\b\\c')).toBe('a/b/c');
+    expect(normalizePath(String.raw`a\b\c`)).toBe('a/b/c');
   });
 
   it('should collapse multiple consecutive slashes', () => {

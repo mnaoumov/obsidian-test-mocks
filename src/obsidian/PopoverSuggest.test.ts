@@ -20,7 +20,7 @@ class ConcretePopoverSuggest extends PopoverSuggest<string> {
     noop();
   }
 
-  public selectSuggestion(_value: string, _evt: KeyboardEvent | MouseEvent): void {
+  public selectSuggestion(_value: string, _event: KeyboardEvent | MouseEvent): void {
     noop();
   }
 }

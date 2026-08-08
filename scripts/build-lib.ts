@@ -12,10 +12,10 @@ import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
 
 exitIfScriptDisabled();
 
-function getEntryPoints(dir: string): string[] {
+function getEntryPoints(directory: string): string[] {
   const entries: string[] = [];
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
+  for (const entry of readdirSync(directory)) {
+    const full = join(directory, entry);
     if (statSync(full).isDirectory()) {
       entries.push(...getEntryPoints(full));
     } else if (entry.endsWith('.ts') && !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts')) {
@@ -54,16 +54,17 @@ async function main(): Promise<void> {
   ]);
 }
 
-function rewriteExtensionsPlugin(ext: string): Plugin {
+function rewriteExtensionsPlugin(extension: string): Plugin {
   return {
     name: 'rewrite-ts-extensions',
     setup(pluginBuild): void {
-      pluginBuild.onLoad({ filter: /\.ts$/ }, async (args) => {
-        const contents = await readFile(args.path, 'utf8');
+      pluginBuild.onLoad({ filter: /\.ts$/ }, async ($arguments) => {
+        const contents = await readFile($arguments.path, 'utf-8');
         return {
-          contents: contents.replace(
+          contents: contents.replaceAll(
             /(?<prefix>(?:from|import\()\s*['"])(?<path>[^'"]*?)\.ts(?<quote>['"])/g,
-            `$<prefix>$<path>${ext}$<quote>`
+            // eslint-disable-next-line unicorn/no-unsafe-string-replacement -- The `$<prefix>`/`$<path>`/`$<quote>` placeholders are the POINT of this replacement, and the only interpolated part is the local `ext` constant.
+            `$<prefix>$<path>${extension}$<quote>`
           ),
           loader: 'ts'
         };

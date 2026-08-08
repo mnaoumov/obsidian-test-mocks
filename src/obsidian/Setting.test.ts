@@ -18,8 +18,8 @@ class TestComponent extends BaseComponent {
     super();
   }
 
-  public override then(cb: (component: this) => unknown): this {
-    cb(this);
+  public override then(callback: (component: this) => unknown): this {
+    callback(this);
     return this;
   }
 }
@@ -117,9 +117,9 @@ describe('Setting', () => {
   describe('addDisplayValue', () => {
     it('should invoke the callback with a component and return this', () => {
       const setting = Setting.create__(createDiv());
-      const cb = vi.fn();
-      const result = setting.addDisplayValue(cb);
-      expect(cb).toHaveBeenCalledOnce();
+      const callback = vi.fn();
+      const result = setting.addDisplayValue(callback);
+      expect(callback).toHaveBeenCalledOnce();
       expect(result).toBe(setting);
     });
   });
@@ -155,9 +155,9 @@ describe('Setting', () => {
   describe('then', () => {
     it('should call callback with this', () => {
       const setting = Setting.create__(createDiv());
-      const cb = vi.fn();
-      setting.then(cb);
-      expect(cb).toHaveBeenCalledWith(setting);
+      const callback = vi.fn();
+      setting.then(callback);
+      expect(callback).toHaveBeenCalledWith(setting);
     });
 
     it('should return this', () => {

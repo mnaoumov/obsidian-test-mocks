@@ -50,7 +50,7 @@ export abstract class Value {
     return this.toString() === other.toString();
   }
 
-  public renderTo(_el: HTMLElement, _ctx: RenderContext): void {
+  public renderTo(_el: HTMLElement, _context: RenderContext): void {
     noop();
   }
 

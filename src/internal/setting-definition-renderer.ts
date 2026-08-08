@@ -63,7 +63,8 @@ export function applyDomState(groups: RenderedSettingGroup[]): void {
   for (const group of groups) {
     let hasVisibleRow = false;
     for (const row of group.children) {
-      if (applyRowDomState(row)) {
+      applyRowDomState(row);
+      if (row.isVisible) {
         hasVisibleRow = true;
       }
     }
@@ -113,7 +114,7 @@ export function renderSettingDefinitions(items: SettingDefinitionItemOriginal[],
   return groups;
 }
 
-function applyRowDomState(row: RenderedSettingRow): boolean {
+function applyRowDomState(row: RenderedSettingRow): void {
   row.isVisible = evaluatePredicate(row.definition.visible, true);
   row.settingEl.toggle(row.isVisible);
 
@@ -121,8 +122,6 @@ function applyRowDomState(row: RenderedSettingRow): boolean {
   if (disabled !== undefined) {
     row.setting.setDisabled(evaluatePredicate(disabled, false));
   }
-
-  return row.isVisible;
 }
 
 function getDisabledPredicate(definition: SettingGroupItemOriginal): (() => boolean) | boolean | undefined {
@@ -166,7 +165,7 @@ function renderGroup(definition: SettingDefinitionGroupOriginal, containerEl: HT
   }
 
   const children = (definition.items ?? [])
-    .filter(isRenderable)
+    .filter((item) => isRenderable(item))
     .map((item, index) => renderRow(item, settingGroup, index));
 
   return {

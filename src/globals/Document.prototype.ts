@@ -17,7 +17,7 @@ export function on(
   this: Document,
   type: string,
   _selector: string,
-  listener: (this: Document, ev: Event, delegateTarget: HTMLElement) => unknown,
+  listener: (this: Document, event: Event, delegateTarget: HTMLElement) => unknown,
   options?: AddEventListenerOptions | boolean
 ): void {
   delegatedOn(this, type, listener, options);

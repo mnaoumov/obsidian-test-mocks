@@ -7,15 +7,15 @@ import {
   toPosixPath
 } from './root.ts';
 
-interface LintParams {
+interface LintOptions {
   readonly paths?: string[] | undefined;
   readonly shouldFix?: boolean | undefined;
 }
 
-export async function lint(params?: LintParams): Promise<void> {
-  const { paths, shouldFix = false } = params ?? {};
+export async function lint(options?: LintOptions): Promise<void> {
+  const { paths, shouldFix = false } = options ?? {};
   const targets = paths?.length ? paths : ['.'];
-  await execFromRoot(['npx', 'markdownlint-cli2', ...(shouldFix ? ['--fix'] : []), { batchedArgs: targets }]);
+  await execFromRoot(['npx', 'markdownlint-cli2', ...(shouldFix ? ['--fix'] : []), { batchedArguments: targets }]);
 
   const mdFiles = paths?.length
     ? paths.map((p) => toPosixPath(relative(process.cwd(), p)) || p)
@@ -36,17 +36,17 @@ export async function lint(params?: LintParams): Promise<void> {
     '--retry-errors-jitter',
     '5',
     '--url-rewrite-search',
-    'https://www\\.npmjs\\.com/package/',
+    String.raw`https://www\.npmjs\.com/package/`,
     '--url-rewrite-replace',
     'https://registry.npmjs.org/',
-    { batchedArgs: mdFiles }
+    { batchedArguments: mdFiles }
   ]);
 }
 
 async function toArray<T>(iter: AsyncIterableIterator<T>): Promise<T[]> {
-  const arr: T[] = [];
+  const array: T[] = [];
   for await (const item of iter) {
-    arr.push(item);
+    array.push(item);
   }
-  return arr;
+  return array;
 }

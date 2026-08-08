@@ -17,7 +17,7 @@ export class Notice {
     if (typeof message === 'string') {
       this.messageEl.textContent = message;
     } else {
-      this.messageEl.appendChild(message.cloneNode(true));
+      this.messageEl.append(message.cloneNode(true));
     }
     this.duration__ = duration ?? 0;
     const self = strictProxy(this);
@@ -50,7 +50,7 @@ export class Notice {
     if (typeof message === 'string') {
       this.messageEl.textContent = message;
     } else {
-      this.messageEl.appendChild(message.cloneNode(true));
+      this.messageEl.append(message.cloneNode(true));
     }
     return this;
   }

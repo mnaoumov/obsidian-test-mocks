@@ -4,13 +4,14 @@ export type GenericObject = Record<string, unknown>;
 
 type NullableConstraint<T> = null extends T ? unknown : undefined extends T ? unknown : never;
 
+// eslint-disable-next-line unicorn/consistent-boolean-name -- TypeScript's `asserts condition` predicate names the parameter, and `condition` is the spelling its own documentation and every assert helper uses.
 export function assert(condition: boolean, errorOrMessage: Error | string): asserts condition {
   if (!condition) {
     throw typeof errorOrMessage === 'string' ? new Error(errorOrMessage) : errorOrMessage;
   }
 }
 
-export function assertGenericObject(_obj: object): asserts _obj is GenericObject {
+export function assertGenericObject(_object: object): asserts _object is GenericObject {
   noop();
 }
 
@@ -24,8 +25,8 @@ export function assertNonNullable<T extends NullableConstraint<T>>(value: T, err
   throw error;
 }
 
-export function ensureGenericObject<T extends object>(obj: T): GenericObject & T {
-  return obj as GenericObject & T;
+export function ensureGenericObject<T extends object>(object: T): GenericObject & T {
+  return object as GenericObject & T;
 }
 
 export function ensureNonNullable<T extends NullableConstraint<T>>(value: T, errorOrMessage?: Error | string): NonNullable<T> {

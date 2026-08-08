@@ -1,6 +1,6 @@
 import type { DataAdapter as DataAdapterOriginal } from 'obsidian';
 
-export interface CreateConfiguredParams {
+export interface AppCreateConfiguredOptions {
   readonly adapter?: DataAdapterOriginal;
   readonly appId?: string;
   /**

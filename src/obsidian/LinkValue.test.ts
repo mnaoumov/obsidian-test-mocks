@@ -42,24 +42,24 @@ describe('LinkValue', () => {
 
   describe('create2__', () => {
     it('should create an instance via factory method', () => {
-      const val = LinkValue.create2__(mockApp, 'note', '');
-      expect(val).toBeInstanceOf(LinkValue);
+      const value = LinkValue.create2__(mockApp, 'note', '');
+      expect(value).toBeInstanceOf(LinkValue);
     });
   });
 
   describe('asOriginalType5__', () => {
     it('should return the same instance', () => {
-      const val = LinkValue.create2__(mockApp, 'note', '');
-      const original = val.asOriginalType5__();
-      expect(original).toBe(val);
+      const value = LinkValue.create2__(mockApp, 'note', '');
+      const original = value.asOriginalType5__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType5__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = LinkValue.create2__(mockApp, 'note', '');
-      const mock = LinkValue.fromOriginalType5__(val.asOriginalType5__());
-      expect(mock).toBe(val);
+      const value = LinkValue.create2__(mockApp, 'note', '');
+      const mock = LinkValue.fromOriginalType5__(value.asOriginalType5__());
+      expect(mock).toBe(value);
     });
   });
 });

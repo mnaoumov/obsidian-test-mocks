@@ -16,9 +16,9 @@ interface DeepNested {
 }
 
 interface MockTarget {
-  fn(): string;
   name: string;
   nested: Nested;
+  run(): string;
 }
 
 interface Nested {
@@ -36,7 +36,7 @@ describe('strictProxy', () => {
 
   it('should throw on unmocked property access', () => {
     const mock = strictProxy<MockTarget>({ name: 'test' });
-    expect(() => mock.fn()).toThrow('Property "fn" is not mocked');
+    expect(() => mock.run()).toThrow('Property "run" is not mocked');
   });
 
   it('should recursively proxy nested plain objects', () => {
@@ -53,9 +53,9 @@ describe('strictProxy', () => {
   });
 
   it('should pass through functions without proxying', () => {
-    const fn = vi.fn().mockReturnValue('result');
-    const mock = strictProxy<MockTarget>({ fn });
-    expect(mock.fn()).toBe('result');
+    const $function = vi.fn().mockReturnValue('result');
+    const mock = strictProxy<MockTarget>({ run: $function });
+    expect(mock.run()).toBe('result');
   });
 
   it('should pass through arrays without proxying', () => {
@@ -64,8 +64,7 @@ describe('strictProxy', () => {
   });
 
   it('should pass through class instances without proxying', () => {
-    const map = new Map<string, number>();
-    map.set('a', 1);
+    const map = new Map<string, number>([['a', 1]]);
     const mock = strictProxy({ data: map });
     expect(mock.data.get('a')).toBe(1);
   });
@@ -162,7 +161,7 @@ describe('bypassStrictProxy', () => {
   });
 
   it('should return non-proxy objects as-is', () => {
-    const obj = { name: 'test' };
-    expect(bypassStrictProxy(obj)).toBe(obj);
+    const object = { name: 'test' };
+    expect(bypassStrictProxy(object)).toBe(object);
   });
 });

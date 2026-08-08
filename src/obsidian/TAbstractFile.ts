@@ -18,7 +18,7 @@ export abstract class TAbstractFile {
     this.vault = vault;
     this.path = path;
     const parts = path.split('/');
-    this.name = ensureNonNullable(parts[parts.length - 1]);
+    this.name = ensureNonNullable(parts.at(-1));
     const self = strictProxy(this);
     self.constructor__(vault, path);
     return self;

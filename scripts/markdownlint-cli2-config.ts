@@ -1,8 +1,8 @@
 import relativeLinksRule from 'markdownlint-rule-relative-links';
 
-import type { MarkdownlintCli2ConfigurationSchema } from './helpers/@types/markdownlint-cli2-config-schema.d.ts';
+import type { MarkdownlintCli2ConfigurationSchema as MarkdownlintCli2ConfigSchema } from './helpers/@types/markdownlint-cli2-config-schema.d.ts';
 
-export const config: MarkdownlintCli2ConfigurationSchema = {
+export const config: MarkdownlintCli2ConfigSchema = {
   config: {
     'MD013': false,
     'MD024': {

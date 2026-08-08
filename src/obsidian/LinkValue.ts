@@ -30,7 +30,7 @@ export class LinkValue extends StringValue {
     }
     const inner = ensureNonNullable(match.groups?.['inner']);
     const pipeIndex = inner.indexOf('|');
-    const linkValue = LinkValue.create2__(app, pipeIndex >= 0 ? inner.slice(0, pipeIndex) : inner, sourcePath);
+    const linkValue = LinkValue.create2__(app, pipeIndex === -1 ? inner : inner.slice(0, pipeIndex), sourcePath);
     return linkValue;
   }
 

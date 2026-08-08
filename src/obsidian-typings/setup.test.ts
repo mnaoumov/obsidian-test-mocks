@@ -29,8 +29,8 @@ describe('obsidian-typings-setup', () => {
     expect(componentRecord['_children']).toEqual([]);
 
     const vaultRecord = ensureGenericObject(app.vault);
-    const fn = vaultRecord['getAvailablePath'] as (this: unknown, path: string, ext: string) => string;
-    expect(fn.call(app.vault, 'note', 'md')).toBe('note.md');
+    const $function = vaultRecord['getAvailablePath'] as (this: unknown, path: string, extension: string) => string;
+    expect($function.call(app.vault, 'note', 'md')).toBe('note.md');
   });
 
   it('should remove all bridges after teardown', () => {

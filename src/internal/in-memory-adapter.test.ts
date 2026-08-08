@@ -76,7 +76,7 @@ describe('InMemoryAdapter', () => {
       await adapter.appendBinary('data.bin', data);
 
       const result = new Uint8Array(await adapter.readBinary('data.bin'));
-      expect(Array.from(result)).toEqual([1]);
+      expect([...result]).toEqual([1]);
     });
 
     it('should concatenate binary data', async () => {
@@ -85,7 +85,7 @@ describe('InMemoryAdapter', () => {
       await adapter.appendBinary('data.bin', Uint8Array.of(0).buffer);
 
       const result = new Uint8Array(await adapter.readBinary('data.bin'));
-      expect(Array.from(result)).toEqual([1, 0]);
+      expect([...result]).toEqual([1, 0]);
     });
 
     it('should respect ctime and mtime options', async () => {
@@ -131,7 +131,7 @@ describe('InMemoryAdapter', () => {
       await adapter.copy('source.bin', 'dest.bin');
 
       const result = new Uint8Array(await adapter.readBinary('dest.bin'));
-      expect(Array.from(result)).toEqual([1]);
+      expect([...result]).toEqual([1]);
     });
 
     it('should throw when copying a non-existent file', async () => {
@@ -462,7 +462,7 @@ describe('InMemoryAdapter', () => {
       await adapter.writeBinary('data.bin', Uint8Array.of(1).buffer);
 
       const result = new Uint8Array(await adapter.readBinary('data.bin'));
-      expect(Array.from(result)).toEqual([1]);
+      expect([...result]).toEqual([1]);
     });
 
     it('should throw for a non-existent file', async () => {
@@ -515,7 +515,7 @@ describe('InMemoryAdapter', () => {
 
       expect(await adapter.exists('old.bin')).toBe(false);
       const result = new Uint8Array(await adapter.readBinary('new.bin'));
-      expect(Array.from(result)).toEqual([1]);
+      expect([...result]).toEqual([1]);
     });
 
     it('should preserve file metadata after rename', async () => {
@@ -548,7 +548,7 @@ describe('InMemoryAdapter', () => {
       expect(await adapter.exists('old-dir')).toBe(false);
       expect(await adapter.exists('new-dir')).toBe(true);
       const result = new Uint8Array(await adapter.readBinary('new-dir/data.bin'));
-      expect(Array.from(result)).toEqual([1]);
+      expect([...result]).toEqual([1]);
     });
 
     it('should throw when renaming a non-existent file', async () => {
@@ -644,9 +644,9 @@ describe('InMemoryAdapter', () => {
     it('should remove the file and return true', async () => {
       const adapter = createAdapter();
       await adapter.write('file.md', 'data');
-      const result = await adapter.trashSystem('file.md');
+      const isResult = await adapter.trashSystem('file.md');
 
-      expect(result).toBe(true);
+      expect(isResult).toBe(true);
       expect(await adapter.exists('file.md')).toBe(false);
     });
   });
@@ -691,7 +691,7 @@ describe('InMemoryAdapter', () => {
       await adapter.writeBinary('file.bin', Uint8Array.of(1).buffer);
 
       const result = new Uint8Array(await adapter.readBinary('file.bin'));
-      expect(Array.from(result)).toEqual([1]);
+      expect([...result]).toEqual([1]);
     });
 
     it('should track correct size in stat', async () => {
@@ -768,7 +768,7 @@ describe('InMemoryAdapter', () => {
       expect(await adapter.exists('src')).toBe(false);
       expect(await adapter.exists('dest')).toBe(true);
       const result = new Uint8Array(await adapter.readBinary('dest/image.bin'));
-      expect(Array.from(result)).toEqual([1]);
+      expect([...result]).toEqual([1]);
       expect(await adapter.read('dest/note.md')).toBe('text');
       expect(await adapter.exists('other/stay.bin')).toBe(true);
     });
@@ -856,7 +856,7 @@ describe('InMemoryAdapter', () => {
       await adapter.copy('source.bin', 'dest/copy.bin');
 
       const result = new Uint8Array(await adapter.readBinary('dest/copy.bin'));
-      expect(Array.from(result)).toEqual([1]);
+      expect([...result]).toEqual([1]);
       expect(await adapter.exists('dest')).toBe(true);
     });
   });

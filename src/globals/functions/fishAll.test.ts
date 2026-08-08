@@ -9,14 +9,14 @@ import { fishAll } from './fishAll.ts';
 
 describe('fishAll', () => {
   afterEach(() => {
-    document.body.innerHTML = '';
+    document.body.replaceChildren();
   });
 
   it('should return all matching elements', () => {
     const items = [document.createElement('div'), document.createElement('div')];
     for (const item of items) {
       item.className = 'item';
-      document.body.appendChild(item);
+      document.body.append(item);
     }
 
     const results = fishAll('.item');

@@ -10,7 +10,7 @@ export function find(this: HTMLElement, selector: string): HTMLElement {
 }
 
 export function findAll(this: HTMLElement, selector: string): HTMLElement[] {
-  return Array.from(this.querySelectorAll(selector));
+  return [...this.querySelectorAll<HTMLElement>(selector)];
 }
 
 export function findAllSelf(this: HTMLElement, selector: string): HTMLElement[] {
@@ -18,7 +18,7 @@ export function findAllSelf(this: HTMLElement, selector: string): HTMLElement[] 
   if (this.matches(selector)) {
     out.push(this);
   }
-  out.push(...Array.from(this.querySelectorAll<HTMLElement>(selector)));
+  out.push(...this.querySelectorAll<HTMLElement>(selector));
   return out;
 }
 
@@ -44,7 +44,7 @@ export function on(
   this: HTMLElement,
   type: string,
   _selector: string,
-  listener: (this: HTMLElement, ev: Event, delegateTarget: HTMLElement) => unknown,
+  listener: (this: HTMLElement, event: Event, delegateTarget: HTMLElement) => unknown,
   options?: AddEventListenerOptions | boolean
 ): void {
   delegatedOn(this, type, listener, options);
@@ -52,14 +52,12 @@ export function on(
 
 export function onClickEvent(
   this: HTMLElement,
-  listener: (this: HTMLElement, ev: MouseEvent) => unknown,
+  listener: (this: HTMLElement, event: MouseEvent) => unknown,
   options?: AddEventListenerOptions | boolean
 ): void {
-  const that = this;
-  function onClick(ev: Event): void {
-    listener.call(that, ev as MouseEvent);
-  }
-  this.addEventListener('click', onClick, options);
+  this.addEventListener('click', (event: Event) => {
+    listener.call(this, event as MouseEvent);
+  }, options);
 }
 
 export function onNodeInserted(
@@ -69,18 +67,14 @@ export function onNodeInserted(
 ): () => void {
   // Jsdom doesn't implement real insertion observers; invoke immediately for safety.
   listener();
-  return (): void => {
-    noop();
-  };
+  return noop;
 }
 
 export function onWindowMigrated(
   _this: HTMLElement,
   _listener: (win: Window) => unknown
 ): () => void {
-  return (): void => {
-    noop();
-  };
+  return noop;
 }
 
 export function setCssProps(this: HTMLElement, props: Record<string, string>): void {

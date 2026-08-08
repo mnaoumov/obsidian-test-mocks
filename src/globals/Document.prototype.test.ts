@@ -13,7 +13,7 @@ import {
 
 describe('Document.prototype extensions', () => {
   afterEach(() => {
-    document.body.innerHTML = '';
+    document.body.replaceChildren();
   });
 
   describe('on / off', () => {

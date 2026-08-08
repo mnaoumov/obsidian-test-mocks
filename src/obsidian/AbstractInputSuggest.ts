@@ -10,7 +10,7 @@ const DEFAULT_LIMIT = 100;
 
 export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   public limit = DEFAULT_LIMIT;
-  public onSelectCallback__?: (value: T, evt: KeyboardEvent | MouseEvent) => unknown;
+  public onSelectCallback__?: (value: T, event: KeyboardEvent | MouseEvent) => unknown;
   public readonly textInputEl__: HTMLDivElement | HTMLInputElement;
   public constructor(app: App, textInputEl: HTMLDivElement | HTMLInputElement) {
     super(app);
@@ -39,7 +39,7 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
     return this.textInputEl__.textContent;
   }
 
-  public onSelect(callback: (value: T, evt: KeyboardEvent | MouseEvent) => unknown): this {
+  public onSelect(callback: (value: T, event: KeyboardEvent | MouseEvent) => unknown): this {
     this.onSelectCallback__ = callback;
     return this;
   }

@@ -25,9 +25,9 @@ describe('ConfirmationModal', () => {
   describe('addButton', () => {
     it('should invoke the callback with a ConfirmationButton and return this', () => {
       const modal = createModal();
-      const cb = vi.fn();
-      const result = modal.addButton(cb);
-      expect(cb).toHaveBeenCalledOnce();
+      const callback = vi.fn();
+      const result = modal.addButton(callback);
+      expect(callback).toHaveBeenCalledOnce();
       expect(result).toBe(modal);
     });
   });
@@ -42,15 +42,15 @@ describe('ConfirmationModal', () => {
   describe('addCheckbox', () => {
     it('should invoke the callback when the checkbox changes', () => {
       const modal = createModal();
-      const cb = vi.fn();
-      modal.addCheckbox('Enable', cb);
+      const callback = vi.fn();
+      modal.addCheckbox('Enable', callback);
       const checkbox = modal.contentEl.querySelector('input');
       expect(checkbox).not.toBeNull();
       if (checkbox) {
         checkbox.checked = true;
         checkbox.dispatchEvent(new Event('change'));
       }
-      expect(cb).toHaveBeenCalledWith(true);
+      expect(callback).toHaveBeenCalledWith(true);
     });
 
     it('should return this', () => {

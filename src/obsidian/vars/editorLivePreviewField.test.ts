@@ -17,15 +17,15 @@ describe('editorLivePreviewField', () => {
 
   it('should create a boolean via its create function', () => {
     const state = EditorState.create({ extensions: [editorLivePreviewField] });
-    const value = state.field(editorLivePreviewField);
-    expect(value).toBe(false);
+    const isValue = state.field(editorLivePreviewField);
+    expect(isValue).toBe(false);
   });
 
   it('should return the same value on update', () => {
     const state = EditorState.create({ extensions: [editorLivePreviewField] });
-    const value = state.field(editorLivePreviewField);
+    const isValue = state.field(editorLivePreviewField);
     const nextState = state.update({}).state;
-    const nextValue = nextState.field(editorLivePreviewField);
-    expect(nextValue).toBe(value);
+    const isNextValue = nextState.field(editorLivePreviewField);
+    expect(isNextValue).toBe(isValue);
   });
 });

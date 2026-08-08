@@ -13,7 +13,7 @@ import {
   unbridgeWorkspaceLeaf
 } from './workspace-leaf-bridge.ts';
 
-type OnOpenTabHeaderMenuFn = (this: WorkspaceLeaf, evt: MouseEvent, parentEl: HTMLElement) => void;
+type OnOpenTabHeaderMenuFunction = (this: WorkspaceLeaf, event: MouseEvent, parentEl: HTMLElement) => void;
 
 describe('workspace-leaf-bridge', () => {
   afterEach(() => {
@@ -23,7 +23,7 @@ describe('workspace-leaf-bridge', () => {
   it('should bridge onOpenTabHeaderMenu as a callable no-op', () => {
     bridgeWorkspaceLeaf();
     const leaf = WorkspaceLeaf.create2__(App.createConfigured__());
-    const onOpenTabHeaderMenu = ensureGenericObject(leaf)['onOpenTabHeaderMenu'] as OnOpenTabHeaderMenuFn;
+    const onOpenTabHeaderMenu = ensureGenericObject(leaf)['onOpenTabHeaderMenu'] as OnOpenTabHeaderMenuFunction;
     expect(() => {
       onOpenTabHeaderMenu.call(leaf, new MouseEvent('click'), document.createElement('div'));
     }).not.toThrow();

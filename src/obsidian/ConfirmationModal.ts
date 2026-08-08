@@ -29,9 +29,9 @@ export class ConfirmationModal extends Modal {
     return strictProxy(value, ConfirmationModal);
   }
 
-  public addButton(cb: (btn: ConfirmationButtonOriginal) => unknown): this {
-    const btn = ConfirmationButton.create2__(this.buttonContainerEl);
-    cb(btn.asOriginalType3__());
+  public addButton(callback: (button: ConfirmationButtonOriginal) => unknown): this {
+    const button = ConfirmationButton.create2__(this.buttonContainerEl);
+    callback(button.asOriginalType3__());
     return this;
   }
 
@@ -39,12 +39,12 @@ export class ConfirmationModal extends Modal {
     return this;
   }
 
-  public addCheckbox(label: string, cb: (value: boolean) => unknown): this {
+  public addCheckbox(label: string, callback: (value: boolean) => unknown): this {
     const checkbox = this.contentEl.createEl('input');
     checkbox.type = 'checkbox';
     checkbox.setAttribute('aria-label', label);
     checkbox.addEventListener('change', () => {
-      cb(checkbox.checked);
+      callback(checkbox.checked);
     });
     return this;
   }

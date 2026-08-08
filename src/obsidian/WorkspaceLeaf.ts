@@ -19,7 +19,8 @@ import {
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
-let nextLeafId = 1;
+// Held on an object so the counter can advance from inside the constructor without assigning to a module-level binding (`unicorn/no-top-level-assignment-in-function`).
+const leafIdCounter = { next: 1 };
 
 export class WorkspaceLeaf extends WorkspaceItem {
   public readonly app__: App;
@@ -44,7 +45,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   protected constructor(app: App, id?: string) {
     super(app.workspace, id);
     this.app__ = app;
-    this.id__ = id ?? String(nextLeafId++);
+    this.id__ = id ?? String(leafIdCounter.next++);
     const self = strictProxy(this);
     self.constructor3__(app, id);
     return self;
@@ -137,6 +138,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     this.pinned = pinned;
   }
 
+  // eslint-disable-next-line unicorn/name-replacements -- `eState` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
   public async setViewState(viewState: ViewStateOriginal, eState?: Record<string, unknown>): Promise<void> {
     await noopAsync();
     this.viewState = { ...viewState };

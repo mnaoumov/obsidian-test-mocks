@@ -28,9 +28,9 @@ describe('Menu', () => {
   describe('addItem', () => {
     it('should call the callback with a MenuItem', () => {
       const menu = Menu.create2__();
-      const cb = vi.fn();
-      menu.addItem(cb);
-      expect(cb).toHaveBeenCalledOnce();
+      const callback = vi.fn();
+      menu.addItem(callback);
+      expect(callback).toHaveBeenCalledOnce();
     });
 
     it('should add the item to items__', () => {
@@ -99,10 +99,10 @@ describe('Menu', () => {
   describe('close', () => {
     it('should call onHide callback', () => {
       const menu = Menu.create2__();
-      const cb = vi.fn();
-      menu.onHide(cb);
+      const callback = vi.fn();
+      menu.onHide(callback);
       menu.close();
-      expect(cb).toHaveBeenCalledOnce();
+      expect(callback).toHaveBeenCalledOnce();
     });
 
     it('should not throw when no onHide callback set', () => {

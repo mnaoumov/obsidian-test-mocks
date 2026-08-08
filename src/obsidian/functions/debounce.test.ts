@@ -19,28 +19,28 @@ beforeEach(() => {
 
 describe('debounce', () => {
   it('should delay execution', () => {
-    let called = false;
-    const fn = debounce(() => {
-      called = true;
+    let isCalled = false;
+    const $function = debounce(() => {
+      isCalled = true;
     }, DEBOUNCE_DELAY);
-    fn();
-    expect(called).toBe(false);
+    $function();
+    expect(isCalled).toBe(false);
     vi.advanceTimersByTime(WAIT_DELAY);
-    expect(called).toBe(true);
+    expect(isCalled).toBe(true);
   });
 
   it('should reset timer on subsequent calls when resetTimer is true', () => {
     let count = 0;
-    const fn = debounce(
+    const $function = debounce(
       () => {
         count++;
       },
       DEBOUNCE_DELAY,
       true
     );
-    fn();
+    $function();
     vi.advanceTimersByTime(HALF_DEBOUNCE_DELAY);
-    fn();
+    $function();
     vi.advanceTimersByTime(HALF_DEBOUNCE_DELAY);
     // Should not have fired yet because timer was reset
     expect(count).toBe(0);
@@ -50,72 +50,72 @@ describe('debounce', () => {
 
   it('should not reset timer when resetTimer is false', () => {
     let count = 0;
-    const fn = debounce(
+    const $function = debounce(
       () => {
         count++;
       },
       DEBOUNCE_DELAY,
       false
     );
-    fn();
-    fn();
+    $function();
+    $function();
     vi.advanceTimersByTime(WAIT_DELAY);
     // Should fire only once since resetTimer is false
     expect(count).toBe(1);
   });
 
   it('should support cancel', () => {
-    let called = false;
-    const fn = debounce(() => {
-      called = true;
+    let isCalled = false;
+    const $function = debounce(() => {
+      isCalled = true;
     }, DEBOUNCE_DELAY);
-    fn();
-    fn.cancel();
+    $function();
+    $function.cancel();
     vi.advanceTimersByTime(WAIT_DELAY);
-    expect(called).toBe(false);
+    expect(isCalled).toBe(false);
   });
 
   it('cancel should return the debouncer', () => {
-    const fn = debounce(() => {
+    const $function = debounce(() => {
       noop();
     }, DEBOUNCE_DELAY);
-    fn();
-    const result = fn.cancel();
-    expect(result).toBe(fn);
+    $function();
+    const result = $function.cancel();
+    expect(result).toBe($function);
   });
 
   it('cancel should be safe to call when no timer is pending', () => {
-    const fn = debounce(() => {
+    const $function = debounce(() => {
       noop();
     }, DEBOUNCE_DELAY);
     expect(() => {
-      fn.cancel();
+      $function.cancel();
     }).not.toThrow();
   });
 
   it('should support run to execute immediately', () => {
     let value = '';
-    const fn = debounce((v: string) => {
+    const $function = debounce((v: string) => {
       value = v;
       return v;
     }, DEBOUNCE_DELAY);
-    fn('hello');
-    const result = fn.run();
+    $function('hello');
+    const result = $function.run();
     expect(value).toBe('hello');
     expect(result).toBe('hello');
   });
 
   it('run should return undefined when no args have been provided', () => {
-    const fn = debounce(() => 'test', DEBOUNCE_DELAY);
-    const result = fn.run();
+    const $function = debounce(() => 'test', DEBOUNCE_DELAY);
+    const result = $function.run();
     expect(result).toBeUndefined();
   });
 
   it('should return the debouncer when called', () => {
-    const fn = debounce(() => {
+    const $function = debounce(() => {
       noop();
     }, DEBOUNCE_DELAY);
-    const result = fn();
-    expect(result).toBe(fn);
+    const result = $function();
+    expect(result).toBe($function);
   });
 });

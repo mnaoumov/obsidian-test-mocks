@@ -110,6 +110,7 @@ describe('Component', () => {
       const child = Component.create__();
       component.addChild(child);
       const events = Events.create__();
+      // eslint-disable-next-line unicorn/name-replacements -- `e` / `fn` are the member names on Obsidian's own `EventRef`, which is what this literal stands in for.
       component.registerEvent({ e: events.asOriginalType__(), fn: vi.fn(), name: 'test' });
       component.register(vi.fn());
       component.registerInterval(0);
@@ -136,6 +137,7 @@ describe('Component', () => {
       component.load();
       const events = Events.create__();
       const offrefSpy = vi.spyOn(events, 'offref');
+      // eslint-disable-next-line unicorn/name-replacements -- `e` / `fn` are the member names on Obsidian's own `EventRef`, which is what this literal stands in for.
       const ref = { e: events.asOriginalType__(), fn: vi.fn(), name: 'test' };
       component.registerEvent(ref);
       component.unload();
@@ -145,6 +147,7 @@ describe('Component', () => {
     it('should not throw when unloading an event ref without e', () => {
       const component = Component.create__();
       component.load();
+      // eslint-disable-next-line unicorn/name-replacements -- `fn` is the member name on Obsidian's own `EventRef`, which is what this literal stands in for.
       component.registerEvent({ fn: vi.fn(), name: 'test' });
       expect(() => {
         component.unload();
@@ -230,27 +233,28 @@ describe('Component', () => {
     it('should add an event listener to the element', () => {
       const component = Component.create__();
       const el = createDiv();
-      const cb = vi.fn();
-      component.registerDomEvent(el, 'click', cb);
+      const callback = vi.fn();
+      component.registerDomEvent(el, 'click', callback);
       el.dispatchEvent(new Event('click'));
-      expect(cb).toHaveBeenCalled();
+      expect(callback).toHaveBeenCalled();
     });
 
     it('should remove the event listener on unload', () => {
       const component = Component.create__();
       component.load();
       const el = createDiv();
-      const cb = vi.fn();
-      component.registerDomEvent(el, 'click', cb);
+      const callback = vi.fn();
+      component.registerDomEvent(el, 'click', callback);
       component.unload();
       el.dispatchEvent(new Event('click'));
-      expect(cb).not.toHaveBeenCalled();
+      expect(callback).not.toHaveBeenCalled();
     });
   });
 
   describe('registerEvent', () => {
     it('should store the event ref', () => {
       const component = Component.create__();
+      // eslint-disable-next-line unicorn/name-replacements -- `e` / `fn` are the member names on Obsidian's own `EventRef`, which is what this literal stands in for.
       const ref = { e: component.asOriginalType__(), fn: vi.fn(), name: 'test' };
       component.registerEvent(ref);
       expect(component.events__).toContain(ref);

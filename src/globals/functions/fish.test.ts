@@ -9,13 +9,13 @@ import { fish } from './fish.ts';
 
 describe('fish', () => {
   afterEach(() => {
-    document.body.innerHTML = '';
+    document.body.replaceChildren();
   });
 
   it('should return matching element', () => {
     const div = document.createElement('div');
     div.id = 'target';
-    document.body.appendChild(div);
+    document.body.append(div);
     const result = fish('#target');
     expect(result).toBe(div);
   });

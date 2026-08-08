@@ -88,7 +88,7 @@ const MOCK_INDEX_PATH = join(PROJECT_ROOT, 'src', 'obsidian', 'index.ts');
  * conformance with `obsidian.d.ts`. Add an entry here only as a short-lived allowance
  * while implementing a newly-discovered gap, and remove it as soon as the gap is mocked.
  */
-const CONFORMANCE_BACKLOG = new Set<string>([]);
+const CONFORMANCE_BACKLOG = new Set<string>();
 
 const VALUE_FLAG_LIST = [
   SymbolFlags.BlockScopedVariable,
@@ -113,7 +113,7 @@ describe('obsidian.d.ts conformance', () => {
     const violations: string[] = [];
 
     for (const [name, obsidianSymbol] of obsidianExports) {
-      if (!VALUE_FLAG_LIST.some((flag) => hasFlag(obsidianSymbol.flags, flag))) {
+      if (VALUE_FLAG_LIST.every((flag) => !hasFlag(obsidianSymbol.flags, flag))) {
         continue;
       }
 
@@ -150,6 +150,7 @@ describe('obsidian.d.ts conformance', () => {
         continue;
       }
       for (const [member, isValueTyped] of members) {
+        // eslint-disable-next-line unicorn/no-computed-property-existence-check -- `in` walks the PROTOTYPE CHAIN, which is the point here; `Object.hasOwn` only sees own properties and would change what this checks.
         if (!(member in target)) {
           record(violations, `global ${interfaceName}: missing member "${member}"`);
           continue;
@@ -311,5 +312,5 @@ function record(violations: string[], message: string): void {
 }
 
 function stripQuotes(name: string): string {
-  return name.replace(/^['"]|['"]$/g, '');
+  return name.replaceAll(/^['"]|['"]$/g, '');
 }

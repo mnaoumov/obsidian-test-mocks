@@ -1,11 +1,11 @@
 import { execFromRoot } from './root.ts';
 
-interface LintParams {
+interface LintOptions {
   readonly paths?: string[] | undefined;
   readonly shouldFix?: boolean | undefined;
 }
 
-export async function lint(params: LintParams = {}): Promise<void> {
-  const targets = params.paths?.length ? params.paths : ['.'];
-  await execFromRoot(['npx', 'eslint', ...(params.shouldFix ? ['--fix'] : []), { batchedArgs: targets }]);
+export async function lint(options: LintOptions = {}): Promise<void> {
+  const targets = options.paths?.length ? options.paths : ['.'];
+  await execFromRoot(['npx', 'eslint', ...(options.shouldFix ? ['--fix'] : []), { batchedArguments: targets }]);
 }

@@ -29,8 +29,8 @@ export abstract class BaseComponent {
     return this;
   }
 
-  public then(cb: (component: this) => unknown): this {
-    cb(this);
+  public then(callback: (component: this) => unknown): this {
+    callback(this);
     return this;
   }
 }

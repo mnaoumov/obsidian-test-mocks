@@ -1,3 +1,1 @@
-import momentInstance from 'moment';
-
-export const moment = momentInstance;
+export { default as moment } from 'moment';

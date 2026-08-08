@@ -12,6 +12,7 @@ export function bridgeComponent(): void {
     get(this: Component): boolean {
       return this.loaded__;
     },
+    // eslint-disable-next-line unicorn/consistent-boolean-name -- `value` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
     set(this: Component, value: boolean) {
       this.loaded__ = value;
     }

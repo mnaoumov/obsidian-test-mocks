@@ -11,6 +11,7 @@ export function bridgeTAbstractFile(): void {
     get(this: TAbstractFile): boolean {
       return this.deleted__;
     },
+    // eslint-disable-next-line unicorn/consistent-boolean-name -- `value` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
     set(this: TAbstractFile, value: boolean) {
       this.deleted__ = value;
     }

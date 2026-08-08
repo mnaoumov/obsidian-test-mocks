@@ -47,8 +47,8 @@ describe('Events', () => {
   describe('on', () => {
     it('should register a callback and return an event ref', () => {
       const events = Events.create__();
-      const cb = vi.fn();
-      const ref = events.on('test-event', cb);
+      const callback = vi.fn();
+      const ref = events.on('test-event', callback);
       expect(ref).toBeDefined();
       // EventRef has a name property at runtime even though the obsidian type does not expose it
       const refRecord = ensureGenericObject(ref);
@@ -59,10 +59,10 @@ describe('Events', () => {
   describe('trigger', () => {
     it('should invoke registered callbacks with provided data', () => {
       const events = Events.create__();
-      const cb = vi.fn();
-      events.on('test-event', cb);
+      const callback = vi.fn();
+      events.on('test-event', callback);
       events.trigger('test-event', 'arg1', 'arg2');
-      expect(cb).toHaveBeenCalledWith('arg1', 'arg2');
+      expect(callback).toHaveBeenCalledWith('arg1', 'arg2');
     });
 
     it('should not throw when triggering an event with no listeners', () => {
@@ -74,24 +74,24 @@ describe('Events', () => {
 
     it('should invoke callback with context when ctx is provided', () => {
       const events = Events.create__();
-      const ctx = { value: 'context' };
-      const cb = vi.fn(function getContext(this: unknown) {
+      const context = { value: 'context' };
+      const callback = vi.fn(function getContext(this: unknown) {
         return this;
       });
-      events.on('ctx-event', cb, ctx);
+      events.on('ctx-event', callback, context);
       events.trigger('ctx-event');
-      expect(cb.mock.instances[0]).toBe(ctx);
+      expect(callback.mock.instances[0]).toBe(context);
     });
   });
 
   describe('off', () => {
     it('should remove a registered callback', () => {
       const events = Events.create__();
-      const cb = vi.fn();
-      events.on('test-event', cb);
-      events.off('test-event', cb);
+      const callback = vi.fn();
+      events.on('test-event', callback);
+      events.off('test-event', callback);
       events.trigger('test-event');
-      expect(cb).not.toHaveBeenCalled();
+      expect(callback).not.toHaveBeenCalled();
     });
 
     it('should not throw when removing from a non-existent event', () => {
@@ -105,15 +105,16 @@ describe('Events', () => {
   describe('offref', () => {
     it('should remove a callback by event ref', () => {
       const events = Events.create__();
-      const cb = vi.fn();
-      const ref = events.on('test-event', cb);
+      const callback = vi.fn();
+      const ref = events.on('test-event', callback);
       events.offref(ref);
       events.trigger('test-event');
-      expect(cb).not.toHaveBeenCalled();
+      expect(callback).not.toHaveBeenCalled();
     });
 
     it('should not throw when event ref has no name or fn', () => {
       const events = Events.create__();
+      // eslint-disable-next-line unicorn/name-replacements -- `fn` is the member name on Obsidian's own `EventRef`, which is what this literal stands in for.
       const emptyRef = strictProxy<EventRefOriginal>({ fn: undefined, name: undefined });
       expect(() => {
         events.offref(emptyRef);
@@ -124,14 +125,15 @@ describe('Events', () => {
   describe('tryTrigger', () => {
     it('should invoke the callback from the event ref with provided args', () => {
       const events = Events.create__();
-      const cb = vi.fn();
-      const ref = events.on('test-event', cb);
+      const callback = vi.fn();
+      const ref = events.on('test-event', callback);
       events.tryTrigger(ref, ['data1', 'data2']);
-      expect(cb).toHaveBeenCalledWith('data1', 'data2');
+      expect(callback).toHaveBeenCalledWith('data1', 'data2');
     });
 
     it('should not throw when event ref has no fn or e', () => {
       const events = Events.create__();
+      // eslint-disable-next-line unicorn/name-replacements -- `e` / `fn` are the member names on Obsidian's own `EventRef`, which is what this literal stands in for.
       const emptyRef = strictProxy<EventRefOriginal>({ e: undefined, fn: undefined });
       expect(() => {
         events.tryTrigger(emptyRef, ['data']);

@@ -1,3 +1,3 @@
-export function isString(obj: unknown): obj is string {
-  return typeof obj === 'string';
+export function isString(object: unknown): object is string {
+  return typeof object === 'string';
 }

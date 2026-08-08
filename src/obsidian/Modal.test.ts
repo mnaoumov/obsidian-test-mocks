@@ -59,7 +59,7 @@ describe('Modal', () => {
       const fragment = document.createDocumentFragment();
       const span = document.createElement('span');
       span.textContent = 'Fragment';
-      fragment.appendChild(span);
+      fragment.append(span);
       modal.setContent(fragment);
       expect(modal.contentEl.textContent).toContain('Fragment');
     });
@@ -93,10 +93,10 @@ describe('Modal', () => {
   describe('setCloseCallback', () => {
     it('should call the callback on close', () => {
       const modal = Modal.create__(app);
-      const cb = vi.fn();
-      modal.setCloseCallback(cb);
+      const callback = vi.fn();
+      modal.setCloseCallback(callback);
       modal.close();
-      expect(cb).toHaveBeenCalledOnce();
+      expect(callback).toHaveBeenCalledOnce();
     });
   });
 

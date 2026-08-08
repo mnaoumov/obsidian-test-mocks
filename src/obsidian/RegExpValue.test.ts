@@ -10,33 +10,33 @@ import { RegExpValue } from './RegExpValue.ts';
 
 describe('RegExpValue', () => {
   it('should create an instance via create__', () => {
-    const val = RegExpValue.create__(/test/);
-    expect(val).toBeInstanceOf(RegExpValue);
+    const value = RegExpValue.create__(/test/);
+    expect(value).toBeInstanceOf(RegExpValue);
   });
 
   it('should always be truthy', () => {
-    const val = new RegExpValue(/test/);
-    expect(val.isTruthy()).toBe(true);
+    const value = new RegExpValue(/test/);
+    expect(value.isTruthy()).toBe(true);
   });
 
   it('should return empty string for toString', () => {
-    const val = new RegExpValue(/test/);
-    expect(String(val)).toBe('');
+    const value = new RegExpValue(/test/);
+    expect(String(value)).toBe('');
   });
 
   describe('asOriginalType3__', () => {
     it('should return the same instance typed as the original', () => {
-      const val = RegExpValue.create__(/abc/);
-      const original: RegExpValueOriginal = val.asOriginalType3__();
-      expect(original).toBe(val);
+      const value = RegExpValue.create__(/abc/);
+      const original: RegExpValueOriginal = value.asOriginalType3__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = RegExpValue.create__(/abc/);
-      const mock = RegExpValue.fromOriginalType3__(val.asOriginalType3__());
-      expect(mock).toBe(val);
+      const value = RegExpValue.create__(/abc/);
+      const mock = RegExpValue.fromOriginalType3__(value.asOriginalType3__());
+      expect(mock).toBe(value);
     });
   });
 });

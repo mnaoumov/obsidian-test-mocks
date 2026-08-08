@@ -31,6 +31,7 @@ export class Vault extends Events {
    * every other key reads as `undefined` until a test sets it.
    */
   public config__: Record<string, unknown> = { [ATTACHMENT_FOLDER_PATH_CONFIG_KEY]: DEFAULT_ATTACHMENT_FOLDER_PATH };
+  // eslint-disable-next-line unicorn/name-replacements -- `configDir` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
   public configDir = '.obsidian';
   public fileMap__: Record<string, TAbstractFile> = {};
   private fileMapLowerCase: Record<string, TAbstractFile> = {};
@@ -55,11 +56,11 @@ export class Vault extends Events {
     return strictProxy(value, Vault);
   }
 
-  public static recurseChildren(folder: TFolder, cb: (f: TAbstractFile) => unknown): void {
+  public static recurseChildren(folder: TFolder, callback: (f: TAbstractFile) => unknown): void {
     for (const child of folder.children) {
-      cb(child);
+      callback(child);
       if (child instanceof TFolder) {
-        Vault.recurseChildren(child, cb);
+        Vault.recurseChildren(child, callback);
       }
     }
   }
@@ -117,7 +118,7 @@ export class Vault extends Events {
 
   public createFolderSync__(path: string): TFolder {
     if (!(this.adapter instanceof InMemoryAdapter)) {
-      throw new Error('createFolderSync__ is only supported for in-memory adapters');
+      throw new TypeError('createFolderSync__ is only supported for in-memory adapters');
     }
     this.adapter.mkdirSync__(path);
     return this.registerFolderTree(path);
@@ -125,7 +126,7 @@ export class Vault extends Events {
 
   public createSync__(path: string, content: string): TFile {
     if (!(this.adapter instanceof InMemoryAdapter)) {
-      throw new Error('createSync__ is only supported for in-memory adapters');
+      throw new TypeError('createSync__ is only supported for in-memory adapters');
     }
     this.adapter.writeSync__(path, content);
     const file = TFile.create__(this, path);
@@ -155,9 +156,9 @@ export class Vault extends Events {
     delete this.fileMapLowerCase[path.toLowerCase()];
     file.deleted__ = true;
     if (file.parent) {
-      const idx = file.parent.children.indexOf(file);
-      if (idx !== -1) {
-        file.parent.children.splice(idx, 1);
+      const index = file.parent.children.indexOf(file);
+      if (index !== -1) {
+        file.parent.children.splice(index, 1);
       }
     }
   }
@@ -286,9 +287,9 @@ export class Vault extends Events {
     this.trigger('modify', file);
   }
 
-  public async process(file: TFile, fn: (data: string) => string, options?: DataWriteOptionsOriginal): Promise<string> {
+  public async process(file: TFile, $function: (data: string) => string, options?: DataWriteOptionsOriginal): Promise<string> {
     const content = await this.adapter.read(file.path);
-    const result = fn(content);
+    const result = $function(content);
     await this.adapter.write(file.path, result, options);
     this.trigger('modify', file);
     return result;
@@ -304,14 +305,14 @@ export class Vault extends Events {
 
   public readSync__(file: TFile): string {
     if (!(this.adapter instanceof InMemoryAdapter)) {
-      throw new Error('readSync__ is only supported for in-memory adapters');
+      throw new TypeError('readSync__ is only supported for in-memory adapters');
     }
     return this.adapter.readSync__(file.path);
   }
 
   public reconcile__(): void {
     if (!(this.adapter instanceof InMemoryAdapter)) {
-      throw new Error('reconcile__ is only supported for in-memory adapters');
+      throw new TypeError('reconcile__ is only supported for in-memory adapters');
     }
     const { files, folders } = this.adapter.listAll__();
     const keep = new Set<string>(['/']);
@@ -327,7 +328,10 @@ export class Vault extends Events {
       }
     }
 
-    for (const filePath of files.filter((path) => !isDotPath(path))) {
+    for (const filePath of files) {
+      if (isDotPath(filePath)) {
+        continue;
+      }
       keep.add(filePath);
       if (!(this.fileMap__[filePath] instanceof TFile)) {
         const file = TFile.create__(this, filePath);
@@ -364,20 +368,20 @@ export class Vault extends Events {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
     delete this.fileMapLowerCase[oldPath.toLowerCase()];
     if (file.parent) {
-      const idx = file.parent.children.indexOf(file);
-      if (idx !== -1) {
-        file.parent.children.splice(idx, 1);
+      const index = file.parent.children.indexOf(file);
+      if (index !== -1) {
+        file.parent.children.splice(index, 1);
       }
     }
 
     // Update the file's properties in place
     file.path = newPath;
     const parts = newPath.split('/');
-    file.name = ensureNonNullable(parts[parts.length - 1]);
+    file.name = ensureNonNullable(parts.at(-1));
     if (file instanceof TFile) {
       const dotIndex = file.name.lastIndexOf('.');
-      file.extension = dotIndex >= 0 ? file.name.slice(dotIndex + 1) : '';
-      file.basename = dotIndex >= 0 ? file.name.slice(0, dotIndex) : file.name;
+      file.extension = dotIndex === -1 ? '' : file.name.slice(dotIndex + 1);
+      file.basename = dotIndex === -1 ? file.name : file.name.slice(0, dotIndex);
     }
 
     // Re-register with new path and attach to new parent

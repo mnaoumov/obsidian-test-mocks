@@ -102,10 +102,10 @@ describe('DropdownComponent', () => {
     it('should invoke the change callback', () => {
       const dropdown = createDropdown();
       dropdown.addOption('x', 'X');
-      const cb = vi.fn();
-      dropdown.onChange(cb);
+      const callback = vi.fn();
+      dropdown.onChange(callback);
       dropdown.setValue('x');
-      expect(cb).toHaveBeenCalledWith('x');
+      expect(callback).toHaveBeenCalledWith('x');
     });
 
     it('should return this for chaining', () => {
@@ -118,10 +118,10 @@ describe('DropdownComponent', () => {
     it('should register a callback invoked on setValue', () => {
       const dropdown = createDropdown();
       dropdown.addOption('a', 'A');
-      const cb = vi.fn();
-      dropdown.onChange(cb);
+      const callback = vi.fn();
+      dropdown.onChange(callback);
       dropdown.setValue('a');
-      expect(cb).toHaveBeenCalledWith('a');
+      expect(callback).toHaveBeenCalledWith('a');
     });
 
     it('should return this for chaining', () => {
@@ -136,10 +136,10 @@ describe('DropdownComponent', () => {
       const dropdown = createDropdown();
       dropdown.addOption('val', 'Val');
       dropdown.setValue('val');
-      const cb = vi.fn();
-      dropdown.onChange(cb);
+      const callback = vi.fn();
+      dropdown.onChange(callback);
       dropdown.simulateChange__();
-      expect(cb).toHaveBeenCalledWith('val');
+      expect(callback).toHaveBeenCalledWith('val');
     });
 
     it('should not throw if no callback is registered', () => {

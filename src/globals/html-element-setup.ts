@@ -28,6 +28,6 @@ export function teardownHTMLElementPrototype(): void {
 }
 
 function parsePadding(value: string): number {
-  const padding = parseFloat(value);
-  return isNaN(padding) ? 0 : padding;
+  const padding = Number.parseFloat(value);
+  return Number.isNaN(padding) ? 0 : padding;
 }

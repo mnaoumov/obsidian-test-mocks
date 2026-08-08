@@ -63,7 +63,7 @@ export abstract class SettingTab {
 
   public hide(): void {
     this.renderedGroups = [];
-    this.containerEl.innerHTML = '';
+    this.containerEl.replaceChildren();
   }
 
   public refreshDomState(): void {

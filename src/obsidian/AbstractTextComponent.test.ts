@@ -10,8 +10,7 @@ import {
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 import { TextComponent } from './TextComponent.ts';
 
-class BareTextComponent extends AbstractTextComponent<HTMLInputElement> {
-}
+class BareTextComponent extends AbstractTextComponent<HTMLInputElement> {}
 
 // AbstractTextComponent is abstract, so we test it through TextComponent.
 describe('AbstractTextComponent', () => {
@@ -47,10 +46,10 @@ describe('AbstractTextComponent', () => {
 
     it('should invoke onChange callback', () => {
       const component = createTextComponent();
-      const cb = vi.fn();
-      component.onChange(cb);
+      const callback = vi.fn();
+      component.onChange(callback);
       component.setValue('test');
-      expect(cb).toHaveBeenCalledWith('test');
+      expect(callback).toHaveBeenCalledWith('test');
     });
 
     it('should return this for chaining', () => {
@@ -77,12 +76,12 @@ describe('AbstractTextComponent', () => {
   describe('onChanged', () => {
     it('should invoke the onChange callback with current value', () => {
       const component = createTextComponent();
-      const cb = vi.fn();
-      component.onChange(cb);
+      const callback = vi.fn();
+      component.onChange(callback);
       component.setValue('initial');
-      cb.mockClear();
+      callback.mockClear();
       component.onChanged();
-      expect(cb).toHaveBeenCalledWith('initial');
+      expect(callback).toHaveBeenCalledWith('initial');
     });
 
     it('should not throw if no callback is registered', () => {

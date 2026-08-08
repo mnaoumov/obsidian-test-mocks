@@ -9,79 +9,79 @@ import { StringValue } from './StringValue.ts';
 
 describe('ListValue', () => {
   it('should default to empty values', () => {
-    const val = new ListValue([]);
-    expect(val.values__).toEqual([]);
+    const value = new ListValue([]);
+    expect(value.values__).toEqual([]);
   });
 
   it('should be falsy when empty', () => {
-    const val = new ListValue([]);
-    expect(val.isTruthy()).toBe(false);
+    const value = new ListValue([]);
+    expect(value.isTruthy()).toBe(false);
   });
 
   it('should be truthy when non-empty', () => {
-    const val = new ListValue([]);
-    val.values__.push(new StringValue('item'));
-    expect(val.isTruthy()).toBe(true);
+    const value = new ListValue([]);
+    value.values__.push(new StringValue('item'));
+    expect(value.isTruthy()).toBe(true);
   });
 
   it('should join values with comma-space for toString', () => {
-    const val = new ListValue([]);
-    val.values__.push(new StringValue('a'), new StringValue('b'), new StringValue('c'));
-    expect(String(val)).toBe('a, b, c');
+    const value = new ListValue([]);
+    value.values__.push(new StringValue('a'), new StringValue('b'), new StringValue('c'));
+    expect(String(value)).toBe('a, b, c');
   });
 
   it('should return empty string for toString when empty', () => {
-    const val = new ListValue([]);
-    expect(String(val)).toBe('');
+    const value = new ListValue([]);
+    expect(String(value)).toBe('');
   });
 
   describe('create__', () => {
     it('should create an instance via factory method', () => {
-      const val = ListValue.create__([]);
-      expect(val).toBeInstanceOf(ListValue);
+      const value = ListValue.create__([]);
+      expect(value).toBeInstanceOf(ListValue);
     });
   });
 
   describe('asOriginalType3__', () => {
     it('should return the same instance', () => {
-      const val = ListValue.create__([]);
-      const original = val.asOriginalType3__();
-      expect(original).toBe(val);
+      const value = ListValue.create__([]);
+      const original = value.asOriginalType3__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = ListValue.create__([]);
-      const mock = ListValue.fromOriginalType3__(val.asOriginalType3__());
-      expect(mock).toBe(val);
+      const value = ListValue.create__([]);
+      const mock = ListValue.fromOriginalType3__(value.asOriginalType3__());
+      expect(mock).toBe(value);
     });
   });
 
   describe('length', () => {
     it('should return the number of values', () => {
-      const val = new ListValue([]);
-      val.values__.push(new StringValue('a'), new StringValue('b'));
-      expect(val.length()).toBe(2);
+      const value = new ListValue([]);
+      value.values__.push(new StringValue('a'), new StringValue('b'));
+      expect(value.length()).toBe(2);
     });
   });
 
   describe('get', () => {
     it('should return the value at the given index', () => {
-      const val = new ListValue([]);
+      const value = new ListValue([]);
       const item = new StringValue('a');
-      val.values__.push(item);
-      expect(val.get(0)).toBe(item);
+      value.values__.push(item);
+      expect(value.get(0)).toBe(item);
     });
   });
 
   describe('includes', () => {
     it('should report membership by reference', () => {
-      const val = new ListValue([]);
+      const value = new ListValue([]);
       const item = new StringValue('a');
-      val.values__.push(item);
-      expect(val.includes(item)).toBe(true);
-      expect(val.includes(new StringValue('b'))).toBe(false);
+      value.values__.push(item);
+      expect(value.includes(item)).toBe(true);
+      expect(value.includes(new StringValue('b'))).toBe(false);
     });
   });
 

@@ -17,8 +17,8 @@ export class TFile extends TAbstractFile {
   protected constructor(vault: Vault, path: string) {
     super(vault, path);
     const dotIndex = this.name.lastIndexOf('.');
-    this.extension = dotIndex >= 0 ? this.name.slice(dotIndex + 1) : '';
-    this.basename = dotIndex >= 0 ? this.name.slice(0, dotIndex) : this.name;
+    this.extension = dotIndex === -1 ? '' : this.name.slice(dotIndex + 1);
+    this.basename = dotIndex === -1 ? this.name : this.name.slice(0, dotIndex);
     const self = strictProxy(this);
     self.constructor2__(vault, path);
     return self;

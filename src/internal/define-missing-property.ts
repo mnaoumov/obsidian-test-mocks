@@ -1,4 +1,5 @@
 export function defineMissingProperty(target: object, property: string, descriptor: PropertyDescriptor): void {
+  // eslint-disable-next-line unicorn/no-computed-property-existence-check -- `in` walks the PROTOTYPE CHAIN, which is the point here; `Object.hasOwn` only sees own properties and would change what this checks.
   if (property in target) {
     return;
   }
