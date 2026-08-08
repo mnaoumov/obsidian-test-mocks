@@ -1,3 +1,3 @@
-export function ready(fn: () => unknown): void {
-  fn();
+export function ready($function: () => unknown): void {
+  $function();
 }

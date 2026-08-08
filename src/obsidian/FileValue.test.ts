@@ -20,13 +20,13 @@ describe('FileValue', () => {
   }
 
   it('should always be truthy', () => {
-    const val = createFileValue();
-    expect(val.isTruthy()).toBe(true);
+    const value = createFileValue();
+    expect(value.isTruthy()).toBe(true);
   });
 
   it('should return empty string for toString', () => {
-    const val = createFileValue();
-    expect(String(val)).toBe('');
+    const value = createFileValue();
+    expect(String(value)).toBe('');
   });
 
   describe('create__', () => {
@@ -37,24 +37,24 @@ describe('FileValue', () => {
         }
       });
       const file = ensureNonNullable(app.vault.getFileByPath('test.md'));
-      const val = FileValue.create__(app, file);
-      expect(val).toBeInstanceOf(FileValue);
+      const value = FileValue.create__(app, file);
+      expect(value).toBeInstanceOf(FileValue);
     });
   });
 
   describe('asOriginalType3__', () => {
     it('should return the same instance', () => {
-      const val = createFileValue();
-      const original = val.asOriginalType3__();
-      expect(original).toBe(val);
+      const value = createFileValue();
+      const original = value.asOriginalType3__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType3__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = createFileValue();
-      const mock = FileValue.fromOriginalType3__(val.asOriginalType3__());
-      expect(mock).toBe(val);
+      const value = createFileValue();
+      const mock = FileValue.fromOriginalType3__(value.asOriginalType3__());
+      expect(mock).toBe(value);
     });
   });
 });

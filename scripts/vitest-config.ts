@@ -23,6 +23,7 @@ export const config = defineConfig({
     globals: false,
     include: ['src/**/*.test.ts'],
     server: {
+      // eslint-disable-next-line unicorn/name-replacements -- `deps` is Vitest's option name, which has to be spelled the way Vitest reads it.
       deps: {
         inline: ['@obsidian-typings', 'obsidian-dev-utils']
       }

@@ -25,29 +25,26 @@ describe('Object extensions', () => {
     });
 
     it('should return true when callback never returns false', () => {
-      const result = each({ x: 'val' }, () => true);
-      expect(result).toBe(true);
+      const isResult = each({ x: 'val' }, () => true);
+      expect(isResult).toBe(true);
     });
 
     it('should stop early and return false when callback returns false', () => {
       const visited: string[] = [];
-      const result = each({ a: 'x', b: 'y', c: 'z' }, (_value, key) => {
+      const isResult = each({ a: 'x', b: 'y', c: 'z' }, (_value, key) => {
         visited.push(key ?? '');
-        if (key === 'b') {
-          return false;
-        }
-        return true;
+        return key !== 'b';
       });
-      expect(result).toBe(false);
+      expect(isResult).toBe(false);
       expect(visited).toEqual(['a', 'b']);
     });
 
     it('should bind the context', () => {
-      const ctx = { multiplier: MULTIPLIER };
+      const context = { multiplier: MULTIPLIER };
       let received = '';
       each({ a: 'val' }, function eachCallback(this: Record<string, unknown>, value) {
         received = `${String(this['multiplier'])}-${String(value)}`;
-      }, ctx);
+      }, context);
       expect(received).toBe(`${String(MULTIPLIER)}-val`);
     });
   });

@@ -79,10 +79,10 @@ describe('ColorComponent', () => {
 
     it('should invoke onChange callback', () => {
       const color = createColor();
-      const cb = vi.fn();
-      color.onChange(cb);
+      const callback = vi.fn();
+      color.onChange(callback);
       color.setValue('#0000ff');
-      expect(cb).toHaveBeenCalledWith('#0000ff');
+      expect(callback).toHaveBeenCalledWith('#0000ff');
     });
 
     it('should return this for chaining', () => {

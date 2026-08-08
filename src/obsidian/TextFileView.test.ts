@@ -24,6 +24,7 @@ class ConcreteTextFileView extends TextFileView {
     return 'test-text-view';
   }
 
+  // eslint-disable-next-line unicorn/consistent-boolean-name -- `clear` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
   public setViewData(data: string, _clear: boolean): void {
     this.data = data;
   }

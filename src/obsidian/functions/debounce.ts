@@ -2,19 +2,19 @@ import type { Debouncer as DebouncerOriginal } from 'obsidian';
 
 import type { MaybeReturn } from '../../internal/types.ts';
 
-export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, timeout = 0, resetTimer = true): DebouncerOriginal<T, V> {
+export function debounce<T extends unknown[], V>(callback: (...$arguments: [...T]) => V, timeout = 0, resetTimer = true): DebouncerOriginal<T, V> {
   let timerId: ReturnType<typeof setTimeout> | undefined;
-  let lastArgs: [...T] | undefined;
+  let lastArguments: [...T] | undefined;
 
-  function debouncer(...args: [...T]): DebouncerOriginal<T, V> {
-    lastArgs = args;
+  function debouncer(...$arguments: [...T]): DebouncerOriginal<T, V> {
+    lastArguments = $arguments;
     if (resetTimer && timerId !== undefined) {
       clearTimeout(timerId);
     }
     if (timerId === undefined || resetTimer) {
       timerId = setTimeout(() => {
         timerId = undefined;
-        cb(...args);
+        callback(...$arguments);
       }, timeout);
     }
     return debouncer;
@@ -33,8 +33,8 @@ export function debounce<T extends unknown[], V>(cb: (...args: [...T]) => V, tim
       clearTimeout(timerId);
       timerId = undefined;
     }
-    if (lastArgs) {
-      return cb(...lastArgs);
+    if (lastArguments) {
+      return callback(...lastArguments);
     }
   };
 

@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { noopAsync } from '../internal/noop.ts';
 import { Tasks } from './Tasks.ts';
 
 describe('Tasks', () => {
@@ -16,24 +17,24 @@ describe('Tasks', () => {
 
   it('should not be empty after add', () => {
     const tasks = Tasks.create__();
-    tasks.add(() => Promise.resolve());
+    tasks.add(() => noopAsync());
     expect(tasks.isEmpty()).toBe(false);
   });
 
   it('should not be empty after addPromise', () => {
     const tasks = Tasks.create__();
-    tasks.addPromise(Promise.resolve());
+    tasks.addPromise(noopAsync());
     expect(tasks.isEmpty()).toBe(false);
   });
 
   it('should invoke the callback immediately on add', () => {
     const tasks = Tasks.create__();
-    let called = false;
+    let isCalled = false;
     tasks.add(() => {
-      called = true;
-      return Promise.resolve();
+      isCalled = true;
+      return noopAsync();
     });
-    expect(called).toBe(true);
+    expect(isCalled).toBe(true);
   });
 
   it('should resolve all promises on promise()', async () => {
@@ -41,10 +42,10 @@ describe('Tasks', () => {
     const results: string[] = [];
     tasks.add(() => {
       results.push('a');
-      return Promise.resolve();
+      return noopAsync();
     });
     tasks.addPromise(
-      Promise.resolve().then(() => {
+      noopAsync().then(() => {
         results.push('b');
       })
     );

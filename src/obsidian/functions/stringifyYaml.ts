@@ -1,5 +1,5 @@
 import { stringify } from 'yaml';
 
-export function stringifyYaml(obj: unknown): string {
-  return stringify(obj);
+export function stringifyYaml(object: unknown): string {
+  return stringify(object);
 }

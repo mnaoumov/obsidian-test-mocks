@@ -15,7 +15,7 @@ async function spellcheck(paths: string[] = []): Promise<void> {
     paths = ['.'];
   }
 
-  await execFromRoot(['npx', 'cspell', '--no-progress', '--no-must-find-files', { batchedArgs: paths }]);
+  await execFromRoot(['npx', 'cspell', '--no-progress', '--no-must-find-files', { batchedArguments: paths }]);
 }
 
 await main();

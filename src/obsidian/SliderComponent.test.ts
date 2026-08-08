@@ -40,10 +40,10 @@ describe('SliderComponent', () => {
 
     it('should call onChange callback when value is set', () => {
       const slider = SliderComponent.create__(createDiv());
-      const cb = vi.fn();
-      slider.onChange(cb);
+      const callback = vi.fn();
+      slider.onChange(callback);
       slider.setValue(VALUE_75);
-      expect(cb).toHaveBeenCalledWith(VALUE_75);
+      expect(callback).toHaveBeenCalledWith(VALUE_75);
     });
   });
 
@@ -95,7 +95,7 @@ describe('SliderComponent', () => {
   describe('setDisplayFormat', () => {
     it('should return this', () => {
       const slider = SliderComponent.create__(createDiv());
-      expect(slider.setDisplayFormat((value) => String(value))).toBe(slider);
+      expect(slider.setDisplayFormat(String)).toBe(slider);
     });
   });
 

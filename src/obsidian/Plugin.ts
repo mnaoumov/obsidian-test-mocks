@@ -34,7 +34,7 @@ export abstract class Plugin extends Component {
   public extensions__ = new Map<string, string>();
   public hoverLinkSources__ = new Map<string, HoverLinkSourceOriginal>();
   public manifest: PluginManifestOriginal;
-  public markdownCodeBlockProcessors__ = new Map<string, (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => unknown>();
+  public markdownCodeBlockProcessors__ = new Map<string, (source: string, el: HTMLElement, context: MarkdownPostProcessorContextOriginal) => unknown>();
   public markdownPostProcessors__: MarkdownPostProcessorOriginal[] = [];
   public obsidianProtocolHandlers__ = new Map<string, ObsidianProtocolHandlerOriginal>();
   public ribbonActions__: HTMLElement[] = [];
@@ -61,7 +61,7 @@ export abstract class Plugin extends Component {
     return command;
   }
 
-  public addRibbonIcon(_icon: string, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
+  public addRibbonIcon(_icon: string, _title: string, _callback: (event: MouseEvent) => unknown): HTMLElement {
     const el = createDiv();
     this.ribbonActions__.push(el);
     return el;
@@ -116,8 +116,8 @@ export abstract class Plugin extends Component {
   }
 
   public registerExtensions(extensions: string[], viewType: string): void {
-    for (const ext of extensions) {
-      this.extensions__.set(ext, viewType);
+    for (const extension of extensions) {
+      this.extensions__.set(extension, viewType);
     }
   }
 
@@ -127,12 +127,12 @@ export abstract class Plugin extends Component {
 
   public registerMarkdownCodeBlockProcessor(
     language: string,
-    handler: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContextOriginal) => unknown,
+    handler: (source: string, el: HTMLElement, context: MarkdownPostProcessorContextOriginal) => unknown,
     _sortOrder?: number
   ): MarkdownPostProcessorOriginal {
     this.markdownCodeBlockProcessors__.set(language, handler);
-    // eslint-disable-next-line func-style, func-names -- Mock implementation.
-    const processor: MarkdownPostProcessorOriginal = function (_el: HTMLElement, _ctx: MarkdownPostProcessorContextOriginal): void {
+    // eslint-disable-next-line func-style, func-names, unicorn/consistent-function-scoping -- Mock implementation. It stays local because each registration has to return a DISTINCT function object; a module-scope one would make every call push and return the same identity.
+    const processor: MarkdownPostProcessorOriginal = function (_el: HTMLElement, _context: MarkdownPostProcessorContextOriginal): void {
       noop();
     };
     this.markdownPostProcessors__.push(processor);

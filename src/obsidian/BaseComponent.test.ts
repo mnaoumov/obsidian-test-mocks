@@ -75,9 +75,9 @@ describe('BaseComponent', () => {
   describe('then', () => {
     it('should invoke the callback with the component', () => {
       const component = createComponent();
-      const cb = vi.fn();
-      component.then(cb);
-      expect(cb).toHaveBeenCalledWith(component);
+      const callback = vi.fn();
+      component.then(callback);
+      expect(callback).toHaveBeenCalledWith(component);
     });
 
     it('should return this for chaining', () => {

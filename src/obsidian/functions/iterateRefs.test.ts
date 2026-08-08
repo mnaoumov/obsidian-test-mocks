@@ -23,14 +23,14 @@ function makeRef(link: string): ReferenceCache {
 describe('iterateRefs', () => {
   it('should return false when no callback returns true', () => {
     const refs = [makeRef('a'), makeRef('b')];
-    const result = iterateRefs(refs, () => undefined);
-    expect(result).toBe(false);
+    const isResult = iterateRefs(refs, () => undefined);
+    expect(isResult).toBe(false);
   });
 
   it('should return true when callback returns true', () => {
     const refs = [makeRef('a'), makeRef('b')];
-    const result = iterateRefs(refs, (ref) => ref.link === 'a');
-    expect(result).toBe(true);
+    const isResult = iterateRefs(refs, (ref) => ref.link === 'a');
+    expect(isResult).toBe(true);
   });
 
   it('should stop iteration when callback returns true', () => {

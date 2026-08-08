@@ -41,9 +41,9 @@ describe('SettingGroup', () => {
   describe('addExtraButton', () => {
     it('should invoke callback with component and return this', () => {
       const group = SettingGroup.create__(createDiv());
-      const cb = vi.fn();
-      const result = group.addExtraButton(cb);
-      expect(cb).toHaveBeenCalledOnce();
+      const callback = vi.fn();
+      const result = group.addExtraButton(callback);
+      expect(callback).toHaveBeenCalledOnce();
       expect(result).toBe(group);
     });
   });
@@ -51,9 +51,9 @@ describe('SettingGroup', () => {
   describe('addSearch', () => {
     it('should invoke callback with component and return this', () => {
       const group = SettingGroup.create__(createDiv());
-      const cb = vi.fn();
-      const result = group.addSearch(cb);
-      expect(cb).toHaveBeenCalledOnce();
+      const callback = vi.fn();
+      const result = group.addSearch(callback);
+      expect(callback).toHaveBeenCalledOnce();
       expect(result).toBe(group);
     });
   });
@@ -61,9 +61,9 @@ describe('SettingGroup', () => {
   describe('addSetting', () => {
     it('should invoke callback with setting and return this', () => {
       const group = SettingGroup.create__(createDiv());
-      const cb = vi.fn();
-      const result = group.addSetting(cb);
-      expect(cb).toHaveBeenCalledOnce();
+      const callback = vi.fn();
+      const result = group.addSetting(callback);
+      expect(callback).toHaveBeenCalledOnce();
       expect(result).toBe(group);
     });
   });

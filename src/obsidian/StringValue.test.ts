@@ -10,48 +10,48 @@ import { StringValue } from './StringValue.ts';
 
 describe('StringValue', () => {
   it('should create an instance via create__', () => {
-    const val = StringValue.create__();
-    expect(val).toBeInstanceOf(StringValue);
+    const value = StringValue.create__();
+    expect(value).toBeInstanceOf(StringValue);
   });
 
   it('should default to empty string', () => {
-    const val = new StringValue();
-    expect(val.value__).toBe('');
+    const value = new StringValue();
+    expect(value.value__).toBe('');
   });
 
   it('should accept a value', () => {
-    const val = new StringValue('hello');
-    expect(val.value__).toBe('hello');
+    const value = new StringValue('hello');
+    expect(value.value__).toBe('hello');
   });
 
   it('should return false for isTruthy when empty', () => {
-    const val = new StringValue('');
-    expect(val.isTruthy()).toBe(false);
+    const value = new StringValue('');
+    expect(value.isTruthy()).toBe(false);
   });
 
   it('should return true for isTruthy when non-empty', () => {
-    const val = new StringValue('hello');
-    expect(val.isTruthy()).toBe(true);
+    const value = new StringValue('hello');
+    expect(value.isTruthy()).toBe(true);
   });
 
   it('should return the string for toString', () => {
-    const val = new StringValue('hello');
-    expect(String(val)).toBe('hello');
+    const value = new StringValue('hello');
+    expect(String(value)).toBe('hello');
   });
 
   describe('asOriginalType4__', () => {
     it('should return the same instance typed as the original', () => {
-      const val = StringValue.create__('test');
-      const original: StringValueOriginal = val.asOriginalType4__();
-      expect(original).toBe(val);
+      const value = StringValue.create__('test');
+      const original: StringValueOriginal = value.asOriginalType4__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType4__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = StringValue.create__('test');
-      const mock = StringValue.fromOriginalType4__(val.asOriginalType4__());
-      expect(mock).toBe(val);
+      const value = StringValue.create__('test');
+      const mock = StringValue.fromOriginalType4__(value.asOriginalType4__());
+      expect(mock).toBe(value);
     });
   });
 });

@@ -47,15 +47,17 @@ export class Events {
       return;
     }
 
-    const fn = entry.fn;
-    this.off(entry.name, fn);
+    const $function = entry.fn;
+    this.off(entry.name, $function);
   }
 
-  public on(name: string, callback: (...data: unknown[]) => unknown, ctx?: unknown): EventRefOriginal {
+  public on(name: string, callback: (...data: unknown[]) => unknown, context?: unknown): EventRefOriginal {
     this._[name] ??= [];
     const self = this.asOriginalType__();
-    this._[name].push({ ctx, e: self, fn: callback, name });
+    /* eslint-disable unicorn/name-replacements -- `ctx` / `e` / `fn` are the member names on Obsidian's own `EventRef`, which `offref` and every consumer read by name. */
+    this._[name].push({ ctx: context, e: self, fn: callback, name });
     return { e: self, fn: callback, name };
+    /* eslint-enable unicorn/name-replacements -- Restores the rule after the `EventRef` shape. */
   }
 
   public trigger(name: string, ...data: unknown[]): void {
@@ -68,11 +70,11 @@ export class Events {
     }
   }
 
-  public tryTrigger(evt: EventRefOriginal, args: unknown[]): void {
-    const entry = evt as Partial<EventsEntry>;
+  public tryTrigger(event: EventRefOriginal, $arguments: unknown[]): void {
+    const entry = event as Partial<EventsEntry>;
     if (!entry.fn || !entry.e) {
       return;
     }
-    entry.fn.call(entry.e, ...args);
+    entry.fn.call(entry.e, ...$arguments);
   }
 }

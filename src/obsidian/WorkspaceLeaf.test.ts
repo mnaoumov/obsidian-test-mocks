@@ -313,11 +313,11 @@ function countLeaves(app: App): number {
 }
 
 function hasLeaf(app: App, leaf: WorkspaceLeaf): boolean {
-  let found = false;
+  let isFound = false;
   app.workspace.iterateAllLeaves((l) => {
     if (l === leaf) {
-      found = true;
+      isFound = true;
     }
   });
-  return found;
+  return isFound;
 }

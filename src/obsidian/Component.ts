@@ -51,7 +51,7 @@ export class Component {
     }
     this.loaded__ = true;
     this.onload();
-    for (const child of [...this.children__]) {
+    for (const child of this.children__) {
       child.load();
     }
   }
@@ -64,26 +64,26 @@ export class Component {
     noop();
   }
 
-  public register(cb: () => unknown): void {
-    this.cleanups__.push(cb);
+  public register(callback: () => unknown): void {
+    this.cleanups__.push(callback);
   }
 
   public registerDomEvent<K extends keyof WindowEventMap>(
     el: Window,
     type: K,
-    callback: (this: HTMLElement, ev: WindowEventMap[K]) => unknown,
+    callback: (this: HTMLElement, event: WindowEventMap[K]) => unknown,
     options?: AddEventListenerOptions | boolean
   ): void;
   public registerDomEvent<K extends keyof DocumentEventMap>(
     el: Document,
     type: K,
-    callback: (this: HTMLElement, ev: DocumentEventMap[K]) => unknown,
+    callback: (this: HTMLElement, event: DocumentEventMap[K]) => unknown,
     options?: AddEventListenerOptions | boolean
   ): void;
   public registerDomEvent<K extends keyof HTMLElementEventMap>(
     el: HTMLElement,
     type: K,
-    callback: (this: HTMLElement, ev: HTMLElementEventMap[K]) => unknown,
+    callback: (this: HTMLElement, event: HTMLElementEventMap[K]) => unknown,
     options?: AddEventListenerOptions | boolean
   ): void;
   public registerDomEvent(

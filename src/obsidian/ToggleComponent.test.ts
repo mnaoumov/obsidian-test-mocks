@@ -29,10 +29,10 @@ describe('ToggleComponent', () => {
 
     it('should call onChange callback', () => {
       const toggle = ToggleComponent.create__(createDiv());
-      const cb = vi.fn();
-      toggle.onChange(cb);
+      const callback = vi.fn();
+      toggle.onChange(callback);
       toggle.setValue(true);
-      expect(cb).toHaveBeenCalledWith(true);
+      expect(callback).toHaveBeenCalledWith(true);
     });
   });
 
@@ -48,10 +48,10 @@ describe('ToggleComponent', () => {
 
     it('should call onChange callback with new value', () => {
       const toggle = ToggleComponent.create__(createDiv());
-      const cb = vi.fn();
-      toggle.onChange(cb);
+      const callback = vi.fn();
+      toggle.onChange(callback);
       toggle.onClick();
-      expect(cb).toHaveBeenCalledWith(true);
+      expect(callback).toHaveBeenCalledWith(true);
     });
   });
 

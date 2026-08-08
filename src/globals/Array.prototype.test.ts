@@ -27,9 +27,9 @@ describe('Array.prototype extensions', () => {
 
   describe('findLastIndex', () => {
     it('should return the last matching index', () => {
-      const arr = ['a', 'b', 'a'];
-      const result = findLastIndex.call(arr, (v: unknown) => v === 'a');
-      expect(result).toBe(arr.length - 1);
+      const array = ['a', 'b', 'a'];
+      const result = findLastIndex.call(array, (v: unknown) => v === 'a');
+      expect(result).toBe(array.length - 1);
     });
 
     it('should return -1 when no element matches', () => {
@@ -65,24 +65,24 @@ describe('Array.prototype extensions', () => {
 
   describe('remove', () => {
     it('should remove the target from the array', () => {
-      const arr = ['a', 'b', 'c'];
-      remove.call(arr, 'b');
-      expect(arr).toEqual(['a', 'c']);
+      const array = ['a', 'b', 'c'];
+      remove.call(array, 'b');
+      expect(array).toEqual(['a', 'c']);
     });
 
     it('should do nothing when the target is not found', () => {
-      const arr = ['a', 'b', 'c'];
-      remove.call(arr, 'z');
-      expect(arr).toEqual(['a', 'b', 'c']);
+      const array = ['a', 'b', 'c'];
+      remove.call(array, 'z');
+      expect(array).toEqual(['a', 'b', 'c']);
     });
   });
 
   describe('shuffle', () => {
     it('should reverse the array in-place (deterministic for tests)', () => {
-      const arr = ['a', 'b', 'c'];
-      const result = shuffle.call(arr);
+      const array = ['a', 'b', 'c'];
+      const result = shuffle.call(array);
       expect(result).toEqual(['c', 'b', 'a']);
-      expect(result).toBe(arr);
+      expect(result).toBe(array);
     });
   });
 

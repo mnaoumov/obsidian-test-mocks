@@ -14,6 +14,7 @@ export function createSvg<K extends keyof SVGElementTagNameMap>(
     }
     if (o.attr) {
       for (const [k, v] of Object.entries(o.attr)) {
+        // eslint-disable-next-line unicorn/prefer-toggle-attribute -- Not equivalent: `toggleAttribute` forces an EMPTY value, while this sets the stringified `v`. Obsidian's `DomElementInfo.attr` carries real attribute values, so the mock has to preserve them.
         if (v === null) {
           el.removeAttribute(k);
         } else {
@@ -25,6 +26,7 @@ export function createSvg<K extends keyof SVGElementTagNameMap>(
       if (o.prepend) {
         o.parent.insertBefore(el, o.parent.firstChild);
       } else {
+        // eslint-disable-next-line unicorn/prefer-dom-node-append -- The receiver is a `Node`, which has no `append()` — only the `ParentNode` mixin does. Obsidian declares these members and `DomElementInfo.parent` on `Node`, so the mock has to match.
         o.parent.appendChild(el);
       }
     }

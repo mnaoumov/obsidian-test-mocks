@@ -7,7 +7,7 @@ import {
 import { isNumber } from './Number.ts';
 
 const VALID_NUMBER = 42;
-const NEGATIVE_DECIMAL = -3.14;
+const NEGATIVE_DECIMAL = -3.25;
 
 describe('Number.isNumber', () => {
   it('should return true for a valid number', () => {

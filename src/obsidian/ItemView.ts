@@ -23,7 +23,7 @@ export abstract class ItemView extends View {
     return strictProxy(value, ItemView);
   }
 
-  public addAction(_icon: IconNameOriginal, _title: string, _callback: (evt: MouseEvent) => unknown): HTMLElement {
+  public addAction(_icon: IconNameOriginal, _title: string, _callback: (event: MouseEvent) => unknown): HTMLElement {
     return createDiv();
   }
 

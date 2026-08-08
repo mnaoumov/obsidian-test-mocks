@@ -25,7 +25,7 @@ describe('Notice', () => {
     const fragment = document.createDocumentFragment();
     const span = document.createElement('span');
     span.textContent = 'Fragment';
-    fragment.appendChild(span);
+    fragment.append(span);
     const notice = Notice.create__(fragment);
     expect(notice.messageEl.textContent).toContain('Fragment');
   });

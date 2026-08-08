@@ -3,8 +3,9 @@ import type { SvgElementInfo } from '../internal/types.ts';
 import { createEl as createElGlobal } from './functions/createEl.ts';
 import { createSvg as createSvgGlobal } from './functions/createSvg.ts';
 
-export function appendText(this: Node, val: string): void {
-  this.appendChild(document.createTextNode(val));
+export function appendText(this: Node, value: string): void {
+  // eslint-disable-next-line unicorn/prefer-dom-node-append -- The receiver is a `Node`, which has no `append()` — only the `ParentNode` mixin does. Obsidian declares these members and `DomElementInfo.parent` on `Node`, so the mock has to match.
+  this.appendChild(document.createTextNode(value));
 }
 
 export function createDiv(
@@ -14,7 +15,7 @@ export function createDiv(
 ): HTMLDivElement {
   return createEl.call(this, 'div', o, (el: HTMLElement) => {
     if (!(el instanceof HTMLDivElement)) {
-      throw new Error(`Expected a div element, but got ${el.tagName.toLowerCase()}`);
+      throw new TypeError(`Expected a div element, but got ${el.tagName.toLowerCase()}`);
     }
     callback?.(el);
   }) as HTMLDivElement;
@@ -62,11 +63,12 @@ export function indexOf(this: Node, other: Node): number {
   if (!parent) {
     return -1;
   }
-  return Array.from(parent.childNodes).indexOf(other as ChildNode);
+  return [...parent.childNodes].indexOf(other as ChildNode);
 }
 
 export function insertAfter<T extends Node>(this: Node, node: T, child: Node | null): T {
   if (!child) {
+    // eslint-disable-next-line unicorn/prefer-dom-node-append -- The receiver is a `Node`, which has no `append()` — only the `ParentNode` mixin does. Obsidian declares these members and `DomElementInfo.parent` on `Node`, so the mock has to match.
     this.appendChild(node);
     return node;
   }
@@ -81,6 +83,7 @@ export function instanceOf<T>(this: Node, type: new () => T): this is T {
 export function setChildrenInPlace(this: Node, children: Node[]): void {
   empty.call(this);
   for (const child of children) {
+    // eslint-disable-next-line unicorn/prefer-dom-node-append -- The receiver is a `Node`, which has no `append()` — only the `ParentNode` mixin does. Obsidian declares these members and `DomElementInfo.parent` on `Node`, so the mock has to match.
     this.appendChild(child);
   }
 }

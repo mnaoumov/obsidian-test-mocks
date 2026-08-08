@@ -33,7 +33,7 @@ export class Scope {
     noop();
   }
 
-  public register(modifiers: ModifierOriginal[] | null, key: null | string, _func: KeymapEventListenerOriginal): KeymapEventHandlerOriginal {
+  public register(modifiers: ModifierOriginal[] | null, key: null | string, _function: KeymapEventListenerOriginal): KeymapEventHandlerOriginal {
     const handler: KeymapEventHandlerOriginal = {
       key,
       modifiers: modifiers?.join(',') ?? null,

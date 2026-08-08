@@ -47,14 +47,15 @@ interface MockClassRef {
  * @param obj - The object to bypass.
  * @returns The object with the bypass accessor.
  */
-export function bypassStrictProxy<T>(obj: T): T {
-  if (!isObjectLike(obj)) {
-    return obj;
+export function bypassStrictProxy<T>(object: T): T {
+  if (!isObjectLike(object)) {
+    return object;
   }
-  if (!(STRICT_PROXY_TARGET_SYMBOL in obj)) {
-    return obj;
+  // eslint-disable-next-line unicorn/no-computed-property-existence-check -- `in` walks the PROTOTYPE CHAIN, which is the point here; `Object.hasOwn` only sees own properties and would change what this checks.
+  if (!(STRICT_PROXY_TARGET_SYMBOL in object)) {
+    return object;
   }
-  return obj[STRICT_PROXY_TARGET_SYMBOL] as T;
+  return object[STRICT_PROXY_TARGET_SYMBOL] as T;
 }
 // eslint-disable-next-line @typescript-eslint/unified-signatures -- This overload infers T from mockClass; the `unknown` overload below requires explicit T. Cannot be combined.
 export function strictProxy<T>(value: unknown, mockClass: MockClassLike<T>): T;
@@ -80,6 +81,7 @@ function wrapProxy<T>(value: unknown, mockClass?: MockClassRef): T {
     return value as T;
   }
 
+  // eslint-disable-next-line unicorn/no-computed-property-existence-check -- `in` walks the PROTOTYPE CHAIN, which is the point here; `Object.hasOwn` only sees own properties and would change what this checks.
   if (STRICT_PROXY_TARGET_SYMBOL in value) {
     return value as T;
   }
@@ -87,41 +89,43 @@ function wrapProxy<T>(value: unknown, mockClass?: MockClassRef): T {
 
   const isClass = !isPlainObject(value);
   const className = mockClass?.name ?? (isClass ? value.constructor.name : '');
-  const mockProto = mockClass ? ensureGenericObject(mockClass.prototype) : null;
+  const mockPrototype = mockClass ? ensureGenericObject(mockClass.prototype) : null;
   const proxiedChildren = isClass ? null : new Map<string | symbol>();
 
   return new Proxy(value, {
-    get(target, prop, receiver): unknown {
+    get(target, property, receiver): unknown {
       // 1. Own properties and prototype chain of the original object
-      if (prop in target) {
-        if (proxiedChildren?.has(prop)) {
-          return proxiedChildren.get(prop);
+      // eslint-disable-next-line unicorn/no-computed-property-existence-check -- `in` walks the PROTOTYPE CHAIN, which is the point here; `Object.hasOwn` only sees own properties and would change what this checks.
+      if (property in target) {
+        if (proxiedChildren?.has(property)) {
+          return proxiedChildren.get(property);
         }
 
-        const val: unknown = Reflect.get(target, prop, receiver);
-        if (proxiedChildren && isPlainObject(val)) {
-          const result = wrapProxy<unknown>(val);
-          proxiedChildren.set(prop, result);
+        const $value: unknown = Reflect.get(target, property, receiver);
+        if (proxiedChildren && isPlainObject($value)) {
+          const result = wrapProxy<unknown>($value);
+          proxiedChildren.set(property, result);
           return result;
         }
-        return val;
+        return $value;
       }
 
       // 2. Mock prototype chain (for __ methods on fromOriginalType)
-      if (mockProto && typeof prop === 'string' && prop.endsWith('__') && prop in mockProto) {
-        const val: unknown = mockProto[prop];
-        if (typeof val === 'function') {
-          return val.bind(receiver);
+      // eslint-disable-next-line unicorn/no-computed-property-existence-check -- `in` walks the PROTOTYPE CHAIN, which is the point here; `Object.hasOwn` only sees own properties and would change what this checks.
+      if (mockPrototype && typeof property === 'string' && property.endsWith('__') && property in mockPrototype) {
+        const $value: unknown = mockPrototype[property];
+        if (typeof $value === 'function') {
+          return $value.bind(receiver);
         }
-        return val;
+        return $value;
       }
 
       // 3. Passthrough props (symbols, then, toJSON, etc.)
-      if (typeof prop === 'symbol' || PASSTHROUGH_PROPS.has(prop)) {
-        return Reflect.get(target, prop, receiver);
+      if (typeof property === 'symbol' || PASSTHROUGH_PROPS.has(property)) {
+        return Reflect.get(target, property, receiver);
       }
 
-      throw new Error(`Property "${prop}" is not mocked in ${className}. To override, assign a value first: mock.${prop} = ...`);
+      throw new Error(`Property "${property}" is not mocked in ${className}. To override, assign a value first: mock.${property} = ...`);
     }
   }) as T;
 }

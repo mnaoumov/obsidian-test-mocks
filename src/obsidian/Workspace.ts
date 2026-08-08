@@ -13,8 +13,8 @@ import type {
 } from 'obsidian';
 
 import type {
-  EnsureSideLeafOptions,
-  SetActiveLeafParams
+  WorkspaceEnsureSideLeafOptions,
+  WorkspaceSetActiveLeafOptions
 } from '../internal/types.ts';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
@@ -33,6 +33,9 @@ import { WorkspaceRoot } from './WorkspaceRoot.ts';
 import { WorkspaceSidedock } from './WorkspaceSidedock.ts';
 import { WorkspaceWindow } from './WorkspaceWindow.ts';
 
+// The `newLeaf` values that ask `getLeaf` for a NEW leaf rather than the active one.
+const NEW_LEAF_REQUESTS = new Set<boolean | PaneTypeOriginal>(['split', 'tab', true, 'window']);
+
 export class Workspace extends Events {
   public activeEditor: MarkdownFileInfoOriginal | null = null;
   public activeLeaf: null | WorkspaceLeaf = null;
@@ -41,9 +44,7 @@ export class Workspace extends Events {
   public leftRibbon: WorkspaceRibbon;
   public leftSplit: WorkspaceSidedock;
 
-  public requestSaveLayout = debounce(() => {
-    noop();
-  });
+  public requestSaveLayout = debounce(noop);
 
   public rightRibbon: WorkspaceRibbon;
   public rightSplit: WorkspaceSidedock;
@@ -118,7 +119,7 @@ export class Workspace extends Events {
   public async ensureSideLeaf(
     _type: string,
     _side: SideOriginal,
-    _options?: EnsureSideLeafOptions
+    _options?: WorkspaceEnsureSideLeafOptions
   ): Promise<WorkspaceLeaf> {
     await noopAsync();
     const leaf = WorkspaceLeaf.create2__(this.app);
@@ -150,7 +151,7 @@ export class Workspace extends Events {
   }
 
   public getLeaf(newLeaf?: boolean | PaneTypeOriginal): WorkspaceLeaf {
-    if (newLeaf === true || newLeaf === 'tab' || newLeaf === 'split' || newLeaf === 'window') {
+    if (newLeaf !== undefined && NEW_LEAF_REQUESTS.has(newLeaf)) {
       const leaf = WorkspaceLeaf.create2__(this.app);
       this.leaves.push(leaf);
       return leaf;
@@ -184,7 +185,7 @@ export class Workspace extends Events {
     if (this.leaves.length === 0) {
       return null;
     }
-    return ensureNonNullable(this.leaves[this.leaves.length - 1]);
+    return ensureNonNullable(this.leaves.at(-1));
   }
 
   public getRightLeaf(_split: boolean): null | WorkspaceLeaf {
@@ -268,7 +269,7 @@ export class Workspace extends Events {
     this.setActiveLeaf(leaf);
   }
 
-  public setActiveLeaf(leaf: WorkspaceLeaf, _params?: SetActiveLeafParams): void {
+  public setActiveLeaf(leaf: WorkspaceLeaf, _options?: WorkspaceSetActiveLeafOptions): void {
     this.activeLeaf = leaf;
     if (!this.leaves.includes(leaf)) {
       this.leaves.push(leaf);

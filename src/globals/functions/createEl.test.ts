@@ -60,7 +60,7 @@ describe('createEl', () => {
 
   it('should append text as DocumentFragment', () => {
     const frag = document.createDocumentFragment();
-    frag.appendChild(document.createTextNode('frag text'));
+    frag.append(document.createTextNode('frag text'));
     const el = createEl('div', { text: frag });
     expect(el.textContent).toBe('frag text');
   });
@@ -90,7 +90,7 @@ describe('createEl', () => {
   it('should prepend to parent when prepend is true', () => {
     const parent = document.createElement('div');
     const existing = document.createElement('span');
-    parent.appendChild(existing);
+    parent.append(existing);
     const el = createEl('div', { parent, prepend: true });
     expect(parent.firstChild).toBe(el);
   });

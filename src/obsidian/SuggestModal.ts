@@ -47,7 +47,7 @@ export abstract class SuggestModal<T> extends Modal {
 
   public abstract getSuggestions(_query: string): Promise<T[]> | T[];
 
-  public abstract onChooseSuggestion(item: T, evt: KeyboardEvent | MouseEvent): void;
+  public abstract onChooseSuggestion(item: T, event: KeyboardEvent | MouseEvent): void;
 
   public onNoSuggestion(): void {
     noop();
@@ -55,12 +55,12 @@ export abstract class SuggestModal<T> extends Modal {
 
   public abstract renderSuggestion(value: T, _el: HTMLElement): void;
 
-  public selectActiveSuggestion(_evt: KeyboardEvent | MouseEvent): void {
+  public selectActiveSuggestion(_event: KeyboardEvent | MouseEvent): void {
     noop();
   }
 
-  public selectSuggestion(value: T, evt: KeyboardEvent | MouseEvent): void {
-    this.onChooseSuggestion(value, evt);
+  public selectSuggestion(value: T, event: KeyboardEvent | MouseEvent): void {
+    this.onChooseSuggestion(value, event);
     this.close();
   }
 
@@ -77,7 +77,7 @@ export abstract class SuggestModal<T> extends Modal {
         el.createSpan({ text: instruction.purpose });
       });
     }
-    this.modalEl.appendChild(this.instructionsEl__);
+    this.modalEl.append(this.instructionsEl__);
   }
 
   public setPlaceholder(placeholder: string): void {

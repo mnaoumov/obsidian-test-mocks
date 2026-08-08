@@ -9,7 +9,7 @@ const PROPERTY_NAME = 'onOpenTabHeaderMenu';
 
 export function bridgeWorkspaceLeaf(): void {
   defineMissingProperty(WorkspaceLeaf.prototype, PROPERTY_NAME, {
-    value(_evt: MouseEvent, _parentEl: HTMLElement): void {
+    value(_event: MouseEvent, _parentEl: HTMLElement): void {
       noop();
     },
     writable: true

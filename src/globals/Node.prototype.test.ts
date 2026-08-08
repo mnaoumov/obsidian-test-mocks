@@ -165,7 +165,7 @@ describe('Node.prototype extensions', () => {
     it('should remove the node from its parent', () => {
       const parent = document.createElement('div');
       const child = document.createElement('span');
-      parent.appendChild(child);
+      parent.append(child);
       detach.call(child);
       expect(parent.contains(child)).toBe(false);
     });
@@ -180,8 +180,8 @@ describe('Node.prototype extensions', () => {
   describe('empty', () => {
     it('should remove all children', () => {
       const el = document.createElement('div');
-      el.appendChild(document.createElement('span'));
-      el.appendChild(document.createElement('span'));
+      el.append(document.createElement('span'));
+      el.append(document.createElement('span'));
       empty.call(el);
       expect(el.childNodes).toHaveLength(0);
     });
@@ -192,8 +192,8 @@ describe('Node.prototype extensions', () => {
       const parent = document.createElement('div');
       const c1 = document.createElement('span');
       const c2 = document.createElement('span');
-      parent.appendChild(c1);
-      parent.appendChild(c2);
+      parent.append(c1);
+      parent.append(c2);
       expect(indexOf.call(parent, c2)).toBe(1);
     });
 
@@ -208,7 +208,7 @@ describe('Node.prototype extensions', () => {
       const parent = document.createElement('div');
       const firstChild = document.createElement('span');
       const second = document.createElement('span');
-      parent.appendChild(firstChild);
+      parent.append(firstChild);
       insertAfter.call(parent, second, firstChild);
       expect(parent.childNodes[1]).toBe(second);
     });
@@ -237,11 +237,11 @@ describe('Node.prototype extensions', () => {
   describe('setChildrenInPlace', () => {
     it('should replace all children', () => {
       const parent = document.createElement('div');
-      parent.appendChild(document.createElement('span'));
+      parent.append(document.createElement('span'));
       const newChildren = [document.createElement('p'), document.createElement('a')];
       setChildrenInPlace.call(parent, newChildren);
       expect(parent.childNodes).toHaveLength(newChildren.length);
-      expect(parent.childNodes[0]).toBe(newChildren[0]);
+      expect(parent.firstChild).toBe(newChildren[0]);
       expect(parent.childNodes[1]).toBe(newChildren[1]);
     });
   });

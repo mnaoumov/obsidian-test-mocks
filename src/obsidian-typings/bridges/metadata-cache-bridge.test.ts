@@ -20,7 +20,7 @@ import {
   unbridgeMetadataCache
 } from './metadata-cache-bridge.ts';
 
-type ComputeMetadataAsyncFn = (this: MetadataCache, arrayBuffer: ArrayBuffer) => Promise<CachedMetadata>;
+type ComputeMetadataAsyncFunction = (this: MetadataCache, arrayBuffer: ArrayBuffer) => Promise<CachedMetadata>;
 
 function toArrayBuffer(text: string): ArrayBuffer {
   const bytes = new TextEncoder().encode(text);
@@ -64,8 +64,8 @@ describe('metadata-cache-bridge', () => {
     it('should parse metadata from an ArrayBuffer', async () => {
       bridgeMetadataCache();
       const app = App.createConfigured__();
-      const fn = ensureGenericObject(app.metadataCache)['computeMetadataAsync'] as ComputeMetadataAsyncFn;
-      const cache = await fn.call(app.metadataCache, toArrayBuffer('# Heading'));
+      const $function = ensureGenericObject(app.metadataCache)['computeMetadataAsync'] as ComputeMetadataAsyncFunction;
+      const cache = await $function.call(app.metadataCache, toArrayBuffer('# Heading'));
 
       expect(cache.headings?.[0]?.heading).toBe('Heading');
     });

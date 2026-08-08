@@ -15,7 +15,7 @@ describe('DocumentFragment.prototype extensions', () => {
       const frag = document.createDocumentFragment();
       const div = document.createElement('div');
       div.className = 'target';
-      frag.appendChild(div);
+      frag.append(div);
       const result = find.call(frag, '.target');
       expect(result).toBe(div);
     });
@@ -32,7 +32,7 @@ describe('DocumentFragment.prototype extensions', () => {
       const items = [document.createElement('div'), document.createElement('div')];
       for (const item of items) {
         item.className = 'item';
-        frag.appendChild(item);
+        frag.append(item);
       }
 
       const results = findAll.call(frag, '.item');

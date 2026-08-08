@@ -47,17 +47,17 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       size: newContent.length
     });
 
-    this.ensureParentDirs(normalizedPath);
+    this.ensureParentDirectories(normalizedPath);
   }
 
   public async appendBinary(normalizedPath: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
     await noopAsync();
     const binaryContent = this.binaryFiles.get(normalizedPath) ?? new ArrayBuffer(0);
 
-    const newContentArr = new Uint8Array(binaryContent.byteLength + data.byteLength);
-    newContentArr.set(new Uint8Array(binaryContent), 0);
-    newContentArr.set(new Uint8Array(data), binaryContent.byteLength);
-    this.binaryFiles.set(normalizedPath, newContentArr.buffer);
+    const newContentArray = new Uint8Array(binaryContent.byteLength + data.byteLength);
+    newContentArray.set(new Uint8Array(binaryContent), 0);
+    newContentArray.set(new Uint8Array(data), binaryContent.byteLength);
+    this.binaryFiles.set(normalizedPath, newContentArray.buffer);
     this.addLowerCaseKey(normalizedPath);
 
     const now = Date.now();
@@ -65,10 +65,10 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     this.fileMeta.set(normalizedPath, {
       ctime: options?.ctime ?? meta?.ctime ?? now,
       mtime: options?.mtime ?? now,
-      size: newContentArr.byteLength
+      size: newContentArray.byteLength
     });
 
-    this.ensureParentDirs(normalizedPath);
+    this.ensureParentDirectories(normalizedPath);
   }
 
   public async copy(normalizedPath: string, normalizedNewPath: string): Promise<void> {
@@ -80,16 +80,17 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       const binaryContent = this.binaryFiles.get(normalizedPath);
       if (binaryContent === undefined) {
         throw new Error(`File not found: ${normalizedPath}`);
-      } else {
-        const copied = binaryContent.slice(0);
-        this.binaryFiles.set(normalizedNewPath, copied);
-        this.addLowerCaseKey(normalizedNewPath);
-        this.fileMeta.set(normalizedNewPath, {
-          ctime: now,
-          mtime: now,
-          size: copied.byteLength
-        });
       }
+
+      // eslint-disable-next-line unicorn/prefer-spread -- `binaryContent` is an `ArrayBuffer`, so `slice(0)` copies the BUFFER. Spreading it would produce a plain array and lose `byteLength`.
+      const copied = binaryContent.slice(0);
+      this.binaryFiles.set(normalizedNewPath, copied);
+      this.addLowerCaseKey(normalizedNewPath);
+      this.fileMeta.set(normalizedNewPath, {
+        ctime: now,
+        mtime: now,
+        size: copied.byteLength
+      });
     } else {
       this.textFiles.set(normalizedNewPath, textContent);
       this.addLowerCaseKey(normalizedNewPath);
@@ -100,9 +101,10 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       });
     }
 
-    this.ensureParentDirs(normalizedNewPath);
+    this.ensureParentDirectories(normalizedNewPath);
   }
 
+  // eslint-disable-next-line unicorn/consistent-boolean-name -- `sensitive` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
   public async exists(normalizedPath: string, sensitive?: boolean): Promise<boolean> {
     await noopAsync();
     if (sensitive || !this.insensitive__) {
@@ -144,9 +146,9 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       }
     }
 
-    for (const dirPath of this.directories) {
-      if (dirPath !== normalizedPath && this.isDirectChild(dirPath, prefix, normalizedPath)) {
-        folders.push(dirPath);
+    for (const directoryPath of this.directories) {
+      if (directoryPath !== normalizedPath && this.isDirectChild(directoryPath, prefix, normalizedPath)) {
+        folders.push(directoryPath);
       }
     }
 
@@ -155,7 +157,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
 
   public listAll__(): AdapterListing {
     const files = [...this.textFiles.keys(), ...this.binaryFiles.keys()];
-    const folders = [...this.directories].filter((dir) => dir !== '');
+    const folders = [...this.directories].filter((directory) => directory !== '');
     return { files, folders };
   }
 
@@ -167,12 +169,12 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   public mkdirSync__(normalizedPath: string): void {
     this.directories.add(normalizedPath);
     this.addLowerCaseKey(normalizedPath);
-    this.ensureParentDirs(normalizedPath);
+    this.ensureParentDirectories(normalizedPath);
   }
 
-  public async process(normalizedPath: string, fn: (data: string) => string, options?: DataWriteOptionsOriginal): Promise<string> {
+  public async process(normalizedPath: string, $function: (data: string) => string, options?: DataWriteOptionsOriginal): Promise<string> {
     const content = await this.read(normalizedPath);
-    const result = fn(content);
+    const result = $function(content);
     await this.write(normalizedPath, result, options);
     return result;
   }
@@ -230,10 +232,10 @@ export class InMemoryAdapter implements DataAdapterOriginal {
         }
       }
 
-      const dirsToMove: [string, string][] = [];
-      for (const dir of this.directories) {
-        if (dir === normalizedPath || dir.startsWith(oldPrefix)) {
-          dirsToMove.push([dir, dir === normalizedPath ? normalizedNewPath : newPrefix + dir.slice(oldPrefix.length)]);
+      const directoriesToMove: [string, string][] = [];
+      for (const directory of this.directories) {
+        if (directory === normalizedPath || directory.startsWith(oldPrefix)) {
+          directoriesToMove.push([directory, directory === normalizedPath ? normalizedNewPath : newPrefix + directory.slice(oldPrefix.length)]);
         }
       }
 
@@ -243,12 +245,12 @@ export class InMemoryAdapter implements DataAdapterOriginal {
         this.moveMapEntry(this.fileMeta, oldKey, newKey);
       }
 
-      for (const [oldDir, newDir] of dirsToMove) {
-        this.directories.delete(oldDir);
-        this.directories.add(newDir);
+      for (const [oldDirectory, newDirectory] of directoriesToMove) {
+        this.directories.delete(oldDirectory);
+        this.directories.add(newDirectory);
       }
 
-      this.ensureParentDirs(normalizedNewPath);
+      this.ensureParentDirectories(normalizedNewPath);
       this.rebuildLowerCaseKeys();
       return;
     }
@@ -258,10 +260,9 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       const binaryContent = this.binaryFiles.get(normalizedPath);
       if (binaryContent === undefined) {
         throw new Error(`File not found: ${normalizedPath}`);
-      } else {
-        this.binaryFiles.set(normalizedNewPath, binaryContent);
-        this.binaryFiles.delete(normalizedPath);
       }
+      this.binaryFiles.set(normalizedNewPath, binaryContent);
+      this.binaryFiles.delete(normalizedPath);
     } else {
       this.textFiles.set(normalizedNewPath, textContent);
       this.textFiles.delete(normalizedPath);
@@ -271,30 +272,35 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     this.fileMeta.set(normalizedNewPath, meta);
     this.fileMeta.delete(normalizedPath);
 
-    this.ensureParentDirs(normalizedNewPath);
+    this.ensureParentDirectories(normalizedNewPath);
     this.rebuildLowerCaseKeys();
   }
 
+  // eslint-disable-next-line unicorn/consistent-boolean-name -- `recursive` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
   public async rmdir(normalizedPath: string, recursive: boolean): Promise<void> {
     await noopAsync();
     if (recursive) {
       const prefix = `${normalizedPath}/`;
 
-      for (const key of [...this.textFiles.keys()]) {
-        if (key.startsWith(prefix)) {
-          this.textFiles.delete(key);
-          this.fileMeta.delete(key);
+      for (const key of this.textFiles.keys()) {
+        if (!key.startsWith(prefix)) {
+          continue;
         }
+
+        this.textFiles.delete(key);
+        this.fileMeta.delete(key);
       }
-      for (const key of [...this.binaryFiles.keys()]) {
-        if (key.startsWith(prefix)) {
-          this.binaryFiles.delete(key);
-          this.fileMeta.delete(key);
+      for (const key of this.binaryFiles.keys()) {
+        if (!key.startsWith(prefix)) {
+          continue;
         }
+
+        this.binaryFiles.delete(key);
+        this.fileMeta.delete(key);
       }
-      for (const dir of [...this.directories]) {
-        if (dir === normalizedPath || dir.startsWith(prefix)) {
-          this.directories.delete(dir);
+      for (const directory of this.directories) {
+        if (directory === normalizedPath || directory.startsWith(prefix)) {
+          this.directories.delete(directory);
         }
       }
     } else {
@@ -354,7 +360,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       size: data.byteLength
     });
 
-    this.ensureParentDirs(normalizedPath);
+    this.ensureParentDirectories(normalizedPath);
   }
 
   public writeSync__(normalizedPath: string, data: string, options?: DataWriteOptionsOriginal): void {
@@ -367,19 +373,19 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       mtime: options?.mtime ?? now,
       size: data.length
     });
-    this.ensureParentDirs(normalizedPath);
+    this.ensureParentDirectories(normalizedPath);
   }
 
   private addLowerCaseKey(path: string): void {
     this.lowerCaseKeys.add(path.toLowerCase());
   }
 
-  private ensureParentDirs(path: string): void {
-    let parent = getParentDir(path);
+  private ensureParentDirectories(path: string): void {
+    let parent = getParentDirectory(path);
     while (parent !== '' && !this.directories.has(parent)) {
       this.directories.add(parent);
       this.addLowerCaseKey(parent);
-      parent = getParentDir(parent);
+      parent = getParentDirectory(parent);
     }
     this.directories.add('');
   }
@@ -411,13 +417,13 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     for (const key of this.binaryFiles.keys()) {
       this.lowerCaseKeys.add(key.toLowerCase());
     }
-    for (const dir of this.directories) {
-      this.lowerCaseKeys.add(dir.toLowerCase());
+    for (const directory of this.directories) {
+      this.lowerCaseKeys.add(directory.toLowerCase());
     }
   }
 }
 
-function getParentDir(path: string): string {
+function getParentDirectory(path: string): string {
   const segments = path.split('/');
   segments.pop();
   return segments.join('/');

@@ -14,15 +14,15 @@ export class BasesEntry implements FormulaContextOriginal {
   public file: TFile;
   private readonly values = new Map<BasesPropertyIdOriginal, null | ValueOriginal>();
 
-  protected constructor(ctx: unknown, file: TFile) {
+  protected constructor(context: unknown, file: TFile) {
     this.file = file;
     const self = strictProxy(this);
-    self.constructor__(ctx, file);
+    self.constructor__(context, file);
     return self;
   }
 
-  public static create__(ctx: unknown, file: TFile): BasesEntry {
-    return new BasesEntry(ctx, file);
+  public static create__(context: unknown, file: TFile): BasesEntry {
+    return new BasesEntry(context, file);
   }
 
   public static fromOriginalType__(value: BasesEntryOriginal): BasesEntry {
@@ -33,7 +33,7 @@ export class BasesEntry implements FormulaContextOriginal {
     return strictProxy<BasesEntryOriginal>(this);
   }
 
-  public constructor__(_ctx: unknown, _file: TFile): void {
+  public constructor__(_context: unknown, _file: TFile): void {
     noop();
   }
 

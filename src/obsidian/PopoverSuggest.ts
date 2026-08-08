@@ -45,7 +45,7 @@ export abstract class PopoverSuggest<T> {
 
   public abstract renderSuggestion(value: T, el: HTMLElement): void;
 
-  public abstract selectSuggestion(value: T, evt: KeyboardEvent | MouseEvent): void;
+  public abstract selectSuggestion(value: T, event: KeyboardEvent | MouseEvent): void;
 
   protected abstract getSuggestions(query: unknown): Promise<T[]> | T[];
 }

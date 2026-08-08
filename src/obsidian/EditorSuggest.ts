@@ -46,7 +46,7 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
 
   public abstract override renderSuggestion(value: T, el: HTMLElement): void;
 
-  public abstract override selectSuggestion(value: T, evt: KeyboardEvent | MouseEvent): void;
+  public abstract override selectSuggestion(value: T, event: KeyboardEvent | MouseEvent): void;
 
   public setInstructions(instructions: InstructionOriginal[]): void {
     this.instructions__ = instructions;

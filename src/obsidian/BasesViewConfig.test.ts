@@ -78,10 +78,10 @@ describe('BasesViewConfig', () => {
   describe('getDisplayName', () => {
     it('should return custom display name when set', () => {
       const config = BasesViewConfig.create__('', '', 'test');
-      const propId = 'prop.status' as BasesPropertyId;
+      const propertyId = 'prop.status' as BasesPropertyId;
 
-      config.setDisplayName__(propId, 'Status');
-      expect(config.getDisplayName(propId)).toBe('Status');
+      config.setDisplayName__(propertyId, 'Status');
+      expect(config.getDisplayName(propertyId)).toBe('Status');
     });
 
     it('should extract name after dot when no custom name', () => {

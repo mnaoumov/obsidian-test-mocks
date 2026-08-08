@@ -16,26 +16,28 @@ export function prepareFuzzySearch(query: string): (text: string) => null | Sear
     let score = 0;
     let lastMatchIndex = INITIAL_LAST_MATCH_INDEX;
 
-    for (let i = 0; i < lowerText.length && queryIndex < lowerQuery.length; i++) {
-      if (lowerText[i] === lowerQuery[queryIndex]) {
-        const isConsecutive = i === lastMatchIndex + 1;
-
-        if (isConsecutive && matches.length > 0) {
-          const lastMatch = ensureNonNullable(matches[matches.length - 1]);
-          lastMatch[1] = i + 1;
-          score += CONSECUTIVE_MATCH_SCORE;
-        } else {
-          matches.push([i, i + 1]);
-          score += 1;
-        }
-
-        if (i === 0 || text[i - 1] === ' ' || text[i - 1] === '/' || text[i - 1] === '-' || text[i - 1] === '_') {
-          score += WORD_BOUNDARY_SCORE;
-        }
-
-        lastMatchIndex = i;
-        queryIndex++;
+    for (let index = 0; index < lowerText.length && queryIndex < lowerQuery.length; index++) {
+      if (lowerText[index] !== lowerQuery[queryIndex]) {
+        continue;
       }
+
+      const isConsecutive = index === lastMatchIndex + 1;
+
+      if (isConsecutive && matches.length > 0) {
+        const lastMatch = ensureNonNullable(matches.at(-1));
+        lastMatch[1] = index + 1;
+        score += CONSECUTIVE_MATCH_SCORE;
+      } else {
+        matches.push([index, index + 1]);
+        score += 1;
+      }
+
+      if (index === 0 || text[index - 1] === ' ' || text[index - 1] === '/' || text[index - 1] === '-' || text[index - 1] === '_') {
+        score += WORD_BOUNDARY_SCORE;
+      }
+
+      lastMatchIndex = index;
+      queryIndex++;
     }
 
     if (queryIndex < lowerQuery.length) {

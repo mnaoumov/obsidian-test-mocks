@@ -35,7 +35,7 @@ class ConcreteEditorSuggest extends EditorSuggest<string> {
     noop();
   }
 
-  public override selectSuggestion(_value: string, _evt: KeyboardEvent | MouseEvent): void {
+  public override selectSuggestion(_value: string, _event: KeyboardEvent | MouseEvent): void {
     noop();
   }
 }

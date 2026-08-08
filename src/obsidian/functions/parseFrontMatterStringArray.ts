@@ -6,7 +6,7 @@ export function parseFrontMatterStringArray(frontmatter: unknown, key: RegExp | 
     return [entry];
   }
   if (Array.isArray(entry)) {
-    return entry.filter((e): e is string => typeof e === 'string');
+    return entry.filter((item): item is string => typeof item === 'string');
   }
   return null;
 }

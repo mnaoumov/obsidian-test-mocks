@@ -23,7 +23,7 @@ class ConcreteInputSuggest extends AbstractInputSuggest<string> {
     noop();
   }
 
-  public override selectSuggestion(_value: string, _evt: KeyboardEvent | MouseEvent): void {
+  public override selectSuggestion(_value: string, _event: KeyboardEvent | MouseEvent): void {
     noop();
   }
 }

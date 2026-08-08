@@ -28,7 +28,7 @@ export class ConfirmationButton extends ButtonComponent {
     noop();
   }
 
-  public override onClick(handler: (evt: MouseEvent) => unknown): this {
+  public override onClick(handler: (event: MouseEvent) => unknown): this {
     return super.onClick(handler);
   }
 

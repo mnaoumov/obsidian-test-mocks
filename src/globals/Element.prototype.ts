@@ -14,7 +14,7 @@ export function find(this: Element, selector: string): Element | null {
 }
 
 export function findAll(this: Element, selector: string): HTMLElement[] {
-  return Array.from(this.querySelectorAll(selector));
+  return [...this.querySelectorAll<HTMLElement>(selector)];
 }
 
 export function findAllSelf(this: Element, selector: string): HTMLElement[] {
@@ -23,7 +23,7 @@ export function findAllSelf(this: Element, selector: string): HTMLElement[] {
     assert(this instanceof HTMLElement, 'This is not an HTMLElement');
     out.push(this);
   }
-  out.push(...Array.from(this.querySelectorAll<HTMLElement>(selector)));
+  out.push(...this.querySelectorAll<HTMLElement>(selector));
   return out;
 }
 
@@ -48,12 +48,12 @@ export function isActiveElement(this: Element): boolean {
 }
 
 export function matchParent(this: Element, selector: string, lastParent?: Element): Element | null {
-  let cur = this.parentElement;
-  while (cur && cur !== lastParent) {
-    if (cur.matches(selector)) {
-      return cur;
+  let current = this.parentElement;
+  while (current && current !== lastParent) {
+    if (current.matches(selector)) {
+      return current;
     }
-    cur = cur.parentElement;
+    current = current.parentElement;
   }
   return null;
 }
@@ -74,19 +74,19 @@ export function setAttr(this: Element, qualifiedName: string, value: boolean | n
   this.setAttribute(qualifiedName, String(value));
 }
 
-export function setAttrs(this: Element, obj: Record<string, boolean | null | number | string>): void {
-  for (const [k, v] of Object.entries(obj)) {
+export function setAttrs(this: Element, object: Record<string, boolean | null | number | string>): void {
+  for (const [k, v] of Object.entries(object)) {
     setAttr.call(this, k, v);
   }
 }
 
-export function setText(this: Element, val: DocumentFragment | string): void {
+export function setText(this: Element, value: DocumentFragment | string): void {
   empty.call(this);
-  if (typeof val === 'string') {
-    this.textContent = val;
+  if (typeof value === 'string') {
+    this.textContent = value;
     return;
   }
-  this.appendChild(val);
+  this.append(value);
 }
 
 export function toggleClass(this: Element, classes: string | string[], value: boolean): void {

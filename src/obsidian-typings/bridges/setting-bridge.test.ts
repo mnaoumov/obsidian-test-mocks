@@ -12,7 +12,8 @@ import {
   unbridgeSetting
 } from './setting-bridge.ts';
 
-type SetVisibilityFn = (this: Setting, visible: boolean) => Setting;
+// eslint-disable-next-line unicorn/consistent-boolean-name -- `visible` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
+type SetVisibilityFunction = (this: Setting, visible: boolean) => Setting;
 
 describe('setting-bridge', () => {
   afterEach(() => {
@@ -23,7 +24,7 @@ describe('setting-bridge', () => {
     bridgeSetting();
     const container = document.createElement('div');
     const setting = Setting.create__(container);
-    const setVisibility = ensureGenericObject(setting)['setVisibility'] as SetVisibilityFn;
+    const setVisibility = ensureGenericObject(setting)['setVisibility'] as SetVisibilityFunction;
 
     expect(setVisibility.call(setting, false)).toBe(setting);
     expect(setting.settingEl.style.display).toBe('none');
@@ -37,7 +38,7 @@ describe('setting-bridge', () => {
     bridgeSetting();
     const container = document.createElement('div');
     const setting = Setting.create__(container);
-    const setVisibility = ensureGenericObject(setting)['setVisibility'] as SetVisibilityFn;
+    const setVisibility = ensureGenericObject(setting)['setVisibility'] as SetVisibilityFunction;
     expect(setVisibility.call(setting, false)).toBe(setting);
   });
 

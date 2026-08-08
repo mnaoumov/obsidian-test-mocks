@@ -15,12 +15,13 @@ type ModifierEvent = KeyboardEvent | MouseEvent | TouchEvent;
 
 const MIDDLE_MOUSE_BUTTON = 1;
 
-const MODIFIER_FLAG_RESOLVERS: Record<ModifierOriginal, (evt: ModifierEvent) => boolean> = {
-  Alt: (evt) => evt.altKey,
-  Ctrl: (evt) => evt.ctrlKey,
-  Meta: (evt) => evt.metaKey,
-  Mod: (evt) => Platform.isMacOS ? evt.metaKey : evt.ctrlKey,
-  Shift: (evt) => evt.shiftKey
+const MODIFIER_FLAG_RESOLVERS: Record<ModifierOriginal, (event: ModifierEvent) => boolean> = {
+  Alt: (event) => event.altKey,
+  Ctrl: (event) => event.ctrlKey,
+  Meta: (event) => event.metaKey,
+  // eslint-disable-next-line unicorn/name-replacements -- `Mod` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
+  Mod: (event) => Platform.isMacOS ? event.metaKey : event.ctrlKey,
+  Shift: (event) => event.shiftKey
 };
 
 export class Keymap {
@@ -40,28 +41,29 @@ export class Keymap {
     return strictProxy(value, Keymap);
   }
 
-  public static isModEvent(evt?: null | UserEventOriginal): boolean | PaneTypeOriginal {
-    if (!evt) {
+  // eslint-disable-next-line unicorn/name-replacements -- `isModEvent` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
+  public static isModEvent(event?: null | UserEventOriginal): boolean | PaneTypeOriginal {
+    if (!event) {
       return false;
     }
 
-    if (evt instanceof MouseEvent && evt.button === MIDDLE_MOUSE_BUTTON) {
+    if (event instanceof MouseEvent && event.button === MIDDLE_MOUSE_BUTTON) {
       return 'tab';
     }
 
-    if (!Keymap.isModifier(evt, 'Mod')) {
+    if (!Keymap.isModifier(event, 'Mod')) {
       return false;
     }
 
-    if (!Keymap.isModifier(evt, 'Alt')) {
+    if (!Keymap.isModifier(event, 'Alt')) {
       return 'tab';
     }
 
-    return Keymap.isModifier(evt, 'Shift') ? 'window' : 'split';
+    return Keymap.isModifier(event, 'Shift') ? 'window' : 'split';
   }
 
-  public static isModifier(evt: ModifierEvent, modifier: ModifierOriginal): boolean {
-    return MODIFIER_FLAG_RESOLVERS[modifier](evt);
+  public static isModifier(event: ModifierEvent, modifier: ModifierOriginal): boolean {
+    return MODIFIER_FLAG_RESOLVERS[modifier](event);
   }
 
   public asOriginalType__(): KeymapOriginal {

@@ -7,6 +7,7 @@ export const jestConfig: Config = {
   moduleNameMapper: {
     '^obsidian$': '<rootDir>/dist/lib/esm/obsidian/index.mjs'
   },
+  // eslint-disable-next-line unicorn/name-replacements -- `rootDir` is Jest's option name, which has to be spelled the way Jest reads it.
   rootDir: join(import.meta.dirname, '..'),
   setupFiles: ['./dist/lib/esm/globals/jest-setup.mjs'],
   testMatch: ['**/jest/*.jest.test.ts'],

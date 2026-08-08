@@ -39,6 +39,9 @@ import { ensureNonNullable } from '../type-guards.ts';
 
 const PARAMS_OPTIONS_SUFFIX_PATTERN = /(?:Params|Options)$/;
 
+/**
+Message ID reported when a `*Params`/`*Options` interface member is never accessed by the function that receives it.
+ */
 export const MESSAGE_ID = 'unusedParamsMember';
 
 interface IdentifierBinding {
@@ -55,10 +58,10 @@ interface MaybeTypedNode {
   type?: unknown;
 }
 
-type ParamBinding = IdentifierBinding | PatternBinding;
+type ParameterBinding = IdentifierBinding | PatternBinding;
 
-interface ParamInfo {
-  readonly binding: ParamBinding;
+interface ParameterInfo {
+  readonly binding: ParameterBinding;
   readonly typeName: string;
 }
 
@@ -74,8 +77,8 @@ export const noUnusedParamsMembers: Rule.RuleModule = {
 
     return {
       ':function'(node: Rule.Node): void {
-        for (const param of record(node)['params'] as Rule.Node[]) {
-          const info = getParamInfo(param);
+        for (const parameter of record(node)['params'] as Rule.Node[]) {
+          const info = getParameterInfo(parameter);
           if (!info) {
             continue;
           }
@@ -84,7 +87,11 @@ export const noUnusedParamsMembers: Rule.RuleModule = {
           if (info.binding.type === 'pattern') {
             collectPatternMembers(info.binding.pattern, usage);
           } else {
-            collectReferenceMembers(context.sourceCode.getScope(node), info.binding.name, usage);
+            collectReferenceMembers({
+              parameterName: info.binding.name,
+              scope: context.sourceCode.getScope(node),
+              usage
+            });
           }
         }
       },
@@ -139,6 +146,26 @@ export const noUnusedParamsMembers: Rule.RuleModule = {
   }
 };
 
+/**
+ * Parameters for {@link collectReferenceMembers}.
+ */
+interface CollectReferenceMembersParams {
+  /**
+   * The name of the parameter whose references are inspected.
+   */
+  readonly parameterName: string;
+
+  /**
+   * The scope in which the parameter is bound.
+   */
+  readonly scope: Scope.Scope;
+
+  /**
+   * The usage accumulator to record accessed members into.
+   */
+  readonly usage: InterfaceUsage;
+}
+
 function classifyReference(reference: object, usage: InterfaceUsage): void {
   const parent = record(reference)['parent'] as Rule.Node;
   if (parent.type === 'MemberExpression' && record(parent)['object'] === reference) {
@@ -156,10 +183,10 @@ function classifyReference(reference: object, usage: InterfaceUsage): void {
 }
 
 function collectMemberAccess(node: Rule.Node, usage: InterfaceUsage): void {
-  const computed = record(node)['computed'] === true;
+  const isComputed = record(node)['computed'] === true;
   const property = record(node)['property'] as Rule.Node;
   if (property.type === 'Identifier') {
-    if (!computed) {
+    if (!isComputed) {
       usage.used.add(record(property)['name'] as string);
     }
     return;
@@ -190,8 +217,9 @@ function collectPatternMembers(pattern: Rule.Node, usage: InterfaceUsage): void 
   }
 }
 
-function collectReferenceMembers(scope: Scope.Scope, paramName: string, usage: InterfaceUsage): void {
-  const variable = ensureNonNullable(scope.set.get(paramName));
+function collectReferenceMembers(params: CollectReferenceMembersParams): void {
+  const { parameterName, scope, usage } = params;
+  const variable = ensureNonNullable(scope.set.get(parameterName));
   for (const reference of variable.references) {
     classifyReference(reference.identifier, usage);
   }
@@ -220,27 +248,27 @@ function getInterfaceName(node: Rule.Node): string {
   return record(id)['name'] as string;
 }
 
-function getParamInfo(param: Rule.Node): ParamInfo | undefined {
-  const actualParam = nodeType(param) === 'TSParameterProperty' ? record(param)['parameter'] as Rule.Node : param;
+function getParameterInfo(parameter: Rule.Node): ParameterInfo | undefined {
+  const actualParameter = nodeType(parameter) === 'TSParameterProperty' ? record(parameter)['parameter'] as Rule.Node : parameter;
 
-  const typeName = getTypeReferenceName(actualParam);
+  const typeName = getTypeReferenceName(actualParameter);
   if (!typeName || !PARAMS_OPTIONS_SUFFIX_PATTERN.test(typeName)) {
     return undefined;
   }
 
-  if (actualParam.type === 'Identifier') {
-    return { binding: { name: record(actualParam)['name'] as string, type: 'identifier' }, typeName };
+  if (actualParameter.type === 'Identifier') {
+    return { binding: { name: record(actualParameter)['name'] as string, type: 'identifier' }, typeName };
   }
 
-  if (actualParam.type === 'ObjectPattern') {
-    return { binding: { pattern: actualParam, type: 'pattern' }, typeName };
+  if (actualParameter.type === 'ObjectPattern') {
+    return { binding: { pattern: actualParameter, type: 'pattern' }, typeName };
   }
 
   return undefined;
 }
 
-function getTypeReferenceName(param: Rule.Node): string | undefined {
-  const annotation = record(param)['typeAnnotation'];
+function getTypeReferenceName(parameter: Rule.Node): string | undefined {
+  const annotation = record(parameter)['typeAnnotation'];
   if (!isNode(annotation)) {
     return undefined;
   }

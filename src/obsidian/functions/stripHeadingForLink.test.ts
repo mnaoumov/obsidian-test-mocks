@@ -16,6 +16,6 @@ describe('stripHeadingForLink', () => {
   });
 
   it('should strip backslash characters', () => {
-    expect(stripHeadingForLink('## A\\B')).toBe('AB');
+    expect(stripHeadingForLink(String.raw`## A\B`)).toBe('AB');
   });
 });

@@ -5,5 +5,5 @@ export function find(this: DocumentFragment, selector: string): HTMLElement {
 }
 
 export function findAll(this: DocumentFragment, selector: string): HTMLElement[] {
-  return Array.from(this.querySelectorAll(selector));
+  return [...this.querySelectorAll<HTMLElement>(selector)];
 }

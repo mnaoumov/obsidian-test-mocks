@@ -37,11 +37,11 @@ export abstract class FuzzySuggestModal<T> extends SuggestModal<FuzzyMatchOrigin
     return '';
   }
 
-  public onChooseItem(_item: T, _evt: KeyboardEvent | MouseEvent): void {
+  public onChooseItem(_item: T, _event: KeyboardEvent | MouseEvent): void {
     noop();
   }
 
-  public override onChooseSuggestion(item: FuzzyMatchOriginal<T>, evt: KeyboardEvent | MouseEvent): void {
-    this.onChooseItem(item.item, evt);
+  public override onChooseSuggestion(item: FuzzyMatchOriginal<T>, event: KeyboardEvent | MouseEvent): void {
+    this.onChooseItem(item.item, event);
   }
 }

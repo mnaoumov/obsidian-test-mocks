@@ -1,3 +1,3 @@
-export function isBoolean(obj: unknown): obj is boolean {
-  return typeof obj === 'boolean';
+export function isBoolean(object: unknown): object is boolean {
+  return typeof object === 'boolean';
 }

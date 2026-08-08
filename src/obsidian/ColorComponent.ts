@@ -71,7 +71,7 @@ export class ColorComponent extends ValueComponent<string> {
       return { h: 0, l, s: 0 };
     }
     const d = max - min;
-    const s = l > HSL_HALF ? d / (HSL_OFFSET_GREEN - max - min) : d / (max + min);
+    const s = d / (l > HSL_HALF ? HSL_OFFSET_GREEN - max - min : max + min);
     let h: number;
     if (max === rn) {
       h = ((gn - bn) / d + (gn < bn ? HSL_SEGMENT_COUNT : 0)) / HSL_SEGMENT_COUNT;
@@ -85,9 +85,9 @@ export class ColorComponent extends ValueComponent<string> {
 
   public getValueRgb(): RGBOriginal {
     const hex = this.value.replace('#', '');
-    const r = parseInt(hex.slice(0, HEX_SLICE_R_END), HEX_RADIX) || 0;
-    const g = parseInt(hex.slice(HEX_SLICE_R_END, HEX_SLICE_G_END), HEX_RADIX) || 0;
-    const b = parseInt(hex.slice(HEX_SLICE_G_END, HEX_SLICE_B_END), HEX_RADIX) || 0;
+    const r = Number.parseInt(hex.slice(0, HEX_SLICE_R_END), HEX_RADIX) || 0;
+    const g = Number.parseInt(hex.slice(HEX_SLICE_R_END, HEX_SLICE_G_END), HEX_RADIX) || 0;
+    const b = Number.parseInt(hex.slice(HEX_SLICE_G_END, HEX_SLICE_B_END), HEX_RADIX) || 0;
     return { b, g, r };
   }
 

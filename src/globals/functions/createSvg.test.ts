@@ -52,7 +52,7 @@ describe('createSvg', () => {
   it('should prepend to parent when prepend is true', () => {
     const parent = document.createElement('div');
     const existing = document.createElement('span');
-    parent.appendChild(existing);
+    parent.append(existing);
     const el = createSvg('svg', { parent, prepend: true });
     expect(parent.firstChild).toBe(el);
   });

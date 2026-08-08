@@ -19,7 +19,7 @@ class ConcreteSuggestModal extends SuggestModal<string> {
     return [];
   }
 
-  public onChooseSuggestion(_item: string, _evt: KeyboardEvent | MouseEvent): void {
+  public onChooseSuggestion(_item: string, _event: KeyboardEvent | MouseEvent): void {
     noop();
   }
 

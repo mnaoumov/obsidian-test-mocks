@@ -1,8 +1,3 @@
-/**
- * @file
- *
- * Tests for the readonly-params-options-result-members ESLint rule.
- */
 import { RuleTester } from '@typescript-eslint/rule-tester';
 import {
   afterAll,

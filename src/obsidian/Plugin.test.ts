@@ -54,10 +54,10 @@ describe('Plugin', () => {
     it('should store and return the command', () => {
       const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
-      const cmd = { id: 'my-cmd', name: 'My Command' };
-      const result = plugin.addCommand(cmd);
-      expect(result).toBe(cmd);
-      expect(plugin.commands__.get('my-cmd')).toBe(cmd);
+      const command = { id: 'my-cmd', name: 'My Command' };
+      const result = plugin.addCommand(command);
+      expect(result).toBe(command);
+      expect(plugin.commands__.get('my-cmd')).toBe(command);
     });
   });
 
@@ -143,6 +143,7 @@ describe('Plugin', () => {
     it('should register a hover link source', () => {
       const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
+      // eslint-disable-next-line unicorn/name-replacements -- `defaultMod` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
       const info = { defaultMod: true, display: 'Test' };
       plugin.registerHoverLinkSource('test-id', info);
       expect(plugin.hoverLinkSources__.get('test-id')).toBe(info);
@@ -206,8 +207,8 @@ describe('Plugin', () => {
       const app = App.createConfigured__();
       const plugin = new ConcretePlugin(app, MANIFEST);
       const registration = strictProxy<BasesViewRegistrationOriginal>({});
-      const result = plugin.registerBasesView('my-base-view', registration);
-      expect(result).toBe(true);
+      const isResult = plugin.registerBasesView('my-base-view', registration);
+      expect(isResult).toBe(true);
       expect(plugin.basesViewRegistrations__.get('my-base-view')).toBe(registration);
     });
   });

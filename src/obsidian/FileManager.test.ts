@@ -100,9 +100,9 @@ describe('FileManager', () => {
     it('should parse existing frontmatter and pass it to the callback', async () => {
       const app = createApp({ 'note.md': '---\ntitle: Hello\n---\nBody' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
-      const cb = vi.fn();
-      await app.fileManager.processFrontMatter(file, cb);
-      expect(cb).toHaveBeenCalledWith(expect.objectContaining({ title: 'Hello' }));
+      const callback = vi.fn();
+      await app.fileManager.processFrontMatter(file, callback);
+      expect(callback).toHaveBeenCalledWith(expect.objectContaining({ title: 'Hello' }));
     });
 
     it('should create frontmatter when none exists', async () => {
@@ -159,10 +159,10 @@ describe('FileManager', () => {
     it('should handle YAML that parses to a non-object by using empty object', async () => {
       const app = createApp({ 'note.md': '---\njust a string\n---\nBody' });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
-      const cb = vi.fn();
-      await app.fileManager.processFrontMatter(file, cb);
+      const callback = vi.fn();
+      await app.fileManager.processFrontMatter(file, callback);
       // When YAML parses to a string (not an object), an empty frontmatter should be used
-      expect(cb).toHaveBeenCalledWith({});
+      expect(callback).toHaveBeenCalledWith({});
     });
   });
 

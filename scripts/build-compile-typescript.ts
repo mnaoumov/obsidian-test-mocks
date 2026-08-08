@@ -17,19 +17,7 @@ const NODE_MODULES_SEGMENT = '/node_modules/';
 
 await main();
 
-async function main(): Promise<void> {
-  await execFromRoot('tsc --build --force');
-
-  if (!validateProjectTypes()) {
-    throw new Error('TypeScript declaration validation failed.');
-  }
-}
-
-function shouldKeepProjectFile(fileName: string, rootCanonical: string): boolean {
-  return fileName.startsWith(`${rootCanonical}/`) && !fileName.includes(NODE_MODULES_SEGMENT);
-}
-
-function validateProjectTypes(): boolean {
+function doesProjectTypeCheckPass(): boolean {
   const root = getRootFolder();
 
   if (!root) {
@@ -48,4 +36,16 @@ function validateProjectTypes(): boolean {
     rootNames: fileNames,
     shouldKeepFile: (fileName) => shouldKeepProjectFile(fileName, rootCanonical)
   });
+}
+
+async function main(): Promise<void> {
+  await execFromRoot('tsc --build --force');
+
+  if (!doesProjectTypeCheckPass()) {
+    throw new Error('TypeScript declaration validation failed.');
+  }
+}
+
+function shouldKeepProjectFile(fileName: string, rootCanonical: string): boolean {
+  return fileName.startsWith(`${rootCanonical}/`) && !fileName.includes(NODE_MODULES_SEGMENT);
 }

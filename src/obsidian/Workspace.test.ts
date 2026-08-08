@@ -514,17 +514,17 @@ describe('Workspace', () => {
 
     it('should invoke and clear pending callbacks', () => {
       const app = App.createConfigured__();
-      const cb1 = vi.fn();
-      const cb2 = vi.fn();
-      app.workspace.onLayoutReady(cb1);
-      app.workspace.onLayoutReady(cb2);
+      const callback1 = vi.fn();
+      const callback2 = vi.fn();
+      app.workspace.onLayoutReady(callback1);
+      app.workspace.onLayoutReady(callback2);
       app.workspace.setLayoutReady__();
-      expect(cb1).toHaveBeenCalled();
-      expect(cb2).toHaveBeenCalled();
+      expect(callback1).toHaveBeenCalled();
+      expect(callback2).toHaveBeenCalled();
       // Calling again should not re-invoke
-      cb1.mockClear();
+      callback1.mockClear();
       app.workspace.setLayoutReady__();
-      expect(cb1).not.toHaveBeenCalled();
+      expect(callback1).not.toHaveBeenCalled();
     });
   });
 

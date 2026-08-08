@@ -22,11 +22,13 @@ interface TsFileEntry {
   readonly name: string;
 }
 
-async function collectTsFiles(dir: string): Promise<TsFileEntry[]> {
+async function collectTsFiles(directory: string): Promise<TsFileEntry[]> {
   const results: TsFileEntry[] = [];
-  for (const entry of (await readdir(dir)).sort()) {
-    const full = join(dir, entry);
-    if ((await stat(full)).isDirectory()) {
+  const entries = await readdir(directory);
+  for (const entry of entries.sort()) {
+    const full = join(directory, entry);
+    const stats = await stat(full);
+    if (stats.isDirectory()) {
       continue;
     }
     if (
@@ -39,22 +41,25 @@ async function collectTsFiles(dir: string): Promise<TsFileEntry[]> {
   return results;
 }
 
-async function directoryExists(path: string): Promise<boolean> {
+async function doesDirectoryExist(path: string): Promise<boolean> {
   try {
-    return (await stat(path)).isDirectory();
+    const stats = await stat(path);
+    return stats.isDirectory();
   } catch {
     return false;
   }
 }
 
-async function generateBarrelIndexWithClaimedNames(dir: string): Promise<BarrelResult> {
+async function generateBarrelIndexWithClaimedNames(directory: string): Promise<BarrelResult> {
   const claimedNames = new Set<string>();
   const lines: string[] = [];
 
   // Generate subdirectory barrels and re-export from them.
-  for (const entry of (await readdir(dir)).sort()) {
-    const full = join(dir, entry);
-    if (!(await stat(full)).isDirectory()) {
+  const entries = await readdir(directory);
+  for (const entry of entries.sort()) {
+    const full = join(directory, entry);
+    const stats = await stat(full);
+    if (!stats.isDirectory()) {
       continue;
     }
     const subFiles = await collectTsFiles(full);
@@ -72,7 +77,7 @@ async function generateBarrelIndexWithClaimedNames(dir: string): Promise<BarrelR
   }
 
   // Re-export root-level files, skipping names already claimed by subdirectories.
-  for (const file of await collectTsFiles(dir)) {
+  for (const file of await collectTsFiles(directory)) {
     const content = await readFile(file.fullPath, 'utf-8');
     const allNames = parseExportedNames(content);
     const unclaimed = allNames.filter((n) => !claimedNames.has(n));
@@ -96,14 +101,15 @@ async function generateBarrelIndexWithClaimedNames(dir: string): Promise<BarrelR
   return { claimedNames, content: `${lines.join('\n')}\n` };
 }
 
-async function generateGlobalsIndex(dir: string): Promise<string> {
+async function generateGlobalsIndex(directory: string): Promise<string> {
   const importLines: string[] = [];
   const registrationLines: string[] = [];
   const teardownLines: string[] = [];
   const globalNamespaces: string[] = [];
 
   const POST_SETUP = 'post-setup.ts';
-  const rootFiles = (await collectTsFiles(dir)).filter((f) => f.name !== POST_SETUP);
+  const allRootFiles = await collectTsFiles(directory);
+  const rootFiles = allRootFiles.filter((f) => f.name !== POST_SETUP);
 
   for (const file of rootFiles) {
     const modulePath = `./${file.name}`;
@@ -124,19 +130,19 @@ async function generateGlobalsIndex(dir: string): Promise<string> {
   }
 
   // Process functions/ subdirectory — generate its own index.ts barrel.
-  const functionsDir = join(dir, 'functions');
-  if (await directoryExists(functionsDir)) {
-    await generateSubdirectoryBarrel(functionsDir);
+  const functionsDirectory = join(directory, 'functions');
+  if (await doesDirectoryExist(functionsDirectory)) {
+    await generateSubdirectoryBarrel(functionsDirectory);
     importLines.push('import * as functions from \'./functions/index.ts\';');
     globalNamespaces.push('functions');
   }
 
   // Process vars/ subdirectory — generate its own index.ts barrel.
-  const varsDir = join(dir, 'vars');
-  if (await directoryExists(varsDir)) {
-    const varFiles = await collectTsFiles(varsDir);
-    if (varFiles.length > 0) {
-      await generateSubdirectoryBarrel(varsDir);
+  const variablesDirectory = join(directory, 'vars');
+  if (await doesDirectoryExist(variablesDirectory)) {
+    const variableFiles = await collectTsFiles(variablesDirectory);
+    if (variableFiles.length > 0) {
+      await generateSubdirectoryBarrel(variablesDirectory);
       importLines.push('import * as vars from \'./vars/index.ts\';');
       globalNamespaces.push('vars');
     }
@@ -150,33 +156,34 @@ async function generateGlobalsIndex(dir: string): Promise<string> {
 
   importLines.push(`import { postSetup, postTeardown } from './${POST_SETUP}';`);
 
-  const lines: string[] = [];
-  lines.push(...importLines.sort());
-  lines.push('');
-  lines.push('function deleteKeys(target: object, source: object): void {');
-  lines.push('  for (const key of Object.keys(source)) {');
-  lines.push('    delete (target as Record<string, unknown>)[key];');
-  lines.push('  }');
-  lines.push('}');
-  lines.push('');
-  lines.push('export function setup(): void {');
-  lines.push(`  ${registrationLines.sort().join('\n  ')}`);
-  lines.push('  postSetup();');
-  lines.push('}');
-  lines.push('');
-  lines.push('export function teardown(): void {');
-  lines.push(`  ${teardownLines.sort().join('\n  ')}`);
-  lines.push('  postTeardown();');
-  lines.push('}');
-  lines.push('');
+  const lines: string[] = [
+    ...importLines.sort(),
+    '',
+    'function deleteKeys(target: object, source: object): void {',
+    '  for (const key of Object.keys(source)) {',
+    '    delete (target as Record<string, unknown>)[key];',
+    '  }',
+    '}',
+    '',
+    'export function setup(): void {',
+    `  ${registrationLines.sort().join('\n  ')}`,
+    '  postSetup();',
+    '}',
+    '',
+    'export function teardown(): void {',
+    `  ${teardownLines.sort().join('\n  ')}`,
+    '  postTeardown();',
+    '}',
+    ''
+  ];
 
   return lines.join('\n');
 }
 
-async function generateSubdirectoryBarrel(dir: string): Promise<void> {
-  const files = await collectTsFiles(dir);
+async function generateSubdirectoryBarrel(directory: string): Promise<void> {
+  const files = await collectTsFiles(directory);
   const lines = files.map((file) => `export * from './${file.name}';`);
-  await writeFile(join(dir, 'index.ts'), `${lines.join('\n')}\n`, 'utf-8');
+  await writeFile(join(directory, 'index.ts'), `${lines.join('\n')}\n`, 'utf-8');
 }
 
 async function main(): Promise<void> {
@@ -201,9 +208,7 @@ function parseExportedNames(content: string): string[] {
 
 function toNamespaceId(fileName: string): string {
   return fileName
-    .replace('.ts', '')
-    .replaceAll('.', '_')
-    .replaceAll('-', '_');
+    .replace('.ts', '').replaceAll(/[.-]/g, '_');
 }
 
 await main();

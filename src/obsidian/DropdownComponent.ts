@@ -29,7 +29,7 @@ export class DropdownComponent extends ValueComponent<string> {
     const option = createEl('option');
     option.value = value;
     option.text = display;
-    this.selectEl.appendChild(option);
+    this.selectEl.append(option);
     return this;
   }
 
@@ -52,9 +52,9 @@ export class DropdownComponent extends ValueComponent<string> {
     return this.selectEl.value;
   }
 
-  public onChange(cb: (value: string) => void): this {
+  public onChange(callback: (value: string) => void): this {
     this.changeCallback = (): void => {
-      cb(this.getValue());
+      callback(this.getValue());
     };
     return this;
   }
@@ -65,7 +65,9 @@ export class DropdownComponent extends ValueComponent<string> {
     return this;
   }
 
-  /** Test helper to trigger change callback. */
+  /**
+  Test helper to trigger change callback.
+  */
   public simulateChange__(): void {
     this.changeCallback?.();
   }

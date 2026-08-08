@@ -22,7 +22,7 @@ interface SectionSubmenuConfig {
   readonly title: string;
 }
 
-type SetSectionSubmenuFn = (this: MenuOriginal, section: string, config: SectionSubmenuConfig) => MenuOriginal;
+type SetSectionSubmenuFunction = (this: MenuOriginal, section: string, config: SectionSubmenuConfig) => MenuOriginal;
 
 describe('menu-bridge', () => {
   afterEach(() => {
@@ -30,8 +30,8 @@ describe('menu-bridge', () => {
   });
 
   function callSetSectionSubmenu(menu: MenuOriginal, section: string, icon: string, title: string): MenuOriginal {
-    const fn = ensureGenericObject(menu)['setSectionSubmenu'] as SetSectionSubmenuFn;
-    return fn.call(menu, section, { icon, title });
+    const $function = ensureGenericObject(menu)['setSectionSubmenu'] as SetSectionSubmenuFunction;
+    return $function.call(menu, section, { icon, title });
   }
 
   function readItems(menu: MenuOriginal): MenuItemOriginal[] {

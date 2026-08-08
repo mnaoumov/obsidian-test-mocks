@@ -15,7 +15,7 @@ describe('sanitizeHTMLToDom', () => {
   it('should contain the HTML content', () => {
     const fragment = sanitizeHTMLToDom('<b>bold</b>');
     const wrapper = createDiv();
-    wrapper.appendChild(fragment);
+    wrapper.append(fragment);
     expect(wrapper.innerHTML).toContain('bold');
   });
 });

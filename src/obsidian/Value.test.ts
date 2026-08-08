@@ -87,9 +87,9 @@ describe('Value', () => {
   describe('looseEquals', () => {
     it('should return true when toString outputs match across types', () => {
       const testNumber = 5;
-      const str = new StringValue(String(testNumber));
-      const num = new NumberValue(testNumber);
-      expect(str.looseEquals(num)).toBe(true);
+      const $string = new StringValue(String(testNumber));
+      const $number = new NumberValue(testNumber);
+      expect($string.looseEquals($number)).toBe(true);
     });
 
     it('should return true for same toString output', () => {
@@ -101,54 +101,54 @@ describe('Value', () => {
 
   describe('isTruthy', () => {
     it('should delegate to subclass implementation', () => {
-      const val = new NullValue();
-      expect(val.isTruthy()).toBe(false);
+      const value = new NullValue();
+      expect(value.isTruthy()).toBe(false);
     });
   });
 
   describe('toString', () => {
     it('should delegate to subclass implementation', () => {
-      const val = new StringValue('hello');
-      expect(String(val)).toBe('hello');
+      const value = new StringValue('hello');
+      expect(String(value)).toBe('hello');
     });
   });
 
   describe('renderTo', () => {
     it('should not throw', () => {
       const app = App.createConfigured__();
-      const val = new StringValue('test');
+      const value = new StringValue('test');
       expect(() => {
-        val.renderTo(createDiv(), RenderContext.create__(app));
+        value.renderTo(createDiv(), RenderContext.create__(app));
       }).not.toThrow();
     });
   });
 
   describe('asOriginalType__', () => {
     it('should return the same instance typed as the original', () => {
-      const val = new StringValue('test');
-      expect(val.asOriginalType__()).toBe(val);
+      const value = new StringValue('test');
+      expect(value.asOriginalType__()).toBe(value);
     });
 
     it('should return the same instance via Value base class', () => {
-      const val = new BareValue();
-      const original: ValueOriginal = val.asOriginalType__();
-      expect(original).toBe(val);
+      const value = new BareValue();
+      const original: ValueOriginal = value.asOriginalType__();
+      expect(original).toBe(value);
     });
   });
 
   describe('fromOriginalType__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const val = new StringValue('test');
-      const mock = Value.fromOriginalType__(val.asOriginalType__());
-      expect(mock).toBe(val);
+      const value = new StringValue('test');
+      const mock = Value.fromOriginalType__(value.asOriginalType__());
+      expect(mock).toBe(value);
     });
   });
 
   describe('constructor__', () => {
     it('should be callable without throwing', () => {
-      const val = new StringValue('test');
+      const value = new StringValue('test');
       expect(() => {
-        val.constructor__();
+        value.constructor__();
       }).not.toThrow();
     });
   });

@@ -13,7 +13,7 @@ import {
   unbridgeTFolder
 } from './t-folder-bridge.ts';
 
-type GetParentPrefixFn = (this: TFolder) => string;
+type GetParentPrefixFunction = (this: TFolder) => string;
 
 describe('t-folder-bridge', () => {
   afterEach(() => {
@@ -25,16 +25,16 @@ describe('t-folder-bridge', () => {
       bridgeTFolder();
       const app = App.createConfigured__();
       const root = app.vault.getRoot();
-      const fn = ensureGenericObject(root)['getParentPrefix'] as GetParentPrefixFn;
-      expect(fn.call(root)).toBe('');
+      const $function = ensureGenericObject(root)['getParentPrefix'] as GetParentPrefixFunction;
+      expect($function.call(root)).toBe('');
     });
 
     it('should append a slash for a non-root folder', () => {
       bridgeTFolder();
       const app = App.createConfigured__();
       const folder = app.vault.createFolderSync__('Docs/api');
-      const fn = ensureGenericObject(folder)['getParentPrefix'] as GetParentPrefixFn;
-      expect(fn.call(folder)).toBe('Docs/api/');
+      const $function = ensureGenericObject(folder)['getParentPrefix'] as GetParentPrefixFunction;
+      expect($function.call(folder)).toBe('Docs/api/');
     });
   });
 
@@ -43,8 +43,8 @@ describe('t-folder-bridge', () => {
     bridgeTFolder();
     const app = App.createConfigured__();
     const folder = app.vault.createFolderSync__('Docs');
-    const fn = ensureGenericObject(folder)['getParentPrefix'] as GetParentPrefixFn;
-    expect(fn.call(folder)).toBe('Docs/');
+    const $function = ensureGenericObject(folder)['getParentPrefix'] as GetParentPrefixFunction;
+    expect($function.call(folder)).toBe('Docs/');
   });
 
   it('should remove the bridge on unbridge', () => {

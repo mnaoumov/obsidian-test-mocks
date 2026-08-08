@@ -40,21 +40,21 @@ export class SettingGroup {
     return this;
   }
 
-  public addExtraButton(cb: (component: ExtraButtonComponentOriginal) => unknown): this {
+  public addExtraButton(callback: (component: ExtraButtonComponentOriginal) => unknown): this {
     const comp = ExtraButtonComponent.create__(this.listEl);
-    cb(comp.asOriginalType2__());
+    callback(comp.asOriginalType2__());
     return this;
   }
 
-  public addSearch(cb: (component: SearchComponentOriginal) => unknown): this {
+  public addSearch(callback: (component: SearchComponentOriginal) => unknown): this {
     const comp = SearchComponent.create__(this.listEl);
-    cb(comp.asOriginalType4__());
+    callback(comp.asOriginalType4__());
     return this;
   }
 
-  public addSetting(cb: (setting: SettingOriginal) => void): this {
+  public addSetting(callback: (setting: SettingOriginal) => void): this {
     const setting = Setting.create__(this.listEl);
-    cb(setting.asOriginalType__());
+    callback(setting.asOriginalType__());
     return this;
   }
 

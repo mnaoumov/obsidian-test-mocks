@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { noopAsync } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { MetadataCache } from './MetadataCache.ts';
 
@@ -18,8 +19,8 @@ const EVENT_ARG_INDEX_CACHE = 2;
  * The vault event triggers an async read + parse chain that needs several ticks.
  */
 async function flushMicrotasks(): Promise<void> {
-  for (let i = 0; i < MICROTASK_FLUSH_COUNT; i++) {
-    await Promise.resolve();
+  for (let index = 0; index < MICROTASK_FLUSH_COUNT; index++) {
+    await noopAsync();
   }
 }
 
@@ -78,22 +79,22 @@ describe('MetadataCache', () => {
   describe('changed event', () => {
     it('should fire changed event with file, content, and cache', async () => {
       const app = App.createConfigured__();
-      let eventFired = false;
+      let isEventFired = false;
       let receivedFile: unknown = null;
       let receivedContent: unknown = null;
       let receivedCache: unknown = null;
 
-      app.metadataCache.on('changed', (...args: unknown[]) => {
-        eventFired = true;
-        receivedFile = args[0];
-        receivedContent = args[1];
-        receivedCache = args[EVENT_ARG_INDEX_CACHE];
+      app.metadataCache.on('changed', (...$arguments: unknown[]) => {
+        isEventFired = true;
+        receivedFile = $arguments[0];
+        receivedContent = $arguments[1];
+        receivedCache = $arguments[EVENT_ARG_INDEX_CACHE];
       });
 
       const file = await app.vault.create('test.md', '# Test');
       await flushMicrotasks();
 
-      expect(eventFired).toBe(true);
+      expect(isEventFired).toBe(true);
       expect(receivedFile).toBe(file);
       expect(receivedContent).toBe('# Test');
       expect(receivedCache).toBeDefined();

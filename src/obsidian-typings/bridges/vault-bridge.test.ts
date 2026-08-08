@@ -15,12 +15,12 @@ import {
   unbridgeVault
 } from './vault-bridge.ts';
 
-type ExistsFn = (this: Vault, path: string, isCaseSensitive?: boolean) => Promise<boolean>;
-type GetAbstractFileByPathInsensitiveFn = (this: Vault, path: string) => unknown;
-type GetAvailablePathFn = (this: Vault, path: string, ext: string) => string;
-type GetAvailablePathForAttachmentsFn = (this: Vault, fileName: string, ext: string, file: null | TFile) => Promise<string>;
-type GetConfigFn = (this: Vault, key: string) => unknown;
-type SetConfigFn = (this: Vault, key: string, value: unknown) => void;
+type ExistsFunction = (this: Vault, path: string, isCaseSensitive?: boolean) => Promise<boolean>;
+type GetAbstractFileByPathInsensitiveFunction = (this: Vault, path: string) => unknown;
+type GetAvailablePathForAttachmentsFunction = (this: Vault, fileName: string, extension: string, file: null | TFile) => Promise<string>;
+type GetAvailablePathFunction = (this: Vault, path: string, extension: string) => string;
+type GetConfigFunction = (this: Vault, key: string) => unknown;
+type SetConfigFunction = (this: Vault, key: string, value: unknown) => void;
 
 describe('vault-bridge', () => {
   afterEach(() => {
@@ -32,14 +32,14 @@ describe('vault-bridge', () => {
       bridgeVault();
       const app = App.createConfigured__();
       app.vault.createSync__('Notes/File.md', 'content');
-      const exists = ensureGenericObject(app.vault)['exists'] as ExistsFn;
+      const exists = ensureGenericObject(app.vault)['exists'] as ExistsFunction;
       await expect(exists.call(app.vault, 'notes/file.md')).resolves.toBe(true);
     });
 
     it('should resolve to false for non-existing file', async () => {
       bridgeVault();
       const app = App.createConfigured__();
-      const exists = ensureGenericObject(app.vault)['exists'] as ExistsFn;
+      const exists = ensureGenericObject(app.vault)['exists'] as ExistsFunction;
       await expect(exists.call(app.vault, 'missing.md')).resolves.toBe(false);
     });
 
@@ -47,7 +47,7 @@ describe('vault-bridge', () => {
       bridgeVault();
       const app = App.createConfigured__();
       app.vault.createSync__('Notes/File.md', 'content');
-      const exists = ensureGenericObject(app.vault)['exists'] as ExistsFn;
+      const exists = ensureGenericObject(app.vault)['exists'] as ExistsFunction;
       await expect(exists.call(app.vault, 'notes/file.md', true)).resolves.toBe(false);
       await expect(exists.call(app.vault, 'Notes/File.md', true)).resolves.toBe(true);
     });
@@ -58,15 +58,15 @@ describe('vault-bridge', () => {
       bridgeVault();
       const app = App.createConfigured__();
       const file = app.vault.createSync__('Notes/File.md', 'content');
-      const fn = ensureGenericObject(app.vault)['getAbstractFileByPathInsensitive'] as GetAbstractFileByPathInsensitiveFn;
-      expect(fn.call(app.vault, 'notes/file.md')).toBe(file);
+      const $function = ensureGenericObject(app.vault)['getAbstractFileByPathInsensitive'] as GetAbstractFileByPathInsensitiveFunction;
+      expect($function.call(app.vault, 'notes/file.md')).toBe(file);
     });
 
     it('should return null for non-existing file', () => {
       bridgeVault();
       const app = App.createConfigured__();
-      const fn = ensureGenericObject(app.vault)['getAbstractFileByPathInsensitive'] as GetAbstractFileByPathInsensitiveFn;
-      expect(fn.call(app.vault, 'missing.md')).toBeNull();
+      const $function = ensureGenericObject(app.vault)['getAbstractFileByPathInsensitive'] as GetAbstractFileByPathInsensitiveFunction;
+      expect($function.call(app.vault, 'missing.md')).toBeNull();
     });
   });
 
@@ -74,23 +74,23 @@ describe('vault-bridge', () => {
     it('should return path with extension', () => {
       bridgeVault();
       const app = App.createConfigured__();
-      const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
-      expect(fn.call(app.vault, 'note', 'md')).toBe('note.md');
+      const $function = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFunction;
+      expect($function.call(app.vault, 'note', 'md')).toBe('note.md');
     });
 
     it('should return base path when extension is empty', () => {
       bridgeVault();
       const app = App.createConfigured__();
-      const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
-      expect(fn.call(app.vault, 'note', '')).toBe('note');
+      const $function = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFunction;
+      expect($function.call(app.vault, 'note', '')).toBe('note');
     });
 
     it('should append " N" when the path is taken', () => {
       bridgeVault();
       const app = App.createConfigured__();
       app.vault.createSync__('note.md', 'content');
-      const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
-      expect(fn.call(app.vault, 'note', 'md')).toBe('note 1.md');
+      const $function = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFunction;
+      expect($function.call(app.vault, 'note', 'md')).toBe('note 1.md');
     });
 
     it('should increment until a free path is found', () => {
@@ -98,16 +98,16 @@ describe('vault-bridge', () => {
       const app = App.createConfigured__();
       app.vault.createSync__('note.md', 'content');
       app.vault.createSync__('note 1.md', 'content');
-      const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
-      expect(fn.call(app.vault, 'note', 'md')).toBe('note 2.md');
+      const $function = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFunction;
+      expect($function.call(app.vault, 'note', 'md')).toBe('note 2.md');
     });
 
     it('should de-duplicate when extension is empty', () => {
       bridgeVault();
       const app = App.createConfigured__();
       app.vault.createSync__('note', 'content');
-      const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
-      expect(fn.call(app.vault, 'note', '')).toBe('note 1');
+      const $function = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFunction;
+      expect($function.call(app.vault, 'note', '')).toBe('note 1');
     });
   });
 
@@ -118,15 +118,15 @@ describe('vault-bridge', () => {
       app.vault.createFolderSync__('Docs/api');
       const note = app.vault.createSync__('Docs/api/get.md', 'content');
       app.vault.setConfig__('attachmentFolderPath', './assets');
-      const fn = ensureGenericObject(app.vault)['getAvailablePathForAttachments'] as GetAvailablePathForAttachmentsFn;
-      await expect(fn.call(app.vault, 'img', 'png', note)).resolves.toBe('Docs/api/assets/img.png');
+      const $function = ensureGenericObject(app.vault)['getAvailablePathForAttachments'] as GetAvailablePathForAttachmentsFunction;
+      await expect($function.call(app.vault, 'img', 'png', note)).resolves.toBe('Docs/api/assets/img.png');
     });
 
     it('should expose no extended member by default', () => {
       bridgeVault();
       const app = App.createConfigured__();
-      const fn = ensureGenericObject(app.vault)['getAvailablePathForAttachments'] as GetAvailablePathForAttachmentsFn;
-      expect(ensureGenericObject(fn)['extended']).toBeUndefined();
+      const $function = ensureGenericObject(app.vault)['getAvailablePathForAttachments'] as GetAvailablePathForAttachmentsFunction;
+      expect(ensureGenericObject($function)['extended']).toBeUndefined();
     });
   });
 
@@ -134,24 +134,24 @@ describe('vault-bridge', () => {
     it('should read the modeled attachmentFolderPath default', () => {
       bridgeVault();
       const app = App.createConfigured__();
-      const fn = ensureGenericObject(app.vault)['getConfig'] as GetConfigFn;
-      expect(fn.call(app.vault, 'attachmentFolderPath')).toBe('/');
+      const $function = ensureGenericObject(app.vault)['getConfig'] as GetConfigFunction;
+      expect($function.call(app.vault, 'attachmentFolderPath')).toBe('/');
     });
 
     it('should return undefined for a key that was never set', () => {
       bridgeVault();
       const app = App.createConfigured__();
-      const fn = ensureGenericObject(app.vault)['getConfig'] as GetConfigFn;
-      expect(fn.call(app.vault, 'newLinkFormat')).toBeUndefined();
+      const $function = ensureGenericObject(app.vault)['getConfig'] as GetConfigFunction;
+      expect($function.call(app.vault, 'newLinkFormat')).toBeUndefined();
     });
 
     it('should round-trip a value written by setConfig', () => {
       bridgeVault();
       const app = App.createConfigured__();
-      const setFn = ensureGenericObject(app.vault)['setConfig'] as SetConfigFn;
-      const getFn = ensureGenericObject(app.vault)['getConfig'] as GetConfigFn;
-      setFn.call(app.vault, 'attachmentFolderPath', 'Files');
-      expect(getFn.call(app.vault, 'attachmentFolderPath')).toBe('Files');
+      const setFunction = ensureGenericObject(app.vault)['setConfig'] as SetConfigFunction;
+      const getFunction = ensureGenericObject(app.vault)['getConfig'] as GetConfigFunction;
+      setFunction.call(app.vault, 'attachmentFolderPath', 'Files');
+      expect(getFunction.call(app.vault, 'attachmentFolderPath')).toBe('Files');
     });
   });
 
@@ -159,8 +159,8 @@ describe('vault-bridge', () => {
     bridgeVault();
     bridgeVault();
     const app = App.createConfigured__();
-    const fn = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFn;
-    expect(fn.call(app.vault, 'note', 'md')).toBe('note.md');
+    const $function = ensureGenericObject(app.vault)['getAvailablePath'] as GetAvailablePathFunction;
+    expect($function.call(app.vault, 'note', 'md')).toBe('note.md');
   });
 
   it('should remove bridges on unbridge', () => {

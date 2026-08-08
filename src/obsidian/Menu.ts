@@ -1,6 +1,7 @@
 import type {
   MenuItem as MenuItemOriginal,
   Menu as MenuOriginal,
+  // eslint-disable-next-line unicorn/name-replacements -- `MenuPositionDef` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
   MenuPositionDef as MenuPositionDefOriginal
 } from 'obsidian';
 
@@ -50,7 +51,7 @@ export class Menu extends Component {
     return new Menu();
   }
 
-  public static forEvent(_evt: MouseEvent | PointerEvent): Menu {
+  public static forEvent(_event: MouseEvent | PointerEvent): Menu {
     return Menu.create2__();
   }
 
@@ -58,10 +59,10 @@ export class Menu extends Component {
     return strictProxy(value, Menu);
   }
 
-  public addItem(cb: (item: MenuItemOriginal) => unknown): this {
+  public addItem(callback: (item: MenuItemOriginal) => unknown): this {
     const item = MenuItem.create__(this);
     this.items__.push(item);
-    cb(item.asOriginalType__());
+    callback(item.asOriginalType__());
     return this;
   }
 
@@ -102,7 +103,7 @@ export class Menu extends Component {
     return this;
   }
 
-  public showAtMouseEvent(_evt: MouseEvent): this {
+  public showAtMouseEvent(_event: MouseEvent): this {
     return this;
   }
 

@@ -68,22 +68,22 @@ export class FileManager {
     return this.app.vault.getRoot();
   }
 
-  public async processFrontMatter(file: TFile, fn: (frontmatter: Record<string, unknown>) => void, options?: DataWriteOptionsOriginal): Promise<void> {
+  public async processFrontMatter(file: TFile, $function: (frontmatter: Record<string, unknown>) => void, options?: DataWriteOptionsOriginal): Promise<void> {
     const content = await this.app.vault.read(file);
     let frontmatter: Record<string, unknown> = {};
     let body = content;
 
     const fmMatch = /^---\r?\n(?<yaml>[\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(content);
     if (fmMatch) {
-      const yamlStr = ensureNonNullable(fmMatch.groups?.['yaml']);
-      const parsed = parseYaml(yamlStr);
+      const yamlString = ensureNonNullable(fmMatch.groups?.['yaml']);
+      const parsed = parseYaml(yamlString);
       if (parsed && typeof parsed === 'object') {
         frontmatter = parsed as Record<string, unknown>;
       }
       body = content.slice(fmMatch[0].length);
     }
 
-    fn(frontmatter);
+    $function(frontmatter);
 
     const yamlOutput = stringifyYaml(frontmatter);
     const newContent = `---\n${yamlOutput}---${body ? `\n${body}` : '\n'}`;

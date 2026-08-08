@@ -4,7 +4,7 @@ import type {
   UserEvent as UserEventOriginal
 } from 'obsidian';
 
-import type { CreateConfiguredParams } from '../internal/create-configured-params.ts';
+import type { AppCreateConfiguredOptions } from '../internal/app-create-configured-options.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
@@ -49,23 +49,24 @@ export class App {
     return new App(adapter, appId);
   }
 
-  public static createConfigured__(params: CreateConfiguredParams = {}): App {
+  // eslint-disable-next-line obsidian-dev-utils/params-options-name-match -- The rule derives `AppCreateConfigured__Options` from the method name, which the core `camelcase` rule then rejects for its embedded `__`. `AppCreateConfiguredOptions` carries the same owner prefix and optional-bag suffix without the collision.
+  public static createConfigured__(options: AppCreateConfiguredOptions = {}): App {
     let adapter: DataAdapterOriginal;
-    if (params.adapter) {
-      adapter = params.adapter;
+    if (options.adapter) {
+      adapter = options.adapter;
     } else {
       const mockAdapter = FileSystemAdapter.create__('/mock-vault');
-      if (params.isAdapterCaseInsensitive) {
+      if (options.isAdapterCaseInsensitive) {
         mockAdapter.insensitive__ = true;
       }
       adapter = mockAdapter.asOriginalType__();
     }
-    const app = App.create__(adapter, params.appId ?? 'mock-app-id');
+    const app = App.create__(adapter, options.appId ?? 'mock-app-id');
 
     const neededFolders = new Set<string>();
     const fileEntries: [string, string][] = [];
 
-    for (const [path, content] of Object.entries(params.files ?? {})) {
+    for (const [path, content] of Object.entries(options.files ?? {})) {
       if (path.endsWith('/')) {
         if (content !== '') {
           throw new Error(`Folder path "${path}" must have empty content`);

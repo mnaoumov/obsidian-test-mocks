@@ -67,6 +67,7 @@ export class MetadataCache extends Events {
     return this.cache__.get(file.path) ?? null;
   }
 
+  // eslint-disable-next-line unicorn/name-replacements -- `getFirstLinkpathDest` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
   public getFirstLinkpathDest(linkpath: string, _sourcePath: string): null | TFile {
     const found = this.app__.vault.getFileByPath(linkpath);
     if (found) {
@@ -119,9 +120,9 @@ export class MetadataCache extends Events {
       if (linkpath === '') {
         continue;
       }
-      const dest = this.getFirstLinkpathDest(linkpath, sourcePath);
-      if (dest) {
-        resolved[dest.path] = (resolved[dest.path] ?? 0) + 1;
+      const destination = this.getFirstLinkpathDest(linkpath, sourcePath);
+      if (destination) {
+        resolved[destination.path] = (resolved[destination.path] ?? 0) + 1;
       } else {
         unresolved[linkpath] = (unresolved[linkpath] ?? 0) + 1;
       }
@@ -133,7 +134,7 @@ export class MetadataCache extends Events {
 
 const HASH_INITIAL = 5381;
 const HASH_MULTIPLIER = 33;
-const HASH_MODULUS = 2147483647;
+const HASH_MODULUS = 2_147_483_647;
 const HEX_RADIX = 16;
 
 /**
@@ -142,8 +143,9 @@ const HEX_RADIX = 16;
  */
 function hashContent(content: string): string {
   let hash = HASH_INITIAL;
-  for (let i = 0; i < content.length; i++) {
-    hash = (hash * HASH_MULTIPLIER + content.charCodeAt(i)) % HASH_MODULUS;
+  for (let index = 0; index < content.length; index++) {
+    // eslint-disable-next-line unicorn/prefer-code-point -- This hash has to stay stable and defined over UTF-16 code UNITS; `codePointAt` would both change every hash and return `undefined` mid-surrogate.
+    hash = (hash * HASH_MULTIPLIER + content.charCodeAt(index)) % HASH_MODULUS;
   }
   return hash.toString(HEX_RADIX);
 }

@@ -7,6 +7,6 @@ export function setIcon(parent: HTMLElement, iconId: IconNameOriginal): void {
   const svgContent = iconRegistry.get(iconId);
   if (svgContent) {
     parent.empty();
-    parent.appendChild(sanitizeHTMLToDom(svgContent));
+    parent.append(sanitizeHTMLToDom(svgContent));
   }
 }
