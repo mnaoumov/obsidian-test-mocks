@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 4.0.0
+
+- chore!: strict unicorn config
+- chore: update libs
+
 ## 3.11.0
 
 - feat!: record separators in the Menu mock
