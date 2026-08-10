@@ -27,6 +27,10 @@ import {
   unbridgeMetadataCache
 } from './bridges/metadata-cache-bridge.ts';
 import {
+  bridgeModal,
+  unbridgeModal
+} from './bridges/modal-bridge.ts';
+import {
   bridgeSetting,
   unbridgeSetting
 } from './bridges/setting-bridge.ts';
@@ -59,6 +63,7 @@ export function setup(): void {
   bridgeMenu();
   bridgeMenuItem();
   bridgeMetadataCache();
+  bridgeModal();
   bridgeSetting();
   bridgeSuggestModal();
   bridgeTAbstractFile();
@@ -75,6 +80,7 @@ export function teardown(): void {
   unbridgeMenu();
   unbridgeMenuItem();
   unbridgeMetadataCache();
+  unbridgeModal();
   unbridgeSetting();
   unbridgeSuggestModal();
   unbridgeTAbstractFile();

@@ -221,6 +221,30 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - `Setting.setDisabled` still does not propagate to the components on the row (it does in real Obsidian), so
     assert the predicate, not `component.disabled`.
 
+- **`Modal`'s DOM mirrors Obsidian** (added 2026-08-09). The mock used to build
+  `containerEl > modalEl > [contentEl, titleEl]` with no classes and no backdrop; it now builds Obsidian
+  1.13.6's tree verbatim:
+
+  ```text
+  containerEl ('modal-container')
+  ├── bgEl__ ('modal-bg')
+  └── modalEl ('modal')
+      ├── headerEl__ ('modal-header') > titleEl ('modal-title')
+      └── contentEl ('modal-content')
+  ```
+
+  So `.modal-bg` / `.modal-header` / `.modal-content` selectors resolve in jsdom exactly as in the app.
+  `bgEl` and `headerEl` are obsidian-typings-only internals (neither is in `obsidian.d.ts`), so per L4 the
+  backing members are `bgEl__` / `headerEl__` and the un-suffixed names come from `obsidian-typings/setup`.
+  `bgEl` matters because it is the element Obsidian registers modal dismissal on — every "the user clicked
+  outside the dialog" behavior is about it, and a strict-proxy read of it used to throw, which is what
+  forced `obsidian-dev-utils`' modal-wrapper tests to hand-build the missing sibling.
+  **`titleEl` MOVED** from a direct `modalEl` child into `headerEl__`: `modalEl.contains(titleEl)` still
+  holds, `titleEl.parentElement === modalEl` no longer does.
+  **Not modeled, deliberately:** the close button (`modal-header-button mod-raised clickable-icon`) and the
+  real `bgEl` click listener that dismisses the modal — `open()` / `close()` remain simplified stand-ins,
+  and adding a listener would change what existing consumer tests observe.
+
 - **`SuggestModal`'s instruction bar is modeled**, so consumers can drive the real
   `SuggestModalCommandBuilder` (`obsidian-dev-utils` `obsidian/modals/suggest-modal-command-builder`)
   instead of hand-rolling a fake. `instructionsEl` is an obsidian-typings-only internal (not in

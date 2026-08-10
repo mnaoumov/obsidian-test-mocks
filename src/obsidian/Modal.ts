@@ -8,8 +8,10 @@ import { Scope } from './Scope.ts';
 
 export class Modal {
   public app: App;
+  public bgEl__: HTMLElement;
   public containerEl: HTMLElement;
   public contentEl: HTMLElement;
+  public headerEl__: HTMLDivElement;
   public modalEl: HTMLElement;
   public scope: Scope;
   public shouldRestoreSelection = true;
@@ -19,10 +21,12 @@ export class Modal {
 
   public constructor(app: App) {
     this.app = app;
-    this.containerEl = createDiv();
-    this.modalEl = this.containerEl.createDiv();
-    this.contentEl = this.modalEl.createDiv();
-    this.titleEl = this.modalEl.createDiv();
+    this.containerEl = createDiv('modal-container');
+    this.bgEl__ = this.containerEl.createDiv('modal-bg');
+    this.modalEl = this.containerEl.createDiv('modal');
+    this.headerEl__ = this.modalEl.createDiv('modal-header');
+    this.titleEl = this.headerEl__.createDiv('modal-title');
+    this.contentEl = this.modalEl.createDiv('modal-content');
     this.scope = Scope.create__();
     const self = strictProxy(this);
     self.constructor__(app);
