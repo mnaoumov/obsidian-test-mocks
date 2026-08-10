@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 4.1.0
+
+- feat(modal): model Obsidian's real modal DOM
+- chore: update libs
+
 ## 4.0.0
 
 - chore!: strict unicorn config
