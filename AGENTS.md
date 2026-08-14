@@ -135,7 +135,7 @@ OTM cannot simply depend on ODU: ODU lists `obsidian-test-mocks` in its own devD
 edge would be a cycle. Anything the copy needed from ODU's `src/script-utils/*` was re-pointed at this
 repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`).
 
-Keep new divergence to the four places OTM genuinely differs:
+Keep new divergence to the five places OTM genuinely differs:
 
 1. **`BASE_PATH` / site title / repo URLs** — mechanical renames.
 2. **`getImportStatement()` (`api-doc-text-utils.ts`)** — OTM publishes BARREL entry points, so a
@@ -147,6 +147,12 @@ Keep new divergence to the four places OTM genuinely differs:
    the other. Mock-only members therefore get a `-mock` route suffix. ODU has no `__` convention and so
    has no equivalent.
 4. **`EXCLUDED_DIR_SEGMENTS` (`api-doc-source-processing.ts`)** — `internal`, `jest`, `test-helpers`.
+5. **The favicon** (`docs/public/favicon.svg`, byte-identical copy in `docs/src/assets/favicon.svg`) —
+   OTM's own mark, NOT ODU's laptop-and-Matrix-rain one: the Obsidian gem with a dashed copy of itself
+   behind it (the mock) and a green check (the passing test). It is the only file under
+   `docs/src/assets/` that must never be re-synced from ODU. It feeds three places at once — Starlight's
+   `favicon` option, the hero image in `docs/src/content/docs/index.mdx`, and every OG card (rasterized
+   by `loadLogoDataUri()` from the `docs/public` copy) — so the two copies must stay identical.
 
 ### Type-checking and linting gaps (same as ODU's)
 
