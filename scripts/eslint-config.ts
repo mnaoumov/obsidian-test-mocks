@@ -6,6 +6,8 @@ import eslint from '@eslint/js';
 // eslint-disable-next-line import-x/no-rename-default -- The default export name `plugin` is too confusing.
 import stylistic from '@stylistic/eslint-plugin';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
+// eslint-disable-next-line import-x/no-rename-default -- The default export name `plugin` says nothing about which plugin it is.
+import astro from 'eslint-plugin-astro';
 import { flatConfigs as eslintPluginImportXFlatConfigs } from 'eslint-plugin-import-x';
 import { configs as perfectionistConfigs } from 'eslint-plugin-perfectionist';
 // eslint-disable-next-line import-x/no-rename-default -- The default export name `index` is too confusing.
@@ -18,9 +20,14 @@ import tseslint from 'typescript-eslint';
 import { obsidianDevUtilsPlugin } from './helpers/eslint-rules/obsidian-dev-utils-plugin.ts';
 import { getRootFolder } from './helpers/root.ts';
 
+// The `docs/src/**/*.ts` modules are deliberately absent (and ignored outright below): they resolve
+// `astro:content` and `import.meta.env` through the types Astro generates into the gitignored
+// `docs/.astro/`, so type-aware linting reports every Astro import as an unresolved `any` on a tree
+// That has not been built yet. The Astro build, and `docs/tsconfig.json`, are what validate them.
 const typeScriptFiles = [
   'src/**/*.ts',
-  'scripts/**/*.ts'
+  'scripts/**/*.ts',
+  'astro.config.ts'
 ];
 
 const testFiles = [
@@ -30,9 +37,16 @@ const testFiles = [
 
 export const config: Linter.Config[] = defineConfig(
   includeIgnoreFile(join(getRootFolder() ?? '', '.gitignore')),
+  {
+    ignores: ['docs/src/**/*.ts']
+  },
+  ...getAstroConfigs(),
   ...getEslintConfigs(),
   ...getLocalPluginConfigs(),
   ...getTseslintConfigs(),
+  // Must follow `getTseslintConfigs()`, which turns `projectService` on for every TypeScript file. This
+  // Override turns it back off for the one file that needs a named project instead.
+  ...getAstroConfigTypeCheckingConfigs(),
   ...getStylisticConfigs(),
   ...getImportXConfigs(),
   ...getPerfectionistConfigs(),
@@ -40,6 +54,32 @@ export const config: Linter.Config[] = defineConfig(
   ...getEslintImportResolverTypescriptConfigs(),
   ...getEslintCommentsConfigs()
 );
+
+function getAstroConfigs(): Linter.Config[] {
+  // eslint-disable-next-line import-x/no-named-as-default-member -- `configs` is the plugin's configuration namespace.
+  return defineConfig(astro.configs.recommended);
+}
+
+/**
+ * Point type-aware linting of `astro.config.ts` at its own tsconfig.
+ *
+ * The root `tsconfig.json` deliberately does not include it: the file imports the Astro/Starlight ESM
+ * packages, which only resolve under `moduleResolution: bundler`, and the root project is `node16`.
+ * `tsconfig.astro.json` is that one-file bundler-resolution project.
+ */
+function getAstroConfigTypeCheckingConfigs(): Linter.Config[] {
+  return defineConfig({
+    files: ['astro.config.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: './tsconfig.astro.json',
+        projectService: false,
+        // eslint-disable-next-line unicorn/name-replacements -- `tsconfigRootDir` is `typescript-eslint`'s option name, which has to be spelled the way `typescript-eslint` reads it.
+        tsconfigRootDir: getRootFolder() ?? ''
+      }
+    }
+  });
+}
 
 function getEslintCommentsConfigs(): Linter.Config[] {
   return defineConfig([
@@ -352,7 +392,8 @@ function getImportXConfigs(): Linter.Config[] {
       }
     },
     {
-      files: ['scripts/**/*.ts', 'src/script-utils/**/*.ts'],
+      // `astro.config.ts` is build tooling like the rest: it reads the generated sidebar off disk.
+      files: ['scripts/**/*.ts', 'src/script-utils/**/*.ts', 'astro.config.ts'],
       rules: {
         'import-x/no-nodejs-modules': 'off'
       }

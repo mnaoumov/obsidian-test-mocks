@@ -15,6 +15,11 @@ export interface ExecDetailedOptions extends ExecOption {
 
 export interface ExecOption {
   readonly cwd?: string;
+
+  /**
+   * Extra environment variables for the child, merged over the inherited `process.env`.
+   */
+  readonly env?: Readonly<Record<string, string>>;
   readonly isQuiet?: boolean;
   readonly shouldIgnoreExitCode?: boolean;
   readonly shouldIncludeDetails?: boolean;
@@ -112,6 +117,7 @@ function commandEscapeCommandLine(commandLine: string): string {
 function execString(command: string, options: ExecOption = {}, rawArguments?: string[]): Promise<ExecResult | string> {
   const {
     cwd = process.cwd(),
+    env = {},
     isQuiet: quiet = false,
     shouldIgnoreExitCode: ignoreExitCode = false,
     shouldIncludeDetails = false,
@@ -119,7 +125,7 @@ function execString(command: string, options: ExecOption = {}, rawArguments?: st
   } = options;
 
   return new Promise((resolve, reject) => {
-    const child = spawnViaShell(command, cwd, rawArguments);
+    const child = spawnViaShell(command, cwd, env, rawArguments);
 
     let stdout = '';
     let stderr = '';
@@ -265,7 +271,14 @@ function isExecArgument(part: CommandPart): part is ExecArgument {
   return typeof part === 'object' && 'batchedArguments' in part;
 }
 
-function spawnViaShell(command: string, cwd: string, rawArguments?: string[]): ChildProcessWithoutNullStreams {
+function spawnViaShell(
+  command: string,
+  cwd: string,
+  env: Readonly<Record<string, string>>,
+  rawArguments?: string[]
+): ChildProcessWithoutNullStreams {
+  const childEnv = { ...CHILD_ENV, ...env };
+
   if (process.platform === 'win32' && command.includes('\n')) {
     if (!rawArguments) {
       throw new Error('Commands containing newlines cannot be executed through cmd.exe on Windows. Pass an argument array instead of a string.');
@@ -276,7 +289,7 @@ function spawnViaShell(command: string, cwd: string, rawArguments?: string[]): C
     }
     return spawn(program, $arguments, {
       cwd,
-      env: CHILD_ENV,
+      env: childEnv,
       stdio: 'pipe'
     });
   }
@@ -284,7 +297,7 @@ function spawnViaShell(command: string, cwd: string, rawArguments?: string[]): C
   const shellCommand = process.platform === 'win32' ? commandEscapeCommandLine(command) : command;
   return spawn(shellCommand, [], {
     cwd,
-    env: CHILD_ENV,
+    env: childEnv,
     shell: true,
     stdio: 'pipe'
   });

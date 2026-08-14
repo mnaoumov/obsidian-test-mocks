@@ -19,7 +19,9 @@
     "jest-environment-jsdom - selected by the `@jest-environment jsdom` docblock in the jest test files, which depcheck does not parse.",
     "linkinator - run as a CLI, named as a string by the markdownlint helper.",
     "markdownlint-cli2 - run as a CLI by the lint:md scripts, configured by .markdownlint-cli2.mjs.",
-    "nano-staged - .husky/pre-commit runs it; configured by scripts/nano-staged-config.ts."
+    "nano-staged - .husky/pre-commit runs it; configured by scripts/nano-staged-config.ts.",
+    "typedoc-plugin-mdn-links - never imported; scripts/docs-gen/helpers/api-doc-link-rendering.ts reads",
+    "  node_modules/typedoc-plugin-mdn-links/data/web-api.json at runtime for the MDN Web API link map."
   ],
   "ignores": [
     "@commitlint/cli",
@@ -33,6 +35,7 @@
     "jest-environment-jsdom",
     "linkinator",
     "markdownlint-cli2",
-    "nano-staged"
+    "nano-staged",
+    "typedoc-plugin-mdn-links"
   ]
 }

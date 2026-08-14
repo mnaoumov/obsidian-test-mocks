@@ -1,0 +1,80 @@
+---
+title: Obsidian Test Mocks
+description: Comprehensive test mocks for the Obsidian plugin API.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+    title: Obsidian Test Mocks
+    tagline: Comprehensive test mocks for the Obsidian plugin API.
+    image:
+        alt: Obsidian Test Mocks logo
+        file: ../../assets/favicon.svg
+    actions:
+        - text: Get started
+          link: /obsidian-test-mocks/guides/getting-started/
+          icon: rocket
+        - text: API reference
+          link: /obsidian-test-mocks/api/
+          icon: open-book
+          variant: secondary
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components'
+
+## Features
+
+<CardGrid stagger>
+    <Card title="The whole public API" icon="open-book">
+        In-memory implementations of every class and function in `obsidian.d.ts`, tracked against each new Obsidian release.
+    </Card>
+
+    <Card title="Globals and prototypes" icon="puzzle">
+        The extensions Obsidian installs on DOM and JS builtins — `createDiv`, `el.setText`, `Array.prototype.contains` — installed and torn down for you.
+    </Card>
+
+    <Card title="Strict by default" icon="warning">
+        Reading a property nobody mocked throws a descriptive error instead of returning `undefined`, so a test cannot pass for the wrong reason.
+    </Card>
+
+    <Card title="Spyable everywhere" icon="approve-check">
+        All construction routes through `create__()` factories and `constructor__()` hooks, so `vi.spyOn()` reaches it.
+    </Card>
+
+    <Card title="Vitest and Jest" icon="rocket">
+        One-line setup entry points for both, plus a framework-agnostic `setup()` / `teardown()` pair for everything else.
+    </Card>
+
+    <Card title="100% covered" icon="star">
+        Lines, branches, functions and statements — enforced on every build.
+    </Card>
+</CardGrid>
+
+## Guides
+
+<CardGrid stagger>
+    <Card title="Getting started" icon="rocket">
+        [Install, pick an entry point, and write your first test](./guides/getting-started/).
+    </Card>
+    <Card title="Test runner setup" icon="setting">
+        [Vitest, Jest, and any framework that can alias a module](./guides/test-runner-setup/).
+    </Card>
+    <Card title="Importing the mocks" icon="document">
+        [Why test files import from `obsidian-test-mocks/obsidian`](./guides/importing-mocks/).
+    </Card>
+    <Card title="Creating mock instances" icon="puzzle">
+        [Factories, spying on construction, and the pre-configured `App`](./guides/creating-mocks/).
+    </Card>
+    <Card title="Strict mocks" icon="warning">
+        [What throws, why, and how to fill the gap](./guides/strict-mocks/).
+    </Card>
+    <Card title="Type bridging" icon="random">
+        [Moving between mock types and real obsidian types](./guides/type-bridging/).
+    </Card>
+    <Card title="obsidian-typings" icon="open-book">
+        [Bridging the internal API surface](./guides/obsidian-typings/).
+    </Card>
+    <Card title="Design principles" icon="approve-check">
+        [The rules the mock surface is held to](./guides/design-principles/).
+    </Card>
+</CardGrid>

@@ -19,6 +19,9 @@
 - `npm run build` — full build pipeline
 - `npm run build:compile:typescript` — TypeScript type-check only
 - `npm run version` — run build (used as npm version hook)
+- `npm run docs:build` — generate the API reference + OG images, build the Astro site, then link-check it
+- `npm run docs:dev` — regenerate the API reference, then run the Astro dev server
+- `npm run docs:preview` — serve the already-built `docs/dist`
 
 ## Architecture
 
@@ -28,6 +31,9 @@
 - `src/obsidian-typings/` — optional bridges mapping obsidian-typings internal property names to mock `__`-suffixed members
 - `src/globals/` — prototype extensions Obsidian adds to DOM/JS builtins (HTMLElement, Document, Array, String, etc.)
 - `src/internal/` — shared implementation details NOT exported from the package
+- `docs/` — the Astro + Starlight documentation site (`docs/src` is its `srcDir`; `docs/dist` the build
+  output; `docs/public` its static assets). See [Documentation site](#documentation-site).
+- `scripts/docs-gen/` — the ts-morph API-reference generator and the satori OG-image generator that feed it
 
 ### Key Design Decisions
 
@@ -103,6 +109,76 @@ Two rules are scoped off where they cannot be satisfied, both for the same reaso
 Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rather than the rule's default `function_` / `arguments_`, so a trailing underscore never reads as the `__` mock-member suffix.
 
 Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint-rules/` (this project has no runtime dependency on it). Their tests run as part of `npm test` and need `tsconfig.eslint-test.json` for the type-aware ones.
+
+## Documentation site
+
+`docs/` is an Astro + Starlight site published to GitHub Pages at
+<https://mnaoumov.dev/obsidian-test-mocks/> by `.github/workflows/build-pages.yml` (on a published
+release, which re-dispatches itself on `main` because the `github-pages` environment refuses to deploy
+from a tag). It has two halves:
+
+- **Guides** — hand-written, in `docs/src/content/docs/guides/`. They are the README's overflow: per G59
+  the top-level `README.md` stays a concise overview + navigation, and everything longer lives here.
+  OTM is a library, not a plugin, so `docs/` is the correct destination (the demo-vault carve-out in
+  G102 does not apply).
+- **API reference** — GENERATED from this repo's own TSDoc by `scripts/docs-gen/generate-api-docs.ts`
+  (ts-morph) into `docs/src/content/docs/api/`, plus `docs/src/generated-sidebar.json` which
+  `astro.config.ts` reads. Both are gitignored; so are `docs/public/og` (per-page Open Graph cards
+  rendered by satori + resvg) and `docs/dist`. Never hand-edit anything under `docs/src/content/docs/api`.
+
+### The pipeline is a COPY of `obsidian-dev-utils`'
+
+Everything under `scripts/docs-gen/`, plus `docs/src/{components,styles,assets}`, `content.config.ts`,
+`route-data.ts`, `astro.config.ts` and `build-pages.yml`, was copied from `obsidian-dev-utils` (ODU) and
+should be kept in copy-sync with it — the same arrangement `scripts/helpers/eslint-rules/` already has.
+OTM cannot simply depend on ODU: ODU lists `obsidian-test-mocks` in its own devDependencies, so the
+edge would be a cycle. Anything the copy needed from ODU's `src/script-utils/*` was re-pointed at this
+repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`).
+
+Keep new divergence to the four places OTM genuinely differs:
+
+1. **`BASE_PATH` / site title / repo URLs** — mechanical renames.
+2. **`getImportStatement()` (`api-doc-text-utils.ts`)** — OTM publishes BARREL entry points, so a
+   namespace does not map to a subpath the way ODU's does. `obsidian/**` becomes a named import from
+   `obsidian-test-mocks/obsidian`; `globals/**` and `obsidian-typings/**` are side-effect imports of the
+   matching setup entry point, because nothing there is imported by name.
+3. **Member slugs (`splitMockOnlySuffix` in the same file)** — slug generation strips `_`, so `create__`
+   and `create` (and `onClick__` / `onClick`) collapsed onto ONE route and one page silently overwrote
+   the other. Mock-only members therefore get a `-mock` route suffix. ODU has no `__` convention and so
+   has no equivalent.
+4. **`EXCLUDED_DIR_SEGMENTS` (`api-doc-source-processing.ts`)** — `internal`, `jest`, `test-helpers`.
+
+### Type-checking and linting gaps (same as ODU's)
+
+`scripts/docs-gen/**` is EXCLUDED from the root `tsconfig.json` (it needs `moduleResolution: bundler`
+for the Astro/Starlight ESM packages, so it carries its own `scripts/docs-gen/tsconfig.json`), and
+`astro.config.ts` is carved out into `tsconfig.astro.json` for the same reason. Neither is part of
+`build:compile:typescript`, exactly as in ODU — so `tsc -p scripts/docs-gen/tsconfig.json` currently
+reports pre-existing `exactOptionalPropertyTypes` violations in the copied code. ESLint DOES cover both
+(`projectService` resolves each file's nearest tsconfig; `astro.config.ts` is pinned to
+`tsconfig.astro.json` by an override that must come AFTER `getTseslintConfigs()`).
+
+`docs/src/**/*.ts` is ignored by ESLint: those modules resolve `astro:content` and `import.meta.env`
+through types Astro generates into the gitignored `docs/.astro/`, so linting them before a build reports
+every Astro import as an unresolved `any`. `docs/tsconfig.json` and the Astro build validate them
+instead. `docs/**` is likewise out of markdownlint's scope (Starlight's frontmatter-driven conventions,
+plus the generated API markdown), and `scripts/docs-gen` is out of dprint's and cspell's — keeping the
+copy byte-comparable to ODU's.
+
+### `js-yaml` must stay on 4.x
+
+The `js-yaml` override is pinned to `4.3.1` (recorded in `pinned-versions.json`). Astro and Starlight do
+`import yaml from 'js-yaml'`, and js-yaml 5 is ESM-only with NO default export, so hoisting 5.x into
+their subtree makes `astro build` die before it reads a single page. The update sweep will try to raise
+it again — do not let it.
+
+### Testing
+
+`scripts/vitest-config.ts` runs the documentation code as its own `unit-tests:docs` project:
+`environment: 'node'`, no setup files (the generator reads this repo's sources with ts-morph, so the
+global `obsidian` mock would only get in the way), and a 30 s `testTimeout` because rendering an OG
+image and building a ts-morph `Project` are genuinely slow. Everything else stays in `unit-tests`
+(jsdom + the mock setup), which excludes the docs globs.
 
 ## Consuming notes
 

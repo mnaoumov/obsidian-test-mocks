@@ -28,404 +28,50 @@ Peer dependencies: `obsidian`
 | `obsidian-test-mocks/obsidian-typings/vitest-setup`  | Vitest setup file: auto-calls `obsidian-typings` bridge `setup()`         |
 | `obsidian-test-mocks/obsidian-typings/jest-setup`    | Jest setup file: auto-calls `obsidian-typings` bridge `setup()`           |
 
-## Usage with Vitest
+## Quick start
 
-Add the Vitest setup file — it patches prototypes/globals and mocks `obsidian` automatically:
+Add the Vitest setup files — they patch prototypes/globals and mock `obsidian` automatically:
 
 ```typescript
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    server: {
-      deps: {
-        inline: ['@obsidian-typings', 'obsidian-dev-utils']
-      }
-    },
     setupFiles: [
       'obsidian-test-mocks/vitest-setup',
       'obsidian-test-mocks/obsidian-typings/vitest-setup'
-    ],
-  },
-});
-```
-
-> [!NOTE]
-> The `server.deps.inline` setting tells Vitest to bundle `@obsidian-typings` and `obsidian-dev-utils` into the test transform pipeline instead of treating them as external Node.js imports. Without this, Vitest may fail to resolve these transitive dependencies at runtime. Add any other packages that cause `Cannot find module` errors during test setup to this list.
-
-## Usage with Jest
-
-Add the Jest setup file and `moduleNameMapper` to alias the `obsidian` module:
-
-```javascript
-module.exports = {
-  moduleNameMapper: {
-    '^obsidian$': 'obsidian-test-mocks/obsidian',
-  },
-  setupFiles: ['obsidian-test-mocks/jest-setup'],
-};
-```
-
-> [!NOTE]
-> Unlike Vitest, Jest requires `moduleNameMapper` because the `obsidian` npm package is types-only (no JS runtime) and `jest.mock` in setup files cannot resolve it.
-
-## Usage with Other Frameworks
-
-The `vitest-setup` and `jest-setup` entry points already handle prototype/global patching and `obsidian` module aliasing. If you use a different test framework, you need to do both manually using the generic `setup` entry point:
-
-1. **Prototype/global patching** — call `setup()` / `teardown()` in your lifecycle hooks:
-
-   ```typescript
-   import { setup, teardown } from 'obsidian-test-mocks/setup';
-
-   beforeAll(() => setup());
-   afterAll(() => teardown());
-   ```
-
-2. **Module aliasing** — redirect `import ... from 'obsidian'` to the mocks so that your production code under test receives mock implementations. For reference, here is what `vitest-setup` does:
-
-   ```typescript
-   vi.mock('obsidian', async () => await import('obsidian-test-mocks/obsidian'));
-   ```
-
-   Write something similar using your framework's module mocking API, or configure module resolution at the config level (as shown in the [Jest example](#usage-with-jest) with `moduleNameMapper`).
-
-> [!WARNING]
->
-> If your test framework does not support module mocking or aliasing, it cannot be used with this library.
->
-> Production code under test does `import { ... } from 'obsidian'`, and without module aliasing those imports will not resolve to the mocks.
-
-## Importing in Test Files
-
-Module aliasing (via `vi.mock`, `moduleNameMapper`, etc.) redirects `import ... from 'obsidian'` to the mocks **at runtime**, but TypeScript still resolves types from `obsidian.d.ts` at compile time. This means mock-only members like `create__()`, `asOriginalType__()`, and `simulateClick__()` are not visible when importing from `'obsidian'`.
-
-To access mock-specific APIs, import directly from `'obsidian-test-mocks/obsidian'` in your test files:
-
-```typescript
-// Test file — gets mock types with create__(), asOriginalType__(), etc.
-import { App } from 'obsidian-test-mocks/obsidian';
-
-const app = App.createConfigured__();
-```
-
-Use `import type ... from 'obsidian'` when you need the original obsidian type (e.g., for function parameter annotations):
-
-```typescript
-import type { App as AppOriginal } from 'obsidian';
-import { App } from 'obsidian-test-mocks/obsidian';
-
-const app = App.createConfigured__();
-
-function pluginInit(app: AppOriginal): void { /* ... */ }
-pluginInit(app.asOriginalType__());
-```
-
-> [!IMPORTANT]
->
-> The `vi.mock` / `moduleNameMapper` aliasing is still required — it ensures your **production code under test** (which does `import { ... } from 'obsidian'`) receives mock implementations at runtime. But in test files where you call `create__()` and other `__` members, import from `'obsidian-test-mocks/obsidian'` so TypeScript can see those members.
-
-## Creating Mock Instances
-
-Classes whose constructors are not public in `obsidian.d.ts` expose a static `create__()` factory method:
-
-```typescript
-import { App } from 'obsidian-test-mocks/obsidian';
-
-const app = App.create__();
-```
-
-The `__` suffix signals this member is not part of the real Obsidian API — it exists only in the mocks for testing purposes. This convention applies to all mock-only public members: factory methods (`create__()`), type-bridge helpers (`asOriginalType__()`), and test helpers (`simulateClick__()`, `simulateChange__()`).
-
-### Spying on Instance Creation
-
-The `create__()` pattern makes all instance creation spyable:
-
-```typescript
-import { vi } from 'vitest';
-import { WorkspaceLeaf } from 'obsidian-test-mocks/obsidian';
-
-const spy = vi.spyOn(WorkspaceLeaf, 'create2__');
-
-// ... code that creates leaves ...
-
-expect(spy).toHaveBeenCalledTimes(2);
-```
-
-### Pre-configured App
-
-Use `App.createConfigured__()` for a fully wired `App` instance. Parent folders are created automatically from file paths:
-
-```typescript
-import { App } from 'obsidian-test-mocks/obsidian';
-
-const app = App.createConfigured__({
-  files: {
-    'notes/daily/2024-01-01.md': '# New Year',
-  },
-});
-// folders "notes" and "notes/daily" are created automatically
-```
-
-Paths ending with `/` are treated as folders (content must be empty):
-
-```typescript
-const app = App.createConfigured__({
-  files: {
-    'archive/2023/': '',
-  },
-});
-```
-
-## Strict Mocks
-
-Every mock instance is wrapped in a `Proxy` that throws a descriptive error when you access a property that isn't implemented, instead of silently returning `undefined`:
-
-```text
-Property "internalPlugins" is not mocked in App. To override, assign a value first: mock.internalPlugins = ...
-```
-
-### Overriding Behavior
-
-The strict proxy is fully override-friendly. Assign a value and subsequent reads just work:
-
-```typescript
-// Spy on an existing method
-vi.spyOn(app.vault, 'read').mockResolvedValue('custom content');
-
-// Batch-extend with Object.assign
-Object.assign(app, { commands: { addCommand: vi.fn() } });
-```
-
-### Accessing Unimplemented Properties
-
-Properties not implemented in the mock (such as `app.internalPlugins`) will throw at runtime:
-
-```text
-Property "internalPlugins" is not mocked in App. To override, assign a value first: mock.internalPlugins = ...
-```
-
-You can add them by assigning a value first:
-
-```typescript
-app.internalPlugins = { manifests: {} };
-```
-
-But since `internalPlugins` is not declared in `obsidian.d.ts`, TypeScript won't compile that assignment. Here are the options to make it work, from best to worst:
-
-**1. Use `obsidian-typings`** (recommended) — install [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings) which declares the full internal API. The assignment compiles with no extra work.
-
-**2. Manual module augmentation** (recommended) — declare only what you need:
-
-```typescript
-declare module 'obsidian' {
-  interface App {
-    internalPlugins: { manifests: Record<string, unknown> };
+    ]
   }
-}
-
-app.internalPlugins = { manifests: {} };
-```
-
-**3. Cast to `Record<string, unknown>`** (less recommended) — quick one-off escape hatch, still catches typos in the value:
-
-```typescript
-(app as Record<string, unknown>).internalPlugins = { manifests: {} };
-```
-
-**4. `as any` / `@ts-expect-error` / `@ts-ignore`** (not recommended) — suppresses all type checking and hides real errors:
-
-```typescript
-(app as any).internalPlugins = { manifests: {} };
-
-// @ts-expect-error -- accessing internal API
-app.internalPlugins = { manifests: {} };
-```
-
-## Type Bridging with `asOriginalType__()`
-
-Mock types and original obsidian types are structurally different — you cannot assign a mock `App` to a parameter typed as `import('obsidian').App`. Every mock class provides an `asOriginalType__()` method that returns the instance typed as its original obsidian counterpart:
-
-```typescript
-import type { App as AppOriginal } from 'obsidian';
-import { App } from 'obsidian-test-mocks/obsidian';
-
-const app = App.createConfigured__();
-
-// Pass to code that expects the original obsidian type
-function pluginInit(app: AppOriginal): void { /* ... */ }
-pluginInit(app.asOriginalType__());
-```
-
-This is a zero-cost type cast at runtime — no wrapping, no cloning. The `__` suffix signals it is not part of the real Obsidian API.
-
-Subclasses use numbered variants following inheritance depth: `asOriginalType__()` on the root class, `asOriginalType2__()` on its child, `asOriginalType3__()` on the grandchild, etc. The inherited base method remains callable at any level. For example, `Vault` (which extends `Events`) uses `asOriginalType2__()`.
-
-### Reverse Bridging with `fromOriginalType__()`
-
-The inverse of `asOriginalType__()`. Every mock class provides a static `fromOriginalType__()` method that accepts a real-typed obsidian object and returns it typed as the mock class:
-
-```typescript
-import type { App as AppOriginal } from 'obsidian';
-import { App, Vault } from 'obsidian-test-mocks/obsidian';
-
-const app: AppOriginal = App.createConfigured__().asOriginalType__();
-
-// Convert back to mock type when you need mock-specific APIs
-const mockVault = Vault.fromOriginalType2__(app.vault);
-mockVault.setVaultAbstractFile__('path', file);
-```
-
-This eliminates the need for maintaining dual variables (`mockApp` / `app`). Keep the real `App` type throughout your test and convert to the mock type only when calling mock-specific APIs.
-
-Subclasses use numbered variants following the same inheritance-depth convention as `asOriginalType__()`: `fromOriginalType__()` on the root, `fromOriginalType2__()` on its child, etc.
-
-Because every mock is a [strict mock](#strict-mocks), passing the result to code that accesses internal members (not part of `obsidian.d.ts`) will throw a descriptive error unless you assign those members first:
-
-```typescript
-const app = App.createConfigured__();
-const original = app.asOriginalType__();
-
-// If pluginInit() accesses app.internalPlugins internally, this throws:
-//   Property "internalPlugins" is not mocked in App.
-//   To override, assign a value first: mock.internalPlugins = ...
-pluginInit(original);
-
-// Fix: assign the missing member before calling
-(app as Record<string, unknown>)['internalPlugins'] = { manifests: {} };
-pluginInit(original); // works
-```
-
-## Overriding Exported Variables
-
-Some exports like `apiVersion` are plain strings, not functions. Since ES module bindings are read-only for consumers, use `vi.mock()` to override them:
-
-```typescript
-import { vi } from 'vitest';
-
-vi.mock('obsidian', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('obsidian')>()),
-  apiVersion: '1.8.0',
-}));
-
-import { apiVersion } from 'obsidian';
-
-it('uses the overridden apiVersion', () => {
-  expect(apiVersion).toBe('1.8.0');
 });
 ```
 
-## Using with `obsidian-typings`
-
-This package does **not** have a runtime dependency on [`obsidian-typings`](https://www.npmjs.com/package/obsidian-typings), but it works seamlessly if your project uses it.
-
-`obsidian-typings` uses `declare module 'obsidian'` to augment obsidian types with dozens of internal properties (e.g., `App.internalPlugins`, `App.commands`). This makes `import('obsidian').App` a superset of what `obsidian.d.ts` alone declares. The mock types only implement the public API from `obsidian.d.ts`, so the two are structurally incompatible.
-
-### Automatic bridging with `obsidian-typings` entry points
-
-The `obsidian-test-mocks/obsidian-typings/*` entry points automatically bridge commonly used `obsidian-typings` internal properties to their mock counterparts. Add the appropriate setup file to your test runner **after** the main setup:
-
-**Vitest:**
+Then build a vault in memory and exercise the code under test:
 
 ```typescript
-// vitest.config.ts
-export default defineConfig({
-  test: {
-    setupFiles: [
-      'obsidian-test-mocks/vitest-setup',
-      'obsidian-test-mocks/obsidian-typings/vitest-setup',
-    ],
-  },
+import { App } from 'obsidian-test-mocks/obsidian';
+
+const app = App.createConfigured__({
+  files: {
+    'notes/daily/2024-01-01.md': '# New Year'
+  }
 });
 ```
 
-**Jest:**
+## Documentation
 
-```javascript
-module.exports = {
-  moduleNameMapper: {
-    '^obsidian$': 'obsidian-test-mocks/obsidian',
-  },
-  setupFiles: [
-    'obsidian-test-mocks/jest-setup',
-    'obsidian-test-mocks/obsidian-typings/jest-setup',
-  ],
-};
-```
+The full documentation — guides plus the complete, searchable **API reference** generated from the
+library's TSDoc — is published at
+[mnaoumov.dev/obsidian-test-mocks](https://mnaoumov.dev/obsidian-test-mocks/).
 
-**Other frameworks** — use the generic `setup` entry point:
-
-```typescript
-import { setup, teardown } from 'obsidian-test-mocks/obsidian-typings/setup';
-
-beforeAll(() => setup());
-afterAll(() => teardown());
-```
-
-This bridges the following properties:
-
-| Class               | obsidian-typings property              | Mock property                          |
-| ------------------- | -------------------------------------- | -------------------------------------- |
-| `CapacitorAdapter`  | `insensitive`                          | `insensitive__`                        |
-| `Component`         | `_loaded`                              | `loaded__`                             |
-| `Component`         | `_children`                            | `children__`                           |
-| `FileSystemAdapter` | `insensitive`                          | `insensitive__`                        |
-| `SettingGroup`      | `listEl`                               | `listEl__`                             |
-| `TAbstractFile`     | `deleted`                              | `deleted__`                            |
-| `Vault`             | `exists`                               | (delegates to adapter/file map)        |
-| `Vault`             | `getAbstractFileByPathInsensitive`     | `getAbstractFileByPathInsensitive__()` |
-| `Vault`             | `getAvailablePath`                     | (stub: returns `basePath.extension`)   |
-
-After setup, code using `obsidian-typings` property names works transparently through the [strict proxy](#strict-mocks):
-
-```typescript
-const component = Component.create__();
-component.load();
-// With obsidian-typings/vitest-setup, this works instead of throwing:
-console.log(component._loaded); // true
-```
-
-The entry point also exports `teardown()` to remove all bridges.
-
-### Manual property assignment
-
-For properties not covered by the automatic bridging, use `asOriginalType__()` to bridge the gap when passing mocks to code that expects obsidian types:
-
-```typescript
-import type { App as AppOriginal } from 'obsidian';
-import { App } from 'obsidian-test-mocks/obsidian';
-
-function myPluginHelper(app: AppOriginal): void { /* ... */ }
-
-const app = App.createConfigured__();
-myPluginHelper(app.asOriginalType__());
-```
-
-With `obsidian-typings` installed, the returned type includes all augmented properties, so you can assign internal members in a type-safe way:
-
-```typescript
-const app = App.createConfigured__();
-const original = app.asOriginalType__();
-
-// Type-safe with obsidian-typings — no casts needed
-original.internalPlugins = { manifests: {} };
-```
-
-Without `obsidian-typings`, you can still assign them via a `Record` cast:
-
-```typescript
-const app = App.createConfigured__();
-(app as unknown as Record<string, unknown>)['internalPlugins'] = { manifests: {} };
-```
-
-Remember that accessing any property not assigned on the mock (and not covered by the automatic bridging) will throw a [strict mock](#strict-mocks) error at runtime, regardless of whether `obsidian-typings` makes it compile.
-
-## Design Principles
-
-- **Only `obsidian.d.ts`** — core mocks expose exactly the public API; optional `obsidian-typings/*` entry points bridge `obsidian-typings` internals
-- **Meaningful implementations** — real in-memory behavior (state tracking, callbacks, data storage), not empty stubs
-- **Spyable** — all instance creation routes through `create__()` so `vi.spyOn()` works everywhere
-- **No `obsidian-typings` runtime dependency** — type shapes are inlined to avoid global module augmentation side effects; `obsidian-typings` is a dev dependency used only for bridge type validation
+- [API reference](https://mnaoumov.dev/obsidian-test-mocks/api/)
+- [Getting Started](https://mnaoumov.dev/obsidian-test-mocks/guides/getting-started/)
+- [Test Runner Setup](https://mnaoumov.dev/obsidian-test-mocks/guides/test-runner-setup/)
+- [Importing the Mocks](https://mnaoumov.dev/obsidian-test-mocks/guides/importing-mocks/)
+- [Creating Mock Instances](https://mnaoumov.dev/obsidian-test-mocks/guides/creating-mocks/)
+- [Strict Mocks](https://mnaoumov.dev/obsidian-test-mocks/guides/strict-mocks/)
+- [Type Bridging](https://mnaoumov.dev/obsidian-test-mocks/guides/type-bridging/)
+- [Using with `obsidian-typings`](https://mnaoumov.dev/obsidian-test-mocks/guides/obsidian-typings/)
+- [Design Principles](https://mnaoumov.dev/obsidian-test-mocks/guides/design-principles/)
 
 ## Support
 
