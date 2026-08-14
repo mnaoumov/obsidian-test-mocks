@@ -1,0 +1,70 @@
+// eslint-disable-next-line import-x/no-rename-default -- The default export name `StarlightIntegration` is too verbose.
+import starlight from '@astrojs/starlight';
+import { defineConfig } from 'astro/config';
+import {
+  existsSync,
+  readFileSync
+} from 'node:fs';
+import { resolve } from 'node:path';
+import starlightGitHubAlerts from 'starlight-github-alerts';
+
+import { remarkRelativeLinks } from './scripts/docs-gen/helpers/remark-plugins/remark-relative-links.ts';
+
+// The documentation site is a self-contained Astro + Starlight project. Its source lives under `docs/src`
+// (`srcDir`) so it never collides with the library's own `src/` and `dist/`. The API reference is
+// Generated from the library's TSDoc by the custom generator (`scripts/docs-gen`, ts-morph) into
+// `docs/src/content/docs/api`, with a matching `docs/src/generated-sidebar.json` consumed below.
+const BASE = '/obsidian-test-mocks';
+
+// eslint-disable-next-line import-x/no-default-export -- Astro requires a default export.
+export default defineConfig({
+  base: BASE,
+  integrations: [
+    starlight({
+      components: {
+        SiteTitle: './docs/src/components/SiteTitle.astro'
+      },
+      customCss: [
+        './docs/src/styles/global.css'
+      ],
+      editLink: {
+        baseUrl: 'https://github.com/mnaoumov/obsidian-test-mocks/edit/main/'
+      },
+      favicon: '/favicon.svg',
+      plugins: [starlightGitHubAlerts()],
+      routeMiddleware: './docs/src/route-data.ts',
+      sidebar: [
+        {
+          items: [{ autogenerate: { directory: 'guides' } }],
+          label: 'Guides'
+        },
+        ...getApiSidebar()
+      ],
+      social: [
+        { href: 'https://github.com/mnaoumov/obsidian-test-mocks', icon: 'github', label: 'GitHub' }
+      ],
+      title: 'Obsidian Test Mocks'
+    })
+  ],
+  markdown: {
+    remarkPlugins: [remarkRelativeLinks(BASE)]
+  },
+  // eslint-disable-next-line unicorn/name-replacements -- `outDir` is an Astro config key.
+  outDir: './docs/dist',
+  // eslint-disable-next-line unicorn/name-replacements -- `publicDir` is an Astro config key.
+  publicDir: './docs/public',
+  site: 'https://mnaoumov.dev',
+  // eslint-disable-next-line unicorn/name-replacements -- `srcDir` is an Astro config key.
+  srcDir: './docs/src',
+  trailingSlash: 'always'
+});
+
+function getApiSidebar(): unknown[] {
+  const sidebarPath = resolve(import.meta.dirname, 'docs/src/generated-sidebar.json');
+  if (!existsSync(sidebarPath)) {
+    console.warn('[astro.config] generated-sidebar.json not found. Run the generator first (npm run docs:build).');
+    return [];
+  }
+  const parsed: unknown = JSON.parse(readFileSync(sidebarPath, 'utf-8'));
+  return Array.isArray(parsed) ? parsed : [];
+}

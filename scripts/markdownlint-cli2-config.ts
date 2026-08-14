@@ -27,9 +27,13 @@ export const config: MarkdownlintCli2ConfigSchema = {
   globs: [
     '**/*.md'
   ],
+  // The `docs/` Astro + Starlight sub-project follows Starlight's frontmatter-driven conventions
+  // (title in frontmatter, no body H1) and holds generated API markdown; it is validated by its own
+  // `astro build` and the link check that follows it, not by this repo's markdownlint.
   ignores: [
     'node_modules/**',
     '.git/**',
-    'dist/**'
+    'dist/**',
+    'docs/**'
   ]
 };

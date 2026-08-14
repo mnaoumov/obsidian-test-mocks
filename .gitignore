@@ -24,8 +24,17 @@ data.json
 dist
 coverage
 
-index.ts
-src/globals/setup.ts
+# Astro documentation site
+.astro
+docs/dist
+docs/src/content/docs/api
+docs/src/generated-sidebar.json
+docs/public/og
+
+# Generated barrels (scripts/build-generate-indices.ts). Anchored under `src/` so it cannot swallow an
+# authored `index.ts` elsewhere — `docs/src/components/api/index.ts` is one.
+/src/**/index.ts
+/src/globals/setup.ts
 
 /tsconfig.tsbuildinfo
 /.env

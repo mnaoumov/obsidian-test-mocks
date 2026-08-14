@@ -34,5 +34,12 @@
     "./scripts/**/*.ts",
     "./src/**/*.ts",
     "./vitest.config.ts"
+  ],
+  // The documentation generator resolves the Astro/Starlight ESM packages, which need
+  // `moduleResolution: bundler`; it is compiled by its own `scripts/docs-gen/tsconfig.json` instead.
+  // `astro.config.ts` is likewise carved out, into `tsconfig.astro.json`, and `docs/src` into
+  // `docs/tsconfig.json`.
+  "exclude": [
+    "./scripts/docs-gen/**/*.ts"
   ]
 }
