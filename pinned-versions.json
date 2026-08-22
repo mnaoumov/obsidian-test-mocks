@@ -28,13 +28,6 @@
       "check": "node -e \"process.stdout.write(require('obsidian/package.json').dependencies.moment)\"",
       "expect": "2.29.4"
     },
-    "@vitest/runner": {
-      "section": "devDependencies",
-      "why": "Declared only to hold the transitive runner at a known-good version; nothing imports it. The check records the version vitest itself depends on, so the pin stops being invisible when vitest moves.",
-      "check": "node -e \"process.stdout.write(require('vitest/package.json').dependencies['@vitest/runner'])\"",
-      "expect": "4.1.10",
-      "manualCheck": "NOTE: the pin and this expectation already disagree - the declared pin is 4.1.0 while vitest depends on 4.1.10 - so npm is resolving a runner older than the vitest that drives it. The unit suite passes either way, and AGENTS.md records that the original reason for pinning (broken .d.ts under exactOptionalPropertyTypes) is now handled by tsconfig's skipLibCheck instead. Re-examine whether this pin is still needed at all; if not, drop the declaration and let vitest choose."
-    },
     "js-yaml": {
       "section": "overrides",
       "why": "Astro and Starlight `import yaml from 'js-yaml'`, and js-yaml 5 is ESM-only with NO default export - hoisting 5.x into their subtree makes `astro build` die on 'The requested module js-yaml does not provide an export named default' before it reads a single page. The override exists to keep the whole tree off the vulnerable 3.x line, and 4.3.1 does that just as well while staying loadable. The check records the range astro itself asks for: when astro moves to 5.x, this pin can be dropped.",
