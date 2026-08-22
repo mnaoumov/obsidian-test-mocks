@@ -14,7 +14,7 @@ import {
   join,
   resolve as resolvePosix
 } from 'node:path/posix';
-import process, { loadEnvFile } from 'node:process';
+import process from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import {
   inc,
@@ -277,15 +277,10 @@ async function updateVersion(versionUpdateType?: string): Promise<void> {
   await addGitTag(newVersion);
   await gitPush();
   await publishGitHubRelease(newVersion);
-  const envPath = resolvePathFromRoot('.env');
-  if (envPath && existsSync(envPath)) {
-    loadEnvFile(envPath);
-  }
-  const npmEnv = process.env as Partial<NpmEnv>;
-  await execFromRoot(['npm', 'config', 'set', `//registry.npmjs.org/:_authToken=${npmEnv.NPM_TOKEN ?? ''}`]);
-
-  const tag = isPreRelease(newVersion) ? 'beta' : 'latest';
-  await execFromRoot(['npm', 'publish', '--tag', tag]);
+  /*
+   * Publishing to npm is NOT done here: the `publish-npm.yml` workflow picks the release up and publishes
+   * the tarball attached to it through npm trusted publishing (OIDC), which only authenticates from CI.
+   */
 }
 
 async function updateVersionInFiles(newVersion: string): Promise<void> {
@@ -322,10 +317,6 @@ interface EditJsonOptions {
 interface EditPackageJsonOptions {
   readonly cwd?: string;
   readonly shouldSkipIfMissing?: boolean;
-}
-
-interface NpmEnv {
-  NPM_TOKEN: string;
 }
 
 interface PackageLockJson extends Partial<PackageJson> {

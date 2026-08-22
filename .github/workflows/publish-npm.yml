@@ -1,0 +1,50 @@
+name: Publish to npm
+
+# Publishes the package to npm using npm trusted publishing (OIDC), so no long-lived `NPM_TOKEN` exists
+# anywhere: <https://docs.npmjs.com/trusted-publishers>.
+#
+# What is published is the `.tgz` that `scripts/version.ts` produced with `npm pack` and attached to the
+# GitHub release, so npm serves the very bytes that `attest-release-assets.yml` attests - there is one
+# artifact per version, not one built locally and a second one rebuilt here.
+#
+# The npmjs.com side must name this exact file: package Settings -> Trusted Publisher -> GitHub Actions,
+# organization/user `mnaoumov`, repository `obsidian-test-mocks`, workflow `publish-npm.yml`, no
+# environment. Trusted publishing works only on cloud-hosted runners and needs npm >= 11.5.1 /
+# Node >= 22.14.0, both satisfied by the `.nvmrc` Node.
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Mints the OIDC token npm exchanges for a short-lived publish credential. Without it the publish
+      # falls back to token auth and fails.
+      id-token: write
+    steps:
+      # Only for `.nvmrc`, so the Node version stays defined in one place.
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+          # Never cache in a release build.
+          package-manager-cache: false
+
+      - name: Download release tarball
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ github.event.release.tag_name }}" --repo "${{ github.repository }}" --pattern '*.tgz' --dir release-assets
+
+      # `latest` / `beta` mirror what `scripts/version.ts` used to pass locally; the release is marked as a
+      # prerelease by that same script for a `x.y.z-beta.n` version.
+      - name: Publish to npm
+        env:
+          NPM_TAG: ${{ github.event.release.prerelease && 'beta' || 'latest' }}
+        run: npm publish release-assets/*.tgz --tag "$NPM_TAG"

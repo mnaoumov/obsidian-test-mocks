@@ -110,6 +110,27 @@ Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rath
 
 Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint-rules/` (this project has no runtime dependency on it). Their tests run as part of `npm test` and need `tsconfig.eslint-test.json` for the type-aware ones.
 
+## Releasing
+
+`npm run version <major|minor|patch|premajor|preminor|prepatch|prerelease|x.y.z>` (`scripts/version.ts`)
+runs the full check suite, bumps the version, rewrites `CHANGELOG.md`, commits, tags, pushes, and creates
+the GitHub release with the `npm pack` tarball attached. It stops there.
+
+The npm publish is a SEPARATE, CI-only step: `.github/workflows/publish-npm.yml` reacts to the published
+release, downloads that same tarball, and publishes it with npm trusted publishing (OIDC) - there is no
+`NPM_TOKEN` anywhere, locally or in repo secrets. Consequences worth knowing:
+
+- The bytes on npm are the bytes attached to the release, which is what
+  `.github/workflows/attest-release-assets.yml` attests. Do not "fix" this by rebuilding in CI: that would
+  publish a second, unattested build of the same version.
+- The workflow FILENAME is part of the trust configuration on npmjs.com (package Settings -> Trusted
+  Publisher: user `mnaoumov`, repo `obsidian-test-mocks`, workflow `publish-npm.yml`). Renaming or moving
+  the file breaks publishing until the npm side is updated to match.
+- OIDC only works from a cloud-hosted runner, so a release can no longer be published from a laptop. A
+  failed publish is re-run from the Actions tab, not re-done locally.
+- The dist-tag comes from the release: `beta` when GitHub marks it a prerelease (which `version.ts` does
+  for a `-beta.n` version), `latest` otherwise.
+
 ## Documentation site
 
 `docs/` is an Astro + Starlight site published to GitHub Pages at
