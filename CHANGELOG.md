@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 4.2.0
+
+- feat(vault): populate `TFile.stat` from the adapter
+- ci: publish to npm via trusted publishing instead of a local NPM_TOKEN
+- chore: update libs
+- fix(docs): replace ODU's favicon with an OTM-specific icon
+- feat(docs): add Astro + Starlight documentation site
+- chore: update libs
+
 ## 4.1.0
 
 - feat(modal): model Obsidian's real modal DOM
