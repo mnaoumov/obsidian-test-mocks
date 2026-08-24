@@ -15,6 +15,14 @@ name: Publish to npm
 on:
   release:
     types: [published]
+  # Manual escape hatch: a publish that failed for a reason outside the tarball (a bad workflow, an npm
+  # outage) can be retried against an already-published release without re-cutting it. Re-running the
+  # failed job would replay the workflow file from the failing commit, so it cannot fix itself.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish, e.g. 4.2.0
+        required: true
 
 jobs:
   publish:
@@ -37,14 +45,30 @@ jobs:
           # Never cache in a release build.
           package-manager-cache: false
 
+      # Both triggers land on the same two facts - which tag, and whether it is a prerelease - so they are
+      # resolved once here instead of every step branching on the event name. `latest` / `beta` mirror what
+      # `scripts/version.ts` used to pass locally; the release is marked as a prerelease by that same script
+      # for a `x.y.z-beta.n` version.
+      - name: Resolve release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.event.release.tag_name }}
+        run: |
+          is_prerelease="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease)"
+          {
+            echo "tag=$TAG"
+            echo "npm-tag=$([ "$is_prerelease" = true ] && echo beta || echo latest)"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Download release tarball
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download "${{ github.event.release.tag_name }}" --repo "${{ github.repository }}" --pattern '*.tgz' --dir release-assets
+        run: gh release download "${{ steps.release.outputs.tag }}" --repo "${{ github.repository }}" --pattern '*.tgz' --dir release-assets
 
-      # `latest` / `beta` mirror what `scripts/version.ts` used to pass locally; the release is marked as a
-      # prerelease by that same script for a `x.y.z-beta.n` version.
       - name: Publish to npm
         env:
-          NPM_TAG: ${{ github.event.release.prerelease && 'beta' || 'latest' }}
-        run: npm publish release-assets/*.tgz --tag "$NPM_TAG"
+          NPM_TAG: ${{ steps.release.outputs.npm-tag }}
+        # The `./` prefix is load-bearing: without it npm parses `release-assets/<name>.tgz` as the GitHub
+        # shorthand `<owner>/<repo>` and tries to `git ls-remote` it instead of publishing the local file.
+        run: npm publish ./release-assets/*.tgz --tag "$NPM_TAG"
