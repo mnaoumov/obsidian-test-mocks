@@ -1,5 +1,6 @@
 import type {
   DataAdapter as DataAdapterOriginal,
+  FileStats as FileStatsOriginal,
   Vault as VaultOriginal
 } from 'obsidian';
 
@@ -21,6 +22,11 @@ const BINARY_SIZE_SMALL = 2;
 const BINARY_SIZE_MEDIUM = 4;
 const BINARY_SIZE_LARGE = 8;
 const EXPECTED_FILE_COUNT = 2;
+const STAT_CTIME = 100;
+const STAT_MTIME = 200;
+const STAT_MTIME_LATER = 300;
+const CONTENT = 'hello';
+const LONGER_CONTENT = 'hello, world';
 
 describe('Vault', () => {
   describe('asOriginalType2__()', () => {
@@ -920,6 +926,121 @@ describe('Vault', () => {
       expect(() => {
         vault.reconcile__();
       }).toThrow('reconcile__ is only supported for in-memory adapters');
+    });
+  });
+
+  describe('refreshStat__()', () => {
+    it('should populate stat on create()', async () => {
+      const app = App.createConfigured__();
+      const file = await app.vault.create('note.md', CONTENT, { ctime: STAT_CTIME, mtime: STAT_MTIME });
+
+      expect(file.stat).toEqual({ ctime: STAT_CTIME, mtime: STAT_MTIME, size: CONTENT.length });
+    });
+
+    it('should populate stat on createBinary()', async () => {
+      const app = App.createConfigured__();
+      const file = await app.vault.createBinary('data.bin', new ArrayBuffer(BINARY_SIZE_MEDIUM), { ctime: STAT_CTIME, mtime: STAT_MTIME });
+
+      expect(file.stat).toEqual({ ctime: STAT_CTIME, mtime: STAT_MTIME, size: BINARY_SIZE_MEDIUM });
+    });
+
+    it('should populate stat on createSync__()', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('note.md', CONTENT);
+
+      expect(file.stat.size).toBe(CONTENT.length);
+      expect(file.stat.ctime).toBeGreaterThan(0);
+      expect(file.stat.mtime).toBeGreaterThan(0);
+    });
+
+    it('should populate stat before the create event fires', async () => {
+      const app = App.createConfigured__();
+      const observed: FileStatsOriginal[] = [];
+      app.vault.on('create', (...data: unknown[]) => {
+        observed.push({ ...(data[0] as TFile).stat });
+      });
+      await app.vault.create('note.md', CONTENT, { ctime: STAT_CTIME, mtime: STAT_MTIME });
+
+      expect(observed).toEqual([{ ctime: STAT_CTIME, mtime: STAT_MTIME, size: CONTENT.length }]);
+    });
+
+    it('should populate stat on copy()', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': CONTENT } });
+      const source = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      const copied = await app.vault.copy(source, 'copy.md');
+
+      expect(copied.stat.size).toBe(CONTENT.length);
+      expect(copied.stat.ctime).toBeGreaterThan(0);
+      expect(copied.stat.mtime).toBeGreaterThan(0);
+    });
+
+    it('should update mtime and size on modify() while preserving ctime', async () => {
+      const app = App.createConfigured__();
+      const file = await app.vault.create('note.md', CONTENT, { ctime: STAT_CTIME, mtime: STAT_MTIME });
+      await app.vault.modify(file, LONGER_CONTENT, { mtime: STAT_MTIME_LATER });
+
+      expect(file.stat).toEqual({ ctime: STAT_CTIME, mtime: STAT_MTIME_LATER, size: LONGER_CONTENT.length });
+    });
+
+    it('should update stat on append()', async () => {
+      const app = App.createConfigured__();
+      const file = await app.vault.create('note.md', CONTENT, { ctime: STAT_CTIME, mtime: STAT_MTIME });
+      await app.vault.append(file, CONTENT, { mtime: STAT_MTIME_LATER });
+
+      expect(file.stat).toEqual({ ctime: STAT_CTIME, mtime: STAT_MTIME_LATER, size: (CONTENT + CONTENT).length });
+    });
+
+    it('should keep stat across rename()', async () => {
+      const app = App.createConfigured__();
+      const file = await app.vault.create('note.md', CONTENT, { ctime: STAT_CTIME, mtime: STAT_MTIME });
+      await app.vault.rename(file, 'renamed.md');
+
+      expect(file.stat).toEqual({ ctime: STAT_CTIME, mtime: STAT_MTIME, size: CONTENT.length });
+    });
+
+    it('should keep a descendant stat across a folder rename', async () => {
+      const app = App.createConfigured__({ files: { 'folder/': '' } });
+      const file = await app.vault.create('folder/note.md', CONTENT, { ctime: STAT_CTIME, mtime: STAT_MTIME });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('folder'));
+      await app.vault.rename(folder, 'renamed');
+
+      expect(file.path).toBe('renamed/note.md');
+      expect(file.stat).toEqual({ ctime: STAT_CTIME, mtime: STAT_MTIME, size: CONTENT.length });
+    });
+
+    it('should populate stat for a file discovered by reconcile__()', async () => {
+      const app = App.createConfigured__();
+      await app.vault.adapter.write('added.md', CONTENT, { ctime: STAT_CTIME, mtime: STAT_MTIME });
+      app.vault.reconcile__();
+      const file = ensureNonNullable(app.vault.getFileByPath('added.md'));
+
+      expect(file.stat).toEqual({ ctime: STAT_CTIME, mtime: STAT_MTIME, size: CONTENT.length });
+    });
+
+    it('should refresh stat of an already tracked file on reconcile__()', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': CONTENT } });
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      await app.vault.adapter.write('note.md', LONGER_CONTENT, { ctime: STAT_CTIME, mtime: STAT_MTIME_LATER });
+      app.vault.reconcile__();
+
+      expect(file.stat).toEqual({ ctime: STAT_CTIME, mtime: STAT_MTIME_LATER, size: LONGER_CONTENT.length });
+    });
+
+    it('should leave stat untouched for a path the adapter does not know', () => {
+      const app = App.createConfigured__();
+      const file = TFile.create__(app.vault, 'ghost.md');
+      app.vault.refreshStat__(file);
+
+      expect(file.stat).toEqual({ ctime: 0, mtime: 0, size: 0 });
+    });
+
+    it('should do nothing for a non-InMemoryAdapter', () => {
+      const fakeAdapter = strictProxy<DataAdapterOriginal>({});
+      const vault = Vault.create2__(fakeAdapter);
+      const file = TFile.create__(vault, 'note.md');
+      vault.refreshStat__(file);
+
+      expect(file.stat).toEqual({ ctime: 0, mtime: 0, size: 0 });
     });
   });
 

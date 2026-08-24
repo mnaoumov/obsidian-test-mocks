@@ -311,6 +311,10 @@ export class InMemoryAdapter implements DataAdapterOriginal {
 
   public async stat(normalizedPath: string): Promise<null | StatOriginal> {
     await noopAsync();
+    return this.statSync__(normalizedPath);
+  }
+
+  public statSync__(normalizedPath: string): null | StatOriginal {
     if (this.directories.has(normalizedPath)) {
       return {
         ctime: 0,
