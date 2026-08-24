@@ -630,6 +630,38 @@ describe('InMemoryAdapter', () => {
     });
   });
 
+  describe('statSync__()', () => {
+    it('should return file stat with correct metadata', () => {
+      const adapter = createAdapter();
+      adapter.writeSync__('file.md', 'hello', { ctime: TIMESTAMP_C, mtime: TIMESTAMP_D });
+
+      expect(adapter.statSync__('file.md')).toEqual({
+        ctime: TIMESTAMP_C,
+        mtime: TIMESTAMP_D,
+        size: 'hello'.length,
+        type: 'file'
+      });
+    });
+
+    it('should return folder stat', () => {
+      const adapter = createAdapter();
+      adapter.mkdirSync__('dir');
+
+      expect(adapter.statSync__('dir')).toEqual({
+        ctime: 0,
+        mtime: 0,
+        size: 0,
+        type: 'folder'
+      });
+    });
+
+    it('should return null for a non-existent path', () => {
+      const adapter = createAdapter();
+
+      expect(adapter.statSync__('missing')).toBeNull();
+    });
+  });
+
   describe('trashLocal()', () => {
     it('should remove the file', async () => {
       const adapter = createAdapter();

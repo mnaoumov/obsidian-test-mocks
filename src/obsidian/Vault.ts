@@ -67,11 +67,13 @@ export class Vault extends Events {
 
   public async append(file: TFile, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
     await this.adapter.append(file.path, data, options);
+    this.refreshStat__(file);
     this.trigger('modify', file);
   }
 
   public async appendBinary(file: TFile, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
     await this.adapter.appendBinary(file.path, data, options);
+    this.refreshStat__(file);
     this.trigger('modify', file);
   }
 
@@ -91,6 +93,7 @@ export class Vault extends Events {
     await this.adapter.copy(file.path, newPath);
     const newFile = TFile.create__(this, newPath);
     this.setVaultAbstractFile__(newPath, newFile);
+    this.refreshStat__(newFile);
     this.trigger('create', newFile);
     return newFile;
   }
@@ -99,6 +102,7 @@ export class Vault extends Events {
     await this.adapter.write(path, data, options);
     const file = TFile.create__(this, path);
     this.setVaultAbstractFile__(path, file);
+    this.refreshStat__(file);
     this.trigger('create', file);
     return file;
   }
@@ -107,6 +111,7 @@ export class Vault extends Events {
     await this.adapter.writeBinary(path, data, options);
     const file = TFile.create__(this, path);
     this.setVaultAbstractFile__(path, file);
+    this.refreshStat__(file);
     this.trigger('create', file);
     return file;
   }
@@ -131,6 +136,7 @@ export class Vault extends Events {
     this.adapter.writeSync__(path, content);
     const file = TFile.create__(this, path);
     this.setVaultAbstractFile__(path, file);
+    this.refreshStat__(file);
     this.trigger('create', file);
     return file;
   }
@@ -279,11 +285,13 @@ export class Vault extends Events {
 
   public async modify(file: TFile, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
     await this.adapter.write(file.path, data, options);
+    this.refreshStat__(file);
     this.trigger('modify', file);
   }
 
   public async modifyBinary(file: TFile, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
     await this.adapter.writeBinary(file.path, data, options);
+    this.refreshStat__(file);
     this.trigger('modify', file);
   }
 
@@ -291,6 +299,7 @@ export class Vault extends Events {
     const content = await this.adapter.read(file.path);
     const result = $function(content);
     await this.adapter.write(file.path, result, options);
+    this.refreshStat__(file);
     this.trigger('modify', file);
     return result;
   }
@@ -333,11 +342,17 @@ export class Vault extends Events {
         continue;
       }
       keep.add(filePath);
-      if (!(this.fileMap__[filePath] instanceof TFile)) {
-        const file = TFile.create__(this, filePath);
-        this.setVaultAbstractFile__(filePath, file);
-        this.trigger('create', file);
+      const tracked = this.fileMap__[filePath];
+      if (tracked instanceof TFile) {
+        // Already tracked, but the adapter may have been written to behind the vault's back.
+        this.refreshStat__(tracked);
+        continue;
       }
+
+      const file = TFile.create__(this, filePath);
+      this.setVaultAbstractFile__(filePath, file);
+      this.refreshStat__(file);
+      this.trigger('create', file);
     }
 
     // Remove tree entries the adapter no longer has.
@@ -348,6 +363,33 @@ export class Vault extends Events {
       this.deleteVaultAbstractFile__(path);
       this.trigger('delete', existing);
     }
+  }
+
+  /**
+   * Copies the adapter's recorded `ctime` / `mtime` / `size` onto `file.stat`, mutating the existing
+   * object in place so a reference a test captured stays valid. Real Obsidian has stat'ed the file by
+   * the time it fires `create` / `modify`, so every write path calls this BEFORE triggering its event.
+   *
+   * Only the in-memory adapter records stat, so this is a silent no-op for any other adapter —
+   * deliberately not the `TypeError` that `createSync__` / `readSync__` / `reconcile__` throw: unlike
+   * those explicit helpers it runs as a side effect of an ordinary `create()` / `modify()`, so it must
+   * not break a caller that supplied a partial adapter.
+   *
+   * @param file - The file whose `stat` to refresh.
+   */
+  public refreshStat__(file: TFile): void {
+    if (!(this.adapter instanceof InMemoryAdapter)) {
+      return;
+    }
+
+    const stat = this.adapter.statSync__(file.path);
+    if (!stat) {
+      return;
+    }
+
+    file.stat.ctime = stat.ctime;
+    file.stat.mtime = stat.mtime;
+    file.stat.size = stat.size;
   }
 
   public async rename(file: TAbstractFile, newPath: string): Promise<void> {
@@ -386,6 +428,9 @@ export class Vault extends Events {
 
     // Re-register with new path and attach to new parent
     this.setVaultAbstractFile__(newPath, file);
+    if (file instanceof TFile) {
+      this.refreshStat__(file);
+    }
 
     // Cascade descendant paths: their tree links are unchanged, only the path prefix moves.
     for (const descendant of descendants) {
@@ -398,6 +443,9 @@ export class Vault extends Events {
       descendant.path = newDescendantPath;
       this.fileMap__[newDescendantPath] = descendant;
       this.fileMapLowerCase[newDescendantPath.toLowerCase()] = descendant;
+      if (descendant instanceof TFile) {
+        this.refreshStat__(descendant);
+      }
     }
 
     this.trigger('rename', file, oldPath);
