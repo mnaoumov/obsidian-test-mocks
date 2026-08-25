@@ -38,7 +38,20 @@ interface NpmPackResult {
   readonly filename: string;
 }
 
+interface ParsedArguments {
+  readonly shouldEditChangelog: boolean;
+  readonly versionUpdateType: string;
+}
+
 const DEFAULT_PREID = 'beta';
+
+/**
+ * Skips the interactive changelog review, so a release can run unattended.
+ *
+ * `updateChangelog` otherwise opens the changelog in an editor and waits for it to close, which no
+ * scripted release can satisfy. Named after the flag `obsidian-dev-utils`' release script already takes.
+ */
+const NO_CHANGELOG_EDITING_FLAG = '--no-changelog-editing';
 
 enum VersionUpdateType {
   Invalid = 'invalid',
@@ -158,8 +171,19 @@ function isPreRelease(version: string): boolean {
 }
 
 async function main(): Promise<void> {
-  const [, , versionUpdateType] = process.argv;
-  await updateVersion(versionUpdateType);
+  const [, , ...$arguments] = process.argv;
+  const {
+    shouldEditChangelog,
+    versionUpdateType
+  } = parseArguments($arguments);
+  await updateVersion(versionUpdateType, { shouldEditChangelog });
+}
+
+function parseArguments($arguments: readonly string[]): ParsedArguments {
+  return {
+    shouldEditChangelog: !$arguments.includes(NO_CHANGELOG_EDITING_FLAG),
+    versionUpdateType: $arguments.find((argument) => argument !== NO_CHANGELOG_EDITING_FLAG) ?? ''
+  };
 }
 
 async function publishGitHubRelease(newVersion: string): Promise<void> {
@@ -192,7 +216,7 @@ function toFirstLine($string: string): string {
   return $string.split(/\r?\n/).filter(Boolean).slice(0, 1).join('');
 }
 
-async function updateChangelog(newVersion: string): Promise<void> {
+async function updateChangelog(newVersion: string, options: UpdateChangelogOptions = {}): Promise<void> {
   const HEADER_LINES_COUNT = 2;
   const changelogPath = resolvePathFromRootSafe('CHANGELOG.md');
   let previousChangelogLines: string[];
@@ -226,6 +250,12 @@ async function updateChangelog(newVersion: string): Promise<void> {
 
   await writeFile(changelogPath, newChangeLog, 'utf-8');
 
+  // The generated entry is already the commit subjects; the review below is an opportunity to reword it,
+  // Not a required step, so an unattended release can decline it.
+  if (!(options.shouldEditChangelog ?? true)) {
+    return;
+  }
+
   const codeVersion = await execFromRoot('code --version', {
     isQuiet: true,
     shouldIgnoreExitCode: true
@@ -245,14 +275,14 @@ async function updateChangelog(newVersion: string): Promise<void> {
   }
 }
 
-async function updateVersion(versionUpdateType?: string): Promise<void> {
+async function updateVersion(versionUpdateType?: string, options: UpdateVersionOptions = {}): Promise<void> {
   if (!versionUpdateType) {
     const npmOldVersion = process.env['npm_old_version'];
     const npmNewVersion = process.env['npm_new_version'];
 
     if (npmOldVersion && npmNewVersion) {
       await updateVersionInFiles(npmOldVersion);
-      await updateVersion(npmNewVersion);
+      await updateVersion(npmNewVersion, options);
       return;
     }
 
@@ -272,7 +302,7 @@ async function updateVersion(versionUpdateType?: string): Promise<void> {
 
   const newVersion = await getNewVersion(versionUpdateType);
   await updateVersionInFiles(newVersion);
-  await updateChangelog(newVersion);
+  await updateChangelog(newVersion, options);
   await addUpdatedFilesToGit(newVersion);
   await addGitTag(newVersion);
   await gitPush();
@@ -321,6 +351,14 @@ interface EditPackageJsonOptions {
 
 interface PackageLockJson extends Partial<PackageJson> {
   packages?: Record<string, PackageJson>;
+}
+
+interface UpdateChangelogOptions {
+  readonly shouldEditChangelog?: boolean;
+}
+
+interface UpdateVersionOptions {
+  readonly shouldEditChangelog?: boolean;
 }
 
 export function resolve(...pathSegments: string[]): string {
