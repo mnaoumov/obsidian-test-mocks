@@ -22,10 +22,42 @@ import { ensureGenericObject } from './type-guards.ts';
 
 const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
 
+/**
+ * The markers `@vitest/pretty-format`'s Immutable.js serializer duck-types on.
+ *
+ * Enumerated in full rather than by prefix, because the check is an exact property read per marker and a
+ * missing one throws exactly like the others.
+ */
+const IMMUTABLE_MARKERS = [
+  '@@__IMMUTABLE_ITERABLE__@@',
+  '@@__IMMUTABLE_KEYED__@@',
+  '@@__IMMUTABLE_LIST__@@',
+  '@@__IMMUTABLE_MAP__@@',
+  '@@__IMMUTABLE_ORDERED__@@',
+  '@@__IMMUTABLE_RECORD__@@',
+  '@@__IMMUTABLE_SEQ__@@',
+  '@@__IMMUTABLE_SET__@@',
+  '@@__IMMUTABLE_STACK__@@'
+];
+
+/**
+ * Properties that must yield rather than throw, because test tooling duck-types on them.
+ *
+ * `@vitest/pretty-format` picks a serializer by probing `$$typeof`, then `nodeType` and `tagName`, then
+ * the Immutable.js markers; the matchers probe `asymmetricMatch` and `_isMockFunction`. None belongs to
+ * an Obsidian API, and every one is read while RENDERING a value — so throwing there replaces a failing
+ * assertion's diff with `Property "$$typeof" is not mocked in TFile`, hiding what actually differed.
+ */
 const PASSTHROUGH_PROPS = new Set<string | symbol>([
+  '_isMockFunction',
+  '$$typeof',
+  'asymmetricMatch',
+  ...IMMUTABLE_MARKERS,
+  'nodeType',
   Symbol.iterator,
   Symbol.toPrimitive,
   Symbol.toStringTag,
+  'tagName',
   'then',
   'toJSON'
 ]);
