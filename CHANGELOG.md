@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 4.2.1
+
+- feat(version): add --no-changelog-editing, so a release can run unattended
+- fix(strict-proxy): yield on the properties test tooling duck-types on
+- chore: update libs
+- ci: publish the release tarball by path, not as a git shorthand
+
 ## 4.2.0
 
 - feat(vault): populate `TFile.stat` from the adapter
