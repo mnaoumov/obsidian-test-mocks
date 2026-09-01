@@ -201,7 +201,7 @@ describe('InMemoryAdapter', () => {
 
     it('should not find case-mismatched path when sensitive is true even on insensitive adapter', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.write('Notes/File.md', 'content');
 
       expect(await adapter.exists('notes/file.md', true)).toBe(false);
@@ -209,7 +209,7 @@ describe('InMemoryAdapter', () => {
 
     it('should find case-mismatched text file on insensitive adapter without sensitive flag', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.write('Notes/File.md', 'content');
 
       expect(await adapter.exists('notes/file.md')).toBe(true);
@@ -217,7 +217,7 @@ describe('InMemoryAdapter', () => {
 
     it('should find case-mismatched binary file on insensitive adapter', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.writeBinary('Data/Image.PNG', new ArrayBuffer(0));
 
       expect(await adapter.exists('data/image.png')).toBe(true);
@@ -225,7 +225,7 @@ describe('InMemoryAdapter', () => {
 
     it('should find case-mismatched directory on insensitive adapter', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.mkdir('Notes');
 
       expect(await adapter.exists('notes')).toBe(true);
@@ -240,7 +240,7 @@ describe('InMemoryAdapter', () => {
 
     it('should track lowercase keys after append', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.append('Notes/Log.txt', 'line1');
 
       expect(await adapter.exists('notes/log.txt')).toBe(true);
@@ -248,7 +248,7 @@ describe('InMemoryAdapter', () => {
 
     it('should track lowercase keys after appendBinary', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.appendBinary('Data/Chunk.bin', new ArrayBuffer(0));
 
       expect(await adapter.exists('data/chunk.bin')).toBe(true);
@@ -256,7 +256,7 @@ describe('InMemoryAdapter', () => {
 
     it('should track lowercase keys after copy', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.write('Original.md', 'content');
       await adapter.copy('Original.md', 'Copy/Backup.md');
 
@@ -265,7 +265,7 @@ describe('InMemoryAdapter', () => {
 
     it('should update lowercase keys after remove', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.write('Notes/File.md', 'content');
       await adapter.remove('Notes/File.md');
 
@@ -274,7 +274,7 @@ describe('InMemoryAdapter', () => {
 
     it('should update lowercase keys after rename', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.write('Old.md', 'content');
       await adapter.rename('Old.md', 'New.md');
 
@@ -284,7 +284,7 @@ describe('InMemoryAdapter', () => {
 
     it('should update lowercase keys after rmdir', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.mkdir('TempDir');
       await adapter.write('TempDir/file.txt', 'data');
       await adapter.rmdir('TempDir', true);
@@ -294,7 +294,7 @@ describe('InMemoryAdapter', () => {
 
     it('should find parent directories case-insensitively', async () => {
       const adapter = createAdapter();
-      adapter.insensitive__ = true;
+      adapter.insensitive = true;
       await adapter.write('Deeply/Nested/Path/File.md', 'content');
 
       expect(await adapter.exists('deeply')).toBe(true);

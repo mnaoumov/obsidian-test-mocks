@@ -15,7 +15,7 @@ export abstract class SuggestModal<T> extends Modal {
   public emptyStateText = 'No results found.';
   public inputEl: HTMLInputElement;
   public instructions__: InstructionOriginal[] = [];
-  public readonly instructionsEl__: HTMLDivElement;
+  public readonly instructionsEl: HTMLDivElement;
   public limit = DEFAULT_LIMIT;
   public resultContainerEl: HTMLElement;
 
@@ -23,7 +23,7 @@ export abstract class SuggestModal<T> extends Modal {
     super(app);
     this.inputEl = this.modalEl.createEl('input');
     this.resultContainerEl = this.modalEl.createDiv();
-    this.instructionsEl__ = createDiv('prompt-instructions');
+    this.instructionsEl = createDiv('prompt-instructions');
     const self = strictProxy(this);
     self.constructor2__(app);
     return self;
@@ -67,17 +67,17 @@ export abstract class SuggestModal<T> extends Modal {
   public setInstructions(instructions: InstructionOriginal[]): void {
     this.instructions__ = instructions;
     if (instructions.length === 0) {
-      this.instructionsEl__.detach();
+      this.instructionsEl.detach();
       return;
     }
-    this.instructionsEl__.empty();
+    this.instructionsEl.empty();
     for (const instruction of instructions) {
-      this.instructionsEl__.createDiv('prompt-instruction', (el) => {
+      this.instructionsEl.createDiv('prompt-instruction', (el) => {
         el.createSpan({ cls: 'prompt-instruction-command', text: instruction.command });
         el.createSpan({ text: instruction.purpose });
       });
     }
-    this.modalEl.append(this.instructionsEl__);
+    this.modalEl.append(this.instructionsEl);
   }
 
   public setPlaceholder(placeholder: string): void {

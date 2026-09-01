@@ -40,18 +40,18 @@ describe('PopoverSuggest', () => {
     expect(suggest.scope).toBe(scope);
   });
 
-  describe('open / close / isOpen__', () => {
+  describe('open / close / isOpen', () => {
     it('should start closed', () => {
       const app = App.createConfigured__();
       const suggest = new ConcretePopoverSuggest(app);
-      expect(suggest.isOpen__()).toBe(false);
+      expect(suggest.isOpen).toBe(false);
     });
 
     it('should be open after open()', () => {
       const app = App.createConfigured__();
       const suggest = new ConcretePopoverSuggest(app);
       suggest.open();
-      expect(suggest.isOpen__()).toBe(true);
+      expect(suggest.isOpen).toBe(true);
     });
 
     it('should be closed after close()', () => {
@@ -59,7 +59,7 @@ describe('PopoverSuggest', () => {
       const suggest = new ConcretePopoverSuggest(app);
       suggest.open();
       suggest.close();
-      expect(suggest.isOpen__()).toBe(false);
+      expect(suggest.isOpen).toBe(false);
     });
   });
 

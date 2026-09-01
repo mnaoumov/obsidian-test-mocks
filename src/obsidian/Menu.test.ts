@@ -33,12 +33,12 @@ describe('Menu', () => {
       expect(callback).toHaveBeenCalledOnce();
     });
 
-    it('should add the item to items__', () => {
+    it('should add the item to items', () => {
       const menu = Menu.create2__();
       menu.addItem(() => {
         noop();
       });
-      expect(menu.items__.length).toBe(1);
+      expect(menu.items.length).toBe(1);
     });
 
     it('should return this for chaining', () => {
@@ -56,11 +56,11 @@ describe('Menu', () => {
       expect(menu.addSeparator()).toBe(menu);
     });
 
-    it('should record the separator in items__, so a count matches what Obsidian reports', () => {
+    it('should record the separator in items, so a count matches what Obsidian reports', () => {
       const menu = Menu.create2__();
       menu.addSeparator();
-      expect(menu.items__).toHaveLength(1);
-      expect(menu.items__[0]).toBeInstanceOf(MenuSeparator);
+      expect(menu.items).toHaveLength(1);
+      expect(menu.items[0]).toBeInstanceOf(MenuSeparator);
     });
 
     it('should interleave with items in insertion order', () => {
@@ -69,7 +69,7 @@ describe('Menu', () => {
       menu.addSeparator();
       menu.addItem((item) => item.setTitle('After'));
 
-      expect(menu.items__.map((item) => item instanceof MenuSeparator)).toEqual([false, true, false]);
+      expect(menu.items.map((item) => item instanceof MenuSeparator)).toEqual([false, true, false]);
     });
   });
 
@@ -87,7 +87,7 @@ describe('Menu', () => {
       expect(menu.menuItems__.map((item) => item.title__)).toEqual(['First', 'Second']);
     });
 
-    it('should reflect a later addition, being a getter over items__', () => {
+    it('should reflect a later addition, being a getter over items', () => {
       const menu = Menu.create2__();
       expect(menu.menuItems__).toHaveLength(0);
 
@@ -169,6 +169,29 @@ describe('Menu', () => {
       const menu = Menu.create2__();
       const mock = Menu.fromOriginalType2__(menu.asOriginalType2__());
       expect(mock).toBe(menu);
+    });
+  });
+  describe('setSectionSubmenu', () => {
+    it('should record the section submenu config', () => {
+      const menu = Menu.create2__();
+      menu.setSectionSubmenu('Patterns', { icon: 'lucide-wand', title: 'Patterns' });
+
+      expect(menu.sectionSubmenus__.get('Patterns')).toEqual({ icon: 'lucide-wand', title: 'Patterns' });
+    });
+
+    it('should return the menu so calls can chain', () => {
+      const menu = Menu.create2__();
+
+      expect(menu.setSectionSubmenu('A', { icon: '', title: 'A' })).toBe(menu);
+    });
+
+    it('should overwrite the config when the same section is set twice', () => {
+      const menu = Menu.create2__();
+      menu.setSectionSubmenu('A', { icon: 'first', title: 'A' });
+      menu.setSectionSubmenu('A', { icon: 'second', title: 'A' });
+
+      expect(menu.sectionSubmenus__.size).toBe(1);
+      expect(menu.sectionSubmenus__.get('A')?.icon).toBe('second');
     });
   });
 });

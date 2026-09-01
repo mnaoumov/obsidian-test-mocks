@@ -77,7 +77,7 @@ export class BasesViewConfig {
     this.displayNames.set(propertyId, displayName);
   }
 
-  public setOrder__(order: BasesPropertyIdOriginal[]): void {
+  public setOrder(order: BasesPropertyIdOriginal[]): void {
     this.order = order;
   }
 

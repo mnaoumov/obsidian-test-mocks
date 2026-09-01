@@ -33,10 +33,10 @@ describe('Modal', () => {
 
   it('should have HTML elements', () => {
     const modal = Modal.create__(app);
-    expect(modal.bgEl__).toBeInstanceOf(HTMLElement);
+    expect(modal.bgEl).toBeInstanceOf(HTMLElement);
     expect(modal.containerEl).toBeInstanceOf(HTMLElement);
     expect(modal.contentEl).toBeInstanceOf(HTMLElement);
-    expect(modal.headerEl__).toBeInstanceOf(HTMLElement);
+    expect(modal.headerEl).toBeInstanceOf(HTMLElement);
     expect(modal.modalEl).toBeInstanceOf(HTMLElement);
     expect(modal.titleEl).toBeInstanceOf(HTMLElement);
   });
@@ -44,13 +44,13 @@ describe('Modal', () => {
   it('should build the same DOM tree as Obsidian', () => {
     const modal = Modal.create__(app);
     expect(modal.containerEl.className).toBe('modal-container');
-    expect([...modal.containerEl.children]).toEqual([modal.bgEl__, modal.modalEl]);
-    expect(modal.bgEl__.className).toBe('modal-bg');
+    expect([...modal.containerEl.children]).toEqual([modal.bgEl, modal.modalEl]);
+    expect(modal.bgEl.className).toBe('modal-bg');
     expect(modal.modalEl.className).toBe('modal');
-    expect([...modal.modalEl.children]).toEqual([modal.headerEl__, modal.contentEl]);
-    expect(modal.headerEl__.className).toBe('modal-header');
+    expect([...modal.modalEl.children]).toEqual([modal.headerEl, modal.contentEl]);
+    expect(modal.headerEl.className).toBe('modal-header');
     expect(modal.contentEl.className).toBe('modal-content');
-    expect([...modal.headerEl__.children]).toEqual([modal.titleEl]);
+    expect([...modal.headerEl.children]).toEqual([modal.titleEl]);
     expect(modal.titleEl.className).toBe('modal-title');
   });
 

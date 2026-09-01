@@ -70,7 +70,7 @@ export abstract class SettingTab {
     applyDomState(this.renderedGroups);
   }
 
-  public renderTab__(): void {
+  public renderTab(): void {
     if (this.settingItems.length === 0) {
       this.renderedGroups = [];
       this.display();

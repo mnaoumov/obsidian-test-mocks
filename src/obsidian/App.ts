@@ -15,10 +15,22 @@ import { MetadataCache } from './MetadataCache.ts';
 import { RenderContext } from './RenderContext.ts';
 import { Scope } from './Scope.ts';
 import { SecretStorage } from './SecretStorage.ts';
+import { Platform } from './vars/Platform.ts';
 import { Vault } from './Vault.ts';
 import { Workspace } from './Workspace.ts';
 
+/**
+ * Obsidian's name for the dark theme.
+ */
+const DARK_THEME = 'obsidian';
+
+/**
+ * Obsidian's name for the light theme.
+ */
+const LIGHT_THEME = 'moonstone';
+
 export class App {
+  public appId: string;
   public fileManager: FileManager;
   public keymap: Keymap;
   public lastEvent: null | UserEventOriginal = null;
@@ -29,9 +41,21 @@ export class App {
   public vault: Vault;
   public workspace: Workspace;
 
+  /**
+   * Whether Obsidian is running on mobile.
+   *
+   * Answers from the mocked `Platform`, so a test that flips `Platform.isMobile` sees the change here
+   * too — the two are the same fact, and Obsidian keeps them consistent as well.
+   */
+  public get isMobile(): boolean {
+    return Platform.isMobile;
+  }
+
   private readonly localStorage = new Map<string>();
+  private theme: 'moonstone' | 'obsidian' = LIGHT_THEME;
 
   protected constructor(adapter: DataAdapterOriginal, appId: string) {
+    this.appId = appId;
     this.vault = Vault.create2__(adapter);
     this.fileManager = FileManager.create__(this);
     this.keymap = Keymap.create__();
@@ -57,7 +81,7 @@ export class App {
     } else {
       const mockAdapter = FileSystemAdapter.create__('/mock-vault');
       if (options.isAdapterCaseInsensitive) {
-        mockAdapter.insensitive__ = true;
+        mockAdapter.insensitive = true;
       }
       adapter = mockAdapter.asOriginalType__();
     }
@@ -104,12 +128,30 @@ export class App {
     return strictProxy<AppOriginal>(this);
   }
 
+  /**
+   * Switches the theme, the way the appearance settings do.
+   *
+   * @param theme - The theme to switch to.
+   */
+  public changeTheme(theme: 'moonstone' | 'obsidian'): void {
+    this.theme = theme;
+  }
+
   public constructor__(_adapter: DataAdapterOriginal, _appId: string): void {
     noop();
   }
 
+  /**
+   * The active theme.
+   *
+   * @returns `'moonstone'` for the light theme, `'obsidian'` for the dark one.
+   */
+  public getTheme(): 'moonstone' | 'obsidian' {
+    return this.theme;
+  }
+
   public isDarkMode(): boolean {
-    return false;
+    return this.theme === DARK_THEME;
   }
 
   public loadLocalStorage(key: string): unknown {
@@ -118,6 +160,18 @@ export class App {
 
   public saveLocalStorage(key: string, data: unknown): void {
     this.localStorage.set(key, data);
+  }
+
+  /**
+   * Records the theme without applying it.
+   *
+   * Obsidian distinguishes this from {@link changeTheme}, which also re-renders; the mock has nothing
+   * to re-render, so both simply store.
+   *
+   * @param theme - The theme to record.
+   */
+  public setTheme(theme: 'moonstone' | 'obsidian'): void {
+    this.theme = theme;
   }
 }
 

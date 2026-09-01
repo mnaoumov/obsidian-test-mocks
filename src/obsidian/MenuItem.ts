@@ -9,13 +9,13 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { Menu } from './Menu.ts';
 
 export class MenuItem {
-  public checked__: boolean | null = null;
-  public disabled__ = false;
+  public checked: boolean | null = null;
+  public disabled = false;
   public icon__: IconNameOriginal | null = null;
   public isLabel__ = false;
   public onClick__: ((event: KeyboardEvent | MouseEvent) => unknown) | null = null;
-  public section__ = '';
-  public submenu__: Menu | null = null;
+  public section = '';
+  public submenu: Menu | null = null;
   public title__: DocumentFragment | string = '';
   public warning__ = false;
 
@@ -46,12 +46,12 @@ export class MenuItem {
   }
 
   public setChecked(checked: boolean | null): this {
-    this.checked__ = checked;
+    this.checked = checked;
     return this;
   }
 
   public setDisabled(disabled: boolean): this {
-    this.disabled__ = disabled;
+    this.disabled = disabled;
     return this;
   }
 
@@ -66,13 +66,13 @@ export class MenuItem {
   }
 
   public setSection(section: string): this {
-    this.section__ = section;
+    this.section = section;
     return this;
   }
 
-  public setSubmenu__(): Menu {
-    this.submenu__ ??= Menu.create2__();
-    return this.submenu__;
+  public setSubmenu(): Menu {
+    this.submenu ??= Menu.create2__();
+    return this.submenu;
   }
 
   public setTitle(title: DocumentFragment | string): this {

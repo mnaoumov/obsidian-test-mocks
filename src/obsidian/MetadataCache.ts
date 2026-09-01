@@ -9,22 +9,25 @@ import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
 import { parseMarkdownContent } from '../internal/markdown-parser.ts';
-import { noop } from '../internal/noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 import { TFile as TFileClass } from './TFile.ts';
 
 export class MetadataCache extends Events {
-  public app__: App;
+  public app: App;
   public cache__ = new Map<string, CachedMetadataOriginal>();
-  public fileCache__: Record<string, FileCacheEntry> = {};
-  public metadataByHash__: Record<string, CachedMetadataOriginal> = {};
+  public fileCache: Record<string, FileCacheEntry> = {};
+  public metadataCache: Record<string, CachedMetadataOriginal> = {};
   public resolvedLinks: Record<string, Record<string, number>> = {};
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
   protected constructor(app: App, vault: Vault) {
     super();
-    this.app__ = app;
+    this.app = app;
     vault.on('create', (...data: unknown[]) => {
       this.parseFileMetadata(data[0]);
     });
@@ -48,6 +51,18 @@ export class MetadataCache extends Events {
     return strictProxy<MetadataCacheOriginal>(this);
   }
 
+  /**
+   * Parses a file's raw bytes into metadata, the way Obsidian does when it indexes a file.
+   *
+   * @param arrayBuffer - The file's raw content.
+   * @returns The parsed metadata.
+   */
+  public async computeMetadataAsync(arrayBuffer: ArrayBuffer): Promise<CachedMetadataOriginal> {
+    await noopAsync();
+    const content = new TextDecoder().decode(arrayBuffer);
+    return parseMarkdownContent(content);
+  }
+
   public constructor2__(_app: App, _vault: Vault): void {
     noop();
   }
@@ -69,15 +84,15 @@ export class MetadataCache extends Events {
 
   // eslint-disable-next-line unicorn/name-replacements -- `getFirstLinkpathDest` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
   public getFirstLinkpathDest(linkpath: string, _sourcePath: string): null | TFile {
-    const found = this.app__.vault.getFileByPath(linkpath);
+    const found = this.app.vault.getFileByPath(linkpath);
     if (found) {
       return found;
     }
-    const withMd = this.app__.vault.getFileByPath(`${linkpath}.md`);
+    const withMd = this.app.vault.getFileByPath(`${linkpath}.md`);
     if (withMd) {
       return withMd;
     }
-    for (const f of this.app__.vault.getFiles()) {
+    for (const f of this.app.vault.getFiles()) {
       if (f.basename === linkpath || f.name === linkpath) {
         return f;
       }
@@ -96,7 +111,7 @@ export class MetadataCache extends Events {
     }
     let content: string;
     try {
-      content = this.app__.vault.readSync__(file);
+      content = this.app.vault.readSync__(file);
     } catch {
       // The file was removed before indexing; leave the cache untouched.
       return;
@@ -104,8 +119,8 @@ export class MetadataCache extends Events {
     const cache = parseMarkdownContent(content);
     this.cache__.set(file.path, cache);
     const hash = hashContent(content);
-    this.fileCache__[file.path] = { hash, mtime: file.stat.mtime, size: file.stat.size };
-    this.metadataByHash__[hash] = cache;
+    this.fileCache[file.path] = { hash, mtime: file.stat.mtime, size: file.stat.size };
+    this.metadataCache[hash] = cache;
     this.updateLinks(file.path, cache);
     this.trigger('changed', file, content, cache);
   }
@@ -138,7 +153,7 @@ const HASH_MODULUS = 2_147_483_647;
 const HEX_RADIX = 16;
 
 /**
- * Deterministic djb2-style hash of file content, used to key `metadataByHash__`.
+ * Deterministic djb2-style hash of file content, used to key `metadataCache`.
  * Uses modular arithmetic (no bitwise ops) to stay within a safe integer.
  */
 function hashContent(content: string): string {

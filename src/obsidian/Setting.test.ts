@@ -279,4 +279,16 @@ describe('Setting', () => {
       expect(mock).toBe(setting);
     });
   });
+  describe('setVisibility', () => {
+    it('should toggle the settingEl display and return the setting', () => {
+      const container = document.createElement('div');
+      const setting = Setting.create__(container);
+
+      expect(setting.setVisibility(false)).toBe(setting);
+      expect(setting.settingEl.style.display).toBe('none');
+
+      setting.setVisibility(true);
+      expect(setting.settingEl.style.display).toBe('');
+    });
+  });
 });

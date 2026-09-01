@@ -24,9 +24,9 @@ Peer dependencies: `obsidian`
 | `obsidian-test-mocks/setup`                          | Exports `setup()` / `teardown()` for prototype extensions and globals     |
 | `obsidian-test-mocks/vitest-setup`                   | One-stop Vitest setup file: calls `setup()` + mocks the `obsidian` module |
 | `obsidian-test-mocks/jest-setup`                     | Jest setup file: calls `setup()` for prototype extensions and globals     |
-| `obsidian-test-mocks/obsidian-typings/setup`         | Exports `setup()` / `teardown()` for `obsidian-typings` bridges           |
-| `obsidian-test-mocks/obsidian-typings/vitest-setup`  | Vitest setup file: auto-calls `obsidian-typings` bridge `setup()`         |
-| `obsidian-test-mocks/obsidian-typings/jest-setup`    | Jest setup file: auto-calls `obsidian-typings` bridge `setup()`           |
+| `obsidian-test-mocks/obsidian-typings/setup`         | **Deprecated no-op.** Bridging is no longer needed                        |
+| `obsidian-test-mocks/obsidian-typings/vitest-setup`  | **Deprecated no-op.** Bridging is no longer needed                        |
+| `obsidian-test-mocks/obsidian-typings/jest-setup`    | **Deprecated no-op.** Bridging is no longer needed                        |
 
 ## Quick start
 
@@ -37,10 +37,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    setupFiles: [
-      'obsidian-test-mocks/vitest-setup',
-      'obsidian-test-mocks/obsidian-typings/vitest-setup'
-    ]
+    setupFiles: ['obsidian-test-mocks/vitest-setup']
   }
 });
 ```

@@ -42,10 +42,10 @@ describe('Component', () => {
   });
 
   describe('load', () => {
-    it('should set loaded__ to true', () => {
+    it('should set _loaded to true', () => {
       const component = Component.create__();
       component.load();
-      expect(component.loaded__).toBe(true);
+      expect(component._loaded).toBe(true);
     });
 
     it('should call onload', () => {
@@ -68,16 +68,16 @@ describe('Component', () => {
       const child = Component.create__();
       parent.addChild(child);
       parent.load();
-      expect(child.loaded__).toBe(true);
+      expect(child._loaded).toBe(true);
     });
   });
 
   describe('unload', () => {
-    it('should set loaded__ to false', () => {
+    it('should set _loaded to false', () => {
       const component = Component.create__();
       component.load();
       component.unload();
-      expect(component.loaded__).toBe(false);
+      expect(component._loaded).toBe(false);
     });
 
     it('should call onunload', () => {
@@ -115,8 +115,8 @@ describe('Component', () => {
       component.register(vi.fn());
       component.registerInterval(0);
       component.unload();
-      expect(component.children__).toHaveLength(0);
-      expect(component.events__).toHaveLength(0);
+      expect(component._children).toHaveLength(0);
+      expect(component._events).toHaveLength(0);
       expect(component.cleanups__).toHaveLength(0);
       expect(component.intervals__).toHaveLength(0);
     });
@@ -160,7 +160,7 @@ describe('Component', () => {
       const parent = Component.create__();
       const child = Component.create__();
       parent.addChild(child);
-      expect(parent.children__).toContain(child);
+      expect(parent._children).toContain(child);
     });
 
     it('should return the added child', () => {
@@ -175,14 +175,14 @@ describe('Component', () => {
       parent.load();
       const child = Component.create__();
       parent.addChild(child);
-      expect(child.loaded__).toBe(true);
+      expect(child._loaded).toBe(true);
     });
 
     it('should not load the child if parent is not loaded', () => {
       const parent = Component.create__();
       const child = Component.create__();
       parent.addChild(child);
-      expect(child.loaded__).toBe(false);
+      expect(child._loaded).toBe(false);
     });
   });
 
@@ -192,7 +192,7 @@ describe('Component', () => {
       const child = Component.create__();
       parent.addChild(child);
       parent.removeChild(child);
-      expect(parent.children__).not.toContain(child);
+      expect(parent._children).not.toContain(child);
     });
 
     it('should unload the removed child', () => {
@@ -201,7 +201,7 @@ describe('Component', () => {
       const child = Component.create__();
       parent.addChild(child);
       parent.removeChild(child);
-      expect(child.loaded__).toBe(false);
+      expect(child._loaded).toBe(false);
     });
 
     it('should return the removed child', () => {
@@ -257,7 +257,7 @@ describe('Component', () => {
       // eslint-disable-next-line unicorn/name-replacements -- `e` / `fn` are the member names on Obsidian's own `EventRef`, which is what this literal stands in for.
       const ref = { e: component.asOriginalType__(), fn: vi.fn(), name: 'test' };
       component.registerEvent(ref);
-      expect(component.events__).toContain(ref);
+      expect(component._events).toContain(ref);
     });
   });
 

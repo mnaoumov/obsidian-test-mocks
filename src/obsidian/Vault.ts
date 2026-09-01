@@ -7,7 +7,10 @@ import type {
 import type { TAbstractFile } from './TAbstractFile.ts';
 
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
-import { noop } from '../internal/noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { Events } from './Events.ts';
@@ -27,22 +30,22 @@ const ROOT_PATH = '/';
 export class Vault extends Events {
   public adapter: DataAdapterOriginal;
   /**
-   * Backs `getConfig__` / `setConfig__`. Only `attachmentFolderPath` carries a modeled default —
+   * Backs `getConfig` / `setConfig`. Only `attachmentFolderPath` carries a modeled default —
    * every other key reads as `undefined` until a test sets it.
    */
-  public config__: Record<string, unknown> = { [ATTACHMENT_FOLDER_PATH_CONFIG_KEY]: DEFAULT_ATTACHMENT_FOLDER_PATH };
+  public config: Record<string, unknown> = { [ATTACHMENT_FOLDER_PATH_CONFIG_KEY]: DEFAULT_ATTACHMENT_FOLDER_PATH };
   // eslint-disable-next-line unicorn/name-replacements -- `configDir` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
   public configDir = '.obsidian';
-  public fileMap__: Record<string, TAbstractFile> = {};
+  public fileMap: Record<string, TAbstractFile> = {};
   private fileMapLowerCase: Record<string, TAbstractFile> = {};
 
   protected constructor(adapter: DataAdapterOriginal) {
     super();
     this.adapter = adapter;
     const root = TFolder.create__(this, '/');
-    this.fileMap__['/'] = root;
+    this.fileMap['/'] = root;
     this.fileMapLowerCase['/'] = root;
-    root.deleted__ = false;
+    root.deleted = false;
     const self = strictProxy(this);
     self.constructor2__(adapter);
     return self;
@@ -152,15 +155,15 @@ export class Vault extends Events {
   }
 
   public deleteVaultAbstractFile__(path: string): void {
-    const file = this.fileMap__[path];
+    const file = this.fileMap[path];
     if (!file) {
       return;
     }
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-    delete this.fileMap__[path];
+    delete this.fileMap[path];
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
     delete this.fileMapLowerCase[path.toLowerCase()];
-    file.deleted__ = true;
+    file.deleted = true;
     if (file.parent) {
       const index = file.parent.children.indexOf(file);
       if (index !== -1) {
@@ -169,20 +172,36 @@ export class Vault extends Events {
     }
   }
 
-  public getAbstractFileByPath(path: string): null | TAbstractFile {
-    return this.fileMap__[path] ?? null;
+  /**
+   * Whether anything exists at `path`.
+   *
+   * @param path - The path to test.
+   * @param isCaseSensitive - Force a case-sensitive check. Obsidian's own default is a
+   * case-insensitive lookup, because most vaults sit on a case-insensitive file system.
+   * @returns Whether a file or folder exists at that path.
+   */
+  public async exists(path: string, isCaseSensitive?: boolean): Promise<boolean> {
+    await noopAsync();
+    if (isCaseSensitive) {
+      return this.getAbstractFileByPath(path) !== null;
+    }
+    return this.getAbstractFileByPathInsensitive(path) !== null;
   }
 
-  public getAbstractFileByPathInsensitive__(path: string): null | TAbstractFile {
+  public getAbstractFileByPath(path: string): null | TAbstractFile {
+    return this.fileMap[path] ?? null;
+  }
+
+  public getAbstractFileByPathInsensitive(path: string): null | TAbstractFile {
     return this.fileMapLowerCase[path.toLowerCase()] ?? null;
   }
 
   public getAllFolders(_includeRoot?: boolean): TFolder[] {
-    return Object.values(this.fileMap__).filter((f): f is TFolder => f instanceof TFolder);
+    return Object.values(this.fileMap).filter((f): f is TFolder => f instanceof TFolder);
   }
 
   public getAllLoadedFiles(): TAbstractFile[] {
-    return Object.values(this.fileMap__);
+    return Object.values(this.fileMap);
   }
 
   /**
@@ -192,7 +211,7 @@ export class Vault extends Events {
    * @param extension - The file extension without the leading dot.
    * @returns A path that no existing file occupies.
    */
-  public getAvailablePath__(basePath: string, extension: string): string {
+  public getAvailablePath(basePath: string, extension: string): string {
     const suffix = extension ? `.${extension}` : '';
     let candidate = `${basePath}${suffix}`;
     let index = 0;
@@ -215,14 +234,14 @@ export class Vault extends Events {
    * @param file - The note the attachment belongs to, or `null`.
    * @returns A {@link Promise} that resolves to the available attachment path.
    */
-  public async getAvailablePathForAttachments__(fileName: string, extension: string, file: null | TFile): Promise<string> {
-    const rawSetting = this.getConfig__(ATTACHMENT_FOLDER_PATH_CONFIG_KEY);
+  public async getAvailablePathForAttachments(fileName: string, extension: string, file: null | TFile): Promise<string> {
+    const rawSetting = this.getConfig(ATTACHMENT_FOLDER_PATH_CONFIG_KEY);
     const setting = typeof rawSetting === 'string' ? rawSetting : '';
     let folderPath: string;
     if (setting === '.' || setting === RELATIVE_PATH_PREFIX) {
       folderPath = file?.parent?.path ?? '';
     } else if (setting.startsWith(RELATIVE_PATH_PREFIX)) {
-      folderPath = (file?.parent?.getParentPrefix__() ?? '') + setting.slice(RELATIVE_PATH_PREFIX.length);
+      folderPath = (file?.parent?.getParentPrefix() ?? '') + setting.slice(RELATIVE_PATH_PREFIX.length);
     } else {
       folderPath = setting;
     }
@@ -232,9 +251,9 @@ export class Vault extends Events {
       folderPath = ROOT_PATH;
     }
 
-    const existing = this.getAbstractFileByPathInsensitive__(folderPath);
+    const existing = this.getAbstractFileByPathInsensitive(folderPath);
     const folder = existing instanceof TFolder ? existing : await this.createFolder(folderPath);
-    return this.getAvailablePath__(folder.getParentPrefix__() + fileName, extension);
+    return this.getAvailablePath(folder.getParentPrefix() + fileName, extension);
   }
 
   /**
@@ -243,26 +262,26 @@ export class Vault extends Events {
    * @param key - The setting key.
    * @returns The setting value, or `undefined` when the key was never set.
    */
-  public getConfig__(key: string): unknown {
-    return this.config__[key];
+  public getConfig(key: string): unknown {
+    return this.config[key];
   }
 
   public getFileByPath(path: string): null | TFile {
-    const f = this.fileMap__[path];
+    const f = this.fileMap[path];
     return f instanceof TFile ? f : null;
   }
 
   public getFiles(): TFile[] {
-    return Object.values(this.fileMap__).filter((f): f is TFile => f instanceof TFile);
+    return Object.values(this.fileMap).filter((f): f is TFile => f instanceof TFile);
   }
 
   public getFolderByPath(path: string): null | TFolder {
-    const f = this.fileMap__[path];
+    const f = this.fileMap[path];
     return f instanceof TFolder ? f : null;
   }
 
   public getMarkdownFiles(): TFile[] {
-    return Object.values(this.fileMap__).filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
+    return Object.values(this.fileMap).filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
   }
 
   public getName(): string {
@@ -274,12 +293,12 @@ export class Vault extends Events {
   }
 
   public getRoot(): TFolder {
-    const root = this.fileMap__['/'];
+    const root = this.fileMap['/'];
     if (root instanceof TFolder) {
       return root;
     }
     const fallback = TFolder.create__(this, '/');
-    this.fileMap__['/'] = fallback;
+    this.fileMap['/'] = fallback;
     return fallback;
   }
 
@@ -332,7 +351,7 @@ export class Vault extends Events {
       .sort((a, b) => a.split('/').length - b.split('/').length);
     for (const folderPath of sortedFolders) {
       keep.add(folderPath);
-      if (!(this.fileMap__[folderPath] instanceof TFolder)) {
+      if (!(this.fileMap[folderPath] instanceof TFolder)) {
         this.registerFolderTree(folderPath);
       }
     }
@@ -342,7 +361,7 @@ export class Vault extends Events {
         continue;
       }
       keep.add(filePath);
-      const tracked = this.fileMap__[filePath];
+      const tracked = this.fileMap[filePath];
       if (tracked instanceof TFile) {
         // Already tracked, but the adapter may have been written to behind the vault's back.
         this.refreshStat__(tracked);
@@ -356,7 +375,7 @@ export class Vault extends Events {
     }
 
     // Remove tree entries the adapter no longer has.
-    for (const [path, existing] of Object.entries(this.fileMap__)) {
+    for (const [path, existing] of Object.entries(this.fileMap)) {
       if (keep.has(path) || isDotPath(path)) {
         continue;
       }
@@ -406,7 +425,7 @@ export class Vault extends Events {
 
     // Remove old entry from maps and parent's children
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-    delete this.fileMap__[oldPath];
+    delete this.fileMap[oldPath];
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
     delete this.fileMapLowerCase[oldPath.toLowerCase()];
     if (file.parent) {
@@ -437,11 +456,11 @@ export class Vault extends Events {
       const oldDescendantPath = descendant.path;
       const newDescendantPath = newPath + oldDescendantPath.slice(oldPath.length);
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
-      delete this.fileMap__[oldDescendantPath];
+      delete this.fileMap[oldDescendantPath];
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
       delete this.fileMapLowerCase[oldDescendantPath.toLowerCase()];
       descendant.path = newDescendantPath;
-      this.fileMap__[newDescendantPath] = descendant;
+      this.fileMap[newDescendantPath] = descendant;
       this.fileMapLowerCase[newDescendantPath.toLowerCase()] = descendant;
       if (descendant instanceof TFile) {
         this.refreshStat__(descendant);
@@ -457,17 +476,17 @@ export class Vault extends Events {
    * @param key - The setting key.
    * @param value - The setting value.
    */
-  public setConfig__(key: string, value: unknown): void {
-    this.config__[key] = value;
+  public setConfig(key: string, value: unknown): void {
+    this.config[key] = value;
   }
 
   public setVaultAbstractFile__(path: string, file: TAbstractFile): void {
-    this.fileMap__[path] = file;
+    this.fileMap[path] = file;
     this.fileMapLowerCase[path.toLowerCase()] = file;
-    file.deleted__ = false;
+    file.deleted = false;
     const lastSlash = path.lastIndexOf('/');
     const parentKey = lastSlash > 0 ? path.slice(0, lastSlash) : '/';
-    const parentFile = this.fileMap__[parentKey];
+    const parentFile = this.fileMap[parentKey];
     if (parentFile instanceof TFolder) {
       file.parent = parentFile;
       if (!parentFile.children.includes(file)) {
@@ -492,7 +511,7 @@ export class Vault extends Events {
     let folder = this.getRoot();
     for (const segment of segments) {
       cumulative = cumulative === '' ? segment : `${cumulative}/${segment}`;
-      const existing = this.fileMap__[cumulative];
+      const existing = this.fileMap[cumulative];
       if (existing instanceof TFolder) {
         folder = existing;
         continue;

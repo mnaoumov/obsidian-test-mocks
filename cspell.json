@@ -10,6 +10,7 @@
     "patches",
     "scripts/docs-gen",
     "scripts/helpers/@types/markdownlint-cli2-config-schema.d.ts",
+    "scripts/obsidian-typings-unimplemented.json",
     "tsconfig.tsbuildinfo"
   ],
   "dictionaryDefinitions": [],

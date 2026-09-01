@@ -12,16 +12,16 @@ import { SearchComponent } from './SearchComponent.ts';
 import { Setting } from './Setting.ts';
 
 export class SettingGroup {
-  public groupEl__: HTMLDivElement;
+  public groupEl: HTMLDivElement;
   public listEl: HTMLDivElement;
   private readonly headerEl: HTMLDivElement;
   private readonly headerInnerEl: HTMLDivElement;
 
   public constructor(containerEl: HTMLElement) {
-    this.groupEl__ = containerEl.createDiv();
+    this.groupEl = containerEl.createDiv();
     this.headerEl = createDiv();
     this.headerInnerEl = this.headerEl.createDiv();
-    this.listEl = this.groupEl__.createDiv();
+    this.listEl = this.groupEl.createDiv();
     const self = strictProxy(this);
     self.constructor__(containerEl);
     return self;
@@ -70,7 +70,7 @@ export class SettingGroup {
     this.headerInnerEl.setText(text);
 
     if (text && !this.headerEl.isShown()) {
-      this.groupEl__.prepend(this.headerEl);
+      this.groupEl.prepend(this.headerEl);
     } else if (!text && this.headerEl.isShown()) {
       this.headerEl.detach();
     }

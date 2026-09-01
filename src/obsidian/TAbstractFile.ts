@@ -8,7 +8,7 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
 export abstract class TAbstractFile {
-  public deleted__ = false;
+  public deleted = false;
   public name: string;
   public parent: null | TFolder = null;
   public path: string;
