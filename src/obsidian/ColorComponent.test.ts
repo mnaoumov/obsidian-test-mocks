@@ -21,15 +21,15 @@ describe('ColorComponent', () => {
     expect(color).toBeInstanceOf(ColorComponent);
   });
 
-  it('should create colorPickerEl__ as child of containerEl', () => {
+  it('should create colorPickerEl as child of containerEl', () => {
     const containerEl = createDiv();
     const color = ColorComponent.create__(containerEl);
-    expect(color.colorPickerEl__.parentElement).toBe(containerEl);
+    expect(color.colorPickerEl.parentElement).toBe(containerEl);
   });
 
-  it('should set colorPickerEl__ type to color', () => {
+  it('should set colorPickerEl type to color', () => {
     const color = createColor();
-    expect(color.colorPickerEl__.type).toBe('color');
+    expect(color.colorPickerEl.type).toBe('color');
   });
 
   it('should throw when accessing an unmocked property', () => {
@@ -70,11 +70,11 @@ describe('ColorComponent', () => {
   });
 
   describe('setValue', () => {
-    it('should set the value and update colorPickerEl__', () => {
+    it('should set the value and update colorPickerEl', () => {
       const color = createColor();
       color.setValue('#00ff00');
       expect(color.getValue()).toBe('#00ff00');
-      expect(color.colorPickerEl__.value).toBe('#00ff00');
+      expect(color.colorPickerEl.value).toBe('#00ff00');
     });
 
     it('should invoke onChange callback', () => {

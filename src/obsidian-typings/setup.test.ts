@@ -1,11 +1,10 @@
+/* eslint-disable @typescript-eslint/no-deprecated, import-x/no-deprecated -- These tests exist precisely to pin the deprecated entry point's behavior: that it is harmless, and that the members it used to install are present without it. */
 import {
-  afterEach,
   describe,
   expect,
   it
 } from 'vitest';
 
-import { ensureGenericObject } from '../internal/type-guards.ts';
 import { App } from '../obsidian/App.ts';
 import { Component } from '../obsidian/Component.ts';
 import {
@@ -14,39 +13,27 @@ import {
 } from './setup.ts';
 
 describe('obsidian-typings-setup', () => {
-  afterEach(() => {
-    teardown();
-  });
-
-  it('should bridge all properties after setup', () => {
-    setup();
-
+  it('should expose the obsidian-typings names without any setup', () => {
     const app = App.createConfigured__();
     const component = Component.create__();
 
-    const componentRecord = ensureGenericObject(component);
-    expect(componentRecord['_loaded']).toBe(false);
-    expect(componentRecord['_children']).toEqual([]);
-
-    const vaultRecord = ensureGenericObject(app.vault);
-    const $function = vaultRecord['getAvailablePath'] as (this: unknown, path: string, extension: string) => string;
-    expect($function.call(app.vault, 'note', 'md')).toBe('note.md');
+    expect(component._loaded).toBe(false);
+    expect(component._children).toEqual([]);
+    expect(app.vault.getAvailablePath('note', 'md')).toBe('note.md');
   });
 
-  it('should remove all bridges after teardown', () => {
+  it('should leave the mocks untouched when setup and teardown run', () => {
     setup();
     teardown();
-
-    const component = Component.create__();
-    expect('_loaded' in component).toBe(false);
-    expect('_children' in component).toBe(false);
-  });
-
-  it('should be idempotent', () => {
-    setup();
     setup();
 
     const component = Component.create__();
-    expect(ensureGenericObject(component)['_loaded']).toBe(false);
+
+    // Teardown used to delete the bridged properties, so calling it mid-suite could break a later test.
+    // No ordering of these calls can remove the members now that they belong to the mock itself.
+    expect(component._loaded).toBe(false);
+    expect(component._children).toEqual([]);
   });
 });
+
+/* eslint-enable @typescript-eslint/no-deprecated, import-x/no-deprecated -- Restores the rules disabled for this whole file. */

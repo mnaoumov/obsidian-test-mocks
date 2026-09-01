@@ -1,90 +1,42 @@
-import {
-  bridgeAbstractInputSuggest,
-  unbridgeAbstractInputSuggest
-} from './bridges/abstract-input-suggest-bridge.ts';
-import {
-  bridgeCapacitorAdapter,
-  unbridgeCapacitorAdapter
-} from './bridges/capacitor-adapter-bridge.ts';
-import {
-  bridgeComponent,
-  unbridgeComponent
-} from './bridges/component-bridge.ts';
-import {
-  bridgeFileSystemAdapter,
-  unbridgeFileSystemAdapter
-} from './bridges/file-system-adapter-bridge.ts';
-import {
-  bridgeMenu,
-  unbridgeMenu
-} from './bridges/menu-bridge.ts';
-import {
-  bridgeMenuItem,
-  unbridgeMenuItem
-} from './bridges/menu-item-bridge.ts';
-import {
-  bridgeMetadataCache,
-  unbridgeMetadataCache
-} from './bridges/metadata-cache-bridge.ts';
-import {
-  bridgeModal,
-  unbridgeModal
-} from './bridges/modal-bridge.ts';
-import {
-  bridgeSetting,
-  unbridgeSetting
-} from './bridges/setting-bridge.ts';
-import {
-  bridgeSuggestModal,
-  unbridgeSuggestModal
-} from './bridges/suggest-modal-bridge.ts';
-import {
-  bridgeTAbstractFile,
-  unbridgeTAbstractFile
-} from './bridges/t-abstract-file-bridge.ts';
-import {
-  bridgeTFolder,
-  unbridgeTFolder
-} from './bridges/t-folder-bridge.ts';
-import {
-  bridgeVault,
-  unbridgeVault
-} from './bridges/vault-bridge.ts';
-import {
-  bridgeWorkspaceLeaf,
-  unbridgeWorkspaceLeaf
-} from './bridges/workspace-leaf-bridge.ts';
+/**
+ * @file
+ *
+ * Retained no-op entry point.
+ *
+ * This module used to install a bridge layer: it defined `obsidian-typings`' internal names on the mock
+ * prototypes and delegated each to the mock's own `__`-suffixed member (`Menu.items` → `items__`). That
+ * indirection is gone. A mock member that implements a real Obsidian internal now simply carries that
+ * internal's name, so there is nothing left to bridge — `Menu.items` IS the mock's member, with or
+ * without this setup.
+ *
+ * The entry point stays, doing nothing, because roughly thirty repositories name it in a Vitest or Jest
+ * config. Removing the module outright would fail those runners at startup with a module-resolution
+ * error, which is a far worse failure than a call that no longer needs to happen. It will be removed in
+ * the next major release.
+ *
+ * Members `obsidian-typings` declares that the mocks do NOT implement still throw through the strict
+ * proxy, exactly as before — that is the guarantee, not a gap this setup used to paper over.
+ *
+ * @deprecated Bridging is no longer required; the mocks carry the real names themselves. Drop this
+ * setup file from your test configuration.
+ */
 
+import { noop } from '../internal/noop.ts';
+
+/**
+ * Does nothing.
+ *
+ * @deprecated Bridging is no longer required. Drop this setup file from your test configuration.
+ */
 export function setup(): void {
-  bridgeAbstractInputSuggest();
-  bridgeCapacitorAdapter();
-  bridgeComponent();
-  bridgeFileSystemAdapter();
-  bridgeMenu();
-  bridgeMenuItem();
-  bridgeMetadataCache();
-  bridgeModal();
-  bridgeSetting();
-  bridgeSuggestModal();
-  bridgeTAbstractFile();
-  bridgeTFolder();
-  bridgeVault();
-  bridgeWorkspaceLeaf();
+  noop();
 }
 
+/**
+ * Does nothing.
+ *
+ * @deprecated Bridging is no longer required. Drop this setup file from your test configuration.
+ */
 export function teardown(): void {
-  unbridgeAbstractInputSuggest();
-  unbridgeCapacitorAdapter();
-  unbridgeComponent();
-  unbridgeFileSystemAdapter();
-  unbridgeMenu();
-  unbridgeMenuItem();
-  unbridgeMetadataCache();
-  unbridgeModal();
-  unbridgeSetting();
-  unbridgeSuggestModal();
-  unbridgeTAbstractFile();
-  unbridgeTFolder();
-  unbridgeVault();
-  unbridgeWorkspaceLeaf();
+  noop();
 }

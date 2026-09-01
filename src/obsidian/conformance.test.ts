@@ -6,8 +6,11 @@
  * - Forward: every public member declared in `obsidian.d.ts` (classes and their
  *   instance/static members, plus the top-level value exports) must have an
  *   equivalent member in the mocks.
- * - Reverse: any extra public mock member that is NOT in `obsidian.d.ts` must end
- *   with the `__` mock-only suffix.
+ * - Reverse: any extra public mock member that is NOT in `obsidian.d.ts` must either end
+ *   with the `__` mock-only suffix, or name a real Obsidian internal that `obsidian-typings`
+ *   declares. The second allowance is what lets a mock implement `Menu.items` under its real
+ *   name instead of `items__` plus a bridge: such a member is not a fake one, so the marker
+ *   that means "this does not exist in Obsidian" would be a lie.
  * - Kind: a global-augmentation member declared as a value property (`doc: Document`)
  *   must not be implemented as a method — a mock exposing it as a function compiles
  *   against the real typings in consumers but blows up at runtime.
@@ -51,6 +54,8 @@ import {
   expect,
   it
 } from 'vitest';
+
+import { getAllAugmentedMemberNames } from '../../scripts/helpers/obsidian-typings-surface.ts';
 
 /**
  * Maps each global interface that `obsidian.d.ts` augments to the runtime object
@@ -107,6 +112,17 @@ interface ConformanceContext {
 }
 
 const { checker, mockExports, obsidianExports, obsidianSourceFile } = build();
+
+/**
+ * Every member name `obsidian-typings` declares, flattened across classes and interfaces.
+ *
+ * Deliberately flat rather than per-class: a member the augmentation declares on a base class
+ * (`Component._loaded`) is inherited by every subclass, so a per-class lookup would reject it on the
+ * ~30 classes that extend `Component`. Flattening is also exactly right for what this rule polices —
+ * the question is "is this name a real Obsidian internal, or a mock-only member missing its marker?",
+ * and any name in this set answers that with the former.
+ */
+const AUGMENTED_MEMBER_NAMES = getAllAugmentedMemberNames();
 
 describe('obsidian.d.ts conformance', () => {
   it('should mock every public member of obsidian.d.ts, and suffix every extra member with __', () => {
@@ -225,8 +241,8 @@ function compareClass(name: string, obsidianSymbol: TsSymbol, mockSymbol: TsSymb
   }
 
   for (const member of mockMembers) {
-    if (!obsidianMembers.has(member) && !member.endsWith(MOCK_SUFFIX)) {
-      record(violations, `${name}: extra member "${member}" must end with "${MOCK_SUFFIX}"`);
+    if (!obsidianMembers.has(member) && !member.endsWith(MOCK_SUFFIX) && !AUGMENTED_MEMBER_NAMES.has(member)) {
+      record(violations, `${name}: extra member "${member}" must end with "${MOCK_SUFFIX}" or be declared by obsidian-typings`);
     }
   }
 }

@@ -31,16 +31,16 @@ describe('ProgressBarComponent', () => {
       expect(comp.getValue()).toBe(TEST_VALUE);
     });
 
-    it('should update progressBar__ style width', () => {
+    it('should update progressBar style width', () => {
       const comp = ProgressBarComponent.create__(createDiv());
       comp.setValue(TEST_VALUE_75);
-      expect(comp.progressBar__.style.width).toBe(`${String(TEST_VALUE_75)}%`);
+      expect(comp.progressBar.style.width).toBe(`${String(TEST_VALUE_75)}%`);
     });
 
-    it('should update progressBar__ dataset value', () => {
+    it('should update progressBar dataset value', () => {
       const comp = ProgressBarComponent.create__(createDiv());
       comp.setValue(TEST_VALUE);
-      expect(comp.progressBar__.dataset['value']).toBe(String(TEST_VALUE));
+      expect(comp.progressBar.dataset['value']).toBe(String(TEST_VALUE));
     });
 
     it('should return this for chaining', () => {

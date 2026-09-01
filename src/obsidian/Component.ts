@@ -9,11 +9,11 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
 export class Component {
-  public children__: Component[] = [];
+  public _children: Component[] = [];
+  public _events: EventRefOriginal[] = [];
+  public _loaded = false;
   public cleanups__: (() => unknown)[] = [];
-  public events__: EventRefOriginal[] = [];
   public intervals__: number[] = [];
-  public loaded__ = false;
 
   public constructor() {
     const self = strictProxy(this);
@@ -30,8 +30,8 @@ export class Component {
   }
 
   public addChild<T extends Component>(component: T): T {
-    this.children__.push(component);
-    if (this.loaded__) {
+    this._children.push(component);
+    if (this._loaded) {
       component.load();
     }
     return component;
@@ -46,12 +46,12 @@ export class Component {
   }
 
   public load(): void {
-    if (this.loaded__) {
+    if (this._loaded) {
       return;
     }
-    this.loaded__ = true;
+    this._loaded = true;
     this.onload();
-    for (const child of this.children__) {
+    for (const child of this._children) {
       child.load();
     }
   }
@@ -99,7 +99,7 @@ export class Component {
   }
 
   public registerEvent(ref: EventRefOriginal): void {
-    this.events__.push(ref);
+    this._events.push(ref);
     this.register(() => {
       const entry = ref as Partial<EventsEntry>;
       entry.e?.offref(ref);
@@ -115,31 +115,31 @@ export class Component {
   }
 
   public removeChild<T extends Component>(component: T): T {
-    const index = this.children__.indexOf(component);
+    const index = this._children.indexOf(component);
     if (index !== -1) {
-      this.children__.splice(index, 1);
+      this._children.splice(index, 1);
     }
     component.unload();
     return component;
   }
 
   public unload(): void {
-    if (!this.loaded__) {
+    if (!this._loaded) {
       return;
     }
-    this.loaded__ = false;
+    this._loaded = false;
 
-    for (const child of [...this.children__].reverse()) {
+    for (const child of [...this._children].reverse()) {
       child.unload();
     }
-    this.children__ = [];
+    this._children = [];
 
     for (const cleanup of [...this.cleanups__].reverse()) {
       cleanup();
     }
     this.cleanups__ = [];
 
-    this.events__ = [];
+    this._events = [];
     this.intervals__ = [];
 
     this.onunload();

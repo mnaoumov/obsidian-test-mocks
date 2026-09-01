@@ -213,6 +213,17 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Shows or hides the setting.
+   *
+   * @param visible - Whether the setting should be visible.
+   * @returns This setting, for chaining.
+   */
+  public setVisibility(visible: boolean): this {
+    this.settingEl.toggle(visible);
+    return this;
+  }
+
   public then(callback: (setting: this) => unknown): this {
     callback(this);
     return this;

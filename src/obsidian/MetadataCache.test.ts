@@ -336,4 +336,14 @@ describe('MetadataCache', () => {
       expect(found).toBe(file);
     });
   });
+  describe('computeMetadataAsync', () => {
+    it('should parse metadata from an ArrayBuffer', async () => {
+      const app = App.createConfigured__();
+      const arrayBuffer = new TextEncoder().encode('# Heading').buffer;
+
+      const cache = await app.metadataCache.computeMetadataAsync(arrayBuffer);
+
+      expect(cache.headings?.[0]?.heading).toBe('Heading');
+    });
+  });
 });

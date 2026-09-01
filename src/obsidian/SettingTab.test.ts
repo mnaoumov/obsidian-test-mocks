@@ -117,7 +117,7 @@ describe('SettingTab', () => {
       const app = App.createConfigured__();
       const tab = new DeclarativeSettingTab(app);
       tab.update();
-      tab.renderTab__();
+      tab.renderTab();
 
       const row = tab.getRenderedRows__()[0];
       expect(row?.isVisible).toBe(true);
@@ -130,12 +130,12 @@ describe('SettingTab', () => {
     });
   });
 
-  describe('renderTab__', () => {
+  describe('renderTab', () => {
     it('should render the setting definitions stored by update', () => {
       const app = App.createConfigured__();
       const tab = new DeclarativeSettingTab(app);
       tab.update();
-      tab.renderTab__();
+      tab.renderTab();
 
       const rows = tab.getRenderedRows__();
       expect(rows).toHaveLength(1);
@@ -148,7 +148,7 @@ describe('SettingTab', () => {
       const tab = new ConcreteSettingTab(app);
       const displaySpy = vi.spyOn(tab, 'display');
       tab.update();
-      tab.renderTab__();
+      tab.renderTab();
 
       expect(displaySpy).toHaveBeenCalledTimes(1);
       expect(tab.getRenderedRows__()).toEqual([]);
@@ -166,7 +166,7 @@ describe('SettingTab', () => {
       const app = App.createConfigured__();
       const tab = new DeclarativeSettingTab(app);
       tab.update();
-      tab.renderTab__();
+      tab.renderTab();
       expect(tab.getRenderedRows__()).toHaveLength(1);
 
       tab.hide();

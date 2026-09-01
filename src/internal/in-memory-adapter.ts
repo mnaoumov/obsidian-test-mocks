@@ -20,7 +20,7 @@ interface FileMeta {
 }
 
 export class InMemoryAdapter implements DataAdapterOriginal {
-  public insensitive__ = false;
+  public insensitive = false;
 
   private readonly binaryFiles = new Map<string, ArrayBuffer>();
   private readonly directories = new Set<string>(['']);
@@ -107,7 +107,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   // eslint-disable-next-line unicorn/consistent-boolean-name -- `sensitive` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
   public async exists(normalizedPath: string, sensitive?: boolean): Promise<boolean> {
     await noopAsync();
-    if (sensitive || !this.insensitive__) {
+    if (sensitive || !this.insensitive) {
       return this.textFiles.has(normalizedPath)
         || this.binaryFiles.has(normalizedPath)
         || this.directories.has(normalizedPath);

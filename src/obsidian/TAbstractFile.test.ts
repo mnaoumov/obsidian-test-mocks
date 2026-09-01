@@ -30,10 +30,10 @@ describe('TAbstractFile (via TFile)', () => {
     expect(file.vault).toBe(app.vault);
   });
 
-  it('should have deleted__ default to false', () => {
+  it('should have deleted default to false', () => {
     const app = App.createConfigured__();
     const file = TFile.create__(app.vault, 'note.md');
-    expect(file.deleted__).toBe(false);
+    expect(file.deleted).toBe(false);
   });
 
   it('should have parent default to null', () => {

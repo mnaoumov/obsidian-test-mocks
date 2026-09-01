@@ -14,6 +14,7 @@ import { App } from './App.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { RenderContext } from './RenderContext.ts';
 import { SecretStorage } from './SecretStorage.ts';
+import { Platform } from './vars/Platform.ts';
 
 describe('App', () => {
   it('should create an instance via createConfigured__', () => {
@@ -174,6 +175,36 @@ describe('App', () => {
       const file = ensureNonNullable(app.vault.getFileByPath('A.md'));
       await app.vault.modify(file, CONTENT_WITH_COMMENT_BLOCK);
       expect(await app.vault.read(file)).toBe(CONTENT_WITH_COMMENT_BLOCK);
+    });
+  });
+  describe('obsidian-typings internals', () => {
+    it('should expose the appId it was created with', () => {
+      const app = App.createConfigured__({ appId: 'my-vault-id' });
+      expect(app.appId).toBe('my-vault-id');
+    });
+
+    it('should answer isMobile from Platform', () => {
+      const app = App.createConfigured__();
+      expect(app.isMobile).toBe(Platform.isMobile);
+    });
+
+    it('should default to the light theme', () => {
+      const app = App.createConfigured__();
+      expect(app.getTheme()).toBe('moonstone');
+      expect(app.isDarkMode()).toBe(false);
+    });
+
+    it('should report dark mode once the theme is changed', () => {
+      const app = App.createConfigured__();
+      app.changeTheme('obsidian');
+      expect(app.getTheme()).toBe('obsidian');
+      expect(app.isDarkMode()).toBe(true);
+    });
+
+    it('should record a theme set without applying it', () => {
+      const app = App.createConfigured__();
+      app.setTheme('obsidian');
+      expect(app.getTheme()).toBe('obsidian');
     });
   });
 });

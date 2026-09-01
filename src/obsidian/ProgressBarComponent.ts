@@ -5,13 +5,13 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 export class ProgressBarComponent extends ValueComponent<number> {
-  public progressBar__: HTMLElement;
+  public progressBar: HTMLElement;
 
   private value = 0;
 
   public constructor(containerEl: HTMLElement) {
     super();
-    this.progressBar__ = containerEl.createDiv();
+    this.progressBar = containerEl.createDiv();
     const self = strictProxy(this);
     self.constructor3__(containerEl);
     return self;
@@ -39,8 +39,8 @@ export class ProgressBarComponent extends ValueComponent<number> {
 
   public override setValue(value: number): this {
     this.value = value;
-    this.progressBar__.style.width = `${String(value)}%`;
-    this.progressBar__.dataset['value'] = String(value);
+    this.progressBar.style.width = `${String(value)}%`;
+    this.progressBar.dataset['value'] = String(value);
     return this;
   }
 }

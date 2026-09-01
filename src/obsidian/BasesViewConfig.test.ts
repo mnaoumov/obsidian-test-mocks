@@ -103,7 +103,7 @@ describe('BasesViewConfig', () => {
     });
   });
 
-  describe('getOrder/setOrder__', () => {
+  describe('getOrder/setOrder', () => {
     it('should default to empty array', () => {
       const config = BasesViewConfig.create__('', '', 'test');
       expect(config.getOrder()).toEqual([]);
@@ -113,7 +113,7 @@ describe('BasesViewConfig', () => {
       const config = BasesViewConfig.create__('', '', 'test');
       const order = ['prop.a' as BasesPropertyId, 'prop.b' as BasesPropertyId];
 
-      config.setOrder__(order);
+      config.setOrder(order);
       expect(config.getOrder()).toEqual(order);
     });
   });

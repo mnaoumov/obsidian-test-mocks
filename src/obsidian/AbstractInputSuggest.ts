@@ -11,10 +11,10 @@ const DEFAULT_LIMIT = 100;
 export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   public limit = DEFAULT_LIMIT;
   public onSelectCallback__?: (value: T, event: KeyboardEvent | MouseEvent) => unknown;
-  public readonly textInputEl__: HTMLDivElement | HTMLInputElement;
+  public readonly textInputEl: HTMLDivElement | HTMLInputElement;
   public constructor(app: App, textInputEl: HTMLDivElement | HTMLInputElement) {
     super(app);
-    this.textInputEl__ = textInputEl;
+    this.textInputEl = textInputEl;
     const self = strictProxy(this);
     self.constructor2__(app, textInputEl);
     return self;
@@ -33,10 +33,10 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   }
 
   public getValue(): string {
-    if (this.textInputEl__ instanceof HTMLInputElement) {
-      return this.textInputEl__.value;
+    if (this.textInputEl instanceof HTMLInputElement) {
+      return this.textInputEl.value;
     }
-    return this.textInputEl__.textContent;
+    return this.textInputEl.textContent;
   }
 
   public onSelect(callback: (value: T, event: KeyboardEvent | MouseEvent) => unknown): this {
@@ -45,10 +45,10 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   }
 
   public setValue(value: string): void {
-    if (this.textInputEl__ instanceof HTMLInputElement) {
-      this.textInputEl__.value = value;
+    if (this.textInputEl instanceof HTMLInputElement) {
+      this.textInputEl.value = value;
     } else {
-      this.textInputEl__.textContent = value;
+      this.textInputEl.textContent = value;
     }
   }
 }

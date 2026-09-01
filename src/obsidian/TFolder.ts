@@ -38,7 +38,7 @@ export class TFolder extends TAbstractFile {
    *
    * @returns The parent prefix.
    */
-  public getParentPrefix__(): string {
+  public getParentPrefix(): string {
     return this.isRoot() ? '' : `${this.path}/`;
   }
 

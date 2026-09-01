@@ -171,7 +171,7 @@ function renderGroup(definition: SettingDefinitionGroupOriginal, containerEl: HT
   return {
     children,
     definition,
-    groupEl: settingGroup.groupEl__,
+    groupEl: settingGroup.groupEl,
     settingGroup
   };
 }

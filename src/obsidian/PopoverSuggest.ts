@@ -8,8 +8,8 @@ import { Scope } from './Scope.ts';
 
 export abstract class PopoverSuggest<T> {
   public app: App;
+  public isOpen = false;
   public scope: Scope;
-  private isOpen = false;
 
   public constructor(app: App, scope?: Scope) {
     this.app = app;
@@ -33,10 +33,6 @@ export abstract class PopoverSuggest<T> {
 
   public constructor__(_app: App, _scope?: Scope): void {
     noop();
-  }
-
-  public isOpen__(): boolean {
-    return this.isOpen;
   }
 
   public open(): void {

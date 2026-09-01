@@ -49,7 +49,7 @@ describe('MenuItem', () => {
     it('should set checked state', () => {
       const item = MenuItem.create__(null);
       item.setChecked(true);
-      expect(item.checked__).toBe(true);
+      expect(item.checked).toBe(true);
     });
   });
 
@@ -57,7 +57,7 @@ describe('MenuItem', () => {
     it('should set disabled state', () => {
       const item = MenuItem.create__(null);
       item.setDisabled(true);
-      expect(item.disabled__).toBe(true);
+      expect(item.disabled).toBe(true);
     });
   });
 
@@ -73,7 +73,7 @@ describe('MenuItem', () => {
     it('should set section', () => {
       const item = MenuItem.create__(null);
       item.setSection('main');
-      expect(item.section__).toBe('main');
+      expect(item.section).toBe('main');
     });
   });
 
@@ -85,22 +85,22 @@ describe('MenuItem', () => {
     });
   });
 
-  describe('setSubmenu__', () => {
+  describe('setSubmenu', () => {
     it('should have no submenu until one is created', () => {
       const item = MenuItem.create__(null);
-      expect(item.submenu__).toBeNull();
+      expect(item.submenu).toBeNull();
     });
 
     it('should return a new Menu and record it', () => {
       const item = MenuItem.create__(null);
-      const submenu = item.setSubmenu__();
+      const submenu = item.setSubmenu();
       expect(submenu).toBeInstanceOf(Menu);
-      expect(item.submenu__).toBe(submenu);
+      expect(item.submenu).toBe(submenu);
     });
 
     it('should return the same Menu on subsequent calls', () => {
       const item = MenuItem.create__(null);
-      expect(item.setSubmenu__()).toBe(item.setSubmenu__());
+      expect(item.setSubmenu()).toBe(item.setSubmenu());
     });
   });
 

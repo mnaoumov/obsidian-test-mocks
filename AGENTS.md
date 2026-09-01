@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-`obsidian-test-mocks` is a standalone npm package providing comprehensive test mocks for the Obsidian plugin API. It publishes as a dual-format (ESM + CJS) package with seven entry points: `obsidian`, `setup`, `vitest-setup`, `jest-setup`, `obsidian-typings/setup`, `obsidian-typings/vitest-setup`, and `obsidian-typings/jest-setup`.
+`obsidian-test-mocks` is a standalone npm package providing comprehensive test mocks for the Obsidian plugin API. It publishes as a dual-format (ESM + CJS) package with seven entry points: `obsidian`, `setup`, `vitest-setup`, `jest-setup`, and the three deprecated no-ops `obsidian-typings/setup`, `obsidian-typings/vitest-setup`, and `obsidian-typings/jest-setup`.
 
 ## Commands
 
@@ -28,7 +28,7 @@
 ### Directory Structure
 
 - `src/obsidian/` — mocks for every class/function in `obsidian.d.ts`
-- `src/obsidian-typings/` — optional bridges mapping obsidian-typings internal property names to mock `__`-suffixed members
+- `src/obsidian-typings/` — deprecated no-op setup entry points, kept for one major so the ~30 consumer repos that name them in a Vitest/Jest config do not fail at runner startup. The bridge layer they used to install is gone: the mocks carry Obsidian's real internal names themselves (L4).
 - `src/globals/` — prototype extensions Obsidian adds to DOM/JS builtins (HTMLElement, Document, Array, String, etc.)
 - `src/internal/` — shared implementation details NOT exported from the package
 - `docs/` — the Astro + Starlight documentation site (`docs/src` is its `srcDir`; `docs/dist` the build
@@ -37,13 +37,17 @@
 
 ### Key Design Decisions
 
-L1. **Only expose what `obsidian.d.ts` defines.** The package must mock exactly the public API — no extra classes, no internal helpers in the public surface. Anything not in `obsidian.d.ts` belongs in `src/internal/`.
+L1. **Only expose what Obsidian actually has.** The package must mock exactly the public API — no extra classes, no internal helpers in the public surface. Anything Obsidian does not have belongs in `src/internal/`. "What Obsidian has" is `obsidian.d.ts` PLUS the internals `obsidian-typings` declares: a member such as `Menu.items` is real, merely undeclared publicly, so a mock may implement it (see L4). Only classes stay strictly `obsidian.d.ts`-bound — an `obsidian-typings` type with no `obsidian.d.ts` counterpart (`Plugins`, `Commands`) is not mocked here.
 
 L2. **Meaningful implementations first.** Mocks should have real in-memory behavior (state tracking, callback invocation, data storage). Only use `noop()` (sync) or `await noopAsync()` (async) from `src/internal/noop.ts` for methods whose bodies would otherwise be completely empty (pure UI operations with no meaningful implementation, e.g., rendering, focus). If a method already has any logic in its body, do not add `noop()` or `await noopAsync()` — they are only for otherwise-empty methods.
 
-L3. **No `obsidian-typings` imports in `src/obsidian/`.** The `obsidian-typings` package uses `declare module 'obsidian'` augmentation which activates globally on import. To avoid side effects, all needed type shapes are inlined in `src/internal/types.ts`. The `src/obsidian-typings/` directory is exempt from this rule — it may import obsidian-typings types for validation (via `type-validation.test.ts`, excluded from the main tsconfig).
+L3. **No `obsidian-typings` imports in `src/`.** The `obsidian-typings` package uses `declare module 'obsidian'` augmentation which activates globally on import. To avoid side effects, all needed type shapes are inlined in `src/internal/types.ts`. It is a **devDependency only**, so the no-runtime-dependency guarantee holds. The one place that reads it is `scripts/helpers/obsidian-typings-surface.ts`, which builds its **own** throwaway `Program` for the conformance tests — the augmentation is visible inside that program and nowhere else, which is precisely why it does not violate this rule.
 
-L4. **`__` suffix for mock-only public members.** Any public member (field, method, static) that does not exist in `obsidian.d.ts` must end with `__` to signal it is mock-only. This includes factory methods (`create__()`), type bridges (`asOriginalType__()`), test helpers (`simulateClick__()`), and internal tracking fields (`_items__`, `_cache__`). Members that exist in `obsidian.d.ts` must NOT have the `__` suffix.
+L4. **`__` suffix for members that do not exist in Obsidian AT ALL.** Any public member (field, method, static) Obsidian itself does not have must end with `__` to signal it is mock-only: factory methods (`create__()`), type bridges (`asOriginalType__()`), test helpers (`simulateClick__()`), and mock-only tracking fields (`cache__`, `menuItems__`).
+
+The test is **"does Obsidian have this?"**, not "is it in `obsidian.d.ts`?". A member `obsidian-typings` declares — `Menu.items`, `Modal.bgEl`, `Vault.getConfig`, `Component._loaded` — is a real Obsidian internal that the public typings merely omit, so it takes its **real name with no suffix**. Marking it `__` would assert something false, and it is what forced the old `src/obsidian-typings/` bridge layer to exist at all: the bridges did nothing but map `items__` back to `items`. Implement the member under its real name and there is nothing left to bridge.
+
+A member is implemented only when the mock can back it with real behavior or real state (L2). Everything else `obsidian-typings` declares stays unmocked and throws through the strict proxy — see `src/obsidian/obsidian-typings-conformance.test.ts`, which requires every augmented member to be either implemented or listed in `scripts/obsidian-typings-unimplemented.json`. Regenerate that inventory (and the guide's table) with `npm run build:generate:typings-surface`; it is deliberately NOT part of `npm run build`, because auto-regenerating would silently absorb exactly the drift the test exists to catch.
 
 L5. **`create__()` factory pattern.** All mock classes have a static `create__()` factory method, regardless of whether the constructor is public in `obsidian.d.ts`. For classes with non-public constructors, the actual constructor is `protected`. This ensures all instance creation is spyable via `vi.spyOn(ClassName, 'create__')`. Internal code must always use `create__()` instead of `new` (except inside `create__()` itself). `super()` calls in subclass constructors are the only acceptable direct constructor invocations. When a subclass `create__()` has an incompatible signature with the base class, use `create2__()`, `create3__()`, etc. to avoid TypeScript static-side conflicts. Do NOT use `override` on `create__()` — use numbered variants instead.
 
@@ -51,7 +55,7 @@ L6. **`castTo<T>()` for type bridging** (intentionally allows `as unknown as T` 
 
 L7. **`DataAdapter` is an interface.** In `obsidian.d.ts`, `DataAdapter` is an interface, not a class. `FileSystemAdapter` and `CapacitorAdapter` implement it. The shared in-memory filesystem lives in `src/internal/in-memory-adapter.ts`.
 
-L8. **Private fields that shadow obsidian-typings.** When `obsidian-typings` declares a field as public (e.g., `Events._`) but `obsidian.d.ts` does not, our mock keeps it private and uses `castTo` where needed for type compatibility.
+L8. **Fields that shadow obsidian-typings.** When `obsidian-typings` declares a field as public (e.g. `Events._`, `Component._loaded`) but `obsidian.d.ts` does not, the mock implements it **public, under that exact name** — leading underscore included — per L4, and uses `castTo` where needed for type compatibility. Keep such a field private only when nothing outside the class needs it and no consumer reads it through the `obsidian-typings` types; a private field is then an implementation detail rather than a mocked member, and does not count as implementing it.
 
 L9. **`strictProxy` constructors with `constructor__()` hooks.** Every mock class (including abstract classes) must use `strictProxy(this)` in its constructor and provide a spyable `constructorN__()` method. The pattern is: `constructor(args) { /* init */ const self = strictProxy(this); self.constructorN__(args); return self; }` with a corresponding `public constructorN__(_args): void { noop(); }`. The `strictProxy()` call prevents access to unmocked properties. The `constructorN__()` method enables spying on construction via `vi.spyOn(Class.prototype, 'constructorN__')`. Numbering follows inheritance depth: a root class uses `constructor__()`, its child uses `constructor2__()`, grandchild `constructor3__()`, etc. — each class in the chain gets the next available number.
 
@@ -218,8 +222,8 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   reconcile the tree (firing `create`/`delete` events). Dot-prefixed paths (e.g. `.obsidian`) are
   excluded, mirroring real Obsidian.
 - **`MetadataCache` indexes synchronously** on `create`/`modify` via `Vault.readSync__`, populating
-  `cache__`, `resolvedLinks`/`unresolvedLinks`, and `frontmatterLinks`, plus the obsidian-typings-bridged
-  `fileCache`/`metadataCache`/`computeMetadataAsync` — so `getFileCache`, the link graph, and
+  `cache__`, `resolvedLinks`/`unresolvedLinks`, and `frontmatterLinks`, plus the obsidian-typings
+  internals `fileCache`/`metadataCache`/`computeMetadataAsync` — so `getFileCache`, the link graph, and
   `getCacheSafe` work with no tick needed.
 - **`Vault.getAvailablePath` de-duplicates**, folder renames cascade to descendants, and
   `createFolder('a/b')` creates/links intermediate ancestors.
@@ -227,23 +231,22 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **Attachment-path resolution is modeled end to end** (added 2026-07-28) — anything calling
   `obsidian-dev-utils`' `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`
   against the mocks used to die on a strict-proxy read, forcing every consumer to hand-seed the surface.
-  The backing members live on the mocks with the `__` suffix (all four are obsidian-typings internals,
-  not `obsidian.d.ts` members, so the un-suffixed names come from `obsidian-typings/setup`):
-  - **`Vault.getConfig__(key)` / `Vault.setConfig__(key, value)`**, backed by the `config__` bag. Only
+  All four are obsidian-typings internals rather than `obsidian.d.ts` members, so per L4 they live on the
+  mocks under their real, un-suffixed names:
+  - **`Vault.getConfig(key)` / `Vault.setConfig(key, value)`**, backed by the `config` bag. Only
     `attachmentFolderPath` carries a modeled default (`/`, Obsidian's own); every other `ConfigItem`
     reads as `undefined` until a test sets it — do NOT assume the bag mirrors Obsidian's full defaults.
-  - **`Vault.getAvailablePath__(basePath, extension)`** — Obsidian's de-duplicator (plain name, then a
-    `" 1"` / `" 2"` suffix, …). The logic moved here from the bridge, which now delegates; note ODU's own
-    `getAvailablePath(app, path)` helper DELEGATES to the bridged name, so a consumer cannot seed it by
-    calling that helper — it would recurse until the stack blows.
-  - **`Vault.getAvailablePathForAttachments__(fileName, extension, file)`** — the real resolution, not a
+  - **`Vault.getAvailablePath(basePath, extension)`** — Obsidian's de-duplicator (plain name, then a
+    `" 1"` / `" 2"` suffix, …). Note ODU's own `getAvailablePath(app, path)` helper DELEGATES to this
+    member, so a consumer cannot seed it by calling that helper — it would recurse until the stack blows.
+  - **`Vault.getAvailablePathForAttachments(fileName, extension, file)`** — the real resolution, not a
     throwing placeholder. `/` → vault root, `./` (and `.`) → the note's own folder, `./sub` → a
     sub-folder of the note's folder, anything else → that fixed folder; the target folder is **created
     when missing** (real Obsidian does this), a `null` file resolves as a root-level note does, and the
-    result runs through `getAvailablePath__`. ODU only ever reads this function's `extended` member (an
+    result runs through `getAvailablePath`. ODU only ever reads this function's `extended` member (an
     attachment-location plugin installs it) and falls back to its own resolution when absent — so the
     plain function is what a test exercises, and it now answers faithfully.
-  - **`TFolder.getParentPrefix__()`** — `''` for the root, `` `${path}/` `` otherwise. On the prototype,
+  - **`TFolder.getParentPrefix()`** — `''` for the root, `` `${path}/` `` otherwise. On the prototype,
     because folders are created by the vault as fixtures are built, never handed to the test to seed.
 
   Every path above was confirmed against a real Obsidian 1.13.4 over CDP; `Vault.test.ts` asserts that
@@ -286,23 +289,22 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **`MenuItem`'s submenu is modeled** (added 2026-07-28), so a plugin's real menu handler —
   `menu.addItem((item) => { const subMenu = item.setSubmenu(); … })`, the shape every plugin with a
   context submenu uses — runs against the mocks. Both names are obsidian-typings internals (neither
-  `setSubmenu` nor `submenu` is in `obsidian.d.ts`), so the un-suffixed names come from
-  `obsidian-typings/setup`; the backing members are `MenuItem.setSubmenu__()` and
-  `MenuItem.submenu__`. `setSubmenu__()` **memoizes** — it creates the `Menu` on first call and
+  `setSubmenu` nor `submenu` is in `obsidian.d.ts`), so per L4 they live on the mock under those exact
+  names. `setSubmenu()` **memoizes** — it creates the `Menu` on first call and
   returns that same instance afterwards, mirroring real Obsidian's `this.submenu || (…)` — and
-  records it in `submenu__`, so a test can read back the items the plugin added to the submenu
-  (`item.submenu__?.items__`). Previously it built a fresh `Menu` and threw it away. The real
+  records it in `submenu`, so a test can read back the items the plugin added to the submenu
+  (`item.submenu?.items`). Previously it built a fresh `Menu` and threw it away. The real
   implementation's DOM side effects (the `has-submenu` class and the `menu-item-icon mod-submenu`
-  chevron) are NOT modeled — `MenuItem` has no `dom__`.
+  chevron) are NOT modeled — `MenuItem` has no `dom`.
 
 - **Declarative settings tabs render for real** (added 2026-07-31). Obsidian 1.13 builds a tab from
   `getSettingDefinitions()`, and nothing rendered those definitions in a unit test — so every plugin that
   migrated hand-rolled its own mini-renderer, in four divergent shapes, most of which silently ignored the
-  `visible` / `disabled` predicates. `SettingTab.renderTab__()` (mock-only per L4; `renderTab` is the real
-  internal name) now does it, backed by `src/internal/setting-definition-renderer.ts`, which mirrors the
+  `visible` / `disabled` predicates. `SettingTab.renderTab()` (an obsidian-typings internal, so un-suffixed
+  per L4) now does it, backed by `src/internal/setting-definition-renderer.ts`, which mirrors the
   shipped Obsidian 1.13.x renderer function for function (`V2`/`Q2`/`$2`/`Z2`/`n6`/`U2`/`_2`/`z2`/`Y2`).
   - **Usage:** `tab.update()` (the real API that stores the definitions in `settingItems`) then
-    `tab.renderTab__()`. From a consumer whose tab is typed against the real `PluginSettingTab`, bridge with
+    `tab.renderTab()`. From a consumer whose tab is typed against the real `PluginSettingTab`, convert with
     `SettingTab.fromOriginalType__(tab)` (L6). Read the result back with `getRenderedRows__()` — one entry per
     rendered row: `{ cleanup, definition, isVisible, setting, settingEl }`. `refreshDomState()` re-evaluates
     the predicates over the already-rendered tree, and `hide()` clears it.
@@ -330,19 +332,19 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 
   ```text
   containerEl ('modal-container')
-  ├── bgEl__ ('modal-bg')
+  ├── bgEl ('modal-bg')
   └── modalEl ('modal')
-      ├── headerEl__ ('modal-header') > titleEl ('modal-title')
+      ├── headerEl ('modal-header') > titleEl ('modal-title')
       └── contentEl ('modal-content')
   ```
 
   So `.modal-bg` / `.modal-header` / `.modal-content` selectors resolve in jsdom exactly as in the app.
-  `bgEl` and `headerEl` are obsidian-typings-only internals (neither is in `obsidian.d.ts`), so per L4 the
-  backing members are `bgEl__` / `headerEl__` and the un-suffixed names come from `obsidian-typings/setup`.
+  `bgEl` and `headerEl` are obsidian-typings-only internals (neither is in `obsidian.d.ts`), so per L4 they
+  live on the mock under those real names.
   `bgEl` matters because it is the element Obsidian registers modal dismissal on — every "the user clicked
   outside the dialog" behavior is about it, and a strict-proxy read of it used to throw, which is what
   forced `obsidian-dev-utils`' modal-wrapper tests to hand-build the missing sibling.
-  **`titleEl` MOVED** from a direct `modalEl` child into `headerEl__`: `modalEl.contains(titleEl)` still
+  **`titleEl` MOVED** from a direct `modalEl` child into `headerEl`: `modalEl.contains(titleEl)` still
   holds, `titleEl.parentElement === modalEl` no longer does.
   **Not modeled, deliberately:** the close button (`modal-header-button mod-raised clickable-icon`) and the
   real `bgEl` click listener that dismisses the modal — `open()` / `close()` remain simplified stand-ins,
@@ -351,9 +353,8 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **`SuggestModal`'s instruction bar is modeled**, so consumers can drive the real
   `SuggestModalCommandBuilder` (`obsidian-dev-utils` `obsidian/modals/suggest-modal-command-builder`)
   instead of hand-rolling a fake. `instructionsEl` is an obsidian-typings-only internal (not in
-  `obsidian.d.ts`) — it is a getter bridged (via `obsidian-typings/setup`) to the `__`-suffixed
-  backing member `SuggestModal.instructionsEl__`, a real `createDiv('prompt-instructions')` container
-  created in the constructor. `setInstructions(instructions)` renders faithfully to real Obsidian:
+  `obsidian.d.ts`), so per L4 the mock declares it under that real name: a real
+  `createDiv('prompt-instructions')` container created in the constructor. `setInstructions(instructions)` renders faithfully to real Obsidian:
   when non-empty it clears the container and appends one `.prompt-instruction` div per `Instruction`
   whose **first** span (`.prompt-instruction-command`) holds `command` and **second** span holds
   `purpose`, then attaches the container to `modalEl`; when empty it detaches the container. The
