@@ -37,7 +37,7 @@
 
 ### Key Design Decisions
 
-L1. **Only expose what Obsidian actually has.** The package must mock exactly the public API — no extra classes, no internal helpers in the public surface. Anything Obsidian does not have belongs in `src/internal/`. "What Obsidian has" is `obsidian.d.ts` PLUS the internals `obsidian-typings` declares: a member such as `Menu.items` is real, merely undeclared publicly, so a mock may implement it (see L4). Only classes stay strictly `obsidian.d.ts`-bound — an `obsidian-typings` type with no `obsidian.d.ts` counterpart (`Plugins`, `Commands`) is not mocked here.
+L1. **Only expose what Obsidian actually has.** The package must mock exactly the public API — no extra classes, no internal helpers in the public surface. Anything Obsidian does not have belongs in `src/internal/`. "What Obsidian has" is `obsidian.d.ts` PLUS the internals `obsidian-typings` declares: a member such as `Menu.items` is real, merely undeclared publicly, so a mock may implement it (see L4). Only the package's EXPORTED classes stay strictly `obsidian.d.ts`-bound — an `obsidian-typings` type with no `obsidian.d.ts` counterpart (`Plugins`, `Commands`) never becomes a `src/obsidian/` export. It may still be implemented in `src/internal/`, which is exactly what L7 already does for the `DataAdapter` interface: `Plugins` lives in `src/internal/plugins.ts` and `App.plugins` points at it. That placement is invisible to the public surface yet fully typed for consumers, because `src/internal/` is emitted into `dist` and referenced by relative path from the public declarations (`FileSystemAdapter.d.mts` already imports `InMemoryAdapter` that way).
 
 L2. **Meaningful implementations first.** Mocks should have real in-memory behavior (state tracking, callback invocation, data storage). Only use `noop()` (sync) or `await noopAsync()` (async) from `src/internal/noop.ts` for methods whose bodies would otherwise be completely empty (pure UI operations with no meaningful implementation, e.g., rendering, focus). If a method already has any logic in its body, do not add `noop()` or `await noopAsync()` — they are only for otherwise-empty methods.
 
@@ -70,6 +70,7 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `icon-registry.ts` — shared `Map<string, string>` for icon storage (addIcon, removeIcon, getIcon, etc.)
 - `in-memory-adapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
 - `noop.ts` — `noop()` / `noopAsync()` helpers for otherwise-empty method bodies (see L2)
+- `plugins.ts` — the community-plugin registry behind `App.plugins`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1, L7)
 - `setting-definition-renderer.ts` — renders declarative setting definitions the way Obsidian 1.13 does; drives `SettingTab.renderTab__()` / `refreshDomState()`
 - `strict-proxy.ts` — `strictProxy()` mock wrapper that throws on unmocked property access (see L9)
 - `types.ts` — inlined type shapes (from obsidian-typings) to avoid augmentation side effects
@@ -248,6 +249,26 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     plain function is what a test exercises, and it now answers faithfully.
   - **`TFolder.getParentPrefix()`** — `''` for the root, `` `${path}/` `` otherwise. On the prototype,
     because folders are created by the vault as fixtures are built, never handed to the test to seed.
+
+- **`app.plugins.getPlugin(id)` answers `null`** (added 2026-09-01) — a mock vault genuinely has no
+  community plugins installed, so that is the truth about it rather than a placeholder. This matters
+  beyond tidiness: `obsidian-dev-utils` reads the registry from INHERITED code (its Notebook Navigator
+  menu registrar on layout ready, plus `canvas.ts`, `folder-note.ts` and
+  `rename-delete-handler-component.ts`), so while `App.plugins` was unmocked a single ODU bump broke the
+  same `plugin.test.ts` in roughly 28 repos at once. Every one of them hand-assigned
+  `app.plugins = strictProxy({ getPlugin: () => null })`; they no longer need to.
+  - **`app.plugins.registerPlugin__(id, plugin)`** seeds one, and `unregisterPlugin__(id)` removes it.
+    The instance can be a full `Plugin` mock via `asOriginalType2__()` or any stand-in carrying the
+    members under test (`{ api }`, `{ settings }`) — which is what ODU's call sites actually read.
+    `enabledPlugins` is kept in step; this mock has no notion of installed-but-switched-off.
+  - Only that honest core is modeled. The enable/disable lifecycle, installing, updates and deprecation
+    stay unmocked and throw, per L2.
+  - **`App.internalPlugins` and `App.commands` are deliberately still unmocked**, because neither has an
+    equally honest empty state. Real Obsidian always ships core plugins with several enabled, so an
+    empty `internalPlugins` would be a lie rather than an empty vault; and `Plugin.addCommand` records
+    into the mock's own `commands__`, so an empty `app.commands` would go stale the moment a plugin
+    registered one. Modeling that means an app-wide command registry (and `App.registerCommands`), which
+    is its own piece of work — not a symmetry to fill in.
 
   Every path above was confirmed against a real Obsidian 1.13.4 over CDP; `Vault.test.ts` asserts that
   table verbatim.

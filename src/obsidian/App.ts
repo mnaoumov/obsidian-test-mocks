@@ -7,6 +7,7 @@ import type {
 import type { AppCreateConfiguredOptions } from '../internal/app-create-configured-options.ts';
 
 import { noop } from '../internal/noop.ts';
+import { Plugins } from '../internal/plugins.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { FileManager } from './FileManager.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
@@ -35,6 +36,7 @@ export class App {
   public keymap: Keymap;
   public lastEvent: null | UserEventOriginal = null;
   public metadataCache: MetadataCache;
+  public plugins: Plugins;
   public renderContext: RenderContext;
   public scope: Scope;
   public secretStorage: SecretStorage;
@@ -60,6 +62,7 @@ export class App {
     this.fileManager = FileManager.create__(this);
     this.keymap = Keymap.create__();
     this.metadataCache = MetadataCache.create2__(this, this.vault);
+    this.plugins = Plugins.create2__(this);
     this.scope = Scope.create__();
     this.workspace = Workspace.create2__(this, createDiv());
     this.renderContext = RenderContext.create__(this);

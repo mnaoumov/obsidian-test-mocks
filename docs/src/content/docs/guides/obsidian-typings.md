@@ -45,7 +45,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | Class | Members |
 | --- | --- |
 | `AbstractInputSuggest` | `textInputEl` |
-| `App` | `appId`, `changeTheme`, `getTheme`, `isMobile`, `setTheme` |
+| `App` | `appId`, `changeTheme`, `getTheme`, `isMobile`, `plugins`, `setTheme` |
 | `BasesViewConfig` | `setOrder` |
 | `ColorComponent` | `colorPickerEl` |
 | `Component` | `_children`, `_events`, `_loaded` |
@@ -76,6 +76,39 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `Workspace` | `app` |
 | `WorkspaceLeaf` | `group`, `pinned` |
 <!-- END GENERATED: implemented-internals -->
+
+## The plugin registry
+
+`app.plugins` is modelled, and `getPlugin()` answers `null`. That is not a stub — a mock vault
+genuinely has no community plugins installed, so `null` is the truth about it:
+
+```typescript
+const app = App.createConfigured__();
+
+app.plugins.getPlugin('notebook-navigator'); // null
+```
+
+This matters because library code reads the registry on your behalf. `obsidian-dev-utils`, for
+instance, looks for Notebook Navigator's optional menu API on layout ready, so a plugin whose own
+code never mentions `app.plugins` still touches it through what it inherits.
+
+To model a vault that *does* have the plugin, seed it:
+
+```typescript
+app.plugins.registerPlugin__('notebook-navigator', castTo<Plugin>({ api }));
+
+app.plugins.getPlugin('notebook-navigator'); // the stand-in
+app.plugins.enabledPlugins;                  // Set { 'notebook-navigator' }
+```
+
+The instance can be a full `Plugin` mock via `asOriginalType2__()`, or any stand-in carrying just the
+members under test. `unregisterPlugin__(id)` reverses it. Only that core is modelled — the
+enable/disable lifecycle, installing, updates and deprecation checks throw, as below.
+
+`app.internalPlugins` and `app.commands` are still unmocked on purpose: neither has an honest empty
+state. Real Obsidian always ships core plugins with several enabled, and this package's
+`Plugin.addCommand` records into the plugin's own mock-only registry, so answering "none" for either
+would be a wrong answer rather than an empty vault.
 
 ## What still throws
 

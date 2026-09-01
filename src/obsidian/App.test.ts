@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { Plugins } from '../internal/plugins.ts';
 import {
   ensureGenericObject,
   ensureNonNullable
@@ -147,6 +148,18 @@ describe('App', () => {
     it('should expose a RenderContext instance', () => {
       const app = App.createConfigured__();
       expect(app.renderContext).toBeInstanceOf(RenderContext);
+    });
+  });
+
+  describe('plugins', () => {
+    it('should expose a Plugins instance', () => {
+      const app = App.createConfigured__();
+      expect(app.plugins).toBeInstanceOf(Plugins);
+    });
+
+    it('should report a vault with no community plugins installed', () => {
+      const app = App.createConfigured__();
+      expect(app.plugins.getPlugin('notebook-navigator')).toBeNull();
     });
   });
 

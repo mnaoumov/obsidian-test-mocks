@@ -291,17 +291,23 @@ function getEslintConfigs(): Linter.Config[] {
       }
     },
     {
-      files: ['src/obsidian/**/*.ts'],
+      // `src/internal/` is in scope for both rules: L3 forbids the import across `src/`, and the L9
+      // `return strictProxy(this)` constructor pattern reaches here too, because an obsidian-typings
+      // Interface with no `obsidian.d.ts` class is implemented in `src/internal/` (L1, L7).
+      files: [
+        'src/internal/**/*.ts',
+        'src/obsidian/**/*.ts'
+      ],
       rules: {
         'no-constructor-return': 'off',
         'no-restricted-imports': ['error', {
           paths: [{
-            message: 'Do not import obsidian-typings in src/obsidian/. Inline needed type shapes in src/internal/types.ts instead.',
+            message: 'Do not import obsidian-typings in src/. Inline needed type shapes in src/internal/types.ts instead.',
             name: 'obsidian-typings'
           }],
           patterns: [{
             group: ['obsidian-typings/*'],
-            message: 'Do not import obsidian-typings in src/obsidian/. Inline needed type shapes in src/internal/types.ts instead.'
+            message: 'Do not import obsidian-typings in src/. Inline needed type shapes in src/internal/types.ts instead.'
           }]
         }]
       }
