@@ -47,7 +47,6 @@
   "App.openHelp",
   "App.openVaultChooser",
   "App.openWithDefaultApp",
-  "App.plugins",
   "App.registerCommands",
   "App.registerQuitHook",
   "App.relaunch",
