@@ -26,6 +26,7 @@ import {
   ensureNonNullable
 } from '../src/internal/type-guards.ts';
 import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
+import { parseNpmPackFilename } from './helpers/npm-pack.ts';
 import {
   execFromRoot,
   getRootFolder,
@@ -33,10 +34,6 @@ import {
 } from './helpers/root.ts';
 
 exitIfScriptDisabled();
-
-interface NpmPackResult {
-  readonly filename: string;
-}
 
 interface ParsedArguments {
   readonly shouldEditChangelog: boolean;
@@ -188,9 +185,8 @@ function parseArguments($arguments: readonly string[]): ParsedArguments {
 
 async function publishGitHubRelease(newVersion: string): Promise<void> {
   const resultOutput = await execFromRoot(['npm', 'pack', '--pack-destination', 'dist', '--json'], { isQuiet: true });
-  const result = JSON.parse(resultOutput) as [NpmPackResult];
   let filePaths = [
-    join('dist', result[0].filename)
+    join('dist', parseNpmPackFilename(resultOutput))
   ];
 
   filePaths = filePaths.filter((filePath) => existsSync(resolvePathFromRootSafe(filePath)));

@@ -136,6 +136,18 @@ release, downloads that same tarball, and publishes it with npm trusted publishi
 - The dist-tag comes from the release: `beta` when GitHub marks it a prerelease (which `version.ts` does
   for a `-beta.n` version), `latest` otherwise.
 
+Two npm-12 facts about this path, both measured on npm 12.0.2 / Node 26.5.0 and worth not re-deriving:
+
+- **The tarball's name is parsed, not asserted.** `npm pack --json` changed shape in npm 12 - npm <= 11
+  emitted an array of results, npm 12 emits an object keyed by package name. Both are valid JSON, so the
+  old `JSON.parse(output) as [NpmPackResult]` cast parsed happily and then read `undefined.filename`,
+  crashing `publishGitHubRelease` AFTER the bump, commit, tag and push had already reached the remote.
+  `scripts/helpers/npm-pack.ts` now reads both shapes and throws naming the raw output otherwise.
+- **The unattended form works here.** `npm run version -- <type> --no-changelog-editing` forwards both
+  arguments to `scripts/version.ts` intact; `obsidian-dev-utils` sees npm claim `--no-*` as its own config
+  and fail with `EUNKNOWNCONFIG`, but that does not reproduce in this repo. Without the flag,
+  `updateChangelog` opens `code -w CHANGELOG.md` and blocks until the editor closes.
+
 ## Documentation site
 
 `docs/` is an Astro + Starlight site published to GitHub Pages at
