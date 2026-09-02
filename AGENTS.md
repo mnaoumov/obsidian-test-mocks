@@ -17,7 +17,7 @@
 - `npm run lint:md:fix` — auto-fix markdown lint issues
 - `npm run spellcheck` — spell check with cspell
 - `npm run build` — full build pipeline
-- `npm run build:compile:typescript` — TypeScript type-check only
+- `npm run build:compile` — TypeScript type-check only
 - `npm run version` — run build (used as npm version hook)
 - `npm run docs:build` — generate the API reference + OG images, build the Astro site, then link-check it
 - `npm run docs:dev` — regenerate the API reference, then run the Astro dev server
@@ -85,7 +85,7 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 
 `tsconfig.json` sets `skipLibCheck: true`. This is a deliberate exception to the usual "never weaken `@tsconfig/strictest`" stance: it lets `tsc` type-check our `.ts` files without failing on broken upstream `.d.ts` files we do not control (e.g. a given version's `@vitest/runner` declarations, which ship optional properties that violate `exactOptionalPropertyTypes`). This replaces the old `patch-package` workaround — there is no longer a `patches/` directory or a `postinstall` hook.
 
-The declarations we author are still fully validated. `scripts/build-compile-typescript.ts` (run by `build:compile:typescript`) does two passes:
+The declarations we author are still fully validated. `scripts/build-compile.ts` (run by `build:compile`) does two passes:
 
 1. `tsc --build --force` — the normal compile, with `skipLibCheck: true`.
 2. An in-memory re-check via `checkProjectTypes()` (`scripts/helpers/check-project-types.ts`) with `skipLibCheck: false`, reporting **only** diagnostics whose source file is under the project root and outside `node_modules`. It prints `Ignored N diagnostic(s) outside the validated set.` — when upstream is fixed and `N` reaches `0`, the workaround is no longer doing anything and `skipLibCheck` can go back to `false`.
@@ -197,7 +197,7 @@ Keep new divergence to the five places OTM genuinely differs:
 `scripts/docs-gen/**` is EXCLUDED from the root `tsconfig.json` (it needs `moduleResolution: bundler`
 for the Astro/Starlight ESM packages, so it carries its own `scripts/docs-gen/tsconfig.json`), and
 `astro.config.ts` is carved out into `tsconfig.astro.json` for the same reason. Neither is part of
-`build:compile:typescript`, exactly as in ODU — so `tsc -p scripts/docs-gen/tsconfig.json` currently
+`build:compile`, exactly as in ODU — so `tsc -p scripts/docs-gen/tsconfig.json` currently
 reports pre-existing `exactOptionalPropertyTypes` violations in the copied code. ESLint DOES cover both
 (`projectService` resolves each file's nearest tsconfig; `astro.config.ts` is pinned to
 `tsconfig.astro.json` by an override that must come AFTER `getTseslintConfigs()`).
