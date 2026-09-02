@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 5.0.0
+
+- refactor(build): rename build:compile:typescript to build:compile
+- fix(release): parse npm pack --json under npm 12, so the release stops half-failing
+- feat(App): mock Plugins so app.plugins.getPlugin() answers null
+- fix(build): drop build:compile, a gate that skipped declaration validation
+- feat(obsidian-typings)!: implement Obsidian internals under their real names
+
 ## 4.2.1
 
 - feat(version): add --no-changelog-editing, so a release can run unattended
