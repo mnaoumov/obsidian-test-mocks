@@ -102,7 +102,7 @@
   "scripts": {
     "build": "jiti scripts/build.ts",
     "build:clean": "jiti scripts/build-clean.ts",
-    "build:compile:typescript": "jiti scripts/build-compile-typescript.ts",
+    "build:compile": "jiti scripts/build-compile.ts",
     "build:generate:indices": "jiti scripts/build-generate-indices.ts",
     "build:generate:typings-surface": "jiti scripts/build-generate-typings-surface.ts",
     "build:lib": "jiti scripts/build-lib.ts",
