@@ -100,9 +100,47 @@ export class MetadataCache extends Events {
     return null;
   }
 
+  /**
+   * Indexes a caller-supplied metadata cache for `path` as though Obsidian had just parsed the file,
+   * overriding whatever the automatic parse produced.
+   *
+   * This runs the SAME bookkeeping the automatic index does — it writes `cache__`, refreshes
+   * `fileCache` / `metadataCache` and the `resolvedLinks` / `unresolvedLinks` graph, and fires
+   * `changed` as `(file, content, cache)`, the shape real Obsidian emits — so a consumer's handler
+   * and a later `getCacheSafe` both see the override rather than a stale parse.
+   *
+   * The file's own content is read from the vault and passed as the event's `data`; only the metadata
+   * is overridden, never the bytes.
+   *
+   * @param path - The path of an EXISTING file to override the metadata of.
+   * @param cache - The metadata to index for it.
+   * @throws A `TypeError` if no file exists at `path` — there is no `file` to put on the event, and a
+   * `changed` event without one is a shape no real Obsidian consumer is written against.
+   */
   public setCache__(path: string, cache: CachedMetadataOriginal): void {
-    this.cache__.set(path, cache);
-    this.trigger('changed');
+    const file = this.app.vault.getFileByPath(path);
+    if (!file) {
+      throw new TypeError(`setCache__ requires a file in the vault at "${path}"`);
+    }
+    this.applyCache(file, this.app.vault.readSync__(file), cache);
+  }
+
+  /**
+   * Records `cache` as `file`'s metadata and brings every derived structure with it, the way Obsidian
+   * does when it finishes indexing a file. The single owner of that bookkeeping — both the automatic
+   * parse and the manual `setCache__` override go through here, so neither can drift from the other.
+   *
+   * @param file - The file being indexed.
+   * @param content - The file's content, passed on as the `changed` event's `data`.
+   * @param cache - The metadata to record.
+   */
+  private applyCache(file: TFile, content: string, cache: CachedMetadataOriginal): void {
+    this.cache__.set(file.path, cache);
+    const hash = hashContent(content);
+    this.fileCache[file.path] = { hash, mtime: file.stat.mtime, size: file.stat.size };
+    this.metadataCache[hash] = cache;
+    this.updateLinks(file.path, cache);
+    this.trigger('changed', file, content, cache);
   }
 
   private parseFileMetadata(file: unknown): void {
@@ -116,13 +154,7 @@ export class MetadataCache extends Events {
       // The file was removed before indexing; leave the cache untouched.
       return;
     }
-    const cache = parseMarkdownContent(content);
-    this.cache__.set(file.path, cache);
-    const hash = hashContent(content);
-    this.fileCache[file.path] = { hash, mtime: file.stat.mtime, size: file.stat.size };
-    this.metadataCache[hash] = cache;
-    this.updateLinks(file.path, cache);
-    this.trigger('changed', file, content, cache);
+    this.applyCache(file, content, parseMarkdownContent(content));
   }
 
   private updateLinks(sourcePath: string, cache: CachedMetadataOriginal): void {
