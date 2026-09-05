@@ -113,6 +113,10 @@ Two rules are scoped off where they cannot be satisfied, both for the same reaso
 
 Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rather than the rule's default `function_` / `arguments_`, so a trailing underscore never reads as the `__` mock-member suffix.
 
+`import-x/no-nodejs-modules` is off for `scripts/` and friends (build tooling reads from disk) and for `testFiles` — a test runs under vitest in Node and is never part of the published library, so the ban has nothing to protect there. The test exemption is ported from ODU's `getNodeBuiltinsConfigs`, which scopes the same rule off for `context.testFiles`; only the `import-x` half comes across, because ODU's twin `obsidianmd/no-nodejs-modules` arrives with the plugin-directory rules this package does not register. It is what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory without an inline waiver at each import.
+
+`linterOptions.reportUnusedDisableDirectives` is set to `'error'` repo-wide. ESLint's default is `'warn'`, and `npm run lint` passes no `--max-warnings 0`, so the default would let a waiver that has stopped silencing anything sit at exit 0 — still naming a rule as the reason for the code beneath it, untruthfully. Every rule here is an error; the directives claiming to suppress them are held to the same bar.
+
 Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint-rules/` (this project has no runtime dependency on it). Their tests run as part of `npm test` and need `tsconfig.eslint-test.json` for the type-aware ones.
 
 ## Releasing

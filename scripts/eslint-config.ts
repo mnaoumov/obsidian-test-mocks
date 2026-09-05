@@ -40,6 +40,18 @@ export const config: Linter.Config[] = defineConfig(
   {
     ignores: ['docs/src/**/*.ts']
   },
+  {
+    /*
+     * A waiver that no longer silences anything is worse than no waiver: it names a rule as the reason for
+     * the code below it, and that reason has quietly stopped being true. ESLint reports these at `warn` by
+     * default, and `npm run lint` passes no `--max-warnings 0`, so the default would let stale waivers
+     * accumulate unnoticed. Every rule in this config is an error; the directives that claim to suppress
+     * them are held to the same bar.
+     */
+    linterOptions: {
+      reportUnusedDisableDirectives: 'error'
+    }
+  },
   ...getAstroConfigs(),
   ...getEslintConfigs(),
   ...getLocalPluginConfigs(),
@@ -400,6 +412,23 @@ function getImportXConfigs(): Linter.Config[] {
     {
       // `astro.config.ts` is build tooling like the rest: it reads the generated sidebar off disk.
       files: ['scripts/**/*.ts', 'src/script-utils/**/*.ts', 'astro.config.ts'],
+      rules: {
+        'import-x/no-nodejs-modules': 'off'
+      }
+    },
+    {
+      /*
+       * A test runs under vitest in Node and is never part of the published library, so the ban on Node
+       * builtins does not apply to it — the same argument the tooling block above already accepts. This is
+       * what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory off
+       * disk without an inline waiver at each import.
+       *
+       * Ported from `obsidian-dev-utils`' shared config, whose `getNodeBuiltinsConfigs` exempts
+       * `context.testFiles` the same way. Only the `import-x` half comes across: the twin
+       * `obsidianmd/no-nodejs-modules` there arrives with the plugin-directory rules, which this package
+       * does not register.
+       */
+      files: testFiles,
       rules: {
         'import-x/no-nodejs-modules': 'off'
       }

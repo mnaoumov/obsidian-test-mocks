@@ -18,11 +18,8 @@
  * outcome. It asserts only that the split is recorded.
  */
 
-// eslint-disable-next-line import-x/no-nodejs-modules -- This conformance test reads the checked-in inventory from disk.
 import { readFileSync } from 'node:fs';
-// eslint-disable-next-line import-x/no-nodejs-modules -- This conformance test reads the checked-in inventory from disk.
 import { join } from 'node:path';
-// eslint-disable-next-line import-x/no-nodejs-modules -- This conformance test reads the checked-in inventory from disk.
 import process from 'node:process';
 import {
   describe,
