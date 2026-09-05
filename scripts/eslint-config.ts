@@ -403,6 +403,23 @@ function getImportXConfigs(): Linter.Config[] {
       rules: {
         'import-x/no-nodejs-modules': 'off'
       }
+    },
+    {
+      /*
+       * A test runs under vitest in Node and is never part of the published library, so the ban on Node
+       * builtins does not apply to it — the same argument the tooling block above already accepts. This is
+       * what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory off
+       * disk without an inline waiver at each import.
+       *
+       * Ported from `obsidian-dev-utils`' shared config, whose `getNodeBuiltinsConfigs` exempts
+       * `context.testFiles` the same way. Only the `import-x` half comes across: the twin
+       * `obsidianmd/no-nodejs-modules` there arrives with the plugin-directory rules, which this package
+       * does not register.
+       */
+      files: testFiles,
+      rules: {
+        'import-x/no-nodejs-modules': 'off'
+      }
     }
   ]);
 }

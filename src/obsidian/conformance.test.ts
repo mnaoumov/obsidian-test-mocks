@@ -30,9 +30,7 @@ import type {
   TypeChecker
 } from 'typescript';
 
-// eslint-disable-next-line import-x/no-nodejs-modules -- This conformance test reads obsidian.d.ts via the TypeScript compiler API.
 import { join } from 'node:path';
-// eslint-disable-next-line import-x/no-nodejs-modules -- This conformance test reads obsidian.d.ts via the TypeScript compiler API.
 import process from 'node:process';
 import {
   createProgram,
