@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 5.1.0
+
+- chore(lint): retire the conformance-test Node-builtins waivers
+- fix(metadata-cache): setCache__ emits the changed event Obsidian actually emits
+- chore(deps): bump to latest, and clear the fflate advisory with a 0.7.5 override
+
 ## 5.0.0
 
 - refactor(build): rename build:compile:typescript to build:compile
