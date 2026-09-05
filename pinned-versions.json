@@ -34,6 +34,12 @@
       "check": "node -e \"process.stdout.write(require('astro/package.json').dependencies['js-yaml'])\"",
       "expect": "^4.3.0"
     },
+    "fflate": {
+      "section": "overrides",
+      "why": "satori pins fflate at exactly 0.7.3, which sits inside GHSA-px8p-9vwx-vf98 (0.7.0 - 0.7.4: unzipSync can enter an infinite loop on a malformed ZIP64 archive). npm audit's only offer is `--force` down to satori@0.32.0, i.e. a downgrade. 0.7.5 is the patched release on the same minor - and is already what @shuding/opentype.js resolves to in this same tree - so the override clears the advisory without moving satori off the fflate API it pins itself to. The check records the version satori itself asks for: when satori moves onto a patched fflate, this override can be dropped.",
+      "check": "node -e \"process.stdout.write(require('satori/package.json').dependencies.fflate)\"",
+      "expect": "0.7.3"
+    },
     "obsidian": {
       "section": "devDependencies",
       "why": "These mocks reproduce one specific Obsidian API surface, so the type definitions they are written against are pinned rather than floated. The check records the newest published obsidian release: when it moves, the mocks should be re-examined against the new API rather than silently drifting.",

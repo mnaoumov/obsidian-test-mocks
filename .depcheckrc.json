@@ -20,6 +20,11 @@
     "linkinator - run as a CLI, named as a string by the markdownlint helper.",
     "markdownlint-cli2 - run as a CLI by the lint:md scripts, configured by .markdownlint-cli2.mjs.",
     "nano-staged - .husky/pre-commit runs it; configured by scripts/nano-staged-config.ts.",
+    "obsidian-typings - never imported anywhere: scripts/helpers/obsidian-typings-surface.ts resolves the bare specifier through",
+    "  ts.resolveModuleName and hands the resolved .d.ts to its own ts.Program. AGENTS.md L3 forbids importing it from src/ (the",
+    "  `declare module 'obsidian'` augmentation activates globally), and 5.0.0 deleted the bridge layer that held the last real",
+    "  import - so there is nothing left for depcheck to see. Removing it would break `npm run build:generate:typings-surface`",
+    "  and src/obsidian/obsidian-typings-conformance.test.ts.",
     "typedoc-plugin-mdn-links - never imported; scripts/docs-gen/helpers/api-doc-link-rendering.ts reads",
     "  node_modules/typedoc-plugin-mdn-links/data/web-api.json at runtime for the MDN Web API link map."
   ],
@@ -36,6 +41,7 @@
     "linkinator",
     "markdownlint-cli2",
     "nano-staged",
+    "obsidian-typings",
     "typedoc-plugin-mdn-links"
   ]
 }
