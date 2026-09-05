@@ -13,6 +13,7 @@ import { MetadataCache } from './MetadataCache.ts';
 const MICROTASK_FLUSH_COUNT = 5;
 const HEADING_COUNT_2 = 2;
 const EVENT_ARG_INDEX_CACHE = 2;
+const ZERO_POSITION = { end: { col: 0, line: 0, offset: 0 }, start: { col: 0, line: 0, offset: 0 } };
 
 /**
  * Flushes multiple microtask ticks to allow async event handlers to complete.
@@ -101,19 +102,76 @@ describe('MetadataCache', () => {
     });
   });
 
-  describe('_setCache', () => {
-    it('should allow manual cache override', async () => {
+  describe('setCache__', () => {
+    it('should allow manual cache override', () => {
       const app = App.createConfigured__();
-      const file = await app.vault.create('note.md', '# Auto');
-      await flushMicrotasks();
+      const file = app.vault.createSync__('note.md', '# Auto');
 
       const manualCache = {
-        headings: [{ heading: 'Manual', level: 1, position: { end: { col: 0, line: 0, offset: 0 }, start: { col: 0, line: 0, offset: 0 } } }]
+        headings: [{ heading: 'Manual', level: 1, position: ZERO_POSITION }]
       };
       app.metadataCache.setCache__(file.path, manualCache);
 
       const cache = app.metadataCache.getCache(file.path);
       expect(cache?.headings?.[0]?.heading).toBe('Manual');
+    });
+
+    it('should fire changed with the file, its content, and the cache', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('note.md', '# Auto');
+
+      let receivedFile: unknown = null;
+      let receivedContent: unknown = null;
+      let receivedCache: unknown = null;
+      app.metadataCache.on('changed', (...$arguments: unknown[]) => {
+        receivedFile = $arguments[0];
+        receivedContent = $arguments[1];
+        receivedCache = $arguments[EVENT_ARG_INDEX_CACHE];
+      });
+
+      const manualCache = { headings: [{ heading: 'Manual', level: 1, position: ZERO_POSITION }] };
+      app.metadataCache.setCache__(file.path, manualCache);
+
+      expect(receivedFile).toBe(file);
+      expect(receivedContent).toBe('# Auto');
+      expect(receivedCache).toBe(manualCache);
+    });
+
+    it('should refresh the link graph from the overridden cache', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('target.md', '# Target');
+      const source = app.vault.createSync__('source.md', 'No links here');
+
+      expect(app.metadataCache.resolvedLinks['source.md']).toEqual({});
+
+      app.metadataCache.setCache__(source.path, {
+        links: [
+          { link: 'target', original: '[[target]]', position: ZERO_POSITION },
+          { link: 'missing', original: '[[missing]]', position: ZERO_POSITION }
+        ]
+      });
+
+      expect(app.metadataCache.resolvedLinks['source.md']).toEqual({ 'target.md': 1 });
+      expect(app.metadataCache.unresolvedLinks['source.md']).toEqual({ missing: 1 });
+    });
+
+    it('should refresh the content-hash lookup so getCacheSafe sees the override', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('note.md', '# Auto');
+
+      const manualCache = { headings: [{ heading: 'Manual', level: 1, position: ZERO_POSITION }] };
+      app.metadataCache.setCache__(file.path, manualCache);
+
+      const hash = app.metadataCache.fileCache[file.path]?.hash ?? '';
+      expect(app.metadataCache.metadataCache[hash]).toBe(manualCache);
+    });
+
+    it('should throw when no file exists at the path', () => {
+      const app = App.createConfigured__();
+
+      expect(() => {
+        app.metadataCache.setCache__('nonexistent.md', {});
+      }).toThrow(new TypeError('setCache__ requires a file in the vault at "nonexistent.md"'));
     });
   });
 

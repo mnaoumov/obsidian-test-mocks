@@ -237,7 +237,12 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **`MetadataCache` indexes synchronously** on `create`/`modify` via `Vault.readSync__`, populating
   `cache__`, `resolvedLinks`/`unresolvedLinks`, and `frontmatterLinks`, plus the obsidian-typings
   internals `fileCache`/`metadataCache`/`computeMetadataAsync` — so `getFileCache`, the link graph, and
-  `getCacheSafe` work with no tick needed.
+  `getCacheSafe` work with no tick needed. **`MetadataCache.setCache__(path, cache)` runs that SAME
+  index** with a caller-supplied cache instead of a parsed one — both paths go through one private
+  `applyCache`, so an override refreshes the link graph and the hash lookup too, and fires `changed`
+  as `(file, content, cache)`, the shape real Obsidian emits. It therefore needs a file to already
+  exist at `path` and throws a `TypeError` if none does; to seed a cache with no event at all, write
+  into `cache__` directly.
 - **`Vault.getAvailablePath` de-duplicates**, folder renames cascade to descendants, and
   `createFolder('a/b')` creates/links intermediate ancestors.
 
