@@ -40,6 +40,18 @@ export const config: Linter.Config[] = defineConfig(
   {
     ignores: ['docs/src/**/*.ts']
   },
+  {
+    /*
+     * A waiver that no longer silences anything is worse than no waiver: it names a rule as the reason for
+     * the code below it, and that reason has quietly stopped being true. ESLint reports these at `warn` by
+     * default, and `npm run lint` passes no `--max-warnings 0`, so the default would let stale waivers
+     * accumulate unnoticed. Every rule in this config is an error; the directives that claim to suppress
+     * them are held to the same bar.
+     */
+    linterOptions: {
+      reportUnusedDisableDirectives: 'error'
+    }
+  },
   ...getAstroConfigs(),
   ...getEslintConfigs(),
   ...getLocalPluginConfigs(),
