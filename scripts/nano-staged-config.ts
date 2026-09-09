@@ -10,19 +10,28 @@ import {
   isEnvVariableOff,
   loadEnvFileIfExists
 } from './helpers/env-toggle.ts';
+import { getPackageManagerRunCommand } from './helpers/package-manager.ts';
+
+/**
+ * The `<manager> run` prefix every task below is built on, resolved once for the process.
+ *
+ * Detection is a handful of `existsSync` calls and at most one `package.json` read — no `.env` read and
+ * no `process.exit`, which is what lets it sit at module scope beside the tasks it prefixes.
+ */
+const PACKAGE_MANAGER_RUN_COMMAND = getPackageManagerRunCommand().join(' ');
 
 const NANO_STAGED_ENV_VARIABLE = 'NANO_STAGED';
 
 const tasks: Record<string, string[]> = {
   '*': [
-    'npm run spellcheck --'
+    `${PACKAGE_MANAGER_RUN_COMMAND} spellcheck --`
   ],
   '*.{ts,tsx,mts}': [
-    'npm run lint:fix --',
-    'npm run format --'
+    `${PACKAGE_MANAGER_RUN_COMMAND} lint:fix --`,
+    `${PACKAGE_MANAGER_RUN_COMMAND} format --`
   ],
   '*.md': [
-    'npm run lint:md:fix --'
+    `${PACKAGE_MANAGER_RUN_COMMAND} lint:md:fix --`
   ]
 };
 
