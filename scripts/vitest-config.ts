@@ -11,10 +11,19 @@ const SHARED_EXCLUDE = ['node_modules', 'dist', 'docs/dist', 'src/jest'];
 const SCRIPTS_TEST_FILES = 'scripts/**/*.test.ts';
 const DOCS_SITE_TEST_FILES = 'docs/src/**/*.test.ts';
 
-// Rendering an OG image to a bitmap (satori + resvg) and building a ts-morph Project are genuinely slow.
-// Under the full aggregate they lose the CPU race and the default 5000 ms times them out. It is a budget
-// Rather than a floor, so the fast helper suites sharing it cost nothing.
-const NODE_TEST_TIMEOUT_IN_MILLISECONDS = 30_000;
+const BIG_TIMEOUT_IN_MILLISECONDS = 30_000;
+
+// Vitest 4 projects do NOT inherit the root-level `test` options, so a project that omits `testTimeout`
+// Silently runs on the built-in 5000 ms default -- nothing warns, and nothing in the config hints that one
+// Project is on a tighter budget than its sibling. Spreading the budget into EVERY project makes that
+// Omission impossible rather than merely unlikely; `obsidian-integration-testing` carries the same object
+// For the same reason, after its release gate went flaky on exactly this. The budget covers two costs a
+// Per-suite number cannot see: v8 coverage instrumentation, which `npm run test:coverage` -- the release
+// Gate, via `npm run version` -- runs `src/**` under, and the CPU contention of a busy machine. Suites that
+// Are genuinely slow in their own right -- rendering an OG image to a bitmap with satori + resvg, building
+// A ts-morph Project -- sit comfortably inside it. It is a ceiling rather than a floor, so the fast suites
+// Sharing it cost nothing.
+const SHARED_TEST_DEFAULTS = { testTimeout: BIG_TIMEOUT_IN_MILLISECONDS };
 
 export const config = defineConfig({
   test: {
@@ -41,18 +50,19 @@ export const config = defineConfig({
         // Jsdom, and must not load the Obsidian mocks (the docs generator reads this repo's own sources
         // With ts-morph, so a global `obsidian` mock would only get in the way).
         test: {
+          ...SHARED_TEST_DEFAULTS,
           environment: 'node',
           exclude: [...SHARED_EXCLUDE],
           include: [SCRIPTS_TEST_FILES, DOCS_SITE_TEST_FILES],
           name: 'unit-tests:scripts',
-          setupFiles: [],
-          testTimeout: NODE_TEST_TIMEOUT_IN_MILLISECONDS
+          setupFiles: []
         }
       },
       {
         // Only `src/**` runs under jsdom with the Obsidian mocks -- the include is narrow on purpose, so
         // A test added anywhere else cannot be collected here by accident.
         test: {
+          ...SHARED_TEST_DEFAULTS,
           environment: 'jsdom',
           exclude: [...SHARED_EXCLUDE],
           include: ['src/**/*.test.ts'],

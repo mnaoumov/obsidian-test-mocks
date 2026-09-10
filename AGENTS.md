@@ -105,9 +105,20 @@ The declarations we author are still fully validated. `scripts/build-compile.ts`
   `src/globals/vitest-setup.ts`, which is what supplies the `obsidian` mock.
 - **`unit-tests:scripts`** — `scripts/**/*.test.ts` and `docs/src/**/*.test.ts`.
   `environment: 'node'`, NO setup files (the docs generator reads this repo's own sources with ts-morph,
-  so a global `obsidian` mock would only get in the way), and a 30 s `testTimeout` because rendering an
-  OG image with satori + resvg and building a ts-morph `Project` are genuinely slow. The timeout is a
-  budget, not a floor, so the fast helper suites sharing it cost nothing.
+  so a global `obsidian` mock would only get in the way).
+
+**Both projects spread `SHARED_TEST_DEFAULTS`, which is where the 30 s `testTimeout` comes from — and the
+spread is the point, not the number.** Vitest 4 projects do NOT inherit the root-level `test` options, so
+a project that omits `testTimeout` silently runs on the built-in 5000 ms default, with no warning and
+nothing in the config to hint that one project is on a tighter budget than its sibling. That is how
+`unit-tests` — whose `src/**` is the only tree `coverage.include` instruments, so it is the project that
+actually pays for `npm run test:coverage`, the release gate `npm run version` runs — ended up with the
+tightest budget in the repo while its uninstrumented sibling had 30 s. The
+budget covers two costs a per-suite number cannot see: v8 coverage instrumentation (~2.2x, measured on
+`obsidian-integration-testing`'s tree) and the CPU contention of a busy machine. Suites that are slow in
+their own right — rendering an OG image with satori + resvg, building a ts-morph `Project` — sit
+comfortably inside it. It is a ceiling, not a floor, so the fast suites sharing it cost nothing. Add a
+project by spreading the defaults, not by remembering to write a timeout.
 
 **Anything outside `src/` must stay in the `node` project — that is a correctness rule, not tidiness:
 mocking a node builtin does not work under `jsdom`.** Measured on 2026-09-09 with a throwaway module
