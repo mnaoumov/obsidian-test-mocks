@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 5.2.0
+
+- test(vitest): give both projects a shared testTimeout, off the 5s default
+- docs(scripts): drop the private tracker ids from the npm-pack comments
+- test(vitest): give the scripts tests their own node project
+- fix(docs): move the relative-link rewrite onto Sätteri, which docs:build has needed since Astro 7.3
+- chore(deps): bump to latest, and clear the js-yaml and smol-toml advisories with overrides
+- fix(scripts): run the script hops through the detected package manager
+- chore: make the LICENSE copyright line lintable and guard it against the year roll-over
+
 ## 5.1.0
 
 - chore(lint): retire the conformance-test Node-builtins waivers
