@@ -97,6 +97,40 @@ The declarations we author are still fully validated. `scripts/build-compile.ts`
 - Vitest with explicit imports (globals: false) — always import `describe`, `it`, `expect`, etc. from `'vitest'`
 - Coverage provider: v8
 
+### The two Vitest projects — where a test file runs depends on where it lives
+
+`scripts/vitest-config.ts` splits the suite in two, and the split is load-bearing:
+
+- **`unit-tests`** — `src/**/*.test.ts` only. `environment: 'jsdom'` plus
+  `src/globals/vitest-setup.ts`, which is what supplies the `obsidian` mock.
+- **`unit-tests:scripts`** — `scripts/**/*.test.ts` and `docs/src/**/*.test.ts`.
+  `environment: 'node'`, NO setup files (the docs generator reads this repo's own sources with ts-morph,
+  so a global `obsidian` mock would only get in the way), and a 30 s `testTimeout` because rendering an
+  OG image with satori + resvg and building a ts-morph `Project` are genuinely slow. The timeout is a
+  budget, not a floor, so the fast helper suites sharing it cost nothing.
+
+**Anything outside `src/` must stay in the `node` project — that is a correctness rule, not tidiness:
+mocking a node builtin does not work under `jsdom`.** Measured on 2026-09-09 with a throwaway module
+under `scripts/helpers/` importing `existsSync` from `node:fs`:
+
+| | `jsdom` | `node` |
+| --- | --- | --- |
+| `vi.mock('node:fs')`, no factory | **silent no-op** — `vi.isMockFunction(existsSync)` is `false` even in the test file's own import, and every call reads the real disk | works — the spy reaches the test file AND the module under test |
+| `vi.mock('node:fs', factory)` | works, but the factory must also return a `default`, or the module under test throws `No "default" export is defined on the "node:fs" mock` | works, with or without `default` |
+
+The no-factory row is what makes this dangerous rather than merely annoying: nothing fails, so a suite
+written against it silently asserts against the real filesystem and passes exactly where the real answer
+happens to match what was expected. `scripts/helpers/package-manager.test.ts` was in that state while
+`scripts/**` was collected by the jsdom project — 15 of its 31 tests green for the wrong reason, being
+the ones whose expected value was the npm fallback the detection had fallen through to.
+
+The per-file `@vitest-environment node` docblock tag is NOT a rescue: `src/globals/vitest-setup.ts` needs
+a DOM, so pinning `node` per file inside the jsdom project trades the silent pass for
+`document is not defined`. The project split is the fix.
+
+Both projects' `include` globs are narrow on purpose, so a new test file cannot be collected by the
+wrong one by accident. `npm test` is a bare `vitest run`, which runs every project.
+
 ## Code Conventions
 
 - Mock files in `src/obsidian/` use PascalCase to match the original obsidian class/function names (e.g., `App.ts`, `Vault.ts`). All other files (`src/internal/`, `scripts/`) follow the global kebab-case convention. Exception: `src/internal/castTo.ts` is camelCase to mirror its exported `castTo()` function.
@@ -222,11 +256,8 @@ it again — do not let it.
 
 ### Testing
 
-`scripts/vitest-config.ts` runs the documentation code as its own `unit-tests:docs` project:
-`environment: 'node'`, no setup files (the generator reads this repo's sources with ts-morph, so the
-global `obsidian` mock would only get in the way), and a 30 s `testTimeout` because rendering an OG
-image and building a ts-morph `Project` are genuinely slow. Everything else stays in `unit-tests`
-(jsdom + the mock setup), which excludes the docs globs.
+The docs generator and the docs site are tested by the `unit-tests:scripts` project, alongside the rest
+of `scripts/**` — see [The two Vitest projects](#the-two-vitest-projects--where-a-test-file-runs-depends-on-where-it-lives).
 
 ## Consuming notes
 

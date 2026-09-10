@@ -8,14 +8,12 @@
  * yarn, a corepack declaration, two managers claiming the same tree) is unreachable in-repo, which is
  * exactly why it is pinned here.
  *
- * The trees are REAL folders under the OS temp directory rather than a mocked `node:fs`. `obsidian-test-mocks`
- * runs its `scripts/**` tests inside the `jsdom` project, and there a `vi.mock('node:fs')` reaches the test
- * file and nothing it imports -- the module under test keeps the real `existsSync`, so detection falls
- * through to its npm default while every npm expectation still passes. A suite that stays green for the
- * wrong reason is worse than no suite, and the per-file environment docblock tag cannot rescue it either:
- * the project's setup file needs a DOM, so pinning `node` per file trades the silent pass for
- * `document is not defined`. Real folders sidestep the whole question and work identically in the `node`
- * project `obsidian-integration-testing` runs this same file under.
+ * The trees are REAL folders under the OS temp directory rather than a mocked `node:fs`. What the module
+ * does is probe a filesystem, so a real tree is the honest fixture for it: the lockfile precedence, the
+ * two-managers-claiming-one-root warning and the corepack declaration are all decided by what is actually
+ * on disk, and a mock only ever proves that the probe called the function it was told to call. It also
+ * makes the file environment-agnostic, so it runs identically here and in the `node` project
+ * `obsidian-integration-testing` runs this same file under.
  */
 
 import type { MockInstance } from 'vitest';
