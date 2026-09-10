@@ -30,9 +30,15 @@
     },
     "js-yaml": {
       "section": "overrides",
-      "why": "Astro and Starlight `import yaml from 'js-yaml'`, and js-yaml 5 is ESM-only with NO default export - hoisting 5.x into their subtree makes `astro build` die on 'The requested module js-yaml does not provide an export named default' before it reads a single page. The override exists to keep the whole tree off the vulnerable 3.x line, and 4.3.1 does that just as well while staying loadable. The check records the range astro itself asks for: when astro moves to 5.x, this pin can be dropped.",
+      "why": "Astro and Starlight `import yaml from 'js-yaml'`, and js-yaml 5 is ESM-only with NO default export - hoisting 5.x into their subtree makes `astro build` die on 'The requested module js-yaml does not provide an export named default' before it reads a single page. The override exists to keep the whole tree off the vulnerable 3.x line and off 4.3.1 and below, which sit inside GHSA-2883-xcg3-v3hh (maxTotalMergeKeys does not limit CPU use for empty merge sources); 4.3.2 is the patched release on the v4-legacy dist-tag, so it clears the advisory while staying loadable. The check records the range astro itself asks for: when astro moves to 5.x, this pin can be dropped.",
       "check": "node -e \"process.stdout.write(require('astro/package.json').dependencies['js-yaml'])\"",
       "expect": "^4.3.0"
+    },
+    "smol-toml": {
+      "section": "overrides",
+      "why": "markdownlint-cli2 pins smol-toml at exactly 1.7.0 and astro / @astrojs/internal-helpers ask for ^1.6.0, so the whole tree deduped onto 1.7.0 - which is inside GHSA-7w5x-hrqm-74c2 (<=1.7.0: denial of service via malformed TOML documents). Both dependents are already on their newest release, so nothing here can be bumped to fix it, and npm audit only offers --force down to markdownlint-cli2@0.21.0, i.e. a downgrade. 1.8.0 is the patched line and is already resolved separately in this same tree under cspell-config-lib, so the override clears the advisory without moving anything onto an API its dependents do not use. Exact rather than caret so the sweep cannot float it onto a future 2.x that markdownlint-cli2 exact pin would reject. The check records the version markdownlint-cli2 itself asks for: when it moves onto a patched smol-toml, this override can be dropped.",
+      "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/markdownlint-cli2/package.json','utf8')).dependencies['smol-toml'])\"",
+      "expect": "1.7.0"
     },
     "fflate": {
       "section": "overrides",
