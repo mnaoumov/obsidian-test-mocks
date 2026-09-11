@@ -23,9 +23,9 @@ export async function lint(options?: LintOptions): Promise<void> {
       exclude: [
         '.git/**',
         'dist/**',
-        // The documentation site's own markdown is validated by `docs:build`, whose link check walks the
-        // BUILT html. Handing it to linkinator instead resolves a base-absolute in-site link
-        // (`/obsidian-test-mocks/guides/...`) against the containing folder, so every one of them 404s.
+        // A repo with a documentation site under `docs/` validates that markdown in `docs:build`, against the BUILT html.
+        // Linkinator would resolve a base-absolute in-site link (`/<site-base>/guides/...`) against the containing folder instead.
+        // So every one of those links would 404 here.
         'docs/**',
         'node_modules/**'
       ]
