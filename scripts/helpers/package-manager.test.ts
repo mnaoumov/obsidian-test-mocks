@@ -1,7 +1,8 @@
 /**
  * @file
  *
- * Tests for the package-manager detection the script hops run through.
+ * Tests for the package-manager detection the script hops run through, and for the `node_modules/.bin`
+ * shim resolution the tool hops run through.
  *
  * Every sibling repo is npm-only today -- a lone `package-lock.json` and no `packageManager` field -- so
  * the tree itself can only ever exercise the npm path. Everything else this module resolves (bun, pnpm,
@@ -14,6 +15,12 @@
  * on disk, and a mock only ever proves that the probe called the function it was told to call. It also
  * makes the file environment-agnostic, so it runs identically here and in the `node` project
  * `obsidian-integration-testing` runs this same file under.
+ *
+ * The shim probe is the one thing here that also depends on `process.platform`, because Windows can only
+ * run the executable shim forms. That half is stubbed rather than skipped: a suite that only exercised the
+ * platform it happens to run on would leave the other branch untested on every machine, and the
+ * Windows-only rule it encodes -- never pick the `sh` shim that carries no extension -- is exactly the one whose
+ * violation fails at the far end of a build rather than here.
  */
 
 import type { MockInstance } from 'vitest';
@@ -41,14 +48,24 @@ import {
 import {
   getPackageManager,
   getPackageManagerRunCommand,
-  PackageManager
+  PackageManager,
+  resolveToolCommand
 } from './package-manager.ts';
-import { toPosixPath } from './root.ts';
+import {
+  getRootFolder,
+  toPosixPath
+} from './root.ts';
 
 /**
  * The shape of a temporary project tree to lay down.
  */
 interface CreateProjectParams {
+  /**
+   * The shim file names to create in the project's own `node_modules/.bin`, which is created only when
+   * this is non-empty -- an absent `node_modules` is itself a case the probe has to handle.
+   */
+  readonly binShimNames?: readonly string[];
+
   /**
    * The lockfile names to create at the project root.
    */
@@ -60,6 +77,16 @@ interface CreateProjectParams {
   readonly packageJsonText?: string;
 }
 
+/**
+ * The tool every shim case asks for.
+ *
+ * Deliberately a name no real package publishes: the probe walks UP from the project root, so a tool that
+ * happened to be installed in some ancestor of the OS temp directory would silently satisfy the cases that
+ * assert on the no-shim fallback.
+ */
+const ABSENT_TOOL = 'package-manager-test-tool';
+
+const ORIGINAL_PLATFORM = process.platform;
 const ORIGINAL_USER_AGENT = process.env['npm_config_user_agent'];
 
 let consoleWarnSpy: MockInstance<typeof console.warn>;
@@ -77,6 +104,7 @@ let temporaryRoot: string;
  */
 function createProject(params: CreateProjectParams = {}): string {
   const {
+    binShimNames = [],
     lockfileNames = [],
     packageJsonText = '{}'
   } = params;
@@ -90,7 +118,27 @@ function createProject(params: CreateProjectParams = {}): string {
     writeFileSync(join(root, lockfileName), '');
   }
 
+  if (binShimNames.length > 0) {
+    const binFolder = join(root, 'node_modules', '.bin');
+    mkdirSync(binFolder, { recursive: true });
+    for (const binShimName of binShimNames) {
+      writeFileSync(join(binFolder, binShimName), '');
+    }
+  }
+
   return root;
+}
+
+/**
+ * Overrides the reported platform for the duration of a test.
+ *
+ * `process.platform` is a read-only property rather than a variable, so it is redefined rather than
+ * assigned, and `afterEach` restores it whether or not a test set it.
+ *
+ * @param platform - The platform to report.
+ */
+function setPlatform(platform: string): void {
+  Object.defineProperty(process, 'platform', { configurable: true, value: platform });
 }
 
 beforeAll(() => {
@@ -109,6 +157,7 @@ beforeEach(() => {
 
 afterEach(() => {
   consoleWarnSpy.mockRestore();
+  Object.defineProperty(process, 'platform', { configurable: true, value: ORIGINAL_PLATFORM });
   if (ORIGINAL_USER_AGENT === undefined) {
     delete process.env['npm_config_user_agent'];
   } else {
@@ -298,5 +347,79 @@ describe('getPackageManagerRunCommand', () => {
 
   it('should run scripts through yarn', () => {
     expect(getPackageManagerRunCommand(createProject({ lockfileNames: ['yarn.lock'] }))).toEqual(['yarn', 'run']);
+  });
+});
+
+describe('resolveToolCommand', () => {
+  it('should prefer the cmd shim on Windows', () => {
+    const root = createProject({ binShimNames: [ABSENT_TOOL, `${ABSENT_TOOL}.cmd`] });
+    setPlatform('win32');
+    expect(resolveToolCommand({ cwd: root, tool: ABSENT_TOOL })).toEqual([`${root}/node_modules/.bin/${ABSENT_TOOL}.cmd`]);
+  });
+
+  it('should resolve the exe shim on Windows when only the bun form exists', () => {
+    const root = createProject({ binShimNames: [`${ABSENT_TOOL}.exe`] });
+    setPlatform('win32');
+    expect(resolveToolCommand({ cwd: root, tool: ABSENT_TOOL })).toEqual([`${root}/node_modules/.bin/${ABSENT_TOOL}.exe`]);
+  });
+
+  it('should resolve the bat shim on Windows when it is the only one', () => {
+    const root = createProject({ binShimNames: [`${ABSENT_TOOL}.bat`] });
+    setPlatform('win32');
+    expect(resolveToolCommand({ cwd: root, tool: ABSENT_TOOL })).toEqual([`${root}/node_modules/.bin/${ABSENT_TOOL}.bat`]);
+  });
+
+  it('should never resolve the sh shim with no extension on Windows', () => {
+    const root = createProject({
+      binShimNames: [ABSENT_TOOL],
+      lockfileNames: ['package-lock.json']
+    });
+    setPlatform('win32');
+    expect(resolveToolCommand({ cwd: root, tool: ABSENT_TOOL })).toEqual(['npx', ABSENT_TOOL]);
+  });
+
+  it('should resolve the shim with no extension everywhere else', () => {
+    const root = createProject({ binShimNames: [ABSENT_TOOL] });
+    setPlatform('linux');
+    expect(resolveToolCommand({ cwd: root, tool: ABSENT_TOOL })).toEqual([`${root}/node_modules/.bin/${ABSENT_TOOL}`]);
+  });
+
+  it('should find a shim hoisted above the package that asks for it', () => {
+    const root = createProject({ binShimNames: [ABSENT_TOOL] });
+    const nestedPackage = join(root, 'packages', 'a');
+    mkdirSync(nestedPackage, { recursive: true });
+    writeFileSync(join(nestedPackage, 'package.json'), '{}');
+    setPlatform('linux');
+    expect(resolveToolCommand({ cwd: nestedPackage, tool: ABSENT_TOOL })).toEqual([`${root}/node_modules/.bin/${ABSENT_TOOL}`]);
+  });
+
+  it('should fall back to the npm exec form when no shim exists', () => {
+    const root = createProject({ lockfileNames: ['package-lock.json'] });
+    setPlatform('linux');
+    expect(resolveToolCommand({ cwd: root, tool: ABSENT_TOOL })).toEqual(['npx', ABSENT_TOOL]);
+  });
+
+  it('should fall back to the bun exec form when no shim exists', () => {
+    const root = createProject({ lockfileNames: ['bun.lock'] });
+    setPlatform('linux');
+    expect(resolveToolCommand({ cwd: root, tool: ABSENT_TOOL })).toEqual(['bun', 'x', ABSENT_TOOL]);
+  });
+
+  it('should fall back to the pnpm exec form when no shim exists', () => {
+    const root = createProject({ lockfileNames: ['pnpm-lock.yaml'] });
+    setPlatform('linux');
+    expect(resolveToolCommand({ cwd: root, tool: ABSENT_TOOL })).toEqual(['pnpm', 'exec', ABSENT_TOOL]);
+  });
+
+  it('should fall back to the yarn exec form when no shim exists', () => {
+    const root = createProject({ lockfileNames: ['yarn.lock'] });
+    setPlatform('linux');
+    expect(resolveToolCommand({ cwd: root, tool: ABSENT_TOOL })).toEqual(['yarn', 'exec', ABSENT_TOOL]);
+  });
+
+  it('should resolve a tool installed in this repo to the shim in this repo', () => {
+    const [command, ...rest] = resolveToolCommand({ tool: 'vitest' });
+    expect(rest).toEqual([]);
+    expect(command).toBe(`${getRootFolder() ?? ''}/node_modules/.bin/vitest${process.platform === 'win32' ? '.cmd' : ''}`);
   });
 });
