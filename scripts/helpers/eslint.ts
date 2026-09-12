@@ -1,3 +1,4 @@
+import { resolveToolCommand } from './package-manager.ts';
 import { execFromRoot } from './root.ts';
 
 interface LintOptions {
@@ -7,5 +8,5 @@ interface LintOptions {
 
 export async function lint(options: LintOptions = {}): Promise<void> {
   const targets = options.paths?.length ? options.paths : ['.'];
-  await execFromRoot(['npx', 'eslint', ...(options.shouldFix ? ['--fix'] : []), { batchedArguments: targets }]);
+  await execFromRoot([...resolveToolCommand({ tool: 'eslint' }), ...(options.shouldFix ? ['--fix'] : []), { batchedArguments: targets }]);
 }

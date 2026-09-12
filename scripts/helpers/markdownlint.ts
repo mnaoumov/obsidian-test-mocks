@@ -2,6 +2,7 @@ import { glob } from 'node:fs/promises';
 import { relative } from 'node:path';
 import process from 'node:process';
 
+import { resolveToolCommand } from './package-manager.ts';
 import {
   execFromRoot,
   toPosixPath
@@ -15,7 +16,7 @@ interface LintOptions {
 export async function lint(options?: LintOptions): Promise<void> {
   const { paths, shouldFix = false } = options ?? {};
   const targets = paths?.length ? paths : ['.'];
-  await execFromRoot(['npx', 'markdownlint-cli2', ...(shouldFix ? ['--fix'] : []), { batchedArguments: targets }]);
+  await execFromRoot([...resolveToolCommand({ tool: 'markdownlint-cli2' }), ...(shouldFix ? ['--fix'] : []), { batchedArguments: targets }]);
 
   const mdFiles = paths?.length
     ? paths.map((p) => toPosixPath(relative(process.cwd(), p)) || p)
@@ -31,8 +32,7 @@ export async function lint(options?: LintOptions): Promise<void> {
       ]
     }));
   await execFromRoot([
-    'npx',
-    'linkinator',
+    ...resolveToolCommand({ tool: 'linkinator' }),
     '--retry',
     '--retry-errors',
     '--retry-errors-count',

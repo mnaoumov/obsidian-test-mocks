@@ -1,5 +1,6 @@
 import { join } from 'node:path/posix';
 
+import { resolveToolCommand } from './package-manager.ts';
 import {
   execFromRoot,
   getRootFolder
@@ -18,5 +19,5 @@ export async function format(options?: FormatOptions): Promise<void> {
 
   const command = rewrite ? 'fmt' : 'check';
   const targets = paths?.length ? paths : ['**/*'];
-  await execFromRoot(['npx', 'dprint', command, '--config', join(rootFolder, 'dprint.json'), { batchedArguments: targets }]);
+  await execFromRoot([...resolveToolCommand({ tool: 'dprint' }), command, '--config', join(rootFolder, 'dprint.json'), { batchedArguments: targets }]);
 }
