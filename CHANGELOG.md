@@ -36,7 +36,7 @@
 - feat(vault): populate `TFile.stat` from the adapter
 - ci: publish to npm via trusted publishing instead of a local NPM_TOKEN
 - chore: update libs
-- fix(docs): replace ODU's favicon with an OTM-specific icon
+- fix(docs): replace the obsidian-dev-utils favicon with an icon of this package's own
 - feat(docs): add Astro + Starlight documentation site
 - chore: update libs
 

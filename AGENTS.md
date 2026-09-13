@@ -160,7 +160,7 @@ A third is scoped off for an unrelated reason: `unicorn/no-useless-recursion` is
 
 Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rather than the rule's default `function_` / `arguments_`, so a trailing underscore never reads as the `__` mock-member suffix.
 
-`import-x/no-nodejs-modules` is off for `scripts/` and friends (build tooling reads from disk) and for `testFiles` — a test runs under vitest in Node and is never part of the published library, so the ban has nothing to protect there. The test exemption is ported from ODU's `getNodeBuiltinsConfigs`, which scopes the same rule off for `context.testFiles`; only the `import-x` half comes across, because ODU's twin `obsidianmd/no-nodejs-modules` arrives with the plugin-directory rules this package does not register. It is what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory without an inline waiver at each import.
+`import-x/no-nodejs-modules` is off for `scripts/` and friends (build tooling reads from disk) and for `testFiles` — a test runs under vitest in Node and is never part of the published library, so the ban has nothing to protect there. The test exemption is ported from `obsidian-dev-utils`' `getNodeBuiltinsConfigs`, which scopes the same rule off for `context.testFiles`; only the `import-x` half comes across, because its twin `obsidianmd/no-nodejs-modules` arrives with the plugin-directory rules this package does not register. It is what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory without an inline waiver at each import.
 
 `linterOptions.reportUnusedDisableDirectives` is set to `'error'` repo-wide. ESLint's default is `'warn'`, and `npm run lint` passes no `--max-warnings 0`, so the default would let a waiver that has stopped silencing anything sit at exit 0 — still naming a rule as the reason for the code beneath it, untruthfully. Every rule here is an error; the directives claiming to suppress them are held to the same bar.
 
@@ -210,7 +210,7 @@ from a tag). It has two halves:
 
 - **Guides** — hand-written, in `docs/src/content/docs/guides/`. They are the README's overflow: per G59
   the top-level `README.md` stays a concise overview + navigation, and everything longer lives here.
-  OTM is a library, not a plugin, so `docs/` is the correct destination (the demo-vault carve-out in
+  This package is a library, not a plugin, so `docs/` is the correct destination (the demo-vault carve-out in
   G102 does not apply).
 - **API reference** — GENERATED from this repo's own TSDoc by `scripts/docs-gen/generate-api-docs.ts`
   (ts-morph) into `docs/src/content/docs/api/`, plus `docs/src/generated-sidebar.json` which
@@ -220,37 +220,37 @@ from a tag). It has two halves:
 ### The pipeline is a COPY of `obsidian-dev-utils`'
 
 Everything under `scripts/docs-gen/`, plus `docs/src/{components,styles,assets}`, `content.config.ts`,
-`route-data.ts`, `astro.config.ts` and `build-pages.yml`, was copied from `obsidian-dev-utils` (ODU) and
+`route-data.ts`, `astro.config.ts` and `build-pages.yml`, was copied from `obsidian-dev-utils` and
 should be kept in copy-sync with it — the same arrangement `scripts/helpers/eslint-rules/` already has.
-OTM cannot simply depend on ODU: ODU lists `obsidian-test-mocks` in its own devDependencies, so the
-edge would be a cycle. Anything the copy needed from ODU's `src/script-utils/*` was re-pointed at this
+This package cannot simply depend on `obsidian-dev-utils`: that library lists `obsidian-test-mocks` in its own devDependencies, so the
+edge would be a cycle. Anything the copy needed from its `src/script-utils/*` was re-pointed at this
 repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`).
 
-Keep new divergence to the five places OTM genuinely differs:
+Keep new divergence to the five places this package genuinely differs:
 
 1. **`BASE_PATH` / site title / repo URLs** — mechanical renames.
-2. **`getImportStatement()` (`api-doc-text-utils.ts`)** — OTM publishes BARREL entry points, so a
-   namespace does not map to a subpath the way ODU's does. `obsidian/**` becomes a named import from
+2. **`getImportStatement()` (`api-doc-text-utils.ts`)** — this package publishes BARREL entry points, so a
+   namespace does not map to a subpath the way `obsidian-dev-utils`' does. `obsidian/**` becomes a named import from
    `obsidian-test-mocks/obsidian`; `globals/**` and `obsidian-typings/**` are side-effect imports of the
    matching setup entry point, because nothing there is imported by name.
 3. **Member slugs (`splitMockOnlySuffix` in the same file)** — slug generation strips `_`, so `create__`
    and `create` (and `onClick__` / `onClick`) collapsed onto ONE route and one page silently overwrote
-   the other. Mock-only members therefore get a `-mock` route suffix. ODU has no `__` convention and so
+   the other. Mock-only members therefore get a `-mock` route suffix. `obsidian-dev-utils` has no `__` convention and so
    has no equivalent.
 4. **`EXCLUDED_DIR_SEGMENTS` (`api-doc-source-processing.ts`)** — `internal`, `jest`, `test-helpers`.
 5. **The favicon** (`docs/public/favicon.svg`, byte-identical copy in `docs/src/assets/favicon.svg`) —
-   OTM's own mark, NOT ODU's laptop-and-Matrix-rain one: the Obsidian gem with a dashed copy of itself
+   this package's own mark, NOT `obsidian-dev-utils`' laptop-and-Matrix-rain one: the Obsidian gem with a dashed copy of itself
    behind it (the mock) and a green check (the passing test). It is the only file under
-   `docs/src/assets/` that must never be re-synced from ODU. It feeds three places at once — Starlight's
+   `docs/src/assets/` that must never be re-synced from `obsidian-dev-utils`. It feeds three places at once — Starlight's
    `favicon` option, the hero image in `docs/src/content/docs/index.mdx`, and every OG card (rasterized
    by `loadLogoDataUri()` from the `docs/public` copy) — so the two copies must stay identical.
 
-### Type-checking and linting gaps (same as ODU's)
+### Type-checking and linting gaps (the same ones `obsidian-dev-utils` has)
 
 `scripts/docs-gen/**` is EXCLUDED from the root `tsconfig.json` (it needs `moduleResolution: bundler`
 for the Astro/Starlight ESM packages, so it carries its own `scripts/docs-gen/tsconfig.json`), and
 `astro.config.ts` is carved out into `tsconfig.astro.json` for the same reason. Neither is part of
-`build:compile`, exactly as in ODU — so `tsc -p scripts/docs-gen/tsconfig.json` currently
+`build:compile`, exactly as in `obsidian-dev-utils` — so `tsc -p scripts/docs-gen/tsconfig.json` currently
 reports pre-existing `exactOptionalPropertyTypes` violations in the copied code. ESLint DOES cover both
 (`projectService` resolves each file's nearest tsconfig; `astro.config.ts` is pinned to
 `tsconfig.astro.json` by an override that must come AFTER `getTseslintConfigs()`).
@@ -260,7 +260,7 @@ through types Astro generates into the gitignored `docs/.astro/`, so linting the
 every Astro import as an unresolved `any`. `docs/tsconfig.json` and the Astro build validate them
 instead. `docs/**` is likewise out of markdownlint's scope (Starlight's frontmatter-driven conventions,
 plus the generated API markdown), and `scripts/docs-gen` is out of dprint's and cspell's — keeping the
-copy byte-comparable to ODU's.
+copy byte-comparable to the `obsidian-dev-utils` one.
 
 ### `js-yaml` must stay on 4.x
 
@@ -305,13 +305,13 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     `attachmentFolderPath` carries a modeled default (`/`, Obsidian's own); every other `ConfigItem`
     reads as `undefined` until a test sets it — do NOT assume the bag mirrors Obsidian's full defaults.
   - **`Vault.getAvailablePath(basePath, extension)`** — Obsidian's de-duplicator (plain name, then a
-    `" 1"` / `" 2"` suffix, …). Note ODU's own `getAvailablePath(app, path)` helper DELEGATES to this
+    `" 1"` / `" 2"` suffix, …). Note `obsidian-dev-utils`' own `getAvailablePath(app, path)` helper DELEGATES to this
     member, so a consumer cannot seed it by calling that helper — it would recurse until the stack blows.
   - **`Vault.getAvailablePathForAttachments(fileName, extension, file)`** — the real resolution, not a
     throwing placeholder. `/` → vault root, `./` (and `.`) → the note's own folder, `./sub` → a
     sub-folder of the note's folder, anything else → that fixed folder; the target folder is **created
     when missing** (real Obsidian does this), a `null` file resolves as a root-level note does, and the
-    result runs through `getAvailablePath`. ODU only ever reads this function's `extended` member (an
+    result runs through `getAvailablePath`. That library only ever reads this function's `extended` member (an
     attachment-location plugin installs it) and falls back to its own resolution when absent — so the
     plain function is what a test exercises, and it now answers faithfully.
   - **`TFolder.getParentPrefix()`** — `''` for the root, `` `${path}/` `` otherwise. On the prototype,
@@ -321,12 +321,12 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   community plugins installed, so that is the truth about it rather than a placeholder. This matters
   beyond tidiness: `obsidian-dev-utils` reads the registry from INHERITED code (its Notebook Navigator
   menu registrar on layout ready, plus `canvas.ts`, `folder-note.ts` and
-  `rename-delete-handler-component.ts`), so while `App.plugins` was unmocked a single ODU bump broke the
+  `rename-delete-handler-component.ts`), so while `App.plugins` was unmocked a single `obsidian-dev-utils` bump broke the
   same `plugin.test.ts` in roughly 28 repos at once. Every one of them hand-assigned
   `app.plugins = strictProxy({ getPlugin: () => null })`; they no longer need to.
   - **`app.plugins.registerPlugin__(id, plugin)`** seeds one, and `unregisterPlugin__(id)` removes it.
     The instance can be a full `Plugin` mock via `asOriginalType2__()` or any stand-in carrying the
-    members under test (`{ api }`, `{ settings }`) — which is what ODU's call sites actually read.
+    members under test (`{ api }`, `{ settings }`) — which is what its call sites actually read.
     `enabledPlugins` is kept in step; this mock has no notion of installed-but-switched-off.
   - Only that honest core is modeled. The enable/disable lifecycle, installing, updates and deprecation
     stay unmocked and throw, per L2.
