@@ -208,10 +208,10 @@ Two npm-12 facts about this path, both measured on npm 12.0.2 / Node 26.5.0 and 
 release, which re-dispatches itself on `main` because the `github-pages` environment refuses to deploy
 from a tag). It has two halves:
 
-- **Guides** — hand-written, in `docs/src/content/docs/guides/`. They are the README's overflow: per G59
+- **Guides** — hand-written, in `docs/src/content/docs/guides/`. They are the README's overflow —
   the top-level `README.md` stays a concise overview + navigation, and everything longer lives here.
   This package is a library, not a plugin, so `docs/` is the correct destination (the demo-vault carve-out in
-  G102 does not apply).
+  the plugin README skeleton does not apply).
 - **API reference** — GENERATED from this repo's own TSDoc by `scripts/docs-gen/generate-api-docs.ts`
   (ts-morph) into `docs/src/content/docs/api/`, plus `docs/src/generated-sidebar.json` which
   `astro.config.ts` reads. Both are gitignored; so are `docs/public/og` (per-page Open Graph cards
@@ -407,7 +407,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     rendered inside a `SettingGroup` — which is what reaches a `render` callback's second argument (the
     hand-rolled copies all passed `null` there).
   - **Not modeled, deliberately:** `control` rows **throw** rather than render an empty row (no consumer uses
-    them; `G101` mandates `settingEx` instead); there is no keyed reconciliation, so each `renderTab__()`
+    them; a declarative tab uses `settingEx` instead); there is no keyed reconciliation, so each `renderTab__()`
     rebuilds; group search inputs and the `list` add/delete/reorder affordances are absent (a `list` renders as
     a group); and a `page` renders as its own name/desc row without navigation — render its `items` by passing
     them in explicitly.
