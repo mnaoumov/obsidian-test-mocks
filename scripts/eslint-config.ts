@@ -895,6 +895,20 @@ function getUnicornConfigs(): Linter.Config[] {
     },
     {
       /*
+       * The rule fires on the tail call that follows a type alias. That function recurses in two places — there,
+       * and above, fanning out over the members of a union — so turning the tail call into a loop would leave it
+       * half recursive and half iterative over the same tree. The suppression lives here rather than on the line
+       * itself because the file is shared byte-for-byte with sibling projects that do not install this plugin,
+       * where a disable directive naming one of its rules is an unresolvable rule reference and fails their lint
+       * outright.
+       */
+      files: ['scripts/helpers/eslint-rules/no-async-callback-to-unsafe-return.ts'],
+      rules: {
+        'unicorn/no-useless-recursion': 'off'
+      }
+    },
+    {
+      /*
        * The mock surface reproduces Obsidian's API name for name, so every boolean here is named by Obsidian
        * rather than by us: the global `requireApiVersion`, `Array.prototype.contains`, `Object.each`,
        * `Node.prototype.instanceOf`, `MarkdownRenderer.supportWorker`, `MetadataCache.omitMdExtension`, and the
