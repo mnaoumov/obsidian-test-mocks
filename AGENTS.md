@@ -156,6 +156,8 @@ Two rules are scoped off where they cannot be satisfied, both for the same reaso
 - `unicorn/consistent-boolean-name` is off for non-test `src/obsidian/**` and `src/globals/**`. Every boolean there is Obsidian's (`requireApiVersion`, `Array.prototype.contains`, `Object.each`, `MarkdownRenderer.supportWorker`, the `_center` / `_system` / `resetTimer` parameters).
 - `unicorn/name-replacements` stays on everywhere; sites naming an Obsidian member (`EventRef`'s `ctx` / `e` / `fn`, `Vault.configDir`, `Keymap.isModEvent`, `ViewState.eState`) carry an inline disable rather than being renamed.
 
+A third is scoped off for an unrelated reason: `unicorn/no-useless-recursion` is off for `scripts/helpers/eslint-rules/no-async-callback-to-unsafe-return.ts`, where it fires on the tail call that follows a type alias. That one is a file-scoped override rather than an inline disable **on purpose** — see the shared-copy rule below.
+
 Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rather than the rule's default `function_` / `arguments_`, so a trailing underscore never reads as the `__` mock-member suffix.
 
 `import-x/no-nodejs-modules` is off for `scripts/` and friends (build tooling reads from disk) and for `testFiles` — a test runs under vitest in Node and is never part of the published library, so the ban has nothing to protect there. The test exemption is ported from ODU's `getNodeBuiltinsConfigs`, which scopes the same rule off for `context.testFiles`; only the `import-x` half comes across, because ODU's twin `obsidianmd/no-nodejs-modules` arrives with the plugin-directory rules this package does not register. It is what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory without an inline waiver at each import.
@@ -163,6 +165,8 @@ Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rath
 `linterOptions.reportUnusedDisableDirectives` is set to `'error'` repo-wide. ESLint's default is `'warn'`, and `npm run lint` passes no `--max-warnings 0`, so the default would let a waiver that has stopped silencing anything sit at exit 0 — still naming a rule as the reason for the code beneath it, untruthfully. Every rule here is an error; the directives claiming to suppress them are held to the same bar.
 
 Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint-rules/` (this project has no runtime dependency on it). Their tests run as part of `npm test` and need `tsconfig.eslint-test.json` for the type-aware ones.
+
+**Those rule sources are byte-identical copies, and this repo holds the canonical one.** `obsidian-typings-crawler`, `typescript-template` and `obsidian-typings` keep the same files, and a sync takes them whole from here rather than merging. The practical consequence: **never put an inline `eslint-disable` naming an `eslint-plugin-unicorn` rule in one of these files.** None of those projects installs that plugin, and ESLint fails the entire run with *"Definition for rule was not found"* on an unresolvable rule reference — so one directive here makes the file impossible to copy anywhere else. Suppress it with a file-scoped override in `scripts/eslint-config.ts` instead, which is what the `unicorn/no-useless-recursion` entry above is. Rules the other projects also have (`no-bitwise`, `@typescript-eslint/*`, `import-x/*`) are fine inline.
 
 ## Releasing
 
