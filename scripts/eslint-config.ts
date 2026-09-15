@@ -343,6 +343,13 @@ function getEslintConfigs(): Linter.Config[] {
       }
     },
     {
+      /*
+       * The build, lint, docs and version scripts are CLI entry points whose output IS their interface, so
+       * printing to stdout is what they are for. Kept as a deliberate local override rather than drift: the
+       * shared config in `obsidian-dev-utils` leaves the rule on everywhere, because nothing in that package
+       * prints. The sibling override below turns off `unicorn/no-process-exit` over the same files for the
+       * same reason.
+       */
       files: ['scripts/**/*.ts'],
       rules: {
         'no-console': 'off'
