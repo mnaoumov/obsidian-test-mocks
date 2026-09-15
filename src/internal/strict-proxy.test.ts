@@ -70,8 +70,8 @@ describe('strictProxy', () => {
   it('should let a failing assertion render its diff instead of throwing while formatting', () => {
     // This is why the properties above must not throw.
     // `@vitest/pretty-format` probes them to pick a serializer, and it does so while rendering the
-    // Mismatch — so a throw there replaced the whole diff with the strict-proxy error, leaving no way
-    // To see what actually differed.
+    // mismatch — so a throw there replaced the whole diff with the strict-proxy error, leaving no way
+    // to see what actually differed.
     const $function = vi.fn();
     $function(strictProxy<MockTarget>({ name: 'actual' }));
 

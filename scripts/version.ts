@@ -248,7 +248,7 @@ async function updateChangelog(newVersion: string, options: UpdateChangelogOptio
   await writeFile(changelogPath, newChangeLog, 'utf-8');
 
   // The generated entry is already the commit subjects; the review below is an opportunity to reword it,
-  // Not a required step, so an unattended release can decline it.
+  // not a required step, so an unattended release can decline it.
   if (!(options.shouldEditChangelog ?? true)) {
     return;
   }

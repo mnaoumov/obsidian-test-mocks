@@ -45,7 +45,7 @@ async function main(): Promise<void> {
     const content = await readFile(filePath, 'utf-8');
 
     // Write .d.mts with .mjs import extensions (TypeScript resolves .mjs → .d.mts automatically,
-    // Avoiding TS2846 "declaration file imported without import type" errors).
+    // avoiding TS2846 "declaration file imported without import type" errors).
     const esmPath = normalized.replace(/\.d\.ts$/, '.d.mts');
     await writeFile(esmPath, rewriteImportExtensions(content, '.mjs'), 'utf-8');
 

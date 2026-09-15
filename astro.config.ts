@@ -13,7 +13,7 @@ import { satteriRelativeLinks } from './scripts/docs-gen/helpers/satteri-plugins
 
 // The documentation site is a self-contained Astro + Starlight project. Its source lives under `docs/src`
 // (`srcDir`) so it never collides with the library's own `src/` and `dist/`. The API reference is
-// Generated from the library's TSDoc by the custom generator (`scripts/docs-gen`, ts-morph) into
+// generated from the library's TSDoc by the custom generator (`scripts/docs-gen`, ts-morph) into
 // `docs/src/content/docs/api`, with a matching `docs/src/generated-sidebar.json` consumed below.
 const BASE = '/obsidian-test-mocks';
 

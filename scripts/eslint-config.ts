@@ -23,7 +23,7 @@ import { getRootFolder } from './helpers/root.ts';
 // The `docs/src/**/*.ts` modules are deliberately absent (and ignored outright below): they resolve
 // `astro:content` and `import.meta.env` through the types Astro generates into the gitignored
 // `docs/.astro/`, so type-aware linting reports every Astro import as an unresolved `any` on a tree
-// That has not been built yet. The Astro build, and `docs/tsconfig.json`, are what validate them.
+// that has not been built yet. The Astro build, and `docs/tsconfig.json`, are what validate them.
 const typeScriptFiles = [
   'src/**/*.ts',
   'scripts/**/*.ts',
@@ -57,7 +57,7 @@ export const config: Linter.Config[] = defineConfig(
   ...getLocalPluginConfigs(),
   ...getTseslintConfigs(),
   // Must follow `getTseslintConfigs()`, which turns `projectService` on for every TypeScript file. This
-  // Override turns it back off for the one file that needs a named project instead.
+  // override turns it back off for the one file that needs a named project instead.
   ...getAstroConfigTypeCheckingConfigs(),
   ...getStylisticConfigs(),
   ...getImportXConfigs(),
@@ -115,7 +115,25 @@ function getEslintConfigs(): Linter.Config[] {
         'accessor-pairs': 'error',
         'array-callback-return': 'error',
         'camelcase': 'error',
-        'capitalized-comments': ['error', 'always', { block: { ignorePattern: 'v8' } }],
+        /*
+         * The rule reports per comment TOKEN, so every continuation line of a wrapped `//` comment is its own token
+         * that would have to start with a capital — which is how prose ends up with capitals mid-sentence.
+         * `ignoreConsecutiveComments` exempts a line comment that directly follows another one, which is exactly the
+         * shape of a wrapped block, while still holding its FIRST line to a capital. Block comments need no such
+         * option: a block comment is a single token however many lines it spans.
+         * `ignorePattern` then covers that first line: a comment opening by naming a camelCase symbol would otherwise
+         * have the symbol rewritten into a name that does not exist. It is anchored at the comment start and cannot
+         * span whitespace, so it only ever matches the first word, and the two bags are separate — hence the
+         * alternation that keeps `v8` on the block half.
+         */
+        'capitalized-comments': [
+          'error',
+          'always',
+          {
+            block: { ignorePattern: 'v8|[a-z][a-zA-Z0-9]*[A-Z]' },
+            line: { ignoreConsecutiveComments: true, ignorePattern: '[a-z][a-zA-Z0-9]*[A-Z]' }
+          }
+        ],
         'complexity': 'error',
         'consistent-this': 'error',
         'curly': 'error',
@@ -305,7 +323,7 @@ function getEslintConfigs(): Linter.Config[] {
     {
       // `src/internal/` is in scope for both rules: L3 forbids the import across `src/`, and the L9
       // `return strictProxy(this)` constructor pattern reaches here too, because an obsidian-typings
-      // Interface with no `obsidian.d.ts` class is implemented in `src/internal/` (L1, L7).
+      // interface with no `obsidian.d.ts` class is implemented in `src/internal/` (L1, L7).
       files: [
         'src/internal/**/*.ts',
         'src/obsidian/**/*.ts'

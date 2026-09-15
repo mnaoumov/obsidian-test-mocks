@@ -65,7 +65,7 @@ export class Modal {
   public open(): void {
     this.onOpen();
     // Use setTimeout so tests can intercept (e.g. simulate button clicks)
-    // Before the modal auto-closes.
+    // before the modal auto-closes.
     setTimeout(() => {
       this.close();
     }, 0);

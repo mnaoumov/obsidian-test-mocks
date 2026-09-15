@@ -285,8 +285,8 @@ function buildContext(): SurfaceContext {
 
   // The `obsidian-typings` specifier resolves to a one-line facade that re-exports the versioned
   // `@obsidian-typings/obsidian-public-<version>` package, and the augmentation blocks live in the
-  // Latter. Collect every source file in the program that belongs to either, so the walk finds them
-  // Regardless of which package carries the declarations.
+  // latter. Collect every source file in the program that belongs to either, so the walk finds them
+  // regardless of which package carries the declarations.
   const typingsSourceFiles = program.getSourceFiles().filter((sourceFile) => sourceFile.fileName.includes(OBSIDIAN_TYPINGS_MODULE_NAME));
 
   return {

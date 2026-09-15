@@ -36,7 +36,7 @@ describe('Plugins', () => {
   it('should expose the app it belongs to', () => {
     const app = App.createConfigured__();
     // The subsystem is built inside `App`'s constructor, before `strictProxy` wraps it, so the
-    // Back-reference is the raw instance the proxy fronts — exactly as `MetadataCache.app` is.
+    // back-reference is the raw instance the proxy fronts — exactly as `MetadataCache.app` is.
     expect(app.plugins.app).toBe(bypassStrictProxy(app));
   });
 
