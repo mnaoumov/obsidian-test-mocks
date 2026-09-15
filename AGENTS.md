@@ -264,10 +264,14 @@ copy byte-comparable to the `obsidian-dev-utils` one.
 
 ### `js-yaml` must stay on 4.x
 
-The `js-yaml` override is pinned to `4.3.1` (recorded in `pinned-versions.json`). Astro and Starlight do
+The `js-yaml` override is pinned to `4.3.2` (recorded in `pinned-versions.json`). Astro and Starlight do
 `import yaml from 'js-yaml'`, and js-yaml 5 is ESM-only with NO default export, so hoisting 5.x into
 their subtree makes `astro build` die before it reads a single page. The update sweep will try to raise
-it again — do not let it.
+it again — do not let it. Do not lower it either: `4.3.1` and every release below it sits inside
+GHSA-2883-xcg3-v3hh (`maxTotalMergeKeys` does not limit CPU use for empty merge sources, `>=4.0.0
+<4.3.2`), so `4.3.2` is the floor as well as the ceiling. That is why `pinned-versions.json` now checks
+the `v4-legacy` dist-tag rather than the range astro declares: an exact pin is invisible to the caret
+sweep, so a backport landing on that tag is the only signal that this one has fallen behind.
 
 ### Testing
 
