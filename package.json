@@ -129,10 +129,8 @@
     "eslint": "$eslint",
     "eslint-plugin-import": "$eslint-plugin-import-x",
     "fflate": "0.7.5",
-    "glob": "^13.0.6",
     "js-yaml": "4.3.2",
     "smol-toml": "1.8.0",
-    "test-exclude": "^8.0.0",
     "type-fest": "$type-fest",
     "typescript": "$typescript"
   },
