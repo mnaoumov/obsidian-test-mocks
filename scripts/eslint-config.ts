@@ -23,7 +23,7 @@ import { getRootFolder } from './helpers/root.ts';
 // The `docs/src/**/*.ts` modules are deliberately absent (and ignored outright below): they resolve
 // `astro:content` and `import.meta.env` through the types Astro generates into the gitignored
 // `docs/.astro/`, so type-aware linting reports every Astro import as an unresolved `any` on a tree
-// That has not been built yet. The Astro build, and `docs/tsconfig.json`, are what validate them.
+// that has not been built yet. The Astro build, and `docs/tsconfig.json`, are what validate them.
 const typeScriptFiles = [
   'src/**/*.ts',
   'scripts/**/*.ts',
@@ -57,7 +57,7 @@ export const config: Linter.Config[] = defineConfig(
   ...getLocalPluginConfigs(),
   ...getTseslintConfigs(),
   // Must follow `getTseslintConfigs()`, which turns `projectService` on for every TypeScript file. This
-  // Override turns it back off for the one file that needs a named project instead.
+  // override turns it back off for the one file that needs a named project instead.
   ...getAstroConfigTypeCheckingConfigs(),
   ...getStylisticConfigs(),
   ...getImportXConfigs(),
@@ -323,7 +323,7 @@ function getEslintConfigs(): Linter.Config[] {
     {
       // `src/internal/` is in scope for both rules: L3 forbids the import across `src/`, and the L9
       // `return strictProxy(this)` constructor pattern reaches here too, because an obsidian-typings
-      // Interface with no `obsidian.d.ts` class is implemented in `src/internal/` (L1, L7).
+      // interface with no `obsidian.d.ts` class is implemented in `src/internal/` (L1, L7).
       files: [
         'src/internal/**/*.ts',
         'src/obsidian/**/*.ts'

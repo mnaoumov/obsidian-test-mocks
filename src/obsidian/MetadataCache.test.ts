@@ -389,7 +389,7 @@ describe('MetadataCache', () => {
       const file = await app.vault.create('folder/test.md', '');
       await flushMicrotasks();
       // Skips 'other.md' (neither basename nor name match),
-      // Then matches via f.name (basename is 'test', not 'test.md')
+      // then matches via f.name (basename is 'test', not 'test.md')
       const found = app.metadataCache.getFirstLinkpathDest('test.md', '');
       expect(found).toBe(file);
     });

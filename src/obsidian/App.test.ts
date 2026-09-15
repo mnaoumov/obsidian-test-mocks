@@ -171,9 +171,9 @@ describe('App', () => {
   });
 
   // A note whose `%%` comment sits on its own line after a blank line is the ordinary Obsidian layout,
-  // And it used to be rejected on EVERY write — both seeding and `vault.modify` — because the markdown
-  // Parser computed the wrong offset for the second block of a gap. Asserted here, at the surface a
-  // Plugin's tests actually use, rather than only against the parser internals.
+  // and it used to be rejected on EVERY write — both seeding and `vault.modify` — because the markdown
+  // parser computed the wrong offset for the second block of a gap. Asserted here, at the surface a
+  // plugin's tests actually use, rather than only against the parser internals.
   describe('a standalone comment block after a blank line', () => {
     const CONTENT_WITH_COMMENT_BLOCK = 'text\n\n%% c %%\n';
 

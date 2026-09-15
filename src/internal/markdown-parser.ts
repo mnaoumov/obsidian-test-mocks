@@ -72,12 +72,12 @@ function addGapSections(
 ): void {
   const gapContent = content.slice(gapStart, gapEnd);
   // Split by blank lines into paragraphs, CAPTURING the separators. Every part's own length then
-  // Advances the running offset, so each block's position is the one it actually occupies rather than
-  // One reconstructed from the block length plus a guessed single separator character. That
-  // Reconstruction both double-counted the block (the offset had already advanced to its end) and
-  // Assumed a one-character separator, while a blank line is at least two — so from the second block
-  // Of a gap onwards the lookup ran past the block and failed. A `%%` comment on its own line after a
-  // Blank line is the everyday shape that hit it.
+  // advances the running offset, so each block's position is the one it actually occupies rather than
+  // one reconstructed from the block length plus a guessed single separator character. That
+  // reconstruction both double-counted the block (the offset had already advanced to its end) and
+  // assumed a one-character separator, while a blank line is at least two — so from the second block
+  // of a gap onwards the lookup ran past the block and failed. A `%%` comment on its own line after a
+  // blank line is the everyday shape that hit it.
   const parts = gapContent.split(/(?<blankLine>\n\s*\n)/);
   let offset = gapStart;
   for (const part of parts) {

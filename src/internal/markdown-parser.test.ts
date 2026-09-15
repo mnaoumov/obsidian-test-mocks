@@ -474,10 +474,10 @@ describe('parseMarkdownContent', () => {
     });
 
     // Regression: a gap holding more than one block used to reconstruct the second block's offset from
-    // The first block's LENGTH plus a single separator character, on top of an offset that had already
-    // Advanced to the first block's end. The lookup then ran past the block and threw
+    // the first block's LENGTH plus a single separator character, on top of an offset that had already
+    // advanced to the first block's end. The lookup then ran past the block and threw
     // "Block not found in content". A standalone `%%` comment after a blank line is the everyday shape
-    // That hit it, and real Obsidian parses every shape below.
+    // that hit it, and real Obsidian parses every shape below.
     it('should parse a standalone comment block that follows a blank line', () => {
       const content = 'text\n\n%% c %%\n';
       const cache = parseMarkdownContent(content);
@@ -604,8 +604,8 @@ describe('parseMarkdownContent', () => {
   describe('addGapSections edge cases', () => {
     it('should handle gap content where block cannot be found via indexOf', () => {
       // A heading followed by a gap that contains blocks which, after trim+split,
-      // Produce a trimmed string that indexOf cannot find at the expected offset
-      // Because the offset has moved past it. This exercises the blockStart < 0 branch.
+      // produce a trimmed string that indexOf cannot find at the expected offset
+      // because the offset has moved past it. This exercises the blockStart < 0 branch.
       const content = '# Heading\n\n \n\nSome text';
       const cache = parseMarkdownContent(content);
 
