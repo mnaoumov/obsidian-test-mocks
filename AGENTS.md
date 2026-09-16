@@ -166,7 +166,30 @@ Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rath
 
 Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint-rules/` (this project has no runtime dependency on it). Their tests run as part of `npm test` and need `tsconfig.eslint-test.json` for the type-aware ones.
 
-**Those rule sources are byte-identical copies, and this repo holds the canonical one.** `obsidian-typings-crawler`, `typescript-template` and `obsidian-typings` keep the same files, and a sync takes them whole from here rather than merging. The practical consequence: **never put an inline `eslint-disable` naming an `eslint-plugin-unicorn` rule in one of these files.** None of those projects installs that plugin, and ESLint fails the entire run with *"Definition for rule was not found"* on an unresolvable rule reference — so one directive here makes the file impossible to copy anywhere else. Suppress it with a file-scoped override in `scripts/eslint-config.ts` instead, which is what the `unicorn/no-useless-recursion` entry above is. Rules the other projects also have (`no-bitwise`, `@typescript-eslint/*`, `import-x/*`) are fine inline.
+**`obsidian-dev-utils`' `src/script-utils/linters/eslint-rules/` is the upstream — this repo is a consumer, not the canonical copy.** An earlier version of this paragraph claimed the sources were byte-identical across the consumers with this repo holding the original. Neither half was true: a fix is written upstream, each consumer vendors a different *subset*, and every consumer rewrites one import. So the rule that actually holds is narrower, and mechanically checkable:
+
+**Every shared source here is byte-identical to its upstream file after exactly two deltas, applied on the way in.**
+
+1. **The `type-guards.ts` import path.** Upstream sits three directories deeper and spells it `../../../type-guards.ts`; here it is `../type-guards.ts`. Nothing else in these files imports outside their own directory, so this is the whole of the path rewrite.
+2. **An `eslint-disable` naming a plugin the consumer does not install is stripped**, and re-expressed as a file-scoped override in `scripts/eslint-config.ts`. Upstream's `no-async-callback-to-unsafe-return.ts` carries an inline `unicorn/no-useless-recursion` disable; ESLint fails the *entire* run with *"Definition for rule was not found"* on an unresolvable rule reference, so a copy that reaches a consumer without `eslint-plugin-unicorn` cannot carry it. The `unicorn/no-useless-recursion` entry above is that override. Rules every consumer has (`no-bitwise`, `@typescript-eslint/*`, `import-x/*`) are fine inline.
+
+`obsidian-dev-utils-plugin.ts` sits outside the rule by construction: its `rules` map names exactly the subset this repo vendors, so it differs in every consumer and is maintained by hand rather than synced.
+
+**So a sync is a transform, not a merge** — take the upstream file whole, apply the two deltas, and let `git diff` be the check. Anything it then shows is drift.
+
+**The `eslint-plugin-unicorn` ban is a condition, not a headcount.** It applies to a consumer that does not install the plugin — which is not all of them, and the set moves. Measured 2026-09-15: `obsidian-dev-utils`, this repo, `obsidian-integration-testing` and `obsidian-typings` install it; `obsidian-typings-crawler` and `typescript-template` do not. Check before assuming, and keep the directive out regardless, since the file has to remain copyable to the consumers that cannot resolve it.
+
+The consumers, and how far each stood from upstream on 2026-09-15:
+
+| consumer | directory | rules vendored | state |
+| --- | --- | --- | --- |
+| this repo | `scripts/helpers/eslint-rules/` | 6, incl. `prefer-noop-async` | byte-identical after the two deltas |
+| `obsidian-integration-testing` | `scripts/helpers/eslint-rules/` | 5 | behind by the rule-export doc comments |
+| `obsidian-typings-crawler` | `scripts/helpers/eslint-rules/` | 5 | behind by the rule-export doc comments |
+| `typescript-template` | `scripts/helpers/eslint-rules/` | 6, incl. `require-method-template` | two wrapped-comment continuation lines wrongly capitalized by a `capitalized-comments` autofix |
+| `obsidian-typings` | `scripts/helpers/eslint/` | 3 | a different arrangement, and behind on all three |
+
+`obsidian-typings` is the outlier on purpose-or-not: its directory, its plugin file (`local-plugin.ts`) and one rule file (`no-used-underscore-params.ts`) are named differently, it vendors no rule tests, and its `no-used-underscore-params` is an ancestor of upstream's `no-used-underscore-variables` that still checks parameters only — upstream widened it to local variables and renamed it to match. Converging it is that repo's own work, not this one's.
 
 ## Releasing
 
