@@ -3,7 +3,6 @@
   "AbstractInputSuggest.lastRect",
   "AbstractInputSuggest.onInputChange",
   "AbstractInputSuggest.onInputFocus",
-  "AbstractInputSuggest.selectCb",
   "AbstractInputSuggest.showSuggestions",
   "App.appMenuBarManager",
   "App.cli",

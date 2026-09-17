@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { ProgressBarComponent } from './ProgressBarComponent.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
@@ -50,6 +51,11 @@ describe('ValueComponent', () => {
   });
 
   describe('fromOriginalType2__', () => {
+    it('should overlay the mock-only members onto a value that lacks them', () => {
+      const mock = ValueComponent.fromOriginalType2__(castTo<ValueComponentOriginal<string>>({}));
+      expect(typeof mock.asOriginalType2__).toBe('function');
+    });
+
     it('should return the same instance typed as the mock type', () => {
       const comp = new BareValueComponent();
       const mock = ValueComponent.fromOriginalType2__(comp.asOriginalType2__());

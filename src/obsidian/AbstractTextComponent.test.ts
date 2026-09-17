@@ -140,6 +140,11 @@ describe('AbstractTextComponent', () => {
       const mock = AbstractTextComponent.fromOriginalType3__(component.asOriginalType3__());
       expect(mock).toBe(component);
     });
+
+    it('should overlay the mock-only members onto a value that lacks them', () => {
+      const mock = AbstractTextComponent.fromOriginalType3__(castTo<AbstractTextComponentOriginal<HTMLInputElement>>({}));
+      expect(typeof mock.asOriginalType3__).toBe('function');
+    });
   });
 
   describe('setPlaceholder', () => {

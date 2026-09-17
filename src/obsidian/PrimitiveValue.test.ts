@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 // Minimal subclass that does NOT override asOriginalType3__.
@@ -25,6 +26,11 @@ describe('PrimitiveValue', () => {
   });
 
   describe('fromOriginalType3__', () => {
+    it('should overlay the mock-only members onto a value that lacks them', () => {
+      const mock = PrimitiveValue.fromOriginalType3__(castTo<PrimitiveValueOriginal<number>>({}));
+      expect(typeof mock.asOriginalType3__).toBe('function');
+    });
+
     it('should return the same instance typed as the mock type', () => {
       const value = new MinimalPrimitiveValue(0);
       const mock = PrimitiveValue.fromOriginalType3__(value.asOriginalType3__());

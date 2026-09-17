@@ -57,7 +57,7 @@ export abstract class PopoverSuggest<T> {
    * @returns The same object, typed as the mock.
    */
   public static fromOriginalType__<T>(value: PopoverSuggestOriginal<T>): PopoverSuggest<T> {
-    return strictProxy<PopoverSuggest<T>>(value);
+    return strictProxy<PopoverSuggest<T>>(value, PopoverSuggest);
   }
 
   /**
@@ -109,13 +109,4 @@ export abstract class PopoverSuggest<T> {
    * @param event - The event that picked it.
    */
   public abstract selectSuggestion(value: T, event: KeyboardEvent | MouseEvent): void;
-
-  /**
-   * Computes the suggestions for a query. Not part of Obsidian's public `PopoverSuggest`; the mock declares it for
-   * its subclasses.
-   *
-   * @param query - The query to suggest for.
-   * @returns The matching suggestions, directly or as a promise.
-   */
-  protected abstract getSuggestions(query: unknown): Promise<T[]> | T[];
 }

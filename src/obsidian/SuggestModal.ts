@@ -80,7 +80,7 @@ export abstract class SuggestModal<T> extends Modal {
    * @returns The same object, typed as the mock.
    */
   public static fromOriginalType2__<T>(value: SuggestModalOriginal<T>): SuggestModal<T> {
-    return strictProxy<SuggestModal<T>>(value);
+    return strictProxy<SuggestModal<T>>(value, SuggestModal);
   }
 
   /**

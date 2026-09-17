@@ -34,7 +34,7 @@ export abstract class ValueComponent<T> extends BaseComponent {
    * @returns The same object, typed as the mock.
    */
   public static fromOriginalType2__<T>(value: ValueComponentOriginal<T>): ValueComponent<T> {
-    return strictProxy<ValueComponent<T>>(value);
+    return strictProxy<ValueComponent<T>>(value, ValueComponent);
   }
 
   /**

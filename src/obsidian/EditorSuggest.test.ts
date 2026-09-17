@@ -13,6 +13,7 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { noop } from '../internal/noop.ts';
 import { ensureGenericObject } from '../internal/type-guards.ts';
 import { App } from './App.ts';
@@ -66,6 +67,11 @@ describe('EditorSuggest', () => {
   });
 
   describe('fromOriginalType2__', () => {
+    it('should overlay the mock-only members onto a value that lacks them', () => {
+      const mock = EditorSuggest.fromOriginalType2__(castTo<EditorSuggestOriginal<string>>({}));
+      expect(typeof mock.asOriginalType2__).toBe('function');
+    });
+
     it('should return the same instance typed as the mock type', () => {
       const suggest = createSuggest();
       const mock = EditorSuggest.fromOriginalType2__(suggest.asOriginalType2__());

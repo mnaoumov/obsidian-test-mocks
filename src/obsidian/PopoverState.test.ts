@@ -7,7 +7,7 @@ import {
 import { PopoverState } from './PopoverState.ts';
 
 describe('PopoverState', () => {
-  it('should be defined with no members', () => {
-    expect(Object.keys(PopoverState)).toHaveLength(0);
+  it('should carry the four states Obsidian defines, numbered from 0', () => {
+    expect([PopoverState.Showing, PopoverState.Shown, PopoverState.Hiding, PopoverState.Hidden]).toEqual([0, 1, 2, 3]);
   });
 });

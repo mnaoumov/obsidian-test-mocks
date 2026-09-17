@@ -44,7 +44,7 @@ export abstract class FuzzySuggestModal<T> extends SuggestModal<FuzzyMatchOrigin
    * @returns The same object, typed as the mock.
    */
   public static fromOriginalType3__<T>(value: FuzzySuggestModalOriginal<T>): FuzzySuggestModal<T> {
-    return strictProxy<FuzzySuggestModal<T>>(value);
+    return strictProxy<FuzzySuggestModal<T>>(value, FuzzySuggestModal);
   }
 
   /**
