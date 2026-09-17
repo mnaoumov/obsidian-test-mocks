@@ -4,46 +4,48 @@
  * Mocks of the delegated event helpers Obsidian adds to `Document.prototype`.
  */
 
+import type { DelegatedListener } from '../internal/delegated-event-registry.ts';
+
 import {
   delegatedOff,
   delegatedOn
 } from '../internal/delegated-event-registry.ts';
 
 /**
- * Removes a delegated event listener registered with {@link on}.
+ * Removes a delegated event listener registered with {@link on}. As in Obsidian, every registration whose selector,
+ * listener and options are all identical to the ones given is removed.
  *
  * @param type - The event type the listener was registered for.
- * @param _selector - The selector the listener was registered with. Ignored by the mock, which looks the listener
- * up by event type and listener alone.
+ * @param selector - The selector the listener was registered with.
  * @param listener - The listener to remove.
- * @param options - The options the listener was registered with, passed on to `removeEventListener`.
+ * @param options - The options the listener was registered with, compared by identity.
  */
 export function off(
   this: Document,
   type: string,
-  _selector: string,
+  selector: string,
   listener: unknown,
   options?: AddEventListenerOptions | boolean
 ): void {
-  delegatedOff(this, type, listener, options);
+  delegatedOff(this, type, selector, listener, options);
 }
 
 /**
- * Adds a delegated event listener: Obsidian calls it only for events whose target matches `selector`, passing the
- * matching element as `delegateTarget`. The mock ignores the selector and calls the listener for every event, with
- * the event target as `delegateTarget`.
+ * Adds a delegated event listener, as Obsidian does: it is called only for events whose target, or an ancestor of
+ * it up to this document, matches `selector`, with that matching element as `delegateTarget`. The registration is
+ * kept in `_EVENTS`.
  *
  * @param type - The event type to listen for.
- * @param _selector - The CSS selector events are filtered by. Ignored by the mock.
+ * @param selector - The CSS selector events are filtered by.
  * @param listener - The listener to call, with the document as `this`.
  * @param options - Standard `addEventListener` options.
  */
 export function on(
   this: Document,
   type: string,
-  _selector: string,
-  listener: (this: Document, event: Event, delegateTarget: HTMLElement) => unknown,
+  selector: string,
+  listener: DelegatedListener<Document>,
   options?: AddEventListenerOptions | boolean
 ): void {
-  delegatedOn(this, type, listener, options);
+  delegatedOn(this, type, selector, listener, options);
 }

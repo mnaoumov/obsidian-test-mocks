@@ -175,6 +175,28 @@ describe('Element.prototype extensions', () => {
 
       document.body.removeChild(grandparent);
     });
+
+    it('should return the element itself when it matches', () => {
+      const parent = document.createElement('div');
+      parent.className = 'match';
+      const child = document.createElement('span');
+      child.className = 'match';
+      parent.append(child);
+
+      expect(matchParent.call(child, '.match')).toBe(child);
+    });
+
+    it('should still check lastParent itself', () => {
+      const grandparent = document.createElement('div');
+      grandparent.className = 'match';
+      const parent = document.createElement('div');
+      parent.className = 'match';
+      const child = document.createElement('span');
+      grandparent.append(parent);
+      parent.append(child);
+
+      expect(matchParent.call(child, '.match', parent)).toBe(parent);
+    });
   });
 
   describe('removeClass', () => {

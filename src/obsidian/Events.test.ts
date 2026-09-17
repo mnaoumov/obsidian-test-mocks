@@ -53,6 +53,7 @@ describe('Events', () => {
       // EventRef has a name property at runtime even though the obsidian type does not expose it
       const refRecord = ensureGenericObject(ref);
       expect(refRecord['name']).toBe('test-event');
+      expect(events._['test-event']?.[0]).toBe(ref);
     });
   });
 
@@ -63,6 +64,35 @@ describe('Events', () => {
       events.on('test-event', callback);
       events.trigger('test-event', 'arg1', 'arg2');
       expect(callback).toHaveBeenCalledWith('arg1', 'arg2');
+    });
+
+    it('should keep calling later handlers when one throws', () => {
+      vi.useFakeTimers();
+      try {
+        const events = Events.create__();
+        const callback = vi.fn();
+        events.on('test-event', () => {
+          throw new Error('handler failed');
+        });
+        events.on('test-event', callback);
+        events.trigger('test-event');
+        expect(callback).toHaveBeenCalled();
+        expect(() => {
+          vi.runAllTimers();
+        }).toThrow('handler failed');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('should iterate a copy of the handlers', () => {
+      const events = Events.create__();
+      const lateCallback = vi.fn();
+      events.on('test-event', () => {
+        events.on('test-event', lateCallback);
+      });
+      events.trigger('test-event');
+      expect(lateCallback).not.toHaveBeenCalled();
     });
 
     it('should not throw when triggering an event with no listeners', () => {
@@ -94,6 +124,18 @@ describe('Events', () => {
       expect(callback).not.toHaveBeenCalled();
     });
 
+    it('should drop the event entry list once it is empty', () => {
+      const events = Events.create__();
+      const callback = vi.fn();
+      const otherCallback = vi.fn();
+      events.on('test-event', callback);
+      events.on('test-event', otherCallback);
+      events.off('test-event', callback);
+      expect(events._['test-event']).toHaveLength(1);
+      events.off('test-event', otherCallback);
+      expect('test-event' in events._).toBe(false);
+    });
+
     it('should not throw when removing from a non-existent event', () => {
       const events = Events.create__();
       expect(() => {
@@ -110,6 +152,26 @@ describe('Events', () => {
       events.offref(ref);
       events.trigger('test-event');
       expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('should remove only the registration the ref was returned for', () => {
+      const events = Events.create__();
+      const callback = vi.fn();
+      const ref = events.on('test-event', callback);
+      events.on('test-event', callback);
+      events.offref(ref);
+      events.trigger('test-event');
+      expect(callback).toHaveBeenCalledTimes(1);
+      events.offref(ref);
+      expect(events._['test-event']).toHaveLength(1);
+    });
+
+    it('should ignore a ref for an event with no handlers', () => {
+      const events = Events.create__();
+      const ref = Events.create__().on('test-event', vi.fn());
+      expect(() => {
+        events.offref(ref);
+      }).not.toThrow();
     });
 
     it('should not throw when event ref has no name or fn', () => {
@@ -131,13 +193,34 @@ describe('Events', () => {
       expect(callback).toHaveBeenCalledWith('data1', 'data2');
     });
 
-    it('should not throw when event ref has no fn or e', () => {
+    it('should call the handler with the registered context', () => {
       const events = Events.create__();
-      // eslint-disable-next-line unicorn/name-replacements -- `e` / `fn` are the member names on Obsidian's own `EventRef`, which is what this literal stands in for.
-      const emptyRef = strictProxy<EventRefOriginal>({ e: undefined, fn: undefined });
-      expect(() => {
-        events.tryTrigger(emptyRef, ['data']);
-      }).not.toThrow();
+      const context = { value: 'context' };
+      const callback = vi.fn(function getContext(this: unknown) {
+        return this;
+      });
+      const ref = events.on('test-event', callback, context);
+      events.tryTrigger(ref, []);
+      expect(callback.mock.instances[0]).toBe(context);
+    });
+
+    it('should rethrow a handler error from a timeout instead of propagating it', () => {
+      vi.useFakeTimers();
+      try {
+        const events = Events.create__();
+        const error = new Error('handler failed');
+        const ref = events.on('test-event', () => {
+          throw error;
+        });
+        expect(() => {
+          events.tryTrigger(ref, []);
+        }).not.toThrow();
+        expect(() => {
+          vi.runAllTimers();
+        }).toThrow(error);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });

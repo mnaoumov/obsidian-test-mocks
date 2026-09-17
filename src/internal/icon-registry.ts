@@ -5,7 +5,8 @@
  */
 
 /**
- * The registered icons: SVG content keyed by icon id.
+ * The icons added with `addIcon`: SVG content keyed by icon id. It starts empty, because the mock deliberately does not
+ * bundle Obsidian's Lucide set or its own glyphs.
  */
 const iconRegistry = new Map<string, string>();
 export { iconRegistry };
