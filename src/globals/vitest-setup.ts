@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * Vitest setup entry point: installs Obsidian's global helpers and the mocked `app`, and redirects imports of
+ * `obsidian` to this package's mocks.
+ */
+
 import { vi } from 'vitest';
 
 import { setup } from './setup.ts';

@@ -1,9 +1,25 @@
+/**
+ * @file
+ *
+ * Mock of Obsidian's global `createEl` helper, which builds an HTML element from `DomElementInfo` options.
+ */
+
 interface ElementEx {
   placeholder?: string;
   type?: string;
   value?: string;
 }
 
+/**
+ * Creates an HTML element and applies its options: class, title, `href`, placeholder, type, value, text and
+ * attributes, then appends it to `parent` (or prepends it when `prepend` is set).
+ *
+ * @typeParam K - The tag name.
+ * @param tag - The tag name of the element to create.
+ * @param o - A class name, or the element's options; a `null` attribute value removes that attribute.
+ * @param callback - Called with the new element after the options are applied.
+ * @returns The new element.
+ */
 export function createEl<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   o?: DomElementInfo | string,

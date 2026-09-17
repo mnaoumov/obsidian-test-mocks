@@ -1,4 +1,6 @@
 /**
+ * @file
+ *
  * Strict proxy for mock objects.
  *
  * Wraps an object in a `Proxy` that throws a descriptive error when any
@@ -74,10 +76,11 @@ interface MockClassRef {
 }
 
 /**
- * Bypasses strict proxy.
+ * Unwraps a strict proxy, giving access to the underlying object without the throwing property checks.
  *
- * @param obj - The object to bypass.
- * @returns The object with the bypass accessor.
+ * @typeParam T - The value's type.
+ * @param object - A value that may be a strict proxy.
+ * @returns The object the proxy wraps, or `object` itself when it is not a strict proxy or not an object.
  */
 export function bypassStrictProxy<T>(object: T): T {
   if (!isObjectLike(object)) {
@@ -92,6 +95,18 @@ export function strictProxy<T extends object>(value: T): T;
 export function strictProxy<T>(value: PartialDeep<T>): T;
 // eslint-disable-next-line @typescript-eslint/unified-signatures, @typescript-eslint/no-unnecessary-type-parameters -- PartialDeep<T> above gives type safety for test partial mocks; this overload accepts explicit T with unchecked value for cross-type casts.
 export function strictProxy<T>(value: unknown): T;
+/**
+ * Wraps an object in a proxy that throws a descriptive error when an unmocked property is read, instead of returning
+ * `undefined`. Wrapping is idempotent, non-objects are returned as they are, and the overloads above only differ in
+ * how `T` is inferred.
+ *
+ * @typeParam T - The type the result is viewed as.
+ * @param value - The object to wrap. The proxy is marked on the object itself, so wrapping it again returns it
+ * unchanged.
+ * @param mockClass - The mock class whose `__` members are overlaid on a value that lacks them, as
+ * `fromOriginalType__` needs; its name also appears in error messages.
+ * @returns The proxy, typed as `T`.
+ */
 export function strictProxy<T>(value: unknown, mockClass?: MockClassRef): T {
   return wrapProxy<T>(value, mockClass);
 }

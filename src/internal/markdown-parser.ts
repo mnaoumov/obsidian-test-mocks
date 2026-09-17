@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * A small regex-based markdown parser that builds the `CachedMetadata` the `MetadataCache` mock serves: frontmatter,
+ * headings, tags, links, embeds, list items and sections.
+ */
+
 import type {
   CachedMetadata,
   EmbedCache,
@@ -19,6 +26,13 @@ import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * Parses markdown content into a `CachedMetadata` object.
+ *
+ * This approximates Obsidian's parser rather than reproducing it: tags, links and embeds are found by regular
+ * expressions outside fenced code blocks and inline code spans, and blocks between the recognized sections become
+ * paragraph, blockquote, code or thematic-break sections.
+ *
+ * @param content - The note's full text, frontmatter included.
+ * @returns The metadata, with each collection present only when it is non-empty.
  */
 export function parseMarkdownContent(content: string): CachedMetadata {
   const cache: CachedMetadata = {};
@@ -106,6 +120,9 @@ function addGapSections(
 /**
  * Builds an array of [start, end] offset ranges that represent code zones
  * (fenced code blocks and inline code spans) where tags/links should not be parsed.
+ *
+ * @param content - The note's full text.
+ * @returns The zones as `[start, end)` offset pairs, fenced blocks first, then inline spans.
  */
 function buildCodeZones(content: string): [number, number][] {
   const zones: [number, number][] = [];
@@ -132,6 +149,9 @@ function buildCodeZones(content: string): [number, number][] {
 /**
  * Precomputes an array of character offsets for each line start in the content.
  * `lineStarts[i]` is the offset of the first character on line `i`.
+ *
+ * @param content - The note's full text.
+ * @returns The line start offsets, beginning with `0`.
  */
 function buildLineStarts(content: string): number[] {
   const starts: number[] = [0];

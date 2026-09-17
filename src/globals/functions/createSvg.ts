@@ -1,5 +1,21 @@
+/**
+ * @file
+ *
+ * Mock of Obsidian's global `createSvg` helper, which builds an SVG element from `SvgElementInfo` options.
+ */
+
 import type { SvgElementInfo } from '../../internal/types.ts';
 
+/**
+ * Creates an element in the SVG namespace and applies its options: class and attributes, then appends it to
+ * `parent` (or prepends it when `prepend` is set).
+ *
+ * @typeParam K - The SVG tag name.
+ * @param tag - The tag name of the SVG element to create.
+ * @param o - A class name, or the element's options; a `null` attribute value removes that attribute.
+ * @param callback - Called with the new element after the options are applied.
+ * @returns The new SVG element.
+ */
 export function createSvg<K extends keyof SVGElementTagNameMap>(
   tag: K,
   o?: string | SvgElementInfo,
