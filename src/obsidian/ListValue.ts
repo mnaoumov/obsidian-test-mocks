@@ -6,14 +6,12 @@
 
 import type { ListValue as ListValueOriginal } from 'obsidian';
 
+// eslint-disable-next-line import-x/no-cycle -- The shared conversion constructs this class, exactly as Obsidian's own does.
+import { lazyEvaluate } from '../internal/lazy-evaluator.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { BooleanValue } from './BooleanValue.ts';
-import { DateValue } from './DateValue.ts';
 import { NotNullValue } from './NotNullValue.ts';
 import { NullValue } from './NullValue.ts';
-import { NumberValue } from './NumberValue.ts';
-import { ObjectValue } from './ObjectValue.ts';
 import { StringValue } from './StringValue.ts';
 import { Value } from './Value.ts';
 
@@ -166,29 +164,7 @@ export class ListValue extends NotNullValue {
    * @throws {Error} For any other raw value, such as a `symbol`, a `bigint` or `NaN`.
    */
   public lazyEvaluator(_index: number, raw: unknown): Value {
-    if (raw === null || raw === undefined || typeof raw === 'function') {
-      return NullValue.value;
-    }
-    if (typeof raw === 'string') {
-      return StringValue.create__(raw);
-    }
-    if (typeof raw === 'number' && !Number.isNaN(raw)) {
-      return NumberValue.create__(raw);
-    }
-    if (typeof raw === 'boolean') {
-      return BooleanValue.create__(raw);
-    }
-    if (Array.isArray(raw)) {
-      return ListValue.create__([...raw]);
-    }
-    if (raw instanceof Date) {
-      return DateValue.create__(new Date(raw));
-    }
-    if (typeof raw === 'object') {
-      return ObjectValue.create__({ ...raw });
-    }
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- Only a symbol, a bigint or NaN reaches this line.
-    throw new Error(`Value type is unsupported ${String(raw)}`);
+    return lazyEvaluate(raw);
   }
 
   /**

@@ -67,7 +67,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `MenuItem` | `checked`, `disabled`, `section`, `setSubmenu`, `submenu` |
 | `MetadataCache` | `app`, `computeMetadataAsync`, `fileCache`, `metadataCache` |
 | `Modal` | `bgEl`, `headerEl` |
-| `ObjectValue` | `data` |
+| `ObjectValue` | `data`, `getInsensitive`, `lazyEvaluator`, `valuesRaw` |
 | `PopoverSuggest` | `isOpen` |
 | `ProgressBarComponent` | `progressBar` |
 | `Setting` | `setVisibility` |

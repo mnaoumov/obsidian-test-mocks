@@ -68,4 +68,13 @@ export class RelativeDateValue extends DateValue {
   public constructor4__(_date: unknown, _showTime?: boolean): void {
     noop();
   }
+
+  /**
+   * Formats the value relative to now, as Obsidian does for this subclass.
+   *
+   * @returns Moment's `fromNow` text, such as `3 days ago`, in place of `DateValue`'s absolute form.
+   */
+  public override toString(): string {
+    return this.relative();
+  }
 }

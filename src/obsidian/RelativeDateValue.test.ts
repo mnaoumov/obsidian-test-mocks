@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { DateValue } from './DateValue.ts';
 import { RelativeDateValue } from './RelativeDateValue.ts';
 
 describe('RelativeDateValue', () => {
@@ -22,6 +23,25 @@ describe('RelativeDateValue', () => {
   it('should be truthy', () => {
     const value = RelativeDateValue.create2__(new Date());
     expect(value.isTruthy()).toBe(true);
+  });
+
+  describe('toString', () => {
+    const DAYS_AGO = 3;
+    const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
+
+    it('should render the date relative to now, not in the absolute form', () => {
+      const date = new Date(Date.now() - (DAYS_AGO * MILLISECONDS_IN_DAY));
+      const value = RelativeDateValue.create2__(date);
+      expect(String(value)).toBe(`${DAYS_AGO.toString()} days ago`);
+      expect(String(value)).toBe(value.relative());
+      expect(String(value)).not.toBe(new DateValue(date).toString());
+    });
+
+    it('should render relative to now for a value without its time too', () => {
+      const date = new Date(Date.now() - (DAYS_AGO * MILLISECONDS_IN_DAY));
+      const value = RelativeDateValue.create2__(date, false);
+      expect(String(value)).toBe(`${DAYS_AGO.toString()} days ago`);
+    });
   });
 
   describe('asOriginalType4__', () => {

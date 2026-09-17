@@ -6,7 +6,13 @@ import {
   it
 } from 'vitest';
 
+import { BooleanValue } from './BooleanValue.ts';
+import { DateValue } from './DateValue.ts';
+import { ListValue } from './ListValue.ts';
+import { NullValue } from './NullValue.ts';
+import { NumberValue } from './NumberValue.ts';
 import { ObjectValue } from './ObjectValue.ts';
+import { StringValue } from './StringValue.ts';
 
 describe('ObjectValue', () => {
   it('should create an instance via create__', () => {
@@ -14,14 +20,35 @@ describe('ObjectValue', () => {
     expect(value).toBeInstanceOf(ObjectValue);
   });
 
-  it('should always be truthy', () => {
-    const value = new ObjectValue({});
-    expect(value.isTruthy()).toBe(true);
+  it('should store the object passed in, not a copy', () => {
+    const data = { a: 'x' };
+    expect(new ObjectValue(data).data).toBe(data);
   });
 
-  it('should return empty string for toString', () => {
-    const value = new ObjectValue({});
-    expect(String(value)).toBe('');
+  describe('isTruthy', () => {
+    it('should return false for an empty object', () => {
+      expect(new ObjectValue({}).isTruthy()).toBe(false);
+    });
+
+    it('should return true for a non-empty object', () => {
+      expect(new ObjectValue({ a: 'x' }).isTruthy()).toBe(true);
+    });
+  });
+
+  describe('toString', () => {
+    it('should return the JSON of an empty object for an empty object', () => {
+      expect(String(new ObjectValue({}))).toBe('{}');
+    });
+
+    it('should map each key to the string form of its value', () => {
+      const value = new ObjectValue({
+        flag: true,
+        list: [1, 2],
+        number: 1,
+        text: 'x'
+      });
+      expect(String(value)).toBe('{"flag":"true","list":"1, 2","number":"1","text":"x"}');
+    });
   });
 
   describe('isEmpty', () => {
@@ -32,20 +59,79 @@ describe('ObjectValue', () => {
     it('should return false for a non-empty object', () => {
       expect(new ObjectValue({ a: 'x' }).isEmpty()).toBe(false);
     });
-
-    it('should return true for null', () => {
-      expect(new ObjectValue(null).isEmpty()).toBe(true);
-    });
-
-    it('should return true for a non-object value', () => {
-      const NON_OBJECT = 5;
-      expect(new ObjectValue(NON_OBJECT).isEmpty()).toBe(true);
-    });
   });
 
   describe('get', () => {
-    it('should return null', () => {
-      expect(new ObjectValue({ a: 'x' }).get('a')).toBeNull();
+    it('should return the null value for a key the object does not own', () => {
+      expect(new ObjectValue({ a: 'x' }).get('b')).toBe(NullValue.value);
+    });
+
+    it('should return the null value for an inherited key', () => {
+      expect(new ObjectValue({}).get('toString')).toBe(NullValue.value);
+    });
+
+    it('should return a Value property as it is', () => {
+      const property = new StringValue('x');
+      expect(new ObjectValue({ a: property }).get('a')).toBe(property);
+    });
+
+    it('should convert a raw property once and cache it', () => {
+      const value = new ObjectValue({ a: 'x' });
+      const converted = value.get('a');
+      expect(converted).toBeInstanceOf(StringValue);
+      expect(value.data['a']).toBe(converted);
+      expect(value.get('a')).toBe(converted);
+    });
+  });
+
+  describe('getInsensitive', () => {
+    it('should prefer the key itself', () => {
+      const value = new ObjectValue({ KEY: 'upper', key: 'lower' });
+      expect(value.getInsensitive('key').toString()).toBe('lower');
+    });
+
+    it('should fall back to a key differing only in case', () => {
+      const value = new ObjectValue({ Key: 'x' });
+      expect(value.getInsensitive('kEy').toString()).toBe('x');
+    });
+
+    it('should return the null value when no key matches', () => {
+      expect(new ObjectValue({ a: 'x' }).getInsensitive('b')).toBe(NullValue.value);
+    });
+  });
+
+  describe('lazyEvaluator', () => {
+    const value = new ObjectValue({});
+
+    it('should convert primitives to their value types', () => {
+      expect(value.lazyEvaluator('a', null)).toBe(NullValue.value);
+      expect(value.lazyEvaluator('a', 's')).toBeInstanceOf(StringValue);
+      expect(value.lazyEvaluator('a', 1)).toBeInstanceOf(NumberValue);
+      expect(value.lazyEvaluator('a', false)).toBeInstanceOf(BooleanValue);
+    });
+
+    it('should convert arrays, dates and objects', () => {
+      expect(value.lazyEvaluator('a', [1])).toBeInstanceOf(ListValue);
+      expect(value.lazyEvaluator('a', new Date())).toBeInstanceOf(DateValue);
+      expect(value.lazyEvaluator('a', { b: 1 })).toBeInstanceOf(ObjectValue);
+    });
+
+    it('should throw for unsupported raw values', () => {
+      expect(() => value.lazyEvaluator('a', NaN)).toThrow('Value type is unsupported NaN');
+    });
+  });
+
+  describe('valuesRaw', () => {
+    it('should return the properties as they are stored', () => {
+      const property = new StringValue('b');
+      const value = new ObjectValue({ a: 'x', b: property });
+      expect(value.valuesRaw()).toEqual(['x', property]);
+    });
+
+    it('should return a converted property once it has been read', () => {
+      const value = new ObjectValue({ a: 'x' });
+      const converted = value.get('a');
+      expect(value.valuesRaw()).toEqual([converted]);
     });
   });
 

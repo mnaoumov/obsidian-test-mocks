@@ -4,27 +4,27 @@
  * Mock of Obsidian's `ObjectValue`, the Bases value wrapping an object.
  */
 
-import type {
-  ObjectValue as ObjectValueOriginal,
-  Value as ValueOriginal
-} from 'obsidian';
+import type { ObjectValue as ObjectValueOriginal } from 'obsidian';
 
+// eslint-disable-next-line import-x/no-cycle -- The shared conversion constructs this class, exactly as Obsidian's own does.
+import { lazyEvaluate } from '../internal/lazy-evaluator.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
+import { NullValue } from './NullValue.ts';
+import { Value } from './Value.ts';
 
 /**
- * Mock of Obsidian's `ObjectValue`, a Bases value wrapping an object.
- *
- * The mock keeps the wrapped data only to answer {@link ObjectValue.isEmpty}; key lookups are not implemented.
+ * Mock of Obsidian's `ObjectValue`, a Bases value wrapping an object whose properties are `Value`s or raw
+ * data. A raw property is converted to a `Value` the first time {@link ObjectValue.get} reads it.
  */
 export class ObjectValue extends NotNullValue {
   /**
    * Creates a value wrapping `data`.
    *
-   * @param data - The object to wrap.
+   * @param data - The object to wrap, stored as {@link ObjectValue.data}. The object passed in, not a copy.
    */
-  public constructor(private readonly data: unknown) {
+  public constructor(public data: Record<string, unknown>) {
     super();
     const self = strictProxy(this);
     self.constructor3__(data);
@@ -37,7 +37,7 @@ export class ObjectValue extends NotNullValue {
    * @param data - The object to wrap.
    * @returns The new object value.
    */
-  public static create__(data: unknown): ObjectValue {
+  public static create__(data: Record<string, unknown>): ObjectValue {
     return new ObjectValue(data);
   }
 
@@ -71,40 +71,97 @@ export class ObjectValue extends NotNullValue {
   }
 
   /**
-   * Looks up the value stored under a key. Obsidian returns it wrapped as a `Value` (or `NullValue` when absent);
-   * the mock does not implement lookups.
+   * Looks up the value stored under a key.
    *
-   * @param _key - The property name to look up.
-   * @returns Always `null` in the mock.
+   * @param key - The property name to look up.
+   * @returns `NullValue.value` when the object has no own property under that key. A `Value` property as
+   * it is. Any other property converted by {@link ObjectValue.lazyEvaluator}, which replaces it in
+   * {@link ObjectValue.data}.
    */
-  public get(_key: string): null | ValueOriginal {
-    return null;
+  public get(key: string): Value {
+    if (!Object.hasOwn(this.data, key)) {
+      return NullValue.value;
+    }
+    const property = this.data[key];
+    if (property instanceof Value) {
+      return property;
+    }
+    const value = this.lazyEvaluator(key, property);
+    this.data[key] = value;
+    return value;
+  }
+
+  /**
+   * Looks up the value stored under a key, ignoring the case of the key.
+   *
+   * @param key - The property name to look up.
+   * @returns The value under the key itself when the object owns it, otherwise the value under the first
+   * key that differs from it only in case, and otherwise `NullValue.value`.
+   */
+  public getInsensitive(key: string): Value {
+    return this.get(findKeyInsensitive(this.data, key));
   }
 
   /**
    * Reports whether the wrapped object has no own enumerable keys.
    *
-   * @returns `true` when the data is not an object, is `null`, or has no keys.
+   * @returns Whether the object has no keys.
    */
   public isEmpty(): boolean {
-    return typeof this.data !== 'object' || this.data === null || Object.keys(this.data).length === 0;
+    return Object.keys(this.data).length === 0;
   }
 
   /**
-   * Reports whether the value counts as true in a condition; an object always does.
+   * Reports whether the value counts as true in a Bases formula.
    *
-   * @returns Always `true`.
+   * @returns Whether the object has at least one key.
    */
   public isTruthy(): boolean {
-    return true;
+    return !this.isEmpty();
   }
 
   /**
-   * Converts the value to its display string.
+   * Converts a raw property to a `Value`, as Obsidian's default evaluator does.
    *
-   * @returns Always an empty string in the mock.
+   * @param _key - The property's name.
+   * @param raw - The raw property.
+   * @returns `NullValue.value` for `null`, `undefined` or a function; a `StringValue`, `NumberValue`
+   * (`NaN` excluded) or `BooleanValue` for a primitive; a `ListValue` over a copy of an array; a
+   * `DateValue` over a copy of a `Date`; and an `ObjectValue` over a shallow copy of any other object.
+   * @throws {Error} For any other raw property, such as a `symbol`, a `bigint` or `NaN`.
+   */
+  public lazyEvaluator(_key: string, raw: unknown): Value {
+    return lazyEvaluate(raw);
+  }
+
+  /**
+   * Renders the object as a string.
+   *
+   * @returns The JSON of an object mapping each own key to the string form of its value, as
+   * {@link ObjectValue.get} reads it.
    */
   public toString(): string {
-    return '';
+    const stringified: Record<string, string> = {};
+    for (const key of Object.keys(this.data)) {
+      stringified[key] = this.get(key).toString();
+    }
+    return JSON.stringify(stringified);
   }
+
+  /**
+   * Gets the object's property values as they are stored, without converting them.
+   *
+   * @returns The raw property values, each still a `Value` or raw data.
+   */
+  public valuesRaw(): unknown[] {
+    return Object.values(this.data);
+  }
+}
+
+function findKeyInsensitive(data: Record<string, unknown>, key: string): string {
+  if (Object.hasOwn(data, key)) {
+    return key;
+  }
+  const lowerCaseKey = key.toLowerCase();
+  return Object.keys(data).find((dataKey) => dataKey.toLowerCase() === lowerCaseKey) ?? key;
 }
