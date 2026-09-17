@@ -758,12 +758,77 @@ describe('InMemoryAdapter', () => {
   });
 
   describe('trashLocal()', () => {
-    it('should remove the file', async () => {
+    it('should move the file into the .trash folder, keeping its content', async () => {
       const adapter = createAdapter();
       await adapter.write('file.md', 'data');
       await adapter.trashLocal('file.md');
 
       expect(await adapter.exists('file.md')).toBe(false);
+      expect(await adapter.exists('.trash')).toBe(true);
+      expect(await adapter.read('.trash/file.md')).toBe('data');
+    });
+
+    it('should move a file out of its folder, keeping only its name', async () => {
+      const adapter = createAdapter();
+      await adapter.write('dir/sub/file.md', 'data');
+      await adapter.trashLocal('dir/sub/file.md');
+
+      expect(await adapter.read('.trash/file.md')).toBe('data');
+    });
+
+    it('should number a name already taken in the trash, from 2, keeping the extension last', async () => {
+      const adapter = createAdapter();
+      await adapter.write('file.md', 'first');
+      await adapter.trashLocal('file.md');
+      await adapter.write('file.md', 'second');
+      await adapter.trashLocal('file.md');
+      await adapter.write('file.md', 'third');
+      await adapter.trashLocal('file.md');
+
+      expect(await adapter.read('.trash/file.md')).toBe('first');
+      expect(await adapter.read('.trash/file 2.md')).toBe('second');
+      expect(await adapter.read('.trash/file 3.md')).toBe('third');
+    });
+
+    it('should keep the whole name of an extension-less entry and of a dotfile', async () => {
+      const adapter = createAdapter();
+      await adapter.write('README', 'readme');
+      await adapter.write('.hidden', 'hidden');
+      await adapter.trashLocal('README');
+      await adapter.trashLocal('.hidden');
+
+      expect(await adapter.read('.trash/README')).toBe('readme');
+      expect(await adapter.read('.trash/.hidden')).toBe('hidden');
+    });
+
+    it('should move a folder with everything under it', async () => {
+      const adapter = createAdapter();
+      await adapter.write('dir/sub/deep.md', 'deep');
+      await adapter.mkdir('dir/empty');
+      await adapter.trashLocal('dir');
+
+      expect(await adapter.exists('dir')).toBe(false);
+      expect(await adapter.read('.trash/dir/sub/deep.md')).toBe('deep');
+      expect(await adapter.exists('.trash/dir/empty')).toBe(true);
+    });
+
+    it('should move a binary file', async () => {
+      const adapter = createAdapter();
+      await adapter.writeBinary('image.png', Uint8Array.of(1).buffer);
+      await adapter.trashLocal('image.png');
+
+      const trashed = await adapter.readBinary('.trash/image.png');
+
+      expect([...new Uint8Array(trashed)]).toEqual([1]);
+    });
+
+    it('should throw for a missing path, having created the trash folder', async () => {
+      const adapter = createAdapter();
+
+      await expect(adapter.trashLocal('missing.md')).rejects.toThrow(
+        'ENOENT: no such file or directory, rename \'/vault/missing.md\' -> \'/vault/.trash/missing.md\''
+      );
+      expect(await adapter.exists('.trash')).toBe(true);
     });
   });
 
@@ -775,6 +840,32 @@ describe('InMemoryAdapter', () => {
 
       expect(isResult).toBe(true);
       expect(await adapter.exists('file.md')).toBe(false);
+      expect(await adapter.exists('.trash')).toBe(false);
+    });
+
+    it('should remove a folder with everything under it', async () => {
+      const adapter = createAdapter();
+      await adapter.write('dir/sub/deep.md', 'deep');
+      const isResult = await adapter.trashSystem('dir');
+
+      expect(isResult).toBe(true);
+      expect(await adapter.exists('dir')).toBe(false);
+      expect(await adapter.exists('dir/sub/deep.md')).toBe(false);
+    });
+
+    it('should return false for a missing path', async () => {
+      const adapter = createAdapter();
+
+      expect(await adapter.trashSystem('missing.md')).toBe(false);
+    });
+
+    it('should return false and keep the file when the system trash is unavailable', async () => {
+      const adapter = createAdapter();
+      await adapter.write('file.md', 'data');
+      adapter.isSystemTrashAvailable__ = false;
+
+      expect(await adapter.trashSystem('file.md')).toBe(false);
+      expect(await adapter.read('file.md')).toBe('data');
     });
   });
 

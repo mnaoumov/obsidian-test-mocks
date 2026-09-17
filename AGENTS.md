@@ -342,6 +342,19 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   a FILE into a missing folder (`ENOENT … copyfile`), while a copied folder still gets its parents created; the mobile
   copy is native and is left creating parents.
 
+- **Trashing routes through the adapter, and the local trash is a real `.trash` folder** (2026-09-17, read in
+  Obsidian 1.14.2's `app.js`). `Vault.trash(file, true)` calls `adapter.trashSystem` and falls back to
+  `adapter.trashLocal` only when it answers `false`; `Vault.trash(file, false)` goes straight to `trashLocal`. The
+  mock used to call `adapter.remove` / `adapter.rmdir` itself, so neither member was ever reached and a spy on
+  either saw nothing. `InMemoryAdapter.trashLocal` now MOVES the entry into the vault's `.trash` folder, creating
+  it first as both real adapters do — `note.md` becomes `.trash/note.md`, the next one `.trash/note 2.md`
+  (numbered from 2, extension last), and a folder moves with everything under it — so a trashed file is still
+  readable through the adapter, while `.trash` stays a dot path the vault never tracks. `trashSystem` removes the
+  entry outright, recursively for a folder, and answers `true`; it answers `false`, changing nothing, for a path
+  that does not exist or when the mock-only `InMemoryAdapter.isSystemTrashAvailable__` is turned off, which is how
+  a test reaches the fallback. `FileManager.trashFile` still always asks for the system trash, where Obsidian
+  routes on the vault's `trashOption` config.
+
 - **Attachment-path resolution is modeled end to end** (added 2026-07-28) — anything calling
   `obsidian-dev-utils`' `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`
   against the mocks used to die on a strict-proxy read, forcing every consumer to hand-seed the surface.

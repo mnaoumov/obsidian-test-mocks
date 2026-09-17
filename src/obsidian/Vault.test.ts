@@ -11,6 +11,7 @@ import {
   vi
 } from 'vitest';
 
+import type { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import type { TAbstractFile } from './TAbstractFile.ts';
 
 import { castTo } from '../internal/castTo.ts';
@@ -829,6 +830,66 @@ describe('Vault', () => {
 
       expect(root.deleted).toBe(false);
       expect(app.vault.getFileByPath('note.md')).not.toBeNull();
+    });
+
+    it('should route a local trash through trashLocal, leaving the file readable under .trash', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      const trashLocalSpy = vi.spyOn(app.vault.adapter, 'trashLocal');
+      const trashSystemSpy = vi.spyOn(app.vault.adapter, 'trashSystem');
+
+      await app.vault.trash(file, false);
+
+      expect(trashSystemSpy).not.toHaveBeenCalled();
+      expect(trashLocalSpy).toHaveBeenCalledWith('note.md');
+      await expect(app.vault.adapter.read('.trash/note.md')).resolves.toBe('content');
+      expect(app.vault.getFileByPath('.trash/note.md')).toBeNull();
+    });
+
+    it('should route a system trash through trashSystem, removing the file outright', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      const trashLocalSpy = vi.spyOn(app.vault.adapter, 'trashLocal');
+      const trashSystemSpy = vi.spyOn(app.vault.adapter, 'trashSystem');
+
+      await app.vault.trash(file, true);
+
+      expect(trashSystemSpy).toHaveBeenCalledWith('note.md');
+      expect(trashLocalSpy).not.toHaveBeenCalled();
+      await expect(app.vault.adapter.exists('.trash/note.md')).resolves.toBe(false);
+    });
+
+    it('should fall back to trashLocal when trashSystem answers false', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      castTo<InMemoryAdapter>(app.vault.adapter).isSystemTrashAvailable__ = false;
+      const trashLocalSpy = vi.spyOn(app.vault.adapter, 'trashLocal');
+
+      await app.vault.trash(file, true);
+
+      expect(trashLocalSpy).toHaveBeenCalledWith('note.md');
+      await expect(app.vault.adapter.read('.trash/note.md')).resolves.toBe('content');
+      expect(app.vault.getFileByPath('note.md')).toBeNull();
+    });
+
+    it('should move a locally trashed folder under .trash with everything in it', async () => {
+      const app = App.createConfigured__({ files: { 'T/sub/a.md': 'a' } });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('T'));
+
+      await app.vault.trash(folder, false);
+
+      await expect(app.vault.adapter.read('.trash/T/sub/a.md')).resolves.toBe('a');
+      expect(app.vault.getFolderByPath('T')).toBeNull();
+    });
+
+    it('should leave the tree tracked when the adapter throws', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      vi.spyOn(app.vault.adapter, 'trashLocal').mockRejectedValue(new Error('adapter failed'));
+
+      await expect(app.vault.trash(file, false)).rejects.toThrow('adapter failed');
+      expect(app.vault.getFileByPath('note.md')).toBe(file);
+      expect(file.deleted).toBe(false);
     });
 
     it('should untrack every descendant of a trashed folder, firing delete for each before the folder', async () => {

@@ -811,23 +811,28 @@ export class Vault extends Events {
   }
 
   /**
-   * Moves a file or folder to the system or the local trash. The mock deletes it from the adapter outright and stops
-   * tracking it and, for a folder, its descendants, firing `delete` for each, as {@link Vault.delete} does. As in
-   * Obsidian, trashing the root does nothing.
+   * Moves a file or folder to the system or the local trash, routing through the adapter exactly as Obsidian does:
+   * `system` tries `trashSystem` first and only falls back to `trashLocal` when it answers `false`, while
+   * `system: false` goes straight to `trashLocal`. Either way the entry stops being tracked and, for a folder, so
+   * does every descendant, each firing its own `delete` as {@link Vault.delete} does. As in Obsidian, trashing the
+   * root does nothing.
+   *
+   * With an `InMemoryAdapter`, `trashLocal` moves the entry into the vault's `.trash` folder, so a trashed file is
+   * still readable from the adapter, while `trashSystem` removes it outright.
    *
    * @param file - The file or folder to trash.
-   * @param _system - Whether to try the system trash first; ignored by the mock.
+   * @param system - Whether to try the system trash first.
+   * @throws Error from the adapter, in which case nothing is untracked.
    */
-  public async trash(file: TAbstractFile, _system: boolean): Promise<void> {
+  public async trash(file: TAbstractFile, system: boolean): Promise<void> {
     if (file === this.fileMap['/']) {
       return;
     }
 
-    if (file instanceof TFolder) {
-      await this.adapter.rmdir(file.path, true);
-    } else {
-      await this.adapter.remove(file.path);
+    if (!system || !(await this.adapter.trashSystem(file.path))) {
+      await this.adapter.trashLocal(file.path);
     }
+
     this.removeTree(file);
   }
 
