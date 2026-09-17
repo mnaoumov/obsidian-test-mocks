@@ -1,3 +1,9 @@
+/**
+ * @file
+ *
+ * Mock of Obsidian's `Setting`, one row of a settings tab with a name, description and controls.
+ */
+
 import type {
   ButtonComponent as ButtonComponentOriginal,
   ColorComponent as ColorComponentOriginal,
@@ -32,15 +38,53 @@ import { TextAreaComponent } from './TextAreaComponent.ts';
 import { TextComponent } from './TextComponent.ts';
 import { ToggleComponent } from './ToggleComponent.ts';
 
+/**
+ * Mock of Obsidian's `Setting`, a settings row with an info area (name and description) and a control area.
+ *
+ * Each `add*` method creates the real mock component in {@link Setting.controlEl}, hands it to the callback
+ * synchronously, and (except for {@link Setting.addDisplayValue}) records it in {@link Setting.components}.
+ */
 export class Setting {
+  /**
+   * The components added to the row, in the order they were added.
+   */
   public components: BaseComponent[] = [];
+
+  /**
+   * The element holding the row's controls.
+   */
   public controlEl: HTMLElement;
+
+  /**
+   * The element holding the row's description.
+   */
   public descEl: HTMLElement;
+
+  /**
+   * The validation error element created by {@link Setting.setErrorMessage}, or `null` when no error is shown.
+   */
   public errorEl: HTMLElement | null = null;
+
+  /**
+   * The element holding the row's name and description.
+   */
   public infoEl: HTMLElement;
+
+  /**
+   * The element holding the row's name.
+   */
   public nameEl: HTMLElement;
+
+  /**
+   * The row's outer element.
+   */
   public settingEl: HTMLElement;
 
+  /**
+   * Creates the setting row inside `containerEl`.
+   *
+   * @param containerEl - The element to create the row in.
+   */
   public constructor(containerEl: HTMLElement) {
     this.settingEl = containerEl.createDiv();
     this.controlEl = this.settingEl.createDiv();
@@ -52,14 +96,32 @@ export class Setting {
     return self;
   }
 
+  /**
+   * Mock-only factory: creates a setting row, spyable via `vi.spyOn(Setting, 'create__')`.
+   *
+   * @param containerEl - The element to create the row in.
+   * @returns The new setting row.
+   */
   public static create__(containerEl: HTMLElement): Setting {
     return new Setting(containerEl);
   }
 
+  /**
+   * Mock-only: views a value typed as Obsidian's `Setting` as this mock.
+   *
+   * @param value - The value typed as the original `Setting`.
+   * @returns The same object, typed as the mock.
+   */
   public static fromOriginalType__(value: SettingOriginal): Setting {
     return strictProxy(value, Setting);
   }
 
+  /**
+   * Adds a button to the row.
+   *
+   * @param callback - Called with the new button, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addButton(callback: (component: ButtonComponentOriginal) => unknown): this {
     const comp = ButtonComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -67,6 +129,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds a color picker to the row.
+   *
+   * @param callback - Called with the new color picker, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addColorPicker(callback: (component: ColorComponentOriginal) => unknown): this {
     const comp = ColorComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -74,18 +142,37 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds a custom component to the row.
+   *
+   * @param callback - Called with {@link Setting.controlEl}; returns the component it created there.
+   * @returns This setting, for chaining.
+   */
   public addComponent(callback: (el: HTMLElement) => BaseComponent): this {
     const component = callback(this.controlEl);
     this.components.push(component);
     return this;
   }
 
+  /**
+   * Adds a read-only display value to the row. On a navigable row, Obsidian uses it to surface the value edited on
+   * the page the row opens. The mock does not record it in {@link Setting.components}.
+   *
+   * @param callback - Called with the new display value component, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addDisplayValue(callback: (component: DisplayValueComponentOriginal) => unknown): this {
     const comp = DisplayValueComponent.create__(this.controlEl);
     callback(comp.asOriginalType__());
     return this;
   }
 
+  /**
+   * Adds a dropdown to the row.
+   *
+   * @param callback - Called with the new dropdown, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addDropdown(callback: (component: DropdownComponentOriginal) => unknown): this {
     const comp = DropdownComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -93,6 +180,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds an extra (icon) button to the row.
+   *
+   * @param callback - Called with the new button, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addExtraButton(callback: (component: ExtraButtonComponentOriginal) => unknown): this {
     const comp = ExtraButtonComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -100,6 +193,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds a moment.js date format input to the row.
+   *
+   * @param callback - Called with the new format input, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addMomentFormat(callback: (component: MomentFormatComponentOriginal) => unknown): this {
     const comp = MomentFormatComponent.create2__(this.controlEl);
     this.components.push(comp);
@@ -107,6 +206,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds a progress bar to the row.
+   *
+   * @param callback - Called with the new progress bar, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addProgressBar(callback: (component: ProgressBarComponentOriginal) => unknown): this {
     const comp = ProgressBarComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -114,6 +219,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds a search input to the row.
+   *
+   * @param callback - Called with the new search input, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addSearch(callback: (component: SearchComponentOriginal) => unknown): this {
     const comp = SearchComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -121,6 +232,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds a slider to the row.
+   *
+   * @param callback - Called with the new slider, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addSlider(callback: (component: SliderComponentOriginal) => unknown): this {
     const comp = SliderComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -128,6 +245,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds a single-line text input to the row.
+   *
+   * @param callback - Called with the new text input, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addText(callback: (component: TextComponentOriginal) => unknown): this {
     const comp = TextComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -135,6 +258,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds a multi-line text area to the row.
+   *
+   * @param callback - Called with the new text area, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addTextArea(callback: (component: TextAreaComponentOriginal) => unknown): this {
     const comp = TextAreaComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -142,6 +271,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Adds a toggle switch to the row.
+   *
+   * @param callback - Called with the new toggle, to configure it.
+   * @returns This setting, for chaining.
+   */
   public addToggle(callback: (component: ToggleComponentOriginal) => unknown): this {
     const comp = ToggleComponent.create__(this.controlEl);
     this.components.push(comp);
@@ -149,24 +284,53 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Mock-only: views this mock as Obsidian's `Setting` type.
+   *
+   * @returns The same object, typed as the original `Setting`.
+   */
   public asOriginalType__(): SettingOriginal {
     return strictProxy<SettingOriginal>(this);
   }
 
+  /**
+   * Removes the row's components. The mock empties {@link Setting.components} but leaves their elements in
+   * {@link Setting.controlEl}.
+   *
+   * @returns This setting, for chaining.
+   */
   public clear(): this {
     this.components = [];
     return this;
   }
 
+  /**
+   * Mock-only construction hook, called at the end of the constructor; a no-op meant for
+   * `vi.spyOn(Setting.prototype, 'constructor__')`.
+   *
+   * @param _containerEl - The element the row was created in.
+   */
   public constructor__(_containerEl: HTMLElement): void {
     noop();
   }
 
+  /**
+   * Adds a CSS class to the row's element.
+   *
+   * @param cls - The class name.
+   * @returns This setting, for chaining.
+   */
   public setClass(cls: string): this {
     this.settingEl.classList.add(cls);
     return this;
   }
 
+  /**
+   * Sets the row's description. A string replaces the text of {@link Setting.descEl}; a fragment is appended to it.
+   *
+   * @param desc - The description, as text or as a fragment.
+   * @returns This setting, for chaining.
+   */
   public setDesc(desc: DocumentFragment | string): this {
     if (typeof desc === 'string') {
       this.descEl.textContent = desc;
@@ -176,11 +340,25 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Marks the row as disabled or enabled. The mock toggles the `is-disabled` class on {@link Setting.settingEl}
+   * and does not disable the components.
+   *
+   * @param disabled - Whether the row is disabled.
+   * @returns This setting, for chaining.
+   */
   public setDisabled(disabled: boolean): this {
     this.settingEl.classList.toggle('is-disabled', disabled);
     return this;
   }
 
+  /**
+   * Shows a persistent validation error below the setting and adds the `is-invalid` class to the row. An empty
+   * string or `null` removes the error element and the class.
+   *
+   * @param message - The error message, or an empty string or `null` to clear it.
+   * @returns This setting, for chaining.
+   */
   public setErrorMessage(message: null | string): this {
     if (message) {
       this.errorEl ??= this.controlEl.createDiv();
@@ -194,11 +372,22 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Styles the row as a section heading, by adding the `setting-item-heading` class.
+   *
+   * @returns This setting, for chaining.
+   */
   public setHeading(): this {
     this.settingEl.classList.add('setting-item-heading');
     return this;
   }
 
+  /**
+   * Sets the row's name. A string replaces the text of {@link Setting.nameEl}; a fragment is appended to it.
+   *
+   * @param name - The name, as text or as a fragment.
+   * @returns This setting, for chaining.
+   */
   public setName(name: DocumentFragment | string): this {
     if (typeof name === 'string') {
       this.nameEl.textContent = name;
@@ -208,6 +397,14 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Sets the row's tooltip. The mock stores it as the `aria-label` attribute of {@link Setting.settingEl} and
+   * ignores the options.
+   *
+   * @param tooltip - The tooltip text.
+   * @param _options - How the tooltip is displayed.
+   * @returns This setting, for chaining.
+   */
   public setTooltip(tooltip: string, _options?: TooltipOptionsOriginal): this {
     this.settingEl.setAttribute('aria-label', tooltip);
     return this;
@@ -224,6 +421,12 @@ export class Setting {
     return this;
   }
 
+  /**
+   * Calls `callback` with this setting, to keep configuration in one chain.
+   *
+   * @param callback - Called with this setting.
+   * @returns This setting, for chaining.
+   */
   public then(callback: (setting: this) => unknown): this {
     callback(this);
     return this;
