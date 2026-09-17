@@ -30,6 +30,9 @@ interface LayoutParent {
   removeChild(child: WorkspaceItem): void;
 }
 
+// Obsidian stores a flex-grow outside the open range `(0, 100)` as `null`.
+const MAX_DIMENSION = 100;
+
 /**
  * Mock of Obsidian's `WorkspaceItem`, the base of leaves, splits, tabs and the other layout nodes.
  *
@@ -38,12 +41,23 @@ interface LayoutParent {
  */
 export abstract class WorkspaceItem extends Events {
   /**
+   * The item's share of its parent split, as a flex-grow value, or `null` when it takes its natural share. The
+   * workspace sets it when it creates, splits or promotes an item; nothing is rendered from it.
+   */
+  public dimension: null | number = null;
+
+  /**
    * The direct parent of the item. An item with no parent holds an empty strict proxy instead, which throws on any
    * member access; {@link WorkspaceItem.setParent} and `WorkspaceParent.insertChild` replace it.
    */
   public parent: WorkspaceParentOriginal = createParentPlaceholder<WorkspaceParentOriginal>();
 
-  private readonly layoutWorkspace: undefined | Workspace;
+  /**
+   * The workspace the item belongs to, which subclasses reach for `onLayoutChange` and the layout requests. It is
+   * optional because a test can build a bare item with no workspace at all; every item the workspace itself creates
+   * has one.
+   */
+  protected readonly layoutWorkspace: undefined | Workspace;
 
   /**
    * Creates a workspace item.
@@ -127,6 +141,16 @@ export abstract class WorkspaceItem extends Events {
    */
   public getRoot(): WorkspaceItem {
     return this.hasParent() ? castTo<WorkspaceItem>(this.parent).getRoot() : this;
+  }
+
+  /**
+   * Sets the item's share of its parent split. As in Obsidian, a value outside the open range `(0, 100)` is stored as
+   * `null`; the mock renders nothing, so it only keeps the value.
+   *
+   * @param dimension - The flex-grow value, or `null` to take the natural share.
+   */
+  public setDimension(dimension: null | number): void {
+    this.dimension = dimension !== null && (dimension <= 0 || dimension >= MAX_DIMENSION) ? null : dimension;
   }
 
   /**

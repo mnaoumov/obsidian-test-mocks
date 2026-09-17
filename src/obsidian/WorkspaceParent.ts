@@ -88,11 +88,13 @@ export abstract class WorkspaceParent extends WorkspaceItem {
     const position = index < 0 || index >= this.children.length ? this.children.length : index;
     this.children.splice(position, 0, child);
     child.setParent(this.asOriginalType3__());
+    this.onLayoutChange();
   }
 
   /**
    * Removes a child and leaves it without a parent. As in Obsidian, a parent left empty then removes itself from its
-   * own parent, and one left with a single child it may not keep is replaced there by that child.
+   * own parent, and one left with a single child it may not keep is replaced there by that child, inheriting the
+   * dimension the parent had.
    *
    * @param child - The child to remove.
    */
@@ -101,6 +103,7 @@ export abstract class WorkspaceParent extends WorkspaceItem {
     child.setParent(null);
 
     if (isParentPlaceholder(this.parent)) {
+      this.onLayoutChange();
       return;
     }
 
@@ -111,6 +114,7 @@ export abstract class WorkspaceParent extends WorkspaceItem {
     }
 
     if (this.children.length !== 1 || this.allowSingleChild) {
+      this.onLayoutChange();
       return;
     }
 
@@ -118,6 +122,8 @@ export abstract class WorkspaceParent extends WorkspaceItem {
     removeFrom(this.children, onlyChild);
     onlyChild.setParent(null);
     parent.replaceChild(parent.children.indexOf(this), onlyChild);
+    onlyChild.setDimension(this.dimension);
+    this.onLayoutChange();
   }
 
   /**
@@ -133,6 +139,11 @@ export abstract class WorkspaceParent extends WorkspaceItem {
     oldChild?.setParent(null);
     this.children[position] = child;
     child.setParent(this.asOriginalType3__());
+    this.onLayoutChange();
+  }
+
+  private onLayoutChange(): void {
+    this.layoutWorkspace?.onLayoutChange(this);
   }
 }
 

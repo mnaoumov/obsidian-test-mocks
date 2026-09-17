@@ -31,6 +31,15 @@ import { TFolder } from './TFolder.ts';
  */
 const ATTACHMENT_FOLDER_PATH_CONFIG_KEY = 'attachmentFolderPath';
 const DEFAULT_ATTACHMENT_FOLDER_PATH = '/';
+
+/**
+ * The vault setting `Workspace.createLeafInTabGroup` reads to decide whether a leaf it creates becomes active.
+ * Obsidian's own default is `true`, from the same default-config object {@link DEFAULT_ATTACHMENT_FOLDER_PATH} comes
+ * from, so `getLeaf('tab')` activates the new tab unless a test turns it off.
+ */
+const FOCUS_NEW_TAB_CONFIG_KEY = 'focusNewTab';
+const DEFAULT_FOCUS_NEW_TAB = true;
+
 const RELATIVE_PATH_PREFIX = './';
 const ROOT_PATH = '/';
 
@@ -48,10 +57,14 @@ export class Vault extends Events {
    */
   public adapter: DataAdapterOriginal;
   /**
-   * Backs `getConfig` / `setConfig`. Only `attachmentFolderPath` carries a modeled default —
+   * Backs `getConfig` / `setConfig`. Only `attachmentFolderPath` and `focusNewTab` carry modeled defaults —
    * every other key reads as `undefined` until a test sets it.
    */
-  public config: Record<string, unknown> = { [ATTACHMENT_FOLDER_PATH_CONFIG_KEY]: DEFAULT_ATTACHMENT_FOLDER_PATH };
+  public config: Record<string, unknown> = {
+    [ATTACHMENT_FOLDER_PATH_CONFIG_KEY]: DEFAULT_ATTACHMENT_FOLDER_PATH,
+    [FOCUS_NEW_TAB_CONFIG_KEY]: DEFAULT_FOCUS_NEW_TAB
+  };
+
   /**
    * The vault-relative path of the config folder, typically `.obsidian`.
    */

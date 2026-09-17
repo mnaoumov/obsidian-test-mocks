@@ -402,6 +402,44 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   it), so `WorkspaceLeaf.create2__(app)` followed by `setActiveLeaf` still works; and `activeTime` is kept strictly
   increasing, so two activations in one millisecond still order.
 
+- **The leaf lifecycle follows Obsidian's, and four of its habits are NOT what the mock used to do**
+  (2026-09-17, read in Obsidian 1.14.2's `app.js`). Each of these changes what an existing consumer test observes.
+  - **Creating a leaf ACTIVATES it.** `createLeafInParent`, `createLeafBySplit` and `getUnpinnedLeaf` all call
+    `setActiveLeaf`, and `createLeafInTabGroup` does too when the vault's `focusNewTab` setting is on — which is now
+    a modelled default (`true`, from the same default-config object `attachmentFolderPath: '/'` comes from). So
+    `getLeaf(true)` leaves the workspace with an active leaf where it used to leave `activeLeaf` as `null`.
+  - **`active-leaf-change`, `file-open` and `layout-change` are DEFERRED and gated on `layoutReady`.** As in
+    Obsidian, `setActiveLeaf` asks for the first two through `requestActiveLeafEvents` (a 0 ms debouncer) and
+    `updateLayout` asks for the third through `requestLayoutChangeEvents` (10 ms), and `activeLeafEvents` /
+    `layoutChangeEvents` do nothing at all until the layout is ready. A test that wants them therefore needs
+    `app.workspace.setLayoutReady__()` and then either a timer tick or `requestActiveLeafEvents.run()` /
+    `requestLayoutChangeEvents.run()`, which fire a pending event at once. `setActiveLeaf` on the leaf that is
+    already active does nothing and fires nothing.
+  - **Detaching the active leaf no longer clears `activeLeaf`** — Obsidian does not clear it either. The re-pick
+    happens in `updateLayout`, which every child mutation asks for through `onLayoutChange` →
+    `requestUpdateLayout`, coalesced onto a **microtask**. So `await Promise.resolve()` after a detach, or call
+    `workspace.updateLayout()` directly. `updateLayout` also re-creates a tab group and a leaf in an emptied root
+    split, and clears a link group that is down to one leaf.
+  - **`iterateLeaves` / `iterateAllLeaves` / `iterateRootLeaves` STOP on a truthy callback.** The mock used to visit
+    every leaf regardless, which quietly forgave the common `(leaf) => leaves.push(leaf)` shape — `push` returns the
+    new length, so that callback now collects exactly one leaf. Give such a callback a block body. As in Obsidian,
+    `iterateAllLeaves` starts one walk per part and discards all four answers, so stopping inside the root split
+    does not stop the sidebars.
+
+  Three more members went from stand-in to Obsidian's own: `getUnpinnedLeaf` picks the most recently active
+  navigable leaf that is its tab group's current tab (`WorkspaceTabs.currentTab` / `isStacked` are modelled now, and
+  `WorkspaceLeaf.canNavigate()` reads `view.navigation` — a leaf with no view stands for Obsidian's empty view,
+  which navigates); `getLeavesOfType` / `detachLeavesOfType` match on the view's type through the mock-only
+  `WorkspaceLeaf.getViewType__()` (the open view's `getViewType()`, else the stored view state's type, else
+  `'empty'`) rather than on `getViewState().type`, so a fresh leaf answers `getLeavesOfType('empty')`; and
+  `WorkspaceItem.dimension` / `setDimension` model the flex-grow share Obsidian divides on `createLeafInParent`,
+  `splitLeaf` and the single-child promotion in `removeChild`, and clears in `moveLeafToPopout`.
+
+  **Two departures kept on purpose.** `createLeafInTabGroup` always creates, where Obsidian hands back a tab already
+  showing the empty view — a mock leaf holds no view, so it cannot be told from one showing a file. And it falls
+  back to the root tab group where Obsidian throws `No tab group found.`, so `getLeaf('tab')` works on a workspace
+  no test has populated.
+
 - **The Markdown edit view dispatches a minimal line diff, not a whole-document replace** (2026-09-17, read in
   Obsidian 1.14.2's `app.js`). `MarkdownView.setViewData(data, false)` and `MarkdownEditView.set(data, false)` compare
   the old and new text line by line: the common leading lines are trimmed, then the common trailing ones, and when

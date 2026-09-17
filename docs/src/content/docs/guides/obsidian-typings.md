@@ -80,12 +80,13 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `TFolder` | `getParentPrefix` |
 | `ToggleComponent` | `changeCallback`, `on` |
 | `Vault` | `config`, `exists`, `fileMap`, `getAbstractFileByPathInsensitive`, `getAvailablePath`, `getAvailablePathForAttachments`, `getConfig`, `setConfig` |
-| `Workspace` | `app`, `floatingSplit` |
-| `WorkspaceItem` | `detach`, `setParent` |
-| `WorkspaceLeaf` | `activeTime`, `group`, `pinned` |
+| `Workspace` | `activeLeafEvents`, `activeTabGroup`, `app`, `createLeafInTabGroup`, `floatingSplit`, `getFocusedContainer`, `isAttached`, `iterateLeaves`, `lastActiveFile`, `lastTabGroupStacked`, `onLayoutChange`, `requestActiveLeafEvents`, `requestLayoutChangeEvents`, `requestUpdateLayout`, `splitLeaf`, `updateLayout` |
+| `WorkspaceItem` | `detach`, `dimension`, `setDimension`, `setParent` |
+| `WorkspaceLeaf` | `activeTime`, `canNavigate`, `group`, `pinned`, `setDimension` |
 | `WorkspaceParent` | `allowSingleChild`, `children`, `insertChild`, `removeChild`, `replaceChild` |
 | `WorkspaceSidedock` | `allowSingleChild`, `children`, `direction` |
 | `WorkspaceSplit` | `direction`, `setDirection` |
+| `WorkspaceTabs` | `currentTab`, `isStacked`, `selectTab`, `selectTabIndex`, `setStacked` |
 <!-- END GENERATED: implemented-internals -->
 
 ## The plugin registry

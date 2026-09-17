@@ -10,6 +10,7 @@ import { WorkspaceFloating } from './WorkspaceFloating.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 const OUT_OF_RANGE_INDEX = 10;
+const HALF_DIMENSION = 50;
 
 class BareWorkspaceParent extends WorkspaceParent {
   public constructor() {
@@ -112,6 +113,21 @@ describe('WorkspaceParent', () => {
       expect(parent.children).toEqual([]);
       expect(kept.getRoot()).toBe(grandparent);
       expect(parent.getRoot()).toBe(parent);
+    });
+
+    it('should hand the replaced parent\'s share to the child that takes its place', () => {
+      const grandparent = new BareWorkspaceParent();
+      const parent = new BareWorkspaceParent();
+      const kept = WorkspaceFloating.create2__();
+      const removed = WorkspaceFloating.create2__();
+      grandparent.insertChild(0, parent);
+      parent.insertChild(0, kept);
+      parent.insertChild(1, removed);
+      parent.setDimension(HALF_DIMENSION);
+
+      parent.removeChild(removed);
+
+      expect(kept.dimension).toBe(HALF_DIMENSION);
     });
 
     it('should keep a single child when it may', () => {

@@ -12,6 +12,9 @@ import { WorkspaceItem } from './WorkspaceItem.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 import { WorkspaceWindow } from './WorkspaceWindow.ts';
 
+const FULL_DIMENSION = 100;
+const HALF_DIMENSION = FULL_DIMENSION / 2;
+
 class BareWorkspaceItem extends WorkspaceItem {
   public constructor() {
     super();
@@ -127,6 +130,42 @@ describe('WorkspaceItem', () => {
       item.setParent(null);
       expect(item.getRoot()).toBe(item);
       expect(() => item.parent.getRoot()).toThrow('is not mocked');
+    });
+  });
+
+  describe('dimension / setDimension()', () => {
+    it('should start without a share of its parent', () => {
+      const item = WorkspaceFloating.create2__();
+      expect(item.dimension).toBeNull();
+    });
+
+    it('should keep a share inside the open range', () => {
+      const item = WorkspaceFloating.create2__();
+      item.setDimension(HALF_DIMENSION);
+      expect(item.dimension).toBe(HALF_DIMENSION);
+    });
+
+    it('should store a share outside the open range as null, as Obsidian does', () => {
+      const item = WorkspaceFloating.create2__();
+      item.setDimension(HALF_DIMENSION);
+
+      item.setDimension(FULL_DIMENSION);
+      expect(item.dimension).toBeNull();
+
+      item.setDimension(HALF_DIMENSION);
+      item.setDimension(0);
+      expect(item.dimension).toBeNull();
+
+      item.setDimension(HALF_DIMENSION);
+      item.setDimension(-HALF_DIMENSION);
+      expect(item.dimension).toBeNull();
+    });
+
+    it('should accept null', () => {
+      const item = WorkspaceFloating.create2__();
+      item.setDimension(HALF_DIMENSION);
+      item.setDimension(null);
+      expect(item.dimension).toBeNull();
     });
   });
 

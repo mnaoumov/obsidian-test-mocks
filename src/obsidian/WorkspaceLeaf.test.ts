@@ -10,6 +10,7 @@ import {
   vi
 } from 'vitest';
 
+import { noopAsync } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
@@ -76,15 +77,18 @@ describe('WorkspaceLeaf', () => {
       expect(countLeaves(app)).toBe(countBefore - 1);
     });
 
-    it('should clear activeLeaf if detached leaf was active', () => {
+    it('should hand activeLeaf to another leaf once the layout updates', async () => {
       const app = App.createConfigured__();
-      const leaf = app.workspace.getLeaf(true);
-      app.workspace.setActiveLeaf(leaf);
+      app.workspace.setLayoutReady__();
+      const kept = app.workspace.getLeaf(true);
+      const leaf = app.workspace.getLeaf('tab');
       expect(app.workspace.activeLeaf).toBe(leaf);
 
       leaf.detach();
+      // Obsidian re-picks in `updateLayout`, which its layout change asks for on a microtask.
+      await noopAsync();
 
-      expect(app.workspace.activeLeaf).toBeNull();
+      expect(app.workspace.activeLeaf).toBe(kept);
     });
 
     it('should not affect activeLeaf if detached leaf was not active', () => {
@@ -325,6 +329,49 @@ describe('WorkspaceLeaf', () => {
       leaf.view = strictProxy<View>({ getDisplayText: () => '', getIcon: () => '', onResize });
       leaf.onResize();
       expect(onResize).toHaveBeenCalled();
+    });
+  });
+
+  describe('canNavigate()', () => {
+    it('should answer true for a leaf with no view, which stands for Obsidian\'s empty view', () => {
+      const app = App.createConfigured__();
+      expect(WorkspaceLeaf.create2__(app).canNavigate()).toBe(true);
+    });
+
+    it('should answer false for a pinned leaf', () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      leaf.setPinned(true);
+      expect(leaf.canNavigate()).toBe(false);
+    });
+
+    it('should read the open view\'s navigation flag', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.open(strictProxy<View>({ navigation: false }));
+      expect(leaf.canNavigate()).toBe(false);
+    });
+  });
+
+  describe('getViewType__()', () => {
+    it('should report the empty view for a leaf with no view and no view state', () => {
+      const app = App.createConfigured__();
+      expect(WorkspaceLeaf.create2__(app).getViewType__()).toBe('empty');
+    });
+
+    it('should report the stored view state\'s type when there is no view', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.setViewState({ type: 'markdown' });
+      expect(leaf.getViewType__()).toBe('markdown');
+    });
+
+    it('should prefer the open view\'s type', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.setViewState({ type: 'markdown' });
+      await leaf.open(strictProxy<View>({ getViewType: () => 'canvas' }));
+      expect(leaf.getViewType__()).toBe('canvas');
     });
   });
 
