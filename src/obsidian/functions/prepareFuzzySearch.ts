@@ -1,3 +1,9 @@
+/**
+ * @file
+ *
+ * Mock of Obsidian's `prepareFuzzySearch`.
+ */
+
 import type { SearchResult as SearchResultOriginal } from 'obsidian';
 
 import { ensureNonNullable } from '../../internal/type-guards.ts';
@@ -6,6 +12,14 @@ const CONSECUTIVE_MATCH_SCORE = 2;
 const WORD_BOUNDARY_SCORE = 3;
 const INITIAL_LAST_MATCH_INDEX = -2;
 
+/**
+ * Builds a fuzzy search callback for a query. The mock's own scoring matches the query's characters in order,
+ * ignoring case, and rewards consecutive matches and matches at word boundaries; its scores are not Obsidian's.
+ *
+ * @param query - The fuzzy query.
+ * @returns A callback that searches a text, returning the matched ranges and a score (negative, lower for better
+ * matches), or `null` when not every query character is found in order.
+ */
 export function prepareFuzzySearch(query: string): (text: string) => null | SearchResultOriginal {
   const lowerQuery = query.toLowerCase();
 

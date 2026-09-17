@@ -1,7 +1,19 @@
+/**
+ * @file
+ *
+ * Mock of Obsidian's `getAllTags`.
+ */
+
 import type { CachedMetadata as CachedMetadataOriginal } from 'obsidian';
 
 import { parseFrontMatterTags } from './parseFrontMatterTags.ts';
 
+/**
+ * Combines the tags found in a note's content and in its frontmatter into a single array.
+ *
+ * @param cache - The note's cached metadata.
+ * @returns The content tags followed by the frontmatter tags (each `#`-prefixed), or `null` when there are none.
+ */
 export function getAllTags(cache: CachedMetadataOriginal): null | string[] {
   const tags: string[] = [];
   if (cache.tags) {
