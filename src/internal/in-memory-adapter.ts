@@ -26,6 +26,8 @@ interface FileMeta {
   size: number;
 }
 
+const TRASH_FOLDER = '.trash';
+
 /**
  * An in-memory `DataAdapter`: text files, binary files and folders live in maps keyed by vault-relative path,
  * with a creation time, modification time and size kept per file.
@@ -39,6 +41,14 @@ export class InMemoryAdapter implements DataAdapterOriginal {
    * ignoring case unless a case-sensitive check is requested.
    */
   public insensitive = false;
+
+  /**
+   * Mock-only: whether {@link InMemoryAdapter.trashSystem} can reach a system trash. Turn it off to make it answer
+   * `false`, which is what Obsidian's desktop adapter does when the Electron shell refuses the item and its mobile
+   * adapter when the native call throws — and what makes `Vault.trash`'s fallback to
+   * {@link InMemoryAdapter.trashLocal} reachable in a test.
+   */
+  public isSystemTrashAvailable__ = true;
 
   private readonly binaryFiles = new Map<string, ArrayBuffer>();
   private readonly directories = new Set<string>(['']);
@@ -483,22 +493,47 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   }
 
   /**
-   * Moves a file into the vault's `.trash` folder. The mock has no trash: the file is deleted outright.
+   * Moves a file or folder into the vault's `.trash` folder, creating that folder first, exactly as both of
+   * Obsidian's adapters do. The entry keeps its own name there; when that name is taken the copy is numbered from
+   * `2` — `note.md`, then `note 2.md`, `note 3.md` — with the extension kept last. A folder moves with everything
+   * under it, and `.trash` is a dot path, so the vault never tracks what lands there.
    *
-   * @param normalizedPath - The vault-relative path of the file.
+   * @param normalizedPath - The vault-relative path of the file or folder.
+   * @throws Error `ENOENT: no such file or directory, rename …` when nothing exists at `normalizedPath`; `.trash`
+   * has been created by then, as it has in the real adapters.
    */
   public async trashLocal(normalizedPath: string): Promise<void> {
-    await this.remove(normalizedPath);
+    await noopAsync();
+    this.mkdirSync__(TRASH_FOLDER);
+    const trashPath = this.getAvailableTrashPath(normalizedPath);
+    if (!this.existsSync(normalizedPath, true)) {
+      throw new Error(`ENOENT: no such file or directory, rename '${this.getFullPath(normalizedPath)}' -> '${this.getFullPath(trashPath)}'`);
+    }
+
+    await this.rename(normalizedPath, trashPath);
   }
 
   /**
-   * Moves a file to the system trash. The mock has no trash: the file is deleted outright.
+   * Moves a file or folder to the system trash. The mock has no system trash to move it to, so the entry is removed
+   * outright — a folder together with everything under it — which is what the vault observes either way.
    *
-   * @param normalizedPath - The vault-relative path of the file.
-   * @returns Always `true`, since the deletion cannot fail.
+   * @param normalizedPath - The vault-relative path of the file or folder.
+   * @returns `true` once the entry is gone; `false`, having changed nothing, when nothing exists at
+   * `normalizedPath` or when {@link InMemoryAdapter.isSystemTrashAvailable__} is off. Obsidian's `Vault.trash`
+   * falls back to {@link InMemoryAdapter.trashLocal} on a `false`.
    */
   public async trashSystem(normalizedPath: string): Promise<boolean> {
-    await this.remove(normalizedPath);
+    await noopAsync();
+    if (!this.isSystemTrashAvailable__ || !this.existsSync(normalizedPath, true)) {
+      return false;
+    }
+
+    if (this.directories.has(normalizedPath)) {
+      await this.rmdir(normalizedPath, true);
+    } else {
+      await this.remove(normalizedPath);
+    }
+
     return true;
   }
 
@@ -625,6 +660,22 @@ export class InMemoryAdapter implements DataAdapterOriginal {
         || this.binaryFiles.has(normalizedPath)
         || this.directories.has(normalizedPath)
       : this.lowerCaseKeys.has(normalizedPath.toLowerCase());
+  }
+
+  private getAvailableTrashPath(normalizedPath: string): string {
+    const name = normalizedPath.slice(normalizedPath.lastIndexOf('/') + 1);
+    // As `path.extname` does: a leading dot is part of the name, not an extension.
+    const dotIndex = name.lastIndexOf('.');
+    const extension = dotIndex > 0 ? name.slice(dotIndex) : '';
+    const baseName = dotIndex > 0 ? name.slice(0, dotIndex) : name;
+
+    let trashPath = `${TRASH_FOLDER}/${baseName}${extension}`;
+    let counter = 1;
+    while (this.existsSync(trashPath)) {
+      counter++;
+      trashPath = `${TRASH_FOLDER}/${baseName} ${counter.toString()}${extension}`;
+    }
+    return trashPath;
   }
 
   private isDirectChild(path: string, prefix: string, normalizedPath: string): boolean {
