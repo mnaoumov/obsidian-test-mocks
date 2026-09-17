@@ -45,14 +45,16 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | Class | Members |
 | --- | --- |
 | `AbstractInputSuggest` | `textInputEl` |
+| `AbstractTextComponent` | `changeCallback` |
 | `App` | `appId`, `changeTheme`, `getTheme`, `isMobile`, `plugins`, `setTheme` |
 | `BasesViewConfig` | `setOrder` |
-| `ColorComponent` | `colorPickerEl` |
+| `ColorComponent` | `changeCallback`, `colorPickerEl` |
 | `Component` | `_children`, `_events`, `_loaded` |
 | `DateValue` | `date`, `printDate`, `printTime`, `time` |
 | `DropdownComponent` | `changeCallback` |
 | `DurationValue` | `days`, `hours`, `milliseconds`, `minutes`, `months`, `seconds`, `years` |
 | `Events` | `_` |
+| `ExtraButtonComponent` | `changeCallback` |
 | `FileManager` | `app` |
 | `FileValue` | `app`, `file` |
 | `LinkValue` | `app`, `display`, `sourcePath` |
@@ -69,12 +71,14 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `PopoverSuggest` | `isOpen` |
 | `ProgressBarComponent` | `progressBar` |
 | `Setting` | `setVisibility` |
-| `SettingGroup` | `groupEl`, `headerEl`, `headerInnerEl` |
+| `SettingGroup` | `components`, `controlEl`, `groupEl`, `headerEl`, `headerInnerEl` |
 | `SettingTab` | `renderTab` |
+| `SliderComponent` | `changeCallback` |
 | `SuggestModal` | `instructionsEl` |
 | `TAbstractFile` | `deleted` |
 | `TFile` | `name` |
 | `TFolder` | `getParentPrefix` |
+| `ToggleComponent` | `changeCallback`, `on` |
 | `Vault` | `config`, `exists`, `fileMap`, `getAbstractFileByPathInsensitive`, `getAvailablePath`, `getAvailablePathForAttachments`, `getConfig`, `setConfig` |
 | `Workspace` | `app` |
 | `WorkspaceLeaf` | `group`, `pinned` |

@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { AbstractTextComponent } from './AbstractTextComponent.ts';
 import { TextComponent } from './TextComponent.ts';
 
@@ -29,6 +30,17 @@ describe('AbstractTextComponent', () => {
       const component = createTextComponent();
       expect(component.getValue()).toBe('');
     });
+
+    it('should read edits made directly to the element', () => {
+      const component = createTextComponent();
+      component.inputEl.value = 'typed';
+      expect(component.getValue()).toBe('typed');
+    });
+  });
+
+  it('should turn spellcheck off on the element', () => {
+    const component = createTextComponent();
+    expect(component.inputEl.getAttribute('spellcheck')).toBe('false');
   });
 
   describe('setValue', () => {
@@ -44,12 +56,19 @@ describe('AbstractTextComponent', () => {
       expect(component.inputEl.value).toBe('world');
     });
 
-    it('should invoke onChange callback', () => {
+    it('should not invoke onChange callback', () => {
       const component = createTextComponent();
       const callback = vi.fn();
       component.onChange(callback);
       component.setValue('test');
-      expect(callback).toHaveBeenCalledWith('test');
+      expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('should ignore a value that is not a string', () => {
+      const component = createTextComponent();
+      component.setValue('kept');
+      component.setValue(castTo<string>(undefined));
+      expect(component.getValue()).toBe('kept');
     });
 
     it('should return this for chaining', () => {
@@ -79,9 +98,18 @@ describe('AbstractTextComponent', () => {
       const callback = vi.fn();
       component.onChange(callback);
       component.setValue('initial');
-      callback.mockClear();
       component.onChanged();
       expect(callback).toHaveBeenCalledWith('initial');
+      expect(component.changeCallback).toBe(callback);
+    });
+
+    it('should be called by an input event on the element', () => {
+      const component = new BareTextComponent(createEl('input'));
+      const callback = vi.fn();
+      component.onChange(callback);
+      component.inputEl.value = 'typed';
+      component.inputEl.dispatchEvent(new Event('input'));
+      expect(callback).toHaveBeenCalledWith('typed');
     });
 
     it('should not throw if no callback is registered', () => {

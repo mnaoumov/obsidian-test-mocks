@@ -13,25 +13,40 @@ import { BaseComponent } from './BaseComponent.ts';
 /**
  * Mock of Obsidian's `ExtraButtonComponent`.
  *
- * The click handler is not attached to the element: a test fires it with
- * {@link ExtraButtonComponent.simulateClick__}.
+ * As in Obsidian, a click on {@link ExtraButtonComponent.extraSettingsEl}, or Enter or Space pressed on it, runs the
+ * handler unless the button is disabled. {@link ExtraButtonComponent.simulateClick__} does the same without an event.
  */
 export class ExtraButtonComponent extends BaseComponent {
+  /**
+   * The click handler registered with {@link ExtraButtonComponent.onClick}, if any.
+   */
+  public changeCallback?: () => unknown;
+
   /**
    * The element the icon button renders into.
    */
   public extraSettingsEl: HTMLElement;
-  private clickHandler?: () => unknown;
 
   /**
-   * Creates the button inside a container.
+   * Creates the button inside a container, focusable, with its click and keyboard listeners.
    *
    * @param containerEl - The element the button element is appended to.
    */
   public constructor(containerEl: HTMLElement) {
     super();
-    this.extraSettingsEl = containerEl.createDiv();
+    this.extraSettingsEl = containerEl.createDiv({ attr: { tabIndex: 0 }, cls: 'clickable-icon extra-setting-button' });
     const self = strictProxy(this);
+    this.extraSettingsEl.addEventListener('click', (event) => {
+      event.preventDefault();
+      self.simulateClick__();
+    });
+    this.extraSettingsEl.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+      }
+      event.preventDefault();
+      self.simulateClick__();
+    });
     self.constructor2__(containerEl);
     return self;
   }
@@ -78,26 +93,27 @@ export class ExtraButtonComponent extends BaseComponent {
   }
 
   /**
-   * Sets the handler run when the button is clicked. The mock stores it, replacing any previous one, and runs it
-   * only from {@link ExtraButtonComponent.simulateClick__}.
+   * Sets the handler run when the button is clicked, replacing any previous one.
    *
    * @param callback - The click handler.
    * @returns This button, for chaining.
    */
   public onClick(callback: () => unknown): this {
-    this.clickHandler = callback;
+    this.changeCallback = callback;
     return this;
   }
 
   /**
-   * Enables or disables the button. The mock only records the state in `disabled`; a disabled button still runs
-   * its handler from {@link ExtraButtonComponent.simulateClick__}.
+   * Enables or disables the button. A disabled button gets the `is-disabled` class, leaves the tab order, and ignores
+   * clicks.
    *
    * @param disabled - Whether the button is disabled.
    * @returns This button, for chaining.
    */
   public override setDisabled(disabled: boolean): this {
-    this.disabled = disabled;
+    super.setDisabled(disabled);
+    this.extraSettingsEl.toggleClass('is-disabled', disabled);
+    this.extraSettingsEl.setAttr('tabindex', disabled ? null : 0);
     return this;
   }
 
@@ -125,9 +141,13 @@ export class ExtraButtonComponent extends BaseComponent {
   }
 
   /**
-   * Mock-only: simulates a click by calling the handler set with {@link ExtraButtonComponent.onClick}, if any.
+   * Mock-only: simulates a click by calling the handler set with {@link ExtraButtonComponent.onClick}, if any, unless
+   * the button is disabled.
    */
   public simulateClick__(): void {
-    this.clickHandler?.();
+    if (this.disabled) {
+      return;
+    }
+    this.changeCallback?.();
   }
 }

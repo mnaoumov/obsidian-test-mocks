@@ -99,13 +99,13 @@ describe('DropdownComponent', () => {
       expect(dropdown.selectEl.value).toBe('bar');
     });
 
-    it('should invoke the change callback', () => {
+    it('should not invoke the change callback', () => {
       const dropdown = createDropdown();
       dropdown.addOption('x', 'X');
       const callback = vi.fn();
       dropdown.onChange(callback);
       dropdown.setValue('x');
-      expect(callback).toHaveBeenCalledWith('x');
+      expect(callback).not.toHaveBeenCalled();
     });
 
     it('should return this for chaining', () => {
@@ -115,13 +115,15 @@ describe('DropdownComponent', () => {
   });
 
   describe('onChange', () => {
-    it('should register a callback invoked on setValue', () => {
+    it('should register a callback invoked on the change event', () => {
       const dropdown = createDropdown();
-      dropdown.addOption('a', 'A');
+      dropdown.addOptions({ a: 'A', b: 'B' });
       const callback = vi.fn();
       dropdown.onChange(callback);
-      dropdown.setValue('a');
-      expect(callback).toHaveBeenCalledWith('a');
+      expect(dropdown.changeCallback).toBe(callback);
+      dropdown.selectEl.value = 'b';
+      dropdown.selectEl.dispatchEvent(new Event('change'));
+      expect(callback).toHaveBeenCalledWith('b');
     });
 
     it('should return this for chaining', () => {

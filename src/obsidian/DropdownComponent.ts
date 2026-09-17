@@ -13,16 +13,19 @@ import { ValueComponent } from './ValueComponent.ts';
 /**
  * Mock of Obsidian's `DropdownComponent`, backed by a real `<select>` element.
  *
- * The change handler is not attached to the element: it runs from {@link DropdownComponent.setValue} and
- * {@link DropdownComponent.simulateChange__}.
+ * As in Obsidian, the change handler runs on the element's `change` event, not from
+ * {@link DropdownComponent.setValue}; {@link DropdownComponent.simulateChange__} runs it without an event.
  */
 export class DropdownComponent extends ValueComponent<string> {
+  /**
+   * The handler registered with {@link DropdownComponent.onChange}, if any.
+   */
+  public changeCallback?: (value: string) => unknown;
+
   /**
    * The `<select>` element the component renders.
    */
   public selectEl: HTMLSelectElement;
-
-  private changeCallback?: () => void;
 
   /**
    * Creates an empty dropdown inside a container.
@@ -33,6 +36,9 @@ export class DropdownComponent extends ValueComponent<string> {
     super();
     this.selectEl = containerEl.createEl('select');
     const self = strictProxy(this);
+    this.selectEl.addEventListener('change', () => {
+      self.simulateChange__();
+    });
     self.constructor3__(containerEl);
     return self;
   }
@@ -122,22 +128,19 @@ export class DropdownComponent extends ValueComponent<string> {
    * @returns This dropdown, for chaining.
    */
   public onChange(callback: (value: string) => void): this {
-    this.changeCallback = (): void => {
-      callback(this.getValue());
-    };
+    this.changeCallback = callback;
     return this;
   }
 
   /**
-   * Selects a value. The mock writes it to the `<select>` element, which ignores a value with no matching option,
-   * and then calls the change handler.
+   * Selects a value by writing it to the `<select>` element, which ignores a value with no matching option. As in
+   * Obsidian, the change handler is not called.
    *
    * @param value - The option value to select.
    * @returns This dropdown, for chaining.
    */
   public override setValue(value: string): this {
     this.selectEl.value = value;
-    this.changeCallback?.();
     return this;
   }
 
@@ -146,6 +149,6 @@ export class DropdownComponent extends ValueComponent<string> {
    * Set `selectEl.value` first to simulate picking a particular option.
    */
   public simulateChange__(): void {
-    this.changeCallback?.();
+    this.changeCallback?.(this.getValue());
   }
 }

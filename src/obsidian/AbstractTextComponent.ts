@@ -13,22 +13,24 @@ import { ValueComponent } from './ValueComponent.ts';
 /**
  * Mock of Obsidian's `AbstractTextComponent`, a value component wrapping a text `<input>` or `<textarea>`.
  *
- * The mock keeps the value in memory and mirrors it into the element on {@link AbstractTextComponent.setValue};
- * edits made directly to the element are not read back.
+ * As in Obsidian, the value lives in the element: {@link AbstractTextComponent.getValue} reads `inputEl.value`, and
+ * an `input` event on the element calls {@link AbstractTextComponent.onChanged}.
  *
  * @typeParam T - The wrapped element's type.
  */
 export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTextAreaElement> extends ValueComponent<string> {
   /**
+   * The callback registered with {@link AbstractTextComponent.onChange}, if any.
+   */
+  public changeCallback?: (value: string) => unknown;
+
+  /**
    * The wrapped `<input>` or `<textarea>` element.
    */
   public inputEl: T;
 
-  private _onChange?: (value: string) => unknown;
-  private value = '';
-
   /**
-   * Wraps an input element.
+   * Wraps an input element, listening for its `input` events and turning spellcheck off, as Obsidian does.
    *
    * @param inputEl - The `<input>` or `<textarea>` to wrap.
    */
@@ -36,6 +38,10 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
     super();
     this.inputEl = inputEl;
     const self = strictProxy(this);
+    inputEl.addEventListener('input', () => {
+      self.onChanged();
+    });
+    inputEl.setAttribute('spellcheck', 'false');
     self.constructor3__(inputEl);
     return self;
   }
@@ -73,28 +79,28 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   /**
    * Gets the component's value.
    *
-   * @returns The value last set through {@link AbstractTextComponent.setValue}, or an empty string.
+   * @returns The element's current value, including edits made directly to the element.
    */
   public override getValue(): string {
-    return this.value;
+    return this.inputEl.value;
   }
 
   /**
-   * Registers the callback to call when the value changes, replacing any earlier one.
+   * Registers the callback to call when the user edits the value, replacing any earlier one.
    *
    * @param callback - Called with the new value.
    * @returns This component, for chaining.
    */
   public onChange(callback: (value: string) => unknown): this {
-    this._onChange = callback;
+    this.changeCallback = callback;
     return this;
   }
 
   /**
-   * Notifies the change callback of the current value, as Obsidian does when the user edits the element.
+   * Calls the change callback with the element's current value. The element's `input` listener calls it.
    */
   public onChanged(): void {
-    this._onChange?.(this.value);
+    this.changeCallback?.(this.inputEl.value);
   }
 
   /**
@@ -109,16 +115,17 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   }
 
   /**
-   * Sets the component's value and writes it into the element. Unlike Obsidian, the mock also calls the change
-   * callback.
+   * Writes the value into the element. As in Obsidian, the change callback is not called, and a value that is not a
+   * string is ignored.
    *
    * @param value - The new value.
    * @returns This component, for chaining.
    */
   public override setValue(value: string): this {
-    this.value = value;
-    this.inputEl.value = value;
-    this._onChange?.(value);
+    // Obsidian ignores a value that is not a string, which an untyped caller can still pass.
+    if (typeof (value as unknown) === 'string') {
+      this.inputEl.value = value;
+    }
     return this;
   }
 }

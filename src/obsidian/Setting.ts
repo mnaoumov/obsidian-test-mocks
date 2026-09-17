@@ -42,7 +42,8 @@ import { ToggleComponent } from './ToggleComponent.ts';
  * Mock of Obsidian's `Setting`, a settings row with an info area (name and description) and a control area.
  *
  * Each `add*` method creates the real mock component in {@link Setting.controlEl}, hands it to the callback
- * synchronously, and (except for {@link Setting.addDisplayValue}) records it in {@link Setting.components}.
+ * synchronously, and (except for {@link Setting.addDisplayValue}, as in Obsidian) records it in
+ * {@link Setting.components}.
  */
 export class Setting {
   /**
@@ -59,6 +60,11 @@ export class Setting {
    * The element holding the row's description.
    */
   public descEl: HTMLElement;
+
+  /**
+   * Whether the row is disabled, as set by {@link Setting.setDisabled}.
+   */
+  public disabled = false;
 
   /**
    * The validation error element created by {@link Setting.setErrorMessage}, or `null` when no error is shown.
@@ -156,7 +162,7 @@ export class Setting {
 
   /**
    * Adds a read-only display value to the row. On a navigable row, Obsidian uses it to surface the value edited on
-   * the page the row opens. The mock does not record it in {@link Setting.components}.
+   * the page the row opens. As in Obsidian, it is not recorded in {@link Setting.components}.
    *
    * @param callback - Called with the new display value component, to configure it.
    * @returns This setting, for chaining.
@@ -294,13 +300,16 @@ export class Setting {
   }
 
   /**
-   * Removes the row's components. The mock empties {@link Setting.components} but leaves their elements in
-   * {@link Setting.controlEl}.
+   * Removes the row's controls: empties {@link Setting.controlEl} and {@link Setting.components}, drops the error
+   * element and removes the `is-invalid` class, as Obsidian does.
    *
    * @returns This setting, for chaining.
    */
   public clear(): this {
+    this.controlEl.empty();
     this.components = [];
+    this.errorEl = null;
+    this.settingEl.removeClass('is-invalid');
     return this;
   }
 
@@ -341,14 +350,18 @@ export class Setting {
   }
 
   /**
-   * Marks the row as disabled or enabled. The mock toggles the `is-disabled` class on {@link Setting.settingEl}
-   * and does not disable the components.
+   * Disables or enables the row: records {@link Setting.disabled}, toggles the `is-disabled` class on
+   * {@link Setting.settingEl}, and disables or enables every component in {@link Setting.components}.
    *
    * @param disabled - Whether the row is disabled.
    * @returns This setting, for chaining.
    */
   public setDisabled(disabled: boolean): this {
+    this.disabled = disabled;
     this.settingEl.classList.toggle('is-disabled', disabled);
+    for (const component of this.components) {
+      component.setDisabled(disabled);
+    }
     return this;
   }
 

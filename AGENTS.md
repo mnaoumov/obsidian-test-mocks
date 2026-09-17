@@ -447,8 +447,18 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     rebuilds; group search inputs and the `list` add/delete/reorder affordances are absent (a `list` renders as
     a group); and a `page` renders as its own name/desc row without navigation — render its `items` by passing
     them in explicitly.
-  - `Setting.setDisabled` still does not propagate to the components on the row (it does in real Obsidian), so
-    assert the predicate, not `component.disabled`.
+  - `Setting.setDisabled` propagates to the components on the row, as in real Obsidian (since 2026-09-17), so
+    `component.disabled` answers for a row the renderer disabled.
+
+- **Setting components follow Obsidian's change-callback rules** (2026-09-17, read from Obsidian 1.14.2's
+  `app.js`). A text, text area, search or moment-format component's `setValue` never calls `onChange`; its
+  value lives in `inputEl`, and an `input` event on the element is what calls the callback. A dropdown's
+  `setValue` does not call it either; its `change` event (or `simulateChange__`) does. `ToggleComponent`,
+  `SliderComponent` and `ColorComponent` DO call `onChange` from `setValue`, but only when the value actually
+  changes. `SecretComponent.setValue` calls nothing. A test that relied on `setValue` to drive a
+  plugin's `onChange` handler should dispatch the element's event instead (`input` for text, `change` for a
+  dropdown, slider or color picker) or call `onClick` / `simulateClick__`. The slider applies a browser's range rules
+  itself (jsdom does not): the value is clamped, stepped from `min`, and starts at the middle of the range.
 
 - **`Modal`'s DOM mirrors Obsidian** (added 2026-08-09). The mock used to build
   `containerEl > modalEl > [contentEl, titleEl]` with no classes and no backdrop; it now builds Obsidian
