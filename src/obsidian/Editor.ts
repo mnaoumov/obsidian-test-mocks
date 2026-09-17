@@ -21,6 +21,31 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 
+const SURROGATE_PAIR_LENGTH = 2;
+const WORD_CHAR_REG_EXP = /[\p{Alphabetic}\p{Number}_]/u;
+
+interface ChangeSection {
+  // The length of new text replacing this section, or `-1` when the section is unchanged.
+  insertLength: number;
+  length: number;
+}
+
+interface ChangeSet {
+  readonly newText: string;
+  readonly sections: readonly ChangeSection[];
+}
+
+interface OffsetChange {
+  readonly from: number;
+  readonly insert: string;
+  readonly to: number;
+}
+
+interface OffsetSelection {
+  readonly anchor: number;
+  readonly head: number;
+}
+
 /**
  * Mock of Obsidian's abstract `Editor`, the common interface over the CodeMirror editors.
  *
@@ -287,21 +312,32 @@ export abstract class Editor {
   }
 
   /**
-   * Converts a line and column position into a character offset.
+   * Converts a line and column position into a character offset, resolving it the way Obsidian does.
    *
-   * @param pos - The position; a column past the end of its line is clamped to the line's end.
+   * @param pos - The position. A line before the first resolves to the start of the document and a line past the
+   * last to its end. A non-finite column resolves to the end of its line, and a negative one counts back from that
+   * end, stopping at the line's start. Any other column is added to the line's start as is, so a column past the end
+   * of its line runs on into the lines after it.
    * @returns The offset from the start of the document.
-   * @throws When `pos.line` is past the last line.
    */
   public posToOffset(pos: EditorPositionOriginal): number {
-    const lines = this.getLines();
-    let offset = 0;
-    for (let index = 0; index < pos.line && index < lines.length; index++) {
-      offset += ensureNonNullable(lines[index]).length + 1;
+    if (pos.line < 0) {
+      return 0;
     }
+
+    const lines = this.getLines();
+    if (pos.line >= lines.length) {
+      return this.content.length;
+    }
+
+    let lineStart = 0;
+    for (let index = 0; index < pos.line; index++) {
+      lineStart += ensureNonNullable(lines[index]).length + 1;
+    }
+
     const lineLength = ensureNonNullable(lines[pos.line]).length;
-    offset += Math.min(pos.ch, lineLength);
-    return offset;
+    const ch = Number.isFinite(pos.ch) ? pos.ch : lineLength;
+    return lineStart + (ch < 0 ? Math.max(0, lineLength + ch) : ch);
   }
 
   /**
@@ -392,6 +428,20 @@ export abstract class Editor {
   }
 
   /**
+   * Mock-only: replaces the whole document and drops the undo and redo history, as Obsidian does when a view loads
+   * a file into a fresh editor state. The cursor moves to the start of the document.
+   *
+   * @param content - The new document text.
+   */
+  public resetState__(content: string): void {
+    this.content = content;
+    this.anchor = { ch: 0, line: 0 };
+    this.head = { ch: 0, line: 0 };
+    this.undoStack.length = 0;
+    this.redoStack = [];
+  }
+
+  /**
    * Scrolls a range into view. A no-op in the mock; the scroll position is unchanged.
    *
    * @param _range - The range to reveal.
@@ -469,14 +519,15 @@ export abstract class Editor {
   }
 
   /**
-   * Replaces the whole document. The mock moves the cursor to the start and does not record an undo snapshot.
+   * Replaces the whole document as one change, as Obsidian does: the change can be undone and clears the redo
+   * history, and the selection is mapped through it, so a cursor at the end of the old document stays at the end of
+   * the new one and a cursor anywhere else moves to the start. Replacing an empty document with an empty one is no
+   * change at all.
    *
    * @param content - The new document text.
    */
   public setValue(content: string): void {
-    this.content = content;
-    this.anchor = { ch: 0, line: 0 };
-    this.head = { ch: 0, line: 0 };
+    this.dispatchChanges([{ from: 0, insert: content, to: this.content.length }]);
   }
 
   /**
@@ -489,27 +540,46 @@ export abstract class Editor {
   }
 
   /**
-   * Applies a set of changes and selections as one transaction. The mock applies each change through
-   * {@link Editor.replaceRange} in order, each against the document as the previous change left it, then sets the
-   * selection.
+   * Applies a set of changes and selections as one transaction, as Obsidian does.
+   *
+   * `replaceSelection` replaces the selected text and `changes` follow it. Every position in them refers to the
+   * document as it was BEFORE the transaction, the way CodeMirror reads a change set, so a change listed after one
+   * that precedes it in the document still lands where its positions say. The whole transaction is a single undo
+   * step.
+   *
+   * The selection is then taken from `selections` (the mock keeps the first), else `selection`, both resolved against
+   * the document AFTER the changes; else the cursor goes after the `replaceSelection` text; else the existing
+   * selection is mapped through the changes.
    *
    * @param tx - The changes and selection to apply.
    * @param _origin - The transaction's origin; ignored by the mock.
    */
   public transaction(tx: EditorTransactionOriginal, _origin?: string): void {
-    if (tx.changes) {
-      for (const change of tx.changes) {
-        this.replaceRange(change.text, change.from, change.to);
+    const changes: OffsetChange[] = [];
+    let replaceSelectionEnd: null | number = null;
+
+    if (typeof tx.replaceSelection === 'string') {
+      const from = this.posToOffset(this.minPos(this.anchor, this.head));
+      const to = this.posToOffset(this.maxPos(this.anchor, this.head));
+      changes.push({ from, insert: tx.replaceSelection, to });
+      replaceSelectionEnd = from + tx.replaceSelection.length;
+    }
+
+    for (const change of tx.changes ?? []) {
+      const from = this.posToOffset(change.from);
+      const to = change.to ? this.posToOffset(change.to) : from;
+      changes.push({ from, insert: change.text, to });
+    }
+
+    this.dispatchChanges(changes, () => {
+      const range = tx.selections?.[0] ?? tx.selection;
+      if (range) {
+        const anchor = this.posToOffset(range.from);
+        return { anchor, head: range.to ? this.posToOffset(range.to) : anchor };
       }
-    }
 
-    if (tx.selection) {
-      this.setSelection(tx.selection.from, tx.selection.to);
-    }
-
-    if (tx.selections) {
-      this.setSelections(tx.selections.map((sel) => ({ anchor: sel.from, head: sel.to ?? sel.from })));
-    }
+      return replaceSelectionEnd === null ? null : { anchor: replaceSelectionEnd, head: replaceSelectionEnd };
+    });
   }
 
   /**
@@ -530,36 +600,68 @@ export abstract class Editor {
   }
 
   /**
-   * Finds the word at a position. The mock treats a word as a run of `\w` characters on one line.
+   * Finds the word at a position, as CodeMirror does. A word is a run of letters, digits and underscores on one line,
+   * found from either side of the position, so a position just after a word (the end of a line included) finds that
+   * word.
    *
-   * @param pos - The position to look at; the character at `pos.ch` must be a word character.
-   * @returns The range of the word, or `null` when there is no word at that position.
+   * @param pos - The position to look at, resolved as {@link Editor.posToOffset} resolves it.
+   * @returns The range of the word, or `null` when neither the character before the position nor the one after it is
+   * a word character.
+   * @throws RangeError when the position resolves past the end of the document.
    */
   public wordAt(pos: EditorPositionOriginal): EditorRangeOriginal | null {
-    const line = this.getLine(pos.line);
-    if (!line || pos.ch > line.length) {
-      return null;
+    const offset = this.posToOffset(pos);
+    if (offset > this.content.length) {
+      throw new RangeError(`Invalid position ${String(offset)} in document of length ${String(this.content.length)}`);
     }
 
-    const wordChars = /\w/;
-    if (!wordChars.test(ensureNonNullable(line[pos.ch]))) {
-      return null;
+    const lineStart = offset === 0 ? 0 : this.content.lastIndexOf('\n', offset - 1) + 1;
+    const lineBreakIndex = this.content.indexOf('\n', offset);
+    const lineText = this.content.slice(lineStart, lineBreakIndex === -1 ? this.content.length : lineBreakIndex);
+
+    let start = offset - lineStart;
+    while (start > 0) {
+      const previous = start - (endsWithSurrogatePair(lineText.slice(0, start)) ? SURROGATE_PAIR_LENGTH : 1);
+      if (!WORD_CHAR_REG_EXP.test(lineText.slice(previous, start))) {
+        break;
+      }
+      start = previous;
     }
 
-    let start = pos.ch;
-    while (start > 0 && wordChars.test(ensureNonNullable(line[start - 1]))) {
-      start--;
+    let end = offset - lineStart;
+    while (end < lineText.length) {
+      const next = end + (startsWithSurrogatePair(lineText.slice(end)) ? SURROGATE_PAIR_LENGTH : 1);
+      if (!WORD_CHAR_REG_EXP.test(lineText.slice(end, next))) {
+        break;
+      }
+      end = next;
     }
 
-    let end = pos.ch;
-    while (end < line.length && wordChars.test(ensureNonNullable(line[end]))) {
-      end++;
-    }
+    return start === end
+      ? null
+      : {
+        from: this.offsetToPos(lineStart + start),
+        to: this.offsetToPos(lineStart + end)
+      };
+  }
 
-    return {
-      from: { ch: start, line: pos.line },
-      to: { ch: end, line: pos.line }
+  private dispatchChanges(changes: readonly OffsetChange[], resolveSelection?: () => null | OffsetSelection): void {
+    const oldLength = this.content.length;
+    const oldSelection: OffsetSelection = {
+      anchor: Math.min(this.posToOffset(this.anchor), oldLength),
+      head: Math.min(this.posToOffset(this.head), oldLength)
     };
+    const { newText, sections } = buildChangeSet(this.content, changes);
+
+    if (sections.some((section) => section.insertLength >= 0)) {
+      this.undoStack.push(this.content);
+      this.redoStack = [];
+      this.content = newText;
+    }
+
+    const selection = resolveSelection?.() ?? mapSelection(oldSelection, sections);
+    this.anchor = this.offsetToPos(selection.anchor);
+    this.head = this.offsetToPos(selection.head);
   }
 
   private execDeleteLine(): void {
@@ -705,4 +807,97 @@ export abstract class Editor {
   private minPos(a: EditorPositionOriginal, b: EditorPositionOriginal): EditorPositionOriginal {
     return a.line < b.line || (a.line === b.line && a.ch < b.ch) ? { ...a } : { ...b };
   }
+}
+
+// CodeMirror's `addSection`: skips an empty section and joins it to the last one where CodeMirror does.
+function addSection(sections: ChangeSection[], length: number, insertLength: number): void {
+  if (length === 0 && insertLength <= 0) {
+    return;
+  }
+
+  const last = sections.at(-1);
+  if (last && insertLength <= 0 && insertLength === last.insertLength) {
+    last.length += length;
+  } else if (last && length === 0 && last.length === 0) {
+    last.insertLength += insertLength;
+  } else {
+    sections.push({ insertLength, length });
+  }
+}
+
+// Builds the change set CodeMirror's `ChangeSet.of` builds from changes whose positions all refer to one document.
+// The changes are taken in document order, keeping the listed order among those that start at one position, so
+// text inserted there keeps that order too. A change starting inside the range an earlier one replaces extends that
+// deletion and puts its text after the earlier text, so no change deletes text another inserted.
+function buildChangeSet(text: string, changes: readonly OffsetChange[]): ChangeSet {
+  const sections: ChangeSection[] = [];
+  let newText = '';
+  let pos = 0;
+
+  // `Array.prototype.sort` is stable, so changes starting at one position keep their listed order.
+  for (const change of [...changes].sort((a, b) => a.from - b.from)) {
+    if (change.from < 0 || change.from > change.to || change.to > text.length) {
+      throw new RangeError(
+        `Invalid change range ${String(change.from)} to ${String(change.to)} (in doc of length ${String(text.length)})`
+      );
+    }
+
+    if (change.from >= pos) {
+      addSection(sections, change.from - pos, -1);
+      addSection(sections, change.to - change.from, change.insert.length);
+      newText += text.slice(pos, change.from) + change.insert;
+      pos = change.to;
+    } else {
+      addSection(sections, Math.max(0, change.to - pos), change.insert.length);
+      newText += change.insert;
+      pos = Math.max(pos, change.to);
+    }
+  }
+
+  addSection(sections, text.length - pos, -1);
+  newText += text.slice(pos);
+  return { newText, sections };
+}
+
+function endsWithSurrogatePair(text: string): boolean {
+  return /[\uD800-\uDBFF][\uDC00-\uDFFF]$/.test(text);
+}
+
+// CodeMirror's `ChangeDesc.mapPos` in its simple mode.
+function mapPos(sections: readonly ChangeSection[], pos: number, assoc: -1 | 1): number {
+  let posA = 0;
+  let posB = 0;
+  for (const section of sections) {
+    const endA = posA + section.length;
+    if (section.insertLength < 0) {
+      if (endA > pos) {
+        return posB + (pos - posA);
+      }
+      posB += section.length;
+    } else {
+      if (endA > pos || (endA === pos && assoc < 0 && section.length === 0)) {
+        return pos === posA || assoc < 0 ? posB : posB + section.insertLength;
+      }
+      posB += section.insertLength;
+    }
+    posA = endA;
+  }
+  return posB;
+}
+
+// CodeMirror's `SelectionRange.map`: a cursor maps backward, a range's start forward and its end backward.
+function mapSelection(selection: OffsetSelection, sections: readonly ChangeSection[]): OffsetSelection {
+  const { anchor, head } = selection;
+  if (anchor === head) {
+    const cursor = mapPos(sections, anchor, -1);
+    return { anchor: cursor, head: cursor };
+  }
+
+  const from = mapPos(sections, Math.min(anchor, head), 1);
+  const to = mapPos(sections, Math.max(anchor, head), -1);
+  return anchor < head ? { anchor: from, head: to } : { anchor: to, head: from };
+}
+
+function startsWithSurrogatePair(text: string): boolean {
+  return /^[\uD800-\uDBFF][\uDC00-\uDFFF]/.test(text);
 }

@@ -107,10 +107,11 @@ export class MarkdownEditView {
   }
 
   /**
-   * Clears the editor's text.
+   * Clears the editor's text into a fresh editor state, as Obsidian does: the undo and redo history is dropped and
+   * the cursor moves to the start.
    */
   public clear(): void {
-    this.editor__.setValue('');
+    this.editor__.resetState__('');
   }
 
   /**
@@ -154,10 +155,15 @@ export class MarkdownEditView {
    * Replaces the editor's text.
    *
    * @param data - The new text.
-   * @param _clear - Whether to reset editor state such as history, as when a different file is loaded; ignored by
-   * the mock.
+   * @param clear - Whether to reset editor state, as when a different file is loaded: the undo and redo history is
+   * dropped and the cursor moves to the start. Otherwise the text is set with {@link Editor.setValue}, as a change
+   * that undo can revert.
    */
-  public set(data: string, _clear: boolean): void {
-    this.editor__.setValue(data);
+  public set(data: string, clear: boolean): void {
+    if (clear) {
+      this.editor__.resetState__(data);
+    } else {
+      this.editor__.setValue(data);
+    }
   }
 }

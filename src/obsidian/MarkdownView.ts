@@ -107,11 +107,12 @@ export class MarkdownView extends TextFileView {
   }
 
   /**
-   * Clears the view's text, both the stored data and the editor.
+   * Clears the view's text, both the stored data and the editor. The editor gets a fresh state, as in Obsidian: its
+   * undo and redo history is dropped and the cursor moves to the start.
    */
   public clear(): void {
     this.data = '';
-    this.editor.setValue('');
+    this.editor.resetState__('');
   }
 
   /**
@@ -156,12 +157,17 @@ export class MarkdownView extends TextFileView {
    * Replaces the view's text, updating both the stored data and the editor.
    *
    * @param data - The new text.
-   * @param _clear - Whether a different file is being loaded, so editor state such as history should be reset;
-   * ignored by the mock.
+   * @param clear - Whether a different file is being loaded, so editor state is reset: the undo and redo history is
+   * dropped and the cursor moves to the start. Otherwise the text is set with {@link Editor.setValue}, as a change
+   * that undo can revert.
    */
-  public setViewData(data: string, _clear: boolean): void {
+  public setViewData(data: string, clear: boolean): void {
     this.data = data;
-    this.editor.setValue(data);
+    if (clear) {
+      this.editor.resetState__(data);
+    } else {
+      this.editor.setValue(data);
+    }
   }
 
   /**

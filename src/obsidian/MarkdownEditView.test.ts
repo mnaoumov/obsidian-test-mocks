@@ -36,6 +36,22 @@ describe('MarkdownEditView', () => {
       editView.set('hello world', false);
       expect(editView.get()).toBe('hello world');
     });
+
+    it('should set the text as a change undo can revert when not clearing', () => {
+      const editView = createEditView();
+      editView.set('first', true);
+      editView.set('second', false);
+      editView.editor__.undo();
+      expect(editView.get()).toBe('first');
+    });
+
+    it('should drop the history when clearing', () => {
+      const editView = createEditView();
+      editView.set('first', false);
+      editView.set('second', true);
+      editView.editor__.undo();
+      expect(editView.get()).toBe('second');
+    });
   });
 
   describe('clear', () => {
@@ -43,6 +59,14 @@ describe('MarkdownEditView', () => {
       const editView = createEditView();
       editView.set('content', false);
       editView.clear();
+      expect(editView.get()).toBe('');
+    });
+
+    it('should drop the history', () => {
+      const editView = createEditView();
+      editView.set('content', false);
+      editView.clear();
+      editView.editor__.undo();
       expect(editView.get()).toBe('');
     });
   });
