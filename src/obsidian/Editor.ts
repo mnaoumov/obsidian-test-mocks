@@ -45,6 +45,13 @@ interface HistoryEntry {
   readonly selection: OffsetSelection;
 }
 
+interface LineBlock {
+  // The offset of the start of the first line.
+  readonly from: number;
+  // The offset of the end of the last line, before its line break.
+  readonly to: number;
+}
+
 interface OffsetChange {
   readonly from: number;
   readonly insert: string;
@@ -698,20 +705,18 @@ export abstract class Editor {
     this.head = this.offsetToPos(selection.head);
   }
 
+  // CodeMirror's `deleteLine`: the lines the selection covers go as one change, together with the line break
+  // BEFORE them, or the one after them when they start the document. The selection becomes a cursor one line
+  // below the head, taken in the document as it was and then mapped through the deletion — which is what
+  // carries the column onto the line that moves up, where a mapped cursor alone would land at its start.
   private execDeleteLine(): void {
-    const cursor = this.getCursor();
-    const lines = this.content.split('\n');
-    if (lines.length <= 1) {
-      this.setValue('');
-    } else if (cursor.line === lines.length - 1) {
-      const from: EditorPositionOriginal = { ch: ensureNonNullable(lines[cursor.line - 1]).length, line: cursor.line - 1 };
-      const to: EditorPositionOriginal = { ch: ensureNonNullable(lines[cursor.line]).length, line: cursor.line };
-      this.replaceRange('', from, to);
-    } else {
-      const from: EditorPositionOriginal = { ch: 0, line: cursor.line };
-      const to: EditorPositionOriginal = { ch: 0, line: cursor.line + 1 };
-      this.replaceRange('', from, to);
-    }
+    const { from, to } = this.selectedLineBlock();
+    const change: OffsetChange = from > 0
+      ? { from: from - 1, insert: '', to }
+      : { from, insert: '', to: Math.min(to + 1, this.content.length) };
+    const head = this.offsetBelow(Math.min(this.posToOffset(this.head), this.content.length));
+
+    this.dispatchChanges([change], (_oldSelection, sections) => mapSelection({ anchor: head, head }, sections, -1));
   }
 
   private execGoDown(): void {
@@ -828,23 +833,34 @@ export abstract class Editor {
     });
   }
 
+  // CodeMirror's `moveLineUp` / `moveLineDown`: ONE transaction carrying both changes and an explicit
+  // selection, so a swap is a single undo step rather than two half-swaps. Every end of the selection is
+  // shifted by the length of the line that moved across it, which keeps the column and the selection's extent.
   private execSwapLine(direction: -1 | 1): void {
-    const cursor = this.getCursor();
-    const lines = this.content.split('\n');
-    const targetLine = cursor.line + direction;
-    if (targetLine < 0 || targetLine >= lines.length) {
+    const block = this.selectedLineBlock();
+    const length = this.content.length;
+    if (direction === 1 ? block.to === length : block.from === 0) {
       return;
     }
-    const currentLine = ensureNonNullable(lines[cursor.line]);
-    const otherLine = ensureNonNullable(lines[targetLine]);
-    if (direction === -1) {
-      this.setLine(cursor.line - 1, currentLine);
-      this.setLine(cursor.line, otherLine);
-    } else {
-      this.setLine(cursor.line, otherLine);
-      this.setLine(cursor.line + 1, currentLine);
-    }
-    this.setCursor({ ch: cursor.ch, line: targetLine });
+
+    const otherLineNumber = this.offsetToPos(direction === 1 ? block.to + 1 : block.from - 1).line;
+    const otherLine = this.getLine(otherLineNumber);
+    const otherFrom = this.posToOffset({ ch: 0, line: otherLineNumber });
+    const shift = (otherLine.length + 1) * direction;
+    const changes: OffsetChange[] = direction === 1
+      ? [
+        { from: block.from, insert: `${otherLine}\n`, to: block.from },
+        { from: block.to, insert: '', to: otherFrom + otherLine.length }
+      ]
+      : [
+        { from: otherFrom, insert: '', to: block.from },
+        { from: block.to, insert: `\n${otherLine}`, to: block.to }
+      ];
+
+    this.dispatchChanges(changes, (oldSelection) => ({
+      anchor: shiftLineMoveEnd(oldSelection.anchor, shift, length),
+      head: shiftLineMoveEnd(oldSelection.head, shift, length)
+    }));
   }
 
   private getLines(): string[] {
@@ -857,6 +873,20 @@ export abstract class Editor {
 
   private minPos(a: EditorPositionOriginal, b: EditorPositionOriginal): EditorPositionOriginal {
     return a.line < b.line || (a.line === b.line && a.ch < b.ch) ? { ...a } : { ...b };
+  }
+
+  // The mock's stand-in for `EditorView.moveVertically(range, true)`, which is viewport geometry the mock has
+  // none of. With no line wrapping that is the same column on the next line, clamped to its length; below the
+  // last line CodeMirror's own bounds check leaves the cursor at the end of the document, so this does too.
+  private offsetBelow(offset: number): number {
+    const pos = this.offsetToPos(offset);
+    const lines = this.getLines();
+    if (pos.line >= lines.length - 1) {
+      return this.content.length;
+    }
+
+    const nextLineLength = ensureNonNullable(lines[pos.line + 1]).length;
+    return this.posToOffset({ ch: Math.min(pos.ch, nextLineLength), line: pos.line + 1 });
   }
 
   // CodeMirror's `HistoryState.pop` and the entry its transaction leaves on the opposite branch.
@@ -877,6 +907,21 @@ export abstract class Editor {
     this.content = entry.content;
     this.anchor = this.offsetToPos(entry.selection.anchor);
     this.head = this.offsetToPos(entry.selection.head);
+  }
+
+  // CodeMirror's `selectedLineBlocks` over the mock's one selection: the lines it covers, whole. A NON-EMPTY
+  // selection ending exactly at the start of a line stops at the line before it, as it does there.
+  private selectedLineBlock(): LineBlock {
+    const fromOffset = Math.min(this.posToOffset(this.getCursor('from')), this.content.length);
+    const toOffset = Math.min(this.posToOffset(this.getCursor('to')), this.content.length);
+    const firstLine = this.offsetToPos(fromOffset).line;
+    const lastPos = this.offsetToPos(toOffset);
+    const lastLine = fromOffset !== toOffset && lastPos.ch === 0 ? lastPos.line - 1 : lastPos.line;
+
+    return {
+      from: this.posToOffset({ ch: 0, line: firstLine }),
+      to: this.posToOffset({ ch: this.getLine(lastLine).length, line: lastLine })
+    };
   }
 }
 
@@ -978,6 +1023,12 @@ function mapSelection(selection: OffsetSelection, sections: readonly ChangeSecti
   const from = mapPos(sections, Math.min(anchor, head), 1);
   const to = mapPos(sections, Math.max(anchor, head), -1);
   return anchor < head ? { anchor: from, head: to } : { anchor: to, head: from };
+}
+
+// `moveLine` clamps its selection to the document on the way down, where the shift is forward, and does not on
+// the way up.
+function shiftLineMoveEnd(offset: number, shift: number, length: number): number {
+  return shift > 0 ? Math.min(length, offset + shift) : offset + shift;
 }
 
 function startsWithSurrogatePair(text: string): boolean {

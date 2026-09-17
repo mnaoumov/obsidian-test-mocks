@@ -465,6 +465,24 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   The shared implementation is `src/internal/markdown-editor-set.ts`; `Editor.setValue` is untouched and still
   replaces the whole document, because that is what Obsidian's own `setValue` does.
 
+- **`Editor.exec` answers to CodeMirror, and its two line commands now say so** (2026-09-17, read in Obsidian
+  1.14.2's `app.js`, which bundles `@codemirror/commands` whole). `Editor.exec(name)` is
+  `commands[name](activeCM)` there, so `deleteLine` is CodeMirror's `deleteLine` and `swapLineUp` /
+  `swapLineDown` are its `moveLineUp` / `moveLineDown`. The documents the handlers produce are unchanged for a
+  plain cursor; three things a consumer test can observe are not.
+  - **`deleteLine` keeps the column.** CodeMirror moves the cursor one line DOWN first and maps that through
+    the deletion, so deleting the middle line of `line1\nline2\nline3` from column 3 leaves the cursor at
+    column 3 of `line3`, where the mock used to leave it at column 0. Deleting the last line still leaves it
+    at the end of the line before. Line wrapping is not modelled, so "one line below" is the same column on
+    the next line clamped to its length, and the end of the document when there is no next line.
+  - **A swap is ONE undo step.** It was two `setLine` calls, so an undo used to put back one of the two lines
+    and leave the other where the swap had moved it. Both
+    changes and the selection now travel in a single transaction, and the selection is the one CodeMirror
+    dispatches — every end shifted by the length of the line that moved across it.
+  - **Both act on every line the selection covers**, CodeMirror's `selectedLineBlocks`, rather than on the
+    head's line alone; a non-empty selection ending at column 0 stops at the line before it. A swap keeps the
+    selection's extent, while `deleteLine` collapses to a cursor, as `moveVertically` does.
+
 - **`Keymap.isModifier` / `Keymap.isModEvent` read the event.** They were unconditional `false` stubs
   until 2026-07-27, which made every modifier-branching behavior untestable without a spy — and let a
   test that forgot the spy silently exercise only the no-modifier path while looking green. Both now
