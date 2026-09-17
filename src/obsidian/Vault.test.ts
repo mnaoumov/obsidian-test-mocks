@@ -11,6 +11,9 @@ import {
   vi
 } from 'vitest';
 
+import type { TAbstractFile } from './TAbstractFile.ts';
+
+import { castTo } from '../internal/castTo.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
@@ -155,6 +158,41 @@ describe('Vault', () => {
       const copied = await app.vault.copy(file, 'copied.md');
       expect(handler).toHaveBeenCalledWith(copied);
     });
+
+    it('should throw when a file already exists at the destination', async () => {
+      const app = App.createConfigured__({ files: { 'existing.md': 'old', 'original.md': 'data' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('original.md'));
+      await expect(app.vault.copy(file, 'existing.md')).rejects.toThrow('Destination file already exists: existing.md');
+      await expect(app.vault.adapter.read('existing.md')).resolves.toBe('old');
+    });
+
+    it('should copy a folder with everything under it, firing create for each new entry', async () => {
+      const app = App.createConfigured__({ files: { 'src/b.md': 'B', 'src/sub/a.md': 'A' } });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('src'));
+      const created: string[] = [];
+      app.vault.on('create', (entry: unknown) => {
+        created.push(castTo<TAbstractFile>(entry).path);
+      });
+
+      const copied = await app.vault.copy(folder, 'dest');
+
+      expect(copied).toBeInstanceOf(TFolder);
+      expect(copied).toBe(app.vault.getFolderByPath('dest'));
+      expect(created).toEqual(['dest', 'dest/sub', 'dest/sub/a.md', 'dest/b.md']);
+      expect(copied.children.map((child) => child.path)).toEqual(['dest/sub', 'dest/b.md']);
+      expect(app.vault.getFileByPath('dest/sub/a.md')?.parent).toBe(app.vault.getFolderByPath('dest/sub'));
+      await expect(app.vault.adapter.read('dest/sub/a.md')).resolves.toBe('A');
+      expect(app.vault.getFileByPath('src/sub/a.md')).not.toBeNull();
+    });
+
+    it('should merge a copied folder into an existing folder', async () => {
+      const app = App.createConfigured__({ files: { 'dest/other.md': 'O', 'src/a.md': 'A' } });
+      const destination = ensureNonNullable(app.vault.getFolderByPath('dest'));
+      const copied = await app.vault.copy(ensureNonNullable(app.vault.getFolderByPath('src')), 'dest');
+
+      expect(copied).toBe(destination);
+      expect(destination.children.map((child) => child.path).sort()).toEqual(['dest/a.md', 'dest/other.md']);
+    });
   });
 
   describe('create()', () => {
@@ -171,6 +209,22 @@ describe('Vault', () => {
       app.vault.on('create', handler);
       const file = await app.vault.create('test.md', 'content');
       expect(handler).toHaveBeenCalledWith(file);
+    });
+
+    it('should throw when a file already exists at the path', async () => {
+      const app = App.createConfigured__({ files: { 'test.md': 'old' } });
+      await expect(app.vault.create('test.md', 'new')).rejects.toThrow('File already exists.');
+      await expect(app.vault.adapter.read('test.md')).resolves.toBe('old');
+    });
+
+    it('should throw when a folder exists at the path', async () => {
+      const app = App.createConfigured__({ files: { 'folder/': '' } });
+      await expect(app.vault.create('folder', 'new')).rejects.toThrow('File already exists.');
+    });
+
+    it('should throw for a path differing only in case on a case-insensitive adapter', async () => {
+      const app = App.createConfigured__({ files: { 'Test.md': 'old' }, isAdapterCaseInsensitive: true });
+      await expect(app.vault.create('test.md', 'new')).rejects.toThrow('File already exists.');
     });
   });
 
@@ -190,6 +244,11 @@ describe('Vault', () => {
       const data = new ArrayBuffer(BINARY_SIZE_MEDIUM);
       const file = await app.vault.createBinary('image.png', data);
       expect(handler).toHaveBeenCalledWith(file);
+    });
+
+    it('should throw when a file already exists at the path', async () => {
+      const app = App.createConfigured__({ files: { 'image.png': 'old' } });
+      await expect(app.vault.createBinary('image.png', new ArrayBuffer(BINARY_SIZE_SMALL))).rejects.toThrow('File already exists.');
     });
   });
 
@@ -229,6 +288,16 @@ describe('Vault', () => {
       const leaf = await app.vault.createFolder('a/b');
       expect(leaf.parent).toBe(a);
       expect(app.vault.getFolderByPath('a')).toBe(a);
+    });
+
+    it('should throw when the folder already exists', async () => {
+      const app = App.createConfigured__({ files: { 'folder/': '' } });
+      await expect(app.vault.createFolder('folder')).rejects.toThrow('Folder already exists.');
+    });
+
+    it('should throw when a file exists at the path', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      await expect(app.vault.createFolder('note.md')).rejects.toThrow('Folder already exists.');
     });
   });
 
@@ -286,6 +355,30 @@ describe('Vault', () => {
       expect(app.vault.getFileByPath('folder/file.md')).toBeNull();
       expect(parent.children).not.toContain(file);
     });
+
+    it('should untrack every descendant of a deleted folder, firing delete for each before the folder', async () => {
+      const app = App.createConfigured__({ files: { 'D/b.md': 'b', 'D/sub/a.md': 'a' } });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('D'));
+      const sub = ensureNonNullable(app.vault.getFolderByPath('D/sub'));
+      const a = ensureNonNullable(app.vault.getFileByPath('D/sub/a.md'));
+      const b = ensureNonNullable(app.vault.getFileByPath('D/b.md'));
+      const deleted: string[] = [];
+      app.vault.on('delete', (entry: unknown) => {
+        deleted.push(castTo<TAbstractFile>(entry).path);
+      });
+
+      await app.vault.delete(folder, true);
+
+      expect(deleted).toEqual(['D/sub', 'D/sub/a.md', 'D/b.md', 'D']);
+      for (const entry of [folder, sub, a, b]) {
+        expect(entry.deleted).toBe(true);
+        expect(app.vault.getAbstractFileByPath(entry.path)).toBeNull();
+        expect(app.vault.getAbstractFileByPathInsensitive(entry.path)).toBeNull();
+      }
+      expect(app.vault.getFiles()).toEqual([]);
+      expect(folder.children).toEqual([]);
+      expect(sub.children).toEqual([]);
+    });
   });
 
   describe('getAbstractFileByPath()', () => {
@@ -309,6 +402,13 @@ describe('Vault', () => {
       for (const f of folders) {
         expect(f).toBeInstanceOf(TFolder);
       }
+    });
+
+    it('should leave out the root unless asked to include it', () => {
+      const app = App.createConfigured__({ files: { 'a/b.md': 'content' } });
+      expect(app.vault.getAllFolders().map((folder) => folder.path)).toEqual(['a']);
+      expect(app.vault.getAllFolders(false).map((folder) => folder.path)).toEqual(['a']);
+      expect(app.vault.getAllFolders(true).map((folder) => folder.path).sort()).toEqual(['/', 'a']);
     });
   });
 
@@ -411,6 +511,7 @@ describe('Vault', () => {
       expect(root.path).toBe('/');
       // It should also store the fallback in fileMap
       expect(fileMap['/']).toBe(root);
+      expect(app.vault.getAbstractFileByPathInsensitive('/')).toBe(root);
     });
   });
 
@@ -493,6 +594,24 @@ describe('Vault', () => {
   });
 
   describe('rename()', () => {
+    it('should do nothing, firing no event, when renaming onto the current path', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      const handler = vi.fn();
+      app.vault.on('rename', handler);
+      await app.vault.rename(file, 'note.md');
+      expect(handler).not.toHaveBeenCalled();
+      expect(app.vault.getFileByPath('note.md')).toBe(file);
+      await expect(app.vault.adapter.read('note.md')).resolves.toBe('content');
+    });
+
+    it('should throw when something already exists at the new path', async () => {
+      const app = App.createConfigured__({ files: { 'a.md': 'A', 'b.md': 'B' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('a.md'));
+      await expect(app.vault.rename(file, 'b.md')).rejects.toThrow('Destination file already exists!');
+      expect(file.path).toBe('a.md');
+    });
+
     it('should rename a file and update its properties', async () => {
       const app = App.createConfigured__({ files: { 'old.md': 'content' } });
       const file = ensureNonNullable(app.vault.getFileByPath('old.md'));
@@ -631,6 +750,21 @@ describe('Vault', () => {
       app.vault.on('delete', handler);
       await app.vault.trash(file, false);
       expect(handler).toHaveBeenCalledWith(file);
+    });
+
+    it('should untrack every descendant of a trashed folder, firing delete for each before the folder', async () => {
+      const app = App.createConfigured__({ files: { 'T/sub/a.md': 'a' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('T/sub/a.md'));
+      const deleted: string[] = [];
+      app.vault.on('delete', (entry: unknown) => {
+        deleted.push(castTo<TAbstractFile>(entry).path);
+      });
+
+      await app.vault.trash(ensureNonNullable(app.vault.getFolderByPath('T')), false);
+
+      expect(deleted).toEqual(['T/sub', 'T/sub/a.md', 'T']);
+      expect(file.deleted).toBe(true);
+      expect(app.vault.getAbstractFileByPath('T/sub/a.md')).toBeNull();
     });
   });
 

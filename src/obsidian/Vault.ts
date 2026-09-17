@@ -12,6 +12,7 @@ import type {
 
 import type { TAbstractFile } from './TAbstractFile.ts';
 
+import { castTo } from '../internal/castTo.ts';
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import {
   noop,
@@ -173,32 +174,46 @@ export class Vault extends Events {
   }
 
   /**
-   * Copies a file to a new path, tracks the copy, and fires `create` for it. Obsidian also copies folders; the mock
-   * accepts files only.
+   * Copies a file, or a folder together with everything under it, tracks the copies, and fires `create` for each new
+   * entry: the copy itself first, then its descendants depth-first. A folder copied onto an existing folder merges
+   * into it, as in Obsidian.
    *
-   * @param file - The file to copy.
+   * @typeParam T - The type of the file or folder being copied.
+   * @param file - The file or folder to copy.
    * @param newPath - The vault-relative path for the copy.
-   * @returns The new file.
+   * @returns The copy, of the same type as `file`.
+   * @throws Error from the adapter when a file would be copied onto an existing path.
    */
-  public async copy(file: TFile, newPath: string): Promise<TFile> {
+  public async copy<T extends TAbstractFile>(file: T, newPath: string): Promise<T> {
     await this.adapter.copy(file.path, newPath);
-    const newFile = TFile.create__(this, newPath);
-    this.setVaultAbstractFile__(newPath, newFile);
-    this.refreshStat__(newFile);
-    this.trigger('create', newFile);
-    return newFile;
+    if (!(file instanceof TFolder)) {
+      return castTo<T>(this.trackCopiedFile(newPath));
+    }
+
+    const copy = this.registerFolderTree(newPath);
+    Vault.recurseChildren(file, (child) => {
+      const childPath = newPath + child.path.slice(file.path.length);
+      if (child instanceof TFolder) {
+        this.registerFolderTree(childPath);
+      } else {
+        this.trackCopiedFile(childPath);
+      }
+    });
+    return castTo<T>(copy);
   }
 
   /**
-   * Creates a plaintext file, tracks it, and fires `create`. Obsidian throws when the file already exists; the mock
-   * does not check.
+   * Creates a plaintext file, tracks it, and fires `create`.
    *
    * @param path - The vault-relative path for the new file, with extension.
    * @param data - The file's text.
    * @param options - Write options such as timestamps to set.
    * @returns The new file.
+   * @throws Error `File already exists.` when the adapter reports anything at `path`, which on a case-insensitive
+   * adapter includes a path differing only in case.
    */
   public async create(path: string, data: string, options?: DataWriteOptionsOriginal): Promise<TFile> {
+    await this.ensureNothingExists(path, 'File already exists.');
     await this.adapter.write(path, data, options);
     const file = TFile.create__(this, path);
     this.setVaultAbstractFile__(path, file);
@@ -208,15 +223,17 @@ export class Vault extends Events {
   }
 
   /**
-   * Creates a binary file, tracks it, and fires `create`. Obsidian throws when the file already exists; the mock
-   * does not check.
+   * Creates a binary file, tracks it, and fires `create`.
    *
    * @param path - The vault-relative path for the new file, with extension.
    * @param data - The file's content.
    * @param options - Write options such as timestamps to set.
    * @returns The new file.
+   * @throws Error `File already exists.` when the adapter reports anything at `path`, which on a case-insensitive
+   * adapter includes a path differing only in case.
    */
   public async createBinary(path: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<TFile> {
+    await this.ensureNothingExists(path, 'File already exists.');
     await this.adapter.writeBinary(path, data, options);
     const file = TFile.create__(this, path);
     this.setVaultAbstractFile__(path, file);
@@ -226,19 +243,21 @@ export class Vault extends Events {
   }
 
   /**
-   * Creates a folder along with any missing ancestors, tracking each new one and firing `create` for it. Obsidian
-   * throws when the folder already exists; the mock returns the existing folder.
+   * Creates a folder along with any missing ancestors, tracking each new one and firing `create` for it.
    *
    * @param path - The vault-relative path for the new folder.
-   * @returns The folder at `path`.
+   * @returns The new folder.
+   * @throws Error `Folder already exists.` when the adapter reports anything at `path`, a file included.
    */
   public async createFolder(path: string): Promise<TFolder> {
+    await this.ensureNothingExists(path, 'Folder already exists.');
     await this.adapter.mkdir(path);
     return this.registerFolderTree(path);
   }
 
   /**
-   * Mock-only: a synchronous {@link Vault.createFolder} for setting up a test vault.
+   * Mock-only: a synchronous {@link Vault.createFolder} for setting up a test vault. Unlike `createFolder`, it returns
+   * the existing folder when `path` is already one.
    *
    * @param path - The vault-relative path for the new folder.
    * @returns The folder at `path`.
@@ -253,7 +272,8 @@ export class Vault extends Events {
   }
 
   /**
-   * Mock-only: a synchronous {@link Vault.create} for setting up a test vault; it also fires `create`.
+   * Mock-only: a synchronous {@link Vault.create} for setting up a test vault; it also fires `create`. Unlike
+   * `create`, it overwrites a file that already exists at `path`.
    *
    * @param path - The vault-relative path for the new file, with extension.
    * @param content - The file's text.
@@ -273,7 +293,8 @@ export class Vault extends Events {
   }
 
   /**
-   * Deletes a file, or a folder recursively, stops tracking it, and fires `delete`.
+   * Deletes a file, or a folder recursively, and stops tracking it. For a folder, every descendant is untracked and
+   * marked `deleted` too, each firing its own `delete` depth-first before the folder's.
    *
    * @param file - The file or folder to delete.
    * @param _force - Whether to delete a folder even when it has hidden children; ignored by the mock.
@@ -284,13 +305,13 @@ export class Vault extends Events {
     } else {
       await this.adapter.remove(file.path);
     }
-    this.deleteVaultAbstractFile__(file.path);
-    this.trigger('delete', file);
+    this.removeTree(file);
   }
 
   /**
    * Mock-only: stops tracking the entry at `path`, marks it `deleted` and detaches it from its parent, without
-   * touching the adapter or firing an event. Does nothing when no entry is tracked there.
+   * touching the adapter or firing an event. Does nothing when no entry is tracked there. A folder's descendants are
+   * left tracked; untrack each of them the same way.
    *
    * @param path - The exact path of the entry.
    */
@@ -350,11 +371,11 @@ export class Vault extends Events {
   /**
    * Gets every tracked folder.
    *
-   * @param _includeRoot - Whether to include the root folder; ignored by the mock, which always includes it.
+   * @param includeRoot - Whether to include the root folder; it is left out by default.
    * @returns The folders.
    */
-  public getAllFolders(_includeRoot?: boolean): TFolder[] {
-    return Object.values(this.fileMap).filter((f): f is TFolder => f instanceof TFolder);
+  public getAllFolders(includeRoot = false): TFolder[] {
+    return Object.values(this.fileMap).filter((f): f is TFolder => f instanceof TFolder && (includeRoot || !f.isRoot()));
   }
 
   /**
@@ -499,6 +520,7 @@ export class Vault extends Events {
     }
     const fallback = TFolder.create__(this, '/');
     this.fileMap['/'] = fallback;
+    this.fileMapLowerCase['/'] = fallback;
     return fallback;
   }
 
@@ -663,13 +685,18 @@ export class Vault extends Events {
   /**
    * Renames or moves a file or folder. The mock updates the object in place (path, name, and for a file its
    * basename and extension), re-parents it, cascades the new path prefix to a folder's descendants, and fires
-   * `rename` with the old path. Unlike `FileManager.renameFile`, it does not update links.
+   * `rename` with the old path. Unlike `FileManager.renameFile`, it does not update links. Renaming onto the current
+   * path does nothing and fires no event.
    *
    * @param file - The file or folder to rename.
    * @param newPath - The new vault-relative path.
+   * @throws Error from the adapter when something already exists at `newPath`.
    */
   public async rename(file: TAbstractFile, newPath: string): Promise<void> {
     const oldPath = file.path;
+    if (oldPath === newPath) {
+      return;
+    }
     await this.adapter.rename(oldPath, newPath);
 
     // Capture descendants before mutating: a folder rename must cascade their paths.
@@ -762,8 +789,8 @@ export class Vault extends Events {
   }
 
   /**
-   * Moves a file or folder to the system or the local trash. The mock deletes it from the adapter outright, stops
-   * tracking it, and fires `delete`, as {@link Vault.delete} does.
+   * Moves a file or folder to the system or the local trash. The mock deletes it from the adapter outright and stops
+   * tracking it and, for a folder, its descendants, firing `delete` for each, as {@link Vault.delete} does.
    *
    * @param file - The file or folder to trash.
    * @param _system - Whether to try the system trash first; ignored by the mock.
@@ -774,8 +801,13 @@ export class Vault extends Events {
     } else {
       await this.adapter.remove(file.path);
     }
-    this.deleteVaultAbstractFile__(file.path);
-    this.trigger('delete', file);
+    this.removeTree(file);
+  }
+
+  private async ensureNothingExists(path: string, message: string): Promise<void> {
+    if (await this.adapter.exists(path)) {
+      throw new Error(message);
+    }
   }
 
   private registerFolderTree(path: string): TFolder {
@@ -794,6 +826,29 @@ export class Vault extends Events {
       this.trigger('create', folder);
     }
     return folder;
+  }
+
+  private removeTree(file: TAbstractFile): void {
+    // Obsidian drops the descendants before the folder itself, each with its own `delete` event.
+    const entries: TAbstractFile[] = [];
+    if (file instanceof TFolder) {
+      Vault.recurseChildren(file, (child) => {
+        entries.push(child);
+      });
+    }
+    entries.push(file);
+    for (const entry of entries) {
+      this.deleteVaultAbstractFile__(entry.path);
+      this.trigger('delete', entry);
+    }
+  }
+
+  private trackCopiedFile(path: string): TFile {
+    const file = TFile.create__(this, path);
+    this.setVaultAbstractFile__(path, file);
+    this.refreshStat__(file);
+    this.trigger('create', file);
+    return file;
   }
 }
 

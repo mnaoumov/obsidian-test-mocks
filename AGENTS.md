@@ -324,6 +324,13 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   into `cache__` directly.
 - **`Vault.getAvailablePath` de-duplicates**, folder renames cascade to descendants, and
   `createFolder('a/b')` creates/links intermediate ancestors.
+- **The vault refuses what Obsidian refuses** (2026-09-17, measured on a real Obsidian 1.14.2): `create` /
+  `createBinary` throw `File already exists.` and `createFolder` throws `Folder already exists.` when the adapter
+  reports anything at the path; the adapter's `copy` never overwrites a file, `rename` onto an existing path throws
+  `Destination file already exists!`, and a non-recursive `rmdir` of a non-empty folder throws. Seed a test vault with
+  `createSync__` / `createFolderSync__`, which stay lenient on purpose. Deleting or trashing a folder stops tracking every
+  descendant, firing `delete` for each before the folder; `copy` accepts folders; `getAllFolders()` leaves the root
+  out unless passed `true`.
 
 - **Attachment-path resolution is modeled end to end** (added 2026-07-28) — anything calling
   `obsidian-dev-utils`' `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`

@@ -140,6 +140,49 @@ describe('InMemoryAdapter', () => {
       await expect(adapter.copy('missing.md', 'dest.md')).rejects.toThrow('File not found: missing.md');
     });
 
+    it('should throw instead of overwriting an existing destination', async () => {
+      const adapter = createAdapter();
+      await adapter.write('source.md', 'new');
+      await adapter.write('dest.md', 'old');
+
+      await expect(adapter.copy('source.md', 'dest.md')).rejects.toThrow('Destination file already exists: dest.md');
+      expect(await adapter.read('dest.md')).toBe('old');
+    });
+
+    it('should treat a destination differing only in case as existing when case-insensitive', async () => {
+      const adapter = createAdapter();
+      adapter.insensitive = true;
+      await adapter.write('source.md', 'new');
+      await adapter.write('Dest.md', 'old');
+
+      await expect(adapter.copy('source.md', 'dest.md')).rejects.toThrow('Destination file already exists: dest.md');
+    });
+
+    it('should copy a folder with everything under it', async () => {
+      const adapter = createAdapter();
+      await adapter.write('src/a.md', 'A');
+      await adapter.writeBinary('src/sub/b.bin', Uint8Array.of(1).buffer);
+      await adapter.mkdir('src/empty');
+
+      await adapter.copy('src', 'dest');
+
+      expect(await adapter.read('dest/a.md')).toBe('A');
+      expect([...new Uint8Array(await adapter.readBinary('dest/sub/b.bin'))]).toEqual([1]);
+      expect(await adapter.exists('dest/empty')).toBe(true);
+      expect(await adapter.read('src/a.md')).toBe('A');
+    });
+
+    it('should merge a copied folder into an existing folder', async () => {
+      const adapter = createAdapter();
+      await adapter.write('src/a.md', 'A');
+      await adapter.write('dest/other.md', 'O');
+
+      await adapter.copy('src', 'dest');
+
+      expect(await adapter.read('dest/a.md')).toBe('A');
+      expect(await adapter.read('dest/other.md')).toBe('O');
+    });
+
     it('should create parent directories for the destination', async () => {
       const adapter = createAdapter();
       await adapter.write('source.md', 'data');
@@ -499,6 +542,42 @@ describe('InMemoryAdapter', () => {
   });
 
   describe('rename()', () => {
+    it('should do nothing when renaming a file onto its own path', async () => {
+      const adapter = createAdapter();
+      await adapter.write('file.md', 'data');
+      await adapter.rename('file.md', 'file.md');
+
+      expect(await adapter.read('file.md')).toBe('data');
+    });
+
+    it('should throw when the destination already exists', async () => {
+      const adapter = createAdapter();
+      await adapter.write('a.md', 'A');
+      await adapter.write('b.md', 'B');
+
+      await expect(adapter.rename('a.md', 'b.md')).rejects.toThrow('Destination file already exists!');
+      expect(await adapter.read('a.md')).toBe('A');
+      expect(await adapter.read('b.md')).toBe('B');
+    });
+
+    it('should throw when a folder is renamed onto an existing folder', async () => {
+      const adapter = createAdapter();
+      await adapter.mkdir('a');
+      await adapter.mkdir('b');
+
+      await expect(adapter.rename('a', 'b')).rejects.toThrow('Destination file already exists!');
+    });
+
+    it('should allow a case-only rename when case-insensitive', async () => {
+      const adapter = createAdapter();
+      adapter.insensitive = true;
+      await adapter.write('file.md', 'data');
+      await adapter.rename('file.md', 'File.md');
+
+      expect(await adapter.exists('file.md', true)).toBe(false);
+      expect(await adapter.read('File.md')).toBe('data');
+    });
+
     it('should rename a text file', async () => {
       const adapter = createAdapter();
       await adapter.write('old.md', 'data');
@@ -568,6 +647,22 @@ describe('InMemoryAdapter', () => {
   });
 
   describe('rmdir()', () => {
+    it('should throw when removing a non-empty directory non-recursively', async () => {
+      const adapter = createAdapter();
+      await adapter.write('dir/a.md', 'data');
+
+      await expect(adapter.rmdir('dir', false)).rejects.toThrow('Directory not empty: dir');
+      expect(await adapter.exists('dir')).toBe(true);
+      expect(await adapter.read('dir/a.md')).toBe('data');
+    });
+
+    it('should throw when a non-recursively removed directory holds only a sub-directory', async () => {
+      const adapter = createAdapter();
+      await adapter.mkdir('dir/sub');
+
+      await expect(adapter.rmdir('dir', false)).rejects.toThrow('Directory not empty: dir');
+    });
+
     it('should remove a directory non-recursively', async () => {
       const adapter = createAdapter();
       await adapter.mkdir('dir');
