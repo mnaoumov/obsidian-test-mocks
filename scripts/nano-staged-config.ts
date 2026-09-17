@@ -30,6 +30,14 @@ const tasks: Record<string, string[]> = {
     `${PACKAGE_MANAGER_RUN_COMMAND} lint:fix --`,
     `${PACKAGE_MANAGER_RUN_COMMAND} format --`
   ],
+  /*
+   * Lint only, with no `format` step beside it: dprint loads a TypeScript, a JSON and a markdown plugin, and none
+   * of them formats Astro. `lint` reaches the `docs/` components too, but no CI job runs it, so without this entry
+   * a staged `.astro` change would be spellchecked and nothing else.
+   */
+  '*.astro': [
+    `${PACKAGE_MANAGER_RUN_COMMAND} lint:fix --`
+  ],
   '*.md': [
     `${PACKAGE_MANAGER_RUN_COMMAND} lint:md:fix --`
   ]
