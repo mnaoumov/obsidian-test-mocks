@@ -109,44 +109,33 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   }
 
   /**
-   * Copies a text or binary file, stamping the copy with the current time. Obsidian fails when a file already exists
-   * at the destination; the mock overwrites it.
+   * Copies a file, or a folder together with everything under it, stamping each copied file with the current time
+   * and creating missing parent folders of the destination. As in Obsidian, a file is never copied over an existing
+   * file, while a folder copied onto an existing folder merges into it.
    *
-   * @param normalizedPath - The vault-relative path of the file to copy.
+   * @param normalizedPath - The vault-relative path of the file or folder to copy.
    * @param normalizedNewPath - The vault-relative path of the copy.
-   * @throws Error when no file exists at `normalizedPath`.
+   * @throws Error when nothing exists at `normalizedPath`, or when a file would be copied onto an existing path.
    */
   public async copy(normalizedPath: string, normalizedNewPath: string): Promise<void> {
     await noopAsync();
-    const now = Date.now();
-
-    const textContent = this.textFiles.get(normalizedPath);
-    if (textContent === undefined) {
-      const binaryContent = this.binaryFiles.get(normalizedPath);
-      if (binaryContent === undefined) {
-        throw new Error(`File not found: ${normalizedPath}`);
-      }
-
-      // eslint-disable-next-line unicorn/prefer-spread -- `binaryContent` is an `ArrayBuffer`, so `slice(0)` copies the BUFFER. Spreading it would produce a plain array and lose `byteLength`.
-      const copied = binaryContent.slice(0);
-      this.binaryFiles.set(normalizedNewPath, copied);
-      this.addLowerCaseKey(normalizedNewPath);
-      this.fileMeta.set(normalizedNewPath, {
-        ctime: now,
-        mtime: now,
-        size: copied.byteLength
-      });
-    } else {
-      this.textFiles.set(normalizedNewPath, textContent);
-      this.addLowerCaseKey(normalizedNewPath);
-      this.fileMeta.set(normalizedNewPath, {
-        ctime: now,
-        mtime: now,
-        size: textContent.length
-      });
+    if (!this.directories.has(normalizedPath)) {
+      this.copyFile(normalizedPath, normalizedNewPath);
+      return;
     }
 
-    this.ensureParentDirectories(normalizedNewPath);
+    const oldPrefix = `${normalizedPath}/`;
+    const newPrefix = `${normalizedNewPath}/`;
+    const directories = [...this.directories].filter((directory) => directory.startsWith(oldPrefix));
+    const files = [...this.textFiles.keys(), ...this.binaryFiles.keys()].filter((key) => key.startsWith(oldPrefix));
+
+    this.mkdirSync__(normalizedNewPath);
+    for (const directory of directories) {
+      this.mkdirSync__(newPrefix + directory.slice(oldPrefix.length));
+    }
+    for (const file of files) {
+      this.copyFile(file, newPrefix + file.slice(oldPrefix.length));
+    }
   }
 
   /**
@@ -159,11 +148,7 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   // eslint-disable-next-line unicorn/consistent-boolean-name -- `sensitive` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
   public async exists(normalizedPath: string, sensitive?: boolean): Promise<boolean> {
     await noopAsync();
-    return sensitive || !this.insensitive
-      ? this.textFiles.has(normalizedPath)
-        || this.binaryFiles.has(normalizedPath)
-        || this.directories.has(normalizedPath)
-      : this.lowerCaseKeys.has(normalizedPath.toLowerCase());
+    return this.existsSync(normalizedPath, sensitive);
   }
 
   /**
@@ -338,13 +323,24 @@ export class InMemoryAdapter implements DataAdapterOriginal {
 
   /**
    * Moves a file, or a folder together with everything under it, creating missing parent folders of the destination.
+   * Renaming a path onto itself does nothing.
    *
    * @param normalizedPath - The current vault-relative path.
-   * @param normalizedNewPath - The new vault-relative path; an existing file there is overwritten.
-   * @throws Error when neither a folder nor a file exists at `normalizedPath`.
+   * @param normalizedNewPath - The new vault-relative path. Nothing may exist there yet, except that a case-only
+   * rename is allowed when {@link InMemoryAdapter.insensitive} is set.
+   * @throws Error when the destination already exists, or when neither a folder nor a file exists at `normalizedPath`.
    */
   public async rename(normalizedPath: string, normalizedNewPath: string): Promise<void> {
     await noopAsync();
+    if (normalizedPath === normalizedNewPath) {
+      return;
+    }
+
+    const isCaseOnlyRename = this.insensitive && normalizedPath.toLowerCase() === normalizedNewPath.toLowerCase();
+    if (!isCaseOnlyRename && this.existsSync(normalizedNewPath)) {
+      throw new Error('Destination file already exists!');
+    }
+
     if (this.directories.has(normalizedPath)) {
       const oldPrefix = `${normalizedPath}/`;
       const newPrefix = `${normalizedNewPath}/`;
@@ -407,41 +403,46 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   }
 
   /**
-   * Removes a folder. Obsidian requires the folder to be empty unless `recursive` is set; the mock does not check, and
-   * a non-recursive call removes only the folder entry itself, leaving anything under it in place.
+   * Removes a folder. Unless `recursive` is set, the folder must be empty.
+   *
+   * On desktop, Obsidian 1.14.2 refuses a non-recursive removal even of an empty folder (`EISDIR` from `fs.rm`),
+   * while its mobile adapter removes it; the mock removes an empty folder, as the mobile adapter does.
    *
    * @param normalizedPath - The vault-relative path of the folder.
    * @param recursive - Whether to delete everything under the folder too.
+   * @throws Error when `recursive` is not set and the folder is not empty.
    */
   // eslint-disable-next-line unicorn/consistent-boolean-name -- `recursive` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
   public async rmdir(normalizedPath: string, recursive: boolean): Promise<void> {
     await noopAsync();
-    if (recursive) {
-      const prefix = `${normalizedPath}/`;
-
-      for (const key of this.textFiles.keys()) {
-        if (!key.startsWith(prefix)) {
-          continue;
-        }
-
-        this.textFiles.delete(key);
-        this.fileMeta.delete(key);
+    const prefix = `${normalizedPath}/`;
+    if (!recursive) {
+      const hasChildren = [...this.textFiles.keys(), ...this.binaryFiles.keys(), ...this.directories].some((key) => key.startsWith(prefix));
+      if (hasChildren) {
+        throw new Error(`Directory not empty: ${normalizedPath}`);
       }
-      for (const key of this.binaryFiles.keys()) {
-        if (!key.startsWith(prefix)) {
-          continue;
-        }
+    }
 
-        this.binaryFiles.delete(key);
-        this.fileMeta.delete(key);
+    for (const key of this.textFiles.keys()) {
+      if (!key.startsWith(prefix)) {
+        continue;
       }
-      for (const directory of this.directories) {
-        if (directory === normalizedPath || directory.startsWith(prefix)) {
-          this.directories.delete(directory);
-        }
+
+      this.textFiles.delete(key);
+      this.fileMeta.delete(key);
+    }
+    for (const key of this.binaryFiles.keys()) {
+      if (!key.startsWith(prefix)) {
+        continue;
       }
-    } else {
-      this.directories.delete(normalizedPath);
+
+      this.binaryFiles.delete(key);
+      this.fileMeta.delete(key);
+    }
+    for (const directory of this.directories) {
+      if (directory === normalizedPath || directory.startsWith(prefix)) {
+        this.directories.delete(directory);
+      }
     }
     this.rebuildLowerCaseKeys();
   }
@@ -563,6 +564,41 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     this.lowerCaseKeys.add(path.toLowerCase());
   }
 
+  private copyFile(normalizedPath: string, normalizedNewPath: string): void {
+    const textContent = this.textFiles.get(normalizedPath);
+    const binaryContent = this.binaryFiles.get(normalizedPath);
+    if (textContent === undefined && binaryContent === undefined) {
+      throw new Error(`File not found: ${normalizedPath}`);
+    }
+
+    if (this.existsSync(normalizedNewPath)) {
+      throw new Error(`Destination file already exists: ${normalizedNewPath}`);
+    }
+
+    const now = Date.now();
+    if (textContent === undefined) {
+      // eslint-disable-next-line unicorn/prefer-spread -- `binaryContent` is an `ArrayBuffer`, so `slice(0)` copies the BUFFER. Spreading it would produce a plain array and lose `byteLength`.
+      const copied = ensureNonNullable(binaryContent).slice(0);
+      this.binaryFiles.set(normalizedNewPath, copied);
+      this.addLowerCaseKey(normalizedNewPath);
+      this.fileMeta.set(normalizedNewPath, {
+        ctime: now,
+        mtime: now,
+        size: copied.byteLength
+      });
+    } else {
+      this.textFiles.set(normalizedNewPath, textContent);
+      this.addLowerCaseKey(normalizedNewPath);
+      this.fileMeta.set(normalizedNewPath, {
+        ctime: now,
+        mtime: now,
+        size: textContent.length
+      });
+    }
+
+    this.ensureParentDirectories(normalizedNewPath);
+  }
+
   private ensureParentDirectories(path: string): void {
     let parent = getParentDirectory(path);
     while (parent !== '' && !this.directories.has(parent)) {
@@ -571,6 +607,15 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       parent = getParentDirectory(parent);
     }
     this.directories.add('');
+  }
+
+  // eslint-disable-next-line unicorn/consistent-boolean-name -- Mirrors the `sensitive` parameter of `exists`, Obsidian's own name.
+  private existsSync(normalizedPath: string, sensitive?: boolean): boolean {
+    return sensitive || !this.insensitive
+      ? this.textFiles.has(normalizedPath)
+        || this.binaryFiles.has(normalizedPath)
+        || this.directories.has(normalizedPath)
+      : this.lowerCaseKeys.has(normalizedPath.toLowerCase());
   }
 
   private isDirectChild(path: string, prefix: string, normalizedPath: string): boolean {
