@@ -276,6 +276,37 @@ describe('Editor.exec', () => {
 
       expect(editor.getValue()).toBe('line1\nline2');
     });
+
+    it('should keep the column', () => {
+      const editor = createEditor('ab\nline2');
+      editor.setCursor(pos(LINE_2, CH_4));
+
+      editor.exec('swapLineUp');
+
+      expect(editor.getValue()).toBe('line2\nab');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_4));
+    });
+
+    it('should be a single undo step', () => {
+      const editor = createEditor('line1\nline2\nline3');
+      editor.setCursor(pos(LINE_2, CH_2));
+
+      editor.exec('swapLineUp');
+      editor.undo();
+
+      expect(editor.getValue()).toBe('line1\nline2\nline3');
+      expect(editor.getCursor()).toEqual(pos(LINE_2, CH_2));
+    });
+
+    it('should move every line the selection covers', () => {
+      const editor = createEditor('a\nb\nc\nd');
+      editor.setSelection(pos(LINE_2, 0), pos(LINE_3, CH_1));
+
+      editor.exec('swapLineUp');
+
+      expect(editor.getValue()).toBe('b\nc\na\nd');
+      expect(editor.listSelections()).toEqual([{ anchor: pos(LINE_1, 0), head: pos(LINE_2, CH_1) }]);
+    });
   });
 
   describe('swapLineDown', () => {
@@ -296,6 +327,37 @@ describe('Editor.exec', () => {
       editor.exec('swapLineDown');
 
       expect(editor.getValue()).toBe('line1\nline2');
+    });
+
+    it('should keep the column', () => {
+      const editor = createEditor('line1\nab');
+      editor.setCursor(pos(LINE_1, CH_4));
+
+      editor.exec('swapLineDown');
+
+      expect(editor.getValue()).toBe('ab\nline1');
+      expect(editor.getCursor()).toEqual(pos(LINE_2, CH_4));
+    });
+
+    it('should be a single undo step', () => {
+      const editor = createEditor('line1\nline2\nline3');
+      editor.setCursor(pos(LINE_1, CH_2));
+
+      editor.exec('swapLineDown');
+      editor.undo();
+
+      expect(editor.getValue()).toBe('line1\nline2\nline3');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_2));
+    });
+
+    it('should move every line the selection covers', () => {
+      const editor = createEditor('a\nb\nc\nd');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_2, CH_1));
+
+      editor.exec('swapLineDown');
+
+      expect(editor.getValue()).toBe('c\na\nb\nd');
+      expect(editor.listSelections()).toEqual([{ anchor: pos(LINE_2, 0), head: pos(LINE_3, CH_1) }]);
     });
   });
 
@@ -325,6 +387,68 @@ describe('Editor.exec', () => {
       editor.exec('deleteLine');
 
       expect(editor.getValue()).toBe('');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, 0));
+    });
+
+    it('should keep the column on the line that moves up', () => {
+      const editor = createEditor('line1\nline2\nline3');
+      editor.setCursor(pos(LINE_2, CH_3));
+
+      editor.exec('deleteLine');
+
+      expect(editor.getValue()).toBe('line1\nline3');
+      expect(editor.getCursor()).toEqual(pos(LINE_2, CH_3));
+    });
+
+    it('should clamp the column to the line that moves up', () => {
+      const editor = createEditor('line1\nline2\nab');
+      editor.setCursor(pos(LINE_2, CH_5));
+
+      editor.exec('deleteLine');
+
+      expect(editor.getValue()).toBe('line1\nab');
+      expect(editor.getCursor()).toEqual(pos(LINE_2, CH_2));
+    });
+
+    it('should leave the cursor at the end of the previous line when deleting the last one', () => {
+      const editor = createEditor('line1\nline2');
+      editor.setCursor(pos(LINE_2, CH_2));
+
+      editor.exec('deleteLine');
+
+      expect(editor.getValue()).toBe('line1');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_5));
+    });
+
+    it('should delete every line the selection covers', () => {
+      const editor = createEditor('a\nb\nc\nd');
+      editor.setSelection(pos(LINE_2, 0), pos(LINE_3, CH_1));
+
+      editor.exec('deleteLine');
+
+      expect(editor.getValue()).toBe('a\nd');
+      expect(editor.getCursor()).toEqual(pos(LINE_2, CH_1));
+    });
+
+    it('should stop at the line before one the selection only reaches the start of', () => {
+      const editor = createEditor('a\nb\nc');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_2, 0));
+
+      editor.exec('deleteLine');
+
+      expect(editor.getValue()).toBe('b\nc');
+      expect(editor.getCursor()).toEqual(pos(LINE_2, 0));
+    });
+
+    it('should be a single undo step', () => {
+      const editor = createEditor('line1\nline2\nline3');
+      editor.setCursor(pos(LINE_2, CH_3));
+
+      editor.exec('deleteLine');
+      editor.undo();
+
+      expect(editor.getValue()).toBe('line1\nline2\nline3');
+      expect(editor.getCursor()).toEqual(pos(LINE_2, CH_3));
     });
   });
 
@@ -1399,8 +1523,10 @@ const LINE_2 = 1;
 const LINE_3 = 2;
 
 // Character positions
+const CH_1 = 1;
 const CH_2 = 2;
 const CH_3 = 3;
+const CH_4 = 4;
 const CH_5 = 5;
 const CH_6 = 6;
 const CH_8 = 8;
