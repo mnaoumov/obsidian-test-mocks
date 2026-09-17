@@ -35,6 +35,16 @@ interface ChangeSet {
   readonly sections: readonly ChangeSection[];
 }
 
+interface HistoryEntry {
+  // The document this entry restores.
+  readonly content: string;
+  // The forward change `content` was turned into by the change this entry undoes, so the opposite branch can
+  // map `selection` through it: CodeMirror's `HistEvent.changes.invertedDesc`.
+  readonly sections: readonly ChangeSection[];
+  // The selection this entry restores, as offsets into `content`: CodeMirror's `HistEvent.startSelection`.
+  readonly selection: OffsetSelection;
+}
+
 interface OffsetChange {
   readonly from: number;
   readonly insert: string;
@@ -50,8 +60,14 @@ interface OffsetSelection {
  * Mock of Obsidian's abstract `Editor`, the common interface over the CodeMirror editors.
  *
  * The document is a plain string with `\n` line breaks. The mock tracks one selection (an anchor and a head),
- * focus and scroll position, and keeps whole-document snapshots for undo and redo. Folding and scrolling a range
- * into view are no-ops.
+ * focus and scroll position, and keeps whole-document snapshots for undo and redo, each carrying the selection its
+ * change started from. Folding and scrolling a range into view are no-ops.
+ *
+ * Two properties of CodeMirror's history are deliberately not modelled, because both would make the mock's
+ * history depend on wall-clock time or on where the cursor has been since a change: a bare selection change is
+ * not recorded against the last change (CodeMirror's `selectionsAfter`, which would take precedence over the
+ * mapped selection when redoing), and consecutive typing or deleting changes are never grouped into one history
+ * entry (CodeMirror's `addChanges` joins them within its `newGroupDelay`, keyed on the `origin` the mock ignores).
  */
 export abstract class Editor {
   private anchor: EditorPositionOriginal = { ch: 0, line: 0 };
@@ -60,10 +76,10 @@ export abstract class Editor {
 
   private focused = false;
   private head: EditorPositionOriginal = { ch: 0, line: 0 };
-  private redoStack: string[] = [];
+  private redoStack: HistoryEntry[] = [];
   private scrollLeft = 0;
   private scrollTop = 0;
-  private readonly undoStack: string[] = [];
+  private readonly undoStack: HistoryEntry[] = [];
   /**
    * Creates an editor with an empty document, the cursor at the start and no focus.
    */
@@ -341,50 +357,72 @@ export abstract class Editor {
   }
 
   /**
-   * Reads every line and applies the changes computed from them in one pass.
+   * Reads the lines the selection covers and applies the changes computed from them as one transaction, as Obsidian
+   * does. `read` is called for every such line first, then `write` for each of them, so both see the document as it
+   * was before any change, and the whole pass is a single undo step.
    *
    * @typeParam T - The type of the value read from each line.
-   * @param read - Called for each line; returns a value for `write`, or `null`.
+   * @param read - Called for each line the selection covers; returns a value for `write`, or `null`.
    * @param write - Called for each line with the value `read` returned; returns the change to make, if any.
-   * @param _ignoreEmpty - Whether to skip empty lines; ignored by the mock, which visits every line.
+   * @param ignoreEmpty - Whether to skip lines that hold nothing but whitespace, which are then neither read nor
+   * written; `true` when omitted, and only honoured when more than one line is in play.
    */
   public processLines<T>(
     read: (line: number, lineText: string) => null | T,
     write: (line: number, lineText: string, value: null | T) => EditorChangeOriginal | undefined,
-    _ignoreEmpty?: boolean
+    ignoreEmpty = true
   ): void {
-    const lines = this.getLines();
-    const changes: EditorChangeOriginal[] = [];
+    // The mock tracks one selection, so Obsidian's union over every selection's lines is one contiguous run, and
+    // its "there is only one selection" guard on the cursor case below is vacuous here.
+    const selection = ensureNonNullable(this.listSelections()[0]);
+    const firstLine = Math.min(selection.anchor.line, selection.head.line);
+    const lastLine = Math.max(selection.anchor.line, selection.head.line);
+    const lines: number[] = [];
+    for (let line = firstLine; line <= lastLine; line++) {
+      lines.push(line);
+    }
 
-    for (const [index, lineText] of lines.entries()) {
-      const value = read(index, lineText);
-      const change = write(index, lineText, value);
+    const reads = lines.map((line) => {
+      const lineText = this.getLine(line);
+      const skipped = ignoreEmpty && lines.length > 1 && !lineText.trim();
+      return { line, value: skipped ? null : read(line, lineText) };
+    });
+
+    const changes: EditorChangeOriginal[] = [];
+    for (const { line, value } of reads) {
+      if (ignoreEmpty && value === null) {
+        continue;
+      }
+      const change = write(line, this.getLine(line), value);
       if (change) {
         changes.push(change);
       }
     }
 
-    for (let index = changes.length - 1; index >= 0; index--) {
-      const change = ensureNonNullable(changes[index]);
-      this.replaceRange(change.text, change.from, change.to);
-    }
-  }
-
-  /**
-   * Redoes the last undone change. The mock restores the next redo snapshot, if any, and moves the cursor to the end
-   * of the document.
-   */
-  public redo(): void {
-    const entry = this.redoStack.pop();
-    if (entry === undefined) {
+    if (changes.length === 0) {
       return;
     }
 
-    this.undoStack.push(this.content);
-    this.content = entry;
-    const endPos = this.offsetToPos(this.content.length);
-    this.anchor = { ...endPos };
-    this.head = { ...endPos };
+    // Obsidian's one special case: a lone cursor at the start of the first change's line is kept at the start of
+    // that line's text by shifting it over what that change added or removed, never past the line's start.
+    const firstChange = ensureNonNullable(changes[0]);
+    const isCursor = selection.anchor.line === selection.head.line && selection.anchor.ch === selection.head.ch;
+    if (selection.anchor.ch === 0 && isCursor && selection.anchor.line === firstChange.from.line) {
+      const replacedLength = firstChange.to ? firstChange.to.ch - firstChange.from.ch : 0;
+      const ch = Math.max(0, firstChange.text.length - replacedLength);
+      this.transaction({ changes, selection: { from: { ch, line: selection.anchor.line } } });
+      return;
+    }
+
+    this.transaction({ changes });
+  }
+
+  /**
+   * Redoes the last undone change. The mock restores the document and the selection the change was undone from, as
+   * CodeMirror's history does, so redoing an insertion puts the cursor after the inserted text.
+   */
+  public redo(): void {
+    this.popHistory(this.redoStack, this.undoStack);
   }
 
   /**
@@ -395,36 +433,38 @@ export abstract class Editor {
   }
 
   /**
-   * Replaces the text between two positions, or inserts it at one. The mock records an undo snapshot, clears the
-   * redo history and puts the cursor after the inserted text.
+   * Replaces the text between two positions, or inserts it at one, as one change: it can be undone, it clears the
+   * redo history, and the selection is mapped through it rather than set, as Obsidian dispatches no selection of its
+   * own. So a cursor exactly at the insertion point stays in FRONT of the inserted text, and one after it shifts
+   * along. A change that changes nothing is no change at all.
    *
    * @param replacement - The text to insert.
    * @param from - The start of the range.
    * @param to - The end of the range; when omitted the text is inserted at `from`.
    * @param _origin - The change's origin, used by Obsidian for undo grouping; ignored by the mock.
+   * @throws RangeError when the range runs backwards or ends past the end of the document.
    */
   public replaceRange(replacement: string, from: EditorPositionOriginal, to?: EditorPositionOriginal, _origin?: string): void {
-    this.undoStack.push(this.content);
-    this.redoStack = [];
     const startOffset = this.posToOffset(from);
     const endOffset = to ? this.posToOffset(to) : startOffset;
-    this.content = this.content.slice(0, startOffset) + replacement + this.content.slice(endOffset);
-
-    const newCursor = this.offsetToPos(startOffset + replacement.length);
-    this.anchor = { ...newCursor };
-    this.head = { ...newCursor };
+    this.dispatchChanges([{ from: startOffset, insert: replacement, to: endOffset }]);
   }
 
   /**
-   * Replaces the selected text, or inserts at the cursor when nothing is selected.
+   * Replaces the selected text, or inserts at the cursor when nothing is selected. Unlike
+   * {@link Editor.replaceRange}, this one sets the selection: the cursor goes after the inserted text, as
+   * CodeMirror's `EditorState.replaceSelection` puts it.
    *
    * @param replacement - The text to insert.
    * @param _origin - The change's origin; ignored by the mock.
    */
   public replaceSelection(replacement: string, _origin?: string): void {
-    const from = this.minPos(this.anchor, this.head);
-    const to = this.maxPos(this.anchor, this.head);
-    this.replaceRange(replacement, from, to);
+    const from = this.posToOffset(this.minPos(this.anchor, this.head));
+    const to = this.posToOffset(this.maxPos(this.anchor, this.head));
+    this.dispatchChanges([{ from, insert: replacement, to }], () => {
+      const cursor = from + replacement.length;
+      return { anchor: cursor, head: cursor };
+    });
   }
 
   /**
@@ -583,20 +623,11 @@ export abstract class Editor {
   }
 
   /**
-   * Undoes the last change. The mock restores the previous snapshot, if any, and moves the cursor to the end of the
-   * document.
+   * Undoes the last change. The mock restores the document and the selection the change started from, as
+   * CodeMirror's history does.
    */
   public undo(): void {
-    const entry = this.undoStack.pop();
-    if (entry === undefined) {
-      return;
-    }
-
-    this.redoStack.push(this.content);
-    this.content = entry;
-    const endPos = this.offsetToPos(this.content.length);
-    this.anchor = { ...endPos };
-    this.head = { ...endPos };
+    this.popHistory(this.undoStack, this.redoStack);
   }
 
   /**
@@ -645,7 +676,10 @@ export abstract class Editor {
       };
   }
 
-  private dispatchChanges(changes: readonly OffsetChange[], resolveSelection?: () => null | OffsetSelection): void {
+  private dispatchChanges(
+    changes: readonly OffsetChange[],
+    resolveSelection?: (oldSelection: OffsetSelection, sections: readonly ChangeSection[]) => null | OffsetSelection
+  ): void {
     const oldLength = this.content.length;
     const oldSelection: OffsetSelection = {
       anchor: Math.min(this.posToOffset(this.anchor), oldLength),
@@ -654,12 +688,12 @@ export abstract class Editor {
     const { newText, sections } = buildChangeSet(this.content, changes);
 
     if (sections.some((section) => section.insertLength >= 0)) {
-      this.undoStack.push(this.content);
+      this.undoStack.push({ content: this.content, sections, selection: oldSelection });
       this.redoStack = [];
       this.content = newText;
     }
 
-    const selection = resolveSelection?.() ?? mapSelection(oldSelection, sections);
+    const selection = resolveSelection?.(oldSelection, sections) ?? mapSelection(oldSelection, sections, -1);
     this.anchor = this.offsetToPos(selection.anchor);
     this.head = this.offsetToPos(selection.head);
   }
@@ -755,26 +789,43 @@ export abstract class Editor {
     this.setCursor(this.offsetToPos(pos));
   }
 
+  // CodeMirror's `indentMore` / `indentLess`, which go through `changeBySelectedLine`: one transaction over every
+  // line in play, with BOTH ends of the selection mapped at assoc 1 rather than the usual from-forward /
+  // to-backward, so an indent shifts a cursor at the start of a line along with its text.
   private execIndent(more: boolean): void {
     const cursor = this.getCursor();
     const from = this.getCursor('from');
     const to = this.getCursor('to');
     const startLine = this.somethingSelected() ? from.line : cursor.line;
     const endLine = this.somethingSelected() ? to.line : cursor.line;
-    for (let index = endLine; index >= startLine; index--) {
+    const changes: OffsetChange[] = [];
+
+    for (let index = startLine; index <= endLine; index++) {
+      const lineStart = this.posToOffset({ ch: 0, line: index });
       if (more) {
-        this.replaceRange('\t', { ch: 0, line: index }, { ch: 0, line: index });
+        changes.push({ from: lineStart, insert: '\t', to: lineStart });
       } else if (this.getLine(index).startsWith('\t')) {
-        this.replaceRange('', { ch: 0, line: index }, { ch: 1, line: index });
+        changes.push({ from: lineStart, insert: '', to: lineStart + 1 });
       }
     }
+
+    this.dispatchChanges(changes, (oldSelection, sections) => ({
+      anchor: mapPos(sections, oldSelection.anchor, 1),
+      head: mapPos(sections, oldSelection.head, 1)
+    }));
   }
 
+  // CodeMirror's `insertNewlineAndIndent`, whose range is an explicit cursor after the inserted break and indent.
   private execNewlineAndIndent(): void {
     const cursor = this.getCursor();
     const currentLine = ensureNonNullable(this.content.split('\n')[cursor.line]);
     const indent = ensureNonNullable(/^[\t ]*/.exec(currentLine)?.[0]);
-    this.replaceRange(`\n${indent}`, cursor, cursor);
+    const insert = `\n${indent}`;
+    const offset = this.posToOffset(cursor);
+    this.dispatchChanges([{ from: offset, insert, to: offset }], () => {
+      const end = offset + insert.length;
+      return { anchor: end, head: end };
+    });
   }
 
   private execSwapLine(direction: -1 | 1): void {
@@ -806,6 +857,26 @@ export abstract class Editor {
 
   private minPos(a: EditorPositionOriginal, b: EditorPositionOriginal): EditorPositionOriginal {
     return a.line < b.line || (a.line === b.line && a.ch < b.ch) ? { ...a } : { ...b };
+  }
+
+  // CodeMirror's `HistoryState.pop` and the entry its transaction leaves on the opposite branch.
+  private popHistory(from: HistoryEntry[], to: HistoryEntry[]): void {
+    const entry = from.pop();
+    if (!entry) {
+      return;
+    }
+
+    // CodeMirror records the popped entry's own selection, mapped FORWARD through the change being undone at
+    // assoc 1, so the opposite branch lands after that change's text rather than in front of it.
+    to.push({
+      content: this.content,
+      sections: invertSections(entry.sections),
+      selection: mapSelection(entry.selection, entry.sections, 1)
+    });
+
+    this.content = entry.content;
+    this.anchor = this.offsetToPos(entry.selection.anchor);
+    this.head = this.offsetToPos(entry.selection.head);
   }
 }
 
@@ -863,6 +934,16 @@ function endsWithSurrogatePair(text: string): boolean {
   return /[\uD800-\uDBFF][\uDC00-\uDFFF]$/.test(text);
 }
 
+// CodeMirror's `ChangeDesc.invertedDesc`: a changed section swaps what it replaced for what it inserted, and an
+// unchanged one describes the same untouched text either way round.
+function invertSections(sections: readonly ChangeSection[]): ChangeSection[] {
+  return sections.map((section) =>
+    section.insertLength < 0
+      ? { insertLength: section.insertLength, length: section.length }
+      : { insertLength: section.length, length: section.insertLength }
+  );
+}
+
 // CodeMirror's `ChangeDesc.mapPos` in its simple mode.
 function mapPos(sections: readonly ChangeSection[], pos: number, assoc: -1 | 1): number {
   let posA = 0;
@@ -885,11 +966,12 @@ function mapPos(sections: readonly ChangeSection[], pos: number, assoc: -1 | 1):
   return posB;
 }
 
-// CodeMirror's `SelectionRange.map`: a cursor maps backward, a range's start forward and its end backward.
-function mapSelection(selection: OffsetSelection, sections: readonly ChangeSection[]): OffsetSelection {
+// CodeMirror's `SelectionRange.map`: a cursor maps with `assoc`, while a range always maps its start forward and
+// its end backward, whatever `assoc` says.
+function mapSelection(selection: OffsetSelection, sections: readonly ChangeSection[], assoc: -1 | 1): OffsetSelection {
   const { anchor, head } = selection;
   if (anchor === head) {
-    const cursor = mapPos(sections, anchor, -1);
+    const cursor = mapPos(sections, anchor, assoc);
     return { anchor: cursor, head: cursor };
   }
 

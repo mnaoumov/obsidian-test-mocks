@@ -168,6 +168,35 @@ describe('Editor.exec', () => {
 
       expect(editor.getValue()).toBe('\tline1\n\tline2\nline3');
     });
+
+    it('should keep the selection over the indented text', () => {
+      const editor = createEditor('line1\nline2\nline3');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_2, CH_5));
+
+      editor.exec('indentMore');
+
+      expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, 1));
+      expect(editor.getCursor('head')).toEqual(pos(LINE_2, CH_6));
+    });
+
+    it('should shift a cursor at the start of the line over the inserted tab', () => {
+      const editor = createEditor('hello');
+      editor.setCursor(pos(LINE_1, 0));
+
+      editor.exec('indentMore');
+
+      expect(editor.getCursor()).toEqual(pos(LINE_1, 1));
+    });
+
+    it('should indent every line as one undo step', () => {
+      const editor = createEditor('line1\nline2');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_2, CH_5));
+
+      editor.exec('indentMore');
+      editor.undo();
+
+      expect(editor.getValue()).toBe('line1\nline2');
+    });
   });
 
   describe('indentLess', () => {
@@ -216,6 +245,15 @@ describe('Editor.exec', () => {
       editor.exec('newlineAndIndent');
 
       expect(editor.getValue()).toBe('\thello\n\t');
+    });
+
+    it('should put the cursor after the inserted break and indent', () => {
+      const editor = createEditor('\thello');
+      editor.setCursor(pos(LINE_1, CH_6));
+
+      editor.exec('newlineAndIndent');
+
+      expect(editor.getCursor()).toEqual(pos(LINE_2, 1));
     });
   });
 
@@ -662,6 +700,44 @@ describe('Editor core methods', () => {
       editor.replaceRange('there', pos(LINE_1, CH_6), pos(LINE_1, CH_11));
       expect(editor.getValue()).toBe('hello there');
     });
+
+    it('should leave a cursor at the insertion point in front of the inserted text', () => {
+      const editor = createEditor('hello');
+      editor.setCursor(pos(LINE_1, CH_2));
+      editor.replaceRange('--', pos(LINE_1, CH_2));
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_2));
+    });
+
+    it('should shift a cursor after the insertion point along', () => {
+      const editor = createEditor('hello');
+      editor.setCursor(pos(LINE_1, CH_3));
+      editor.replaceRange('--', pos(LINE_1, CH_2));
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_5));
+    });
+
+    it('should keep a selection that spans the change', () => {
+      const editor = createEditor('hello world');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_1, CH_11));
+      editor.replaceRange('there', pos(LINE_1, CH_6), pos(LINE_1, CH_11));
+      expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, 0));
+      expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_11));
+    });
+
+    it('should record nothing for a replacement that changes nothing', () => {
+      const editor = createEditor('hello');
+      editor.setValue('world');
+      editor.replaceRange('', pos(LINE_1, CH_2));
+      editor.undo();
+      expect(editor.getValue()).toBe('hello');
+    });
+
+    it('should throw when the range ends past the end of the document', () => {
+      const editor = createEditor('hi');
+      const OUT_OF_RANGE = 10;
+      expect(() => {
+        editor.replaceRange('x', pos(LINE_1, 0), pos(LINE_1, OUT_OF_RANGE));
+      }).toThrow(RangeError);
+    });
   });
 
   describe('replaceSelection', () => {
@@ -670,6 +746,21 @@ describe('Editor core methods', () => {
       editor.setSelection(pos(LINE_1, CH_6), pos(LINE_1, CH_11));
       editor.replaceSelection('there');
       expect(editor.getValue()).toBe('hello there');
+    });
+
+    it('should put the cursor after the inserted text', () => {
+      const editor = createEditor('hello world');
+      editor.setSelection(pos(LINE_1, CH_6), pos(LINE_1, CH_11));
+      editor.replaceSelection('hi');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_8));
+    });
+
+    it('should insert at the cursor when nothing is selected', () => {
+      const editor = createEditor('ab');
+      editor.setCursor(pos(LINE_1, 1));
+      editor.replaceSelection('X');
+      expect(editor.getValue()).toBe('aXb');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_2));
     });
   });
 
@@ -682,6 +773,39 @@ describe('Editor core methods', () => {
       expect(editor.getValue()).toBe('original');
       editor.redo();
       expect(editor.getValue()).toBe('new');
+    });
+
+    it('should restore the selection the change started from', () => {
+      const editor = createEditor('hello world');
+      editor.setSelection(pos(LINE_1, CH_6), pos(LINE_1, CH_11));
+      editor.replaceSelection('there');
+      editor.undo();
+      expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, CH_6));
+      expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_11));
+    });
+
+    it('should redo to the position after the redone text, where the change itself left it in front', () => {
+      const editor = createEditor('');
+      editor.replaceRange('abc', pos(LINE_1, 0));
+      expect(editor.getCursor()).toEqual(pos(LINE_1, 0));
+      editor.undo();
+      expect(editor.getCursor()).toEqual(pos(LINE_1, 0));
+      editor.redo();
+      expect(editor.getValue()).toBe('abc');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_3));
+    });
+
+    it('should round-trip the history over repeated undo and redo', () => {
+      const editor = createEditor('');
+      editor.replaceRange('abc', pos(LINE_1, 0));
+      editor.undo();
+      editor.redo();
+      editor.undo();
+      expect(editor.getValue()).toBe('');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, 0));
+      editor.redo();
+      expect(editor.getValue()).toBe('abc');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_3));
     });
 
     it('should not fail when undo stack is empty', () => {
@@ -1036,13 +1160,153 @@ describe('Editor core methods', () => {
   describe('processLines', () => {
     it('should read and write lines', () => {
       const editor = createEditor('abc\ndef\nxyz');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_3, CH_3));
       editor.processLines(
         (_line, text) => (text.startsWith('d') ? text : null),
         (_line, _text, value) => {
-          return value ? { from: pos(1, 0), text: 'DEF', to: pos(1, CH_3) } : undefined;
+          return value ? { from: pos(LINE_2, 0), text: 'DEF', to: pos(LINE_2, CH_3) } : undefined;
         }
       );
       expect(editor.getValue()).toBe('abc\nDEF\nxyz');
+    });
+
+    it('should visit only the lines the selection covers', () => {
+      const editor = createEditor('a\nb\nc');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_2, 1));
+      const visited: number[] = [];
+      editor.processLines(
+        (line) => {
+          visited.push(line);
+          return null;
+        },
+        () => undefined
+      );
+      expect(visited).toEqual([LINE_1, LINE_2]);
+    });
+
+    it('should neither read nor write a whitespace-only line when more than one is in play', () => {
+      const editor = createEditor('a\n  \nc');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_3, 1));
+      const read: number[] = [];
+      const written: number[] = [];
+      editor.processLines(
+        (line) => {
+          read.push(line);
+          return line;
+        },
+        (line) => {
+          written.push(line);
+        }
+      );
+      expect(read).toEqual([LINE_1, LINE_3]);
+      expect(written).toEqual([LINE_1, LINE_3]);
+    });
+
+    it('should read a whitespace-only line when it is the only one in play', () => {
+      const editor = createEditor('a\n  \nc');
+      editor.setCursor(pos(LINE_2, 1));
+      const read: number[] = [];
+      editor.processLines(
+        (line) => {
+          read.push(line);
+          return null;
+        },
+        () => undefined
+      );
+      expect(read).toEqual([LINE_2]);
+    });
+
+    it('should read and write every line when ignoreEmpty is false', () => {
+      const editor = createEditor('a\n  \nc');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_3, 1));
+      const written: (null | number)[] = [];
+      editor.processLines(
+        (line) => (line === LINE_2 ? null : line),
+        (_line, _text, value) => {
+          written.push(value);
+        },
+        false
+      );
+      expect(written).toEqual([LINE_1, null, LINE_3]);
+    });
+
+    it('should apply every change as one undo step', () => {
+      const editor = createEditor('a\nb');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_2, 1));
+      editor.processLines(
+        (line) => line,
+        (line) => ({ from: pos(line, 0), text: '> ', to: pos(line, 0) })
+      );
+      expect(editor.getValue()).toBe('> a\n> b');
+      editor.undo();
+      expect(editor.getValue()).toBe('a\nb');
+    });
+
+    it('should shift a lone cursor at the start of the first change line over what was added', () => {
+      const editor = createEditor('a\nb');
+      editor.setCursor(pos(LINE_1, 0));
+      editor.processLines(
+        (line) => line,
+        (line) => ({ from: pos(line, 0), text: '> ', to: pos(line, 0) })
+      );
+      expect(editor.getValue()).toBe('> a\nb');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_2));
+    });
+
+    it('should shift that cursor over an insertion that names no end position', () => {
+      const editor = createEditor('a\nb');
+      editor.setCursor(pos(LINE_1, 0));
+      editor.processLines(
+        (line) => line,
+        (line) => ({ from: pos(line, 0), text: '> ' })
+      );
+      expect(editor.getValue()).toBe('> a\nb');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_2));
+    });
+
+    it('should keep that cursor at the start of the line when the change removed text', () => {
+      const editor = createEditor('> a\nb');
+      editor.setCursor(pos(LINE_1, 0));
+      editor.processLines(
+        (line) => line,
+        (line) => ({ from: pos(line, 0), text: '', to: pos(line, CH_2) })
+      );
+      expect(editor.getValue()).toBe('a\nb');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, 0));
+    });
+
+    it('should map the selection when the cursor is not at the start of the first change line', () => {
+      const editor = createEditor('abc');
+      editor.setCursor(pos(LINE_1, CH_3));
+      editor.processLines(
+        (line) => line,
+        (line) => ({ from: pos(line, 0), text: '> ', to: pos(line, 0) })
+      );
+      expect(editor.getValue()).toBe('> abc');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_5));
+    });
+
+    it('should leave a selection alone when the cursor is on another line than the first change', () => {
+      const editor = createEditor('a\nb');
+      editor.setCursor(pos(LINE_2, 0));
+      editor.processLines(
+        (line) => line,
+        () => ({ from: pos(LINE_1, 0), text: '> ', to: pos(LINE_1, 0) })
+      );
+      expect(editor.getValue()).toBe('> a\nb');
+      expect(editor.getCursor()).toEqual(pos(LINE_2, 0));
+    });
+
+    it('should do nothing when write returns no change', () => {
+      const editor = createEditor('a\nb');
+      editor.setSelection(pos(LINE_1, 0), pos(LINE_2, 1));
+      editor.processLines(
+        (line) => line,
+        () => undefined
+      );
+      expect(editor.getValue()).toBe('a\nb');
+      editor.undo();
+      expect(editor.getValue()).toBe('a\nb');
     });
   });
 
