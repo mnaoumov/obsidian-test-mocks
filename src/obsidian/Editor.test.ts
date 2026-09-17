@@ -779,7 +779,7 @@ describe('Editor core methods', () => {
       const editor = createEditor('hello\nworld');
       // Set selection with head before anchor (reversed)
       editor.setSelection(pos(LINE_2, CH_3), pos(LINE_1, CH_2));
-      // GetCursor('to') uses maxPos which should return anchor (line 1, ch 3)
+      // getCursor('to') uses maxPos which should return anchor (line 1, ch 3)
       expect(editor.getCursor('to')).toEqual(pos(LINE_2, CH_3));
     });
 
