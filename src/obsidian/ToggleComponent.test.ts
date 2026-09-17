@@ -19,20 +19,39 @@ describe('ToggleComponent', () => {
     it('should default to false', () => {
       const toggle = ToggleComponent.create__(createDiv());
       expect(toggle.getValue()).toBe(false);
+      expect(toggle.on).toBe(false);
     });
 
     it('should set and get value', () => {
       const toggle = ToggleComponent.create__(createDiv());
       toggle.setValue(true);
       expect(toggle.getValue()).toBe(true);
+      expect(toggle.toggleEl.hasClass('is-enabled')).toBe(true);
+      toggle.setValue(false);
+      expect(toggle.toggleEl.hasClass('is-enabled')).toBe(false);
     });
 
-    it('should call onChange callback', () => {
+    it('should call onChange callback when the value changes', () => {
       const toggle = ToggleComponent.create__(createDiv());
       const callback = vi.fn();
       toggle.onChange(callback);
       toggle.setValue(true);
       expect(callback).toHaveBeenCalledWith(true);
+    });
+
+    it('should not call onChange callback when the value is unchanged', () => {
+      const toggle = ToggleComponent.create__(createDiv());
+      const callback = vi.fn();
+      toggle.onChange(callback);
+      toggle.setValue(false);
+      expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('should not throw when no onChange callback is set', () => {
+      const toggle = ToggleComponent.create__(createDiv());
+      expect(() => {
+        toggle.setValue(true);
+      }).not.toThrow();
     });
   });
 
@@ -52,6 +71,27 @@ describe('ToggleComponent', () => {
       toggle.onChange(callback);
       toggle.onClick();
       expect(callback).toHaveBeenCalledWith(true);
+    });
+
+    it('should do nothing while disabled', () => {
+      const toggle = ToggleComponent.create__(createDiv());
+      const callback = vi.fn();
+      toggle.onChange(callback);
+      toggle.setDisabled(true);
+      toggle.onClick();
+      expect(toggle.getValue()).toBe(false);
+      expect(callback).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('setDisabled', () => {
+    it('should toggle the is-disabled class and return this', () => {
+      const toggle = ToggleComponent.create__(createDiv());
+      expect(toggle.setDisabled(true)).toBe(toggle);
+      expect(toggle.disabled).toBe(true);
+      expect(toggle.toggleEl.hasClass('is-disabled')).toBe(true);
+      toggle.setDisabled(false);
+      expect(toggle.toggleEl.hasClass('is-disabled')).toBe(false);
     });
   });
 

@@ -16,17 +16,25 @@ import { ValueComponent } from './ValueComponent.ts';
 /**
  * Mock of Obsidian's `ToggleComponent`.
  *
- * The on/off state is kept in memory; {@link ToggleComponent.onClick} flips it, and both it and
- * {@link ToggleComponent.setValue} invoke the change callback.
+ * The on/off state is kept in {@link ToggleComponent.on}. As in Obsidian, {@link ToggleComponent.setValue} calls the
+ * change callback only when the value actually changes, and {@link ToggleComponent.onClick} flips the toggle unless
+ * it is disabled.
  */
 export class ToggleComponent extends ValueComponent<boolean> {
+  /**
+   * The callback registered with {@link ToggleComponent.onChange}, if any.
+   */
+  public changeCallback?: (value: boolean) => unknown;
+
+  /**
+   * Whether the toggle is on.
+   */
+  public on = false;
+
   /**
    * The toggle's element.
    */
   public toggleEl: HTMLElement;
-
-  private _onChange: ((value: boolean) => unknown) | null = null;
-  private value = false;
 
   /**
    * Creates a toggle, initially off, and appends its element to the container.
@@ -86,7 +94,7 @@ export class ToggleComponent extends ValueComponent<boolean> {
    * @returns `true` when on.
    */
   public override getValue(): boolean {
-    return this.value;
+    return this.on;
   }
 
   /**
@@ -96,16 +104,30 @@ export class ToggleComponent extends ValueComponent<boolean> {
    * @returns This component, for chaining.
    */
   public onChange(callback: (value: boolean) => unknown): this {
-    this._onChange = callback;
+    this.changeCallback = callback;
     return this;
   }
 
   /**
-   * Handles a click: flips the toggle and invokes the change callback with the new value.
+   * Handles a click: flips the toggle through {@link ToggleComponent.setValue}, unless the toggle is disabled.
    */
   public onClick(): void {
-    this.value = !this.value;
-    this._onChange?.(this.value);
+    if (this.disabled) {
+      return;
+    }
+    this.setValue(!this.getValue());
+  }
+
+  /**
+   * Disables or enables the toggle, toggling the `is-disabled` class on {@link ToggleComponent.toggleEl}.
+   *
+   * @param disabled - Whether the toggle is disabled.
+   * @returns This component, for chaining.
+   */
+  public override setDisabled(disabled: boolean): this {
+    super.setDisabled(disabled);
+    this.toggleEl.toggleClass('is-disabled', disabled);
+    return this;
   }
 
   /**
@@ -121,14 +143,18 @@ export class ToggleComponent extends ValueComponent<boolean> {
   }
 
   /**
-   * Turns the toggle on or off and invokes the change callback, even when the value is unchanged.
+   * Turns the toggle on or off. When the value changes, toggles the `is-enabled` class on
+   * {@link ToggleComponent.toggleEl} and calls the change callback; an unchanged value does nothing.
    *
    * @param value - Whether the toggle should be on.
    * @returns This component, for chaining.
    */
   public override setValue(value: boolean): this {
-    this.value = value;
-    this._onChange?.(value);
+    if (this.on !== value) {
+      this.on = value;
+      this.toggleEl.toggleClass('is-enabled', value);
+      this.changeCallback?.(value);
+    }
     return this;
   }
 }

@@ -12,6 +12,9 @@ import { AbstractTextComponent } from './AbstractTextComponent.ts';
 
 /**
  * Mock of Obsidian's `SearchComponent`, a `type="search"` input with a button that clears it.
+ *
+ * Clicking {@link SearchComponent.clearButtonEl} empties the input and calls the change callback, unless the
+ * component is disabled.
  */
 export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   /**
@@ -20,7 +23,7 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   public clearButtonEl: HTMLElement;
 
   /**
-   * Creates the search input and its clear button inside `containerEl`.
+   * Creates the search input and its clear button inside `containerEl`, and wires the button's click.
    *
    * @param containerEl - The element to create the component in.
    */
@@ -29,6 +32,13 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
     this.inputEl.type = 'search';
     this.clearButtonEl = containerEl.createDiv();
     const self = strictProxy(this);
+    this.clearButtonEl.addEventListener('click', () => {
+      if (self.disabled) {
+        return;
+      }
+      self.inputEl.value = '';
+      self.onChanged();
+    });
     self.constructor4__(containerEl);
     return self;
   }
@@ -73,9 +83,10 @@ export class SearchComponent extends AbstractTextComponent<HTMLInputElement> {
   }
 
   /**
-   * Called when the input's value changes; Obsidian uses it to show or hide the clear button. A no-op in the mock.
+   * Calls the change callback with the input's current value, as `AbstractTextComponent.onChanged` does. The input's
+   * `input` listener and a click on {@link SearchComponent.clearButtonEl} both call it.
    */
   public override onChanged(): void {
-    noop();
+    super.onChanged();
   }
 }

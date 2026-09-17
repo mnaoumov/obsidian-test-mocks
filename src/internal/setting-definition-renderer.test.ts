@@ -98,8 +98,8 @@ describe('renderSettingDefinitions', () => {
 
     const group = groups[0];
     expect(group?.groupEl.textContent).toContain('Heading');
-    expect(group?.settingGroup.listEl.classList.contains('mod-first')).toBe(true);
-    expect(group?.settingGroup.listEl.classList.contains('mod-second')).toBe(true);
+    expect(group?.settingGroup.groupEl.classList.contains('mod-first')).toBe(true);
+    expect(group?.settingGroup.groupEl.classList.contains('mod-second')).toBe(true);
   });
 
   it('should render a list definition as a group', () => {

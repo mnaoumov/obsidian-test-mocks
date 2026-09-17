@@ -72,10 +72,16 @@ describe('ExtraButtonComponent', () => {
   });
 
   describe('setDisabled', () => {
-    it('should set the disabled property', () => {
+    it('should set the disabled property, the is-disabled class and the tab order', () => {
       const button = createExtraButton();
+      expect(button.extraSettingsEl.getAttribute('tabindex')).toBe('0');
       button.setDisabled(true);
       expect(button.disabled).toBe(true);
+      expect(button.extraSettingsEl.hasClass('is-disabled')).toBe(true);
+      expect(button.extraSettingsEl.hasAttribute('tabindex')).toBe(false);
+      button.setDisabled(false);
+      expect(button.extraSettingsEl.hasClass('is-disabled')).toBe(false);
+      expect(button.extraSettingsEl.getAttribute('tabindex')).toBe('0');
     });
 
     it('should return this for chaining', () => {
@@ -113,6 +119,36 @@ describe('ExtraButtonComponent', () => {
       expect(() => {
         button.simulateClick__();
       }).not.toThrow();
+    });
+
+    it('should not invoke the handler while disabled', () => {
+      const button = createExtraButton();
+      const handler = vi.fn();
+      button.onClick(handler).setDisabled(true);
+      button.simulateClick__();
+      expect(handler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('element events', () => {
+    it('should invoke the handler on click', () => {
+      const button = createExtraButton();
+      const handler = vi.fn();
+      button.onClick(handler);
+      button.extraSettingsEl.click();
+      expect(handler).toHaveBeenCalledOnce();
+      expect(button.changeCallback).toBe(handler);
+    });
+
+    it('should invoke the handler on Enter and Space, but not on other keys', () => {
+      const button = createExtraButton();
+      const handler = vi.fn();
+      button.onClick(handler);
+      button.extraSettingsEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }));
+      expect(handler).not.toHaveBeenCalled();
+      button.extraSettingsEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      button.extraSettingsEl.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
+      expect(handler).toHaveBeenCalledTimes(2);
     });
   });
 });

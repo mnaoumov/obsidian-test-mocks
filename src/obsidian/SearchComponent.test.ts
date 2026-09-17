@@ -3,7 +3,8 @@ import type { SearchComponent as SearchComponentOriginal } from 'obsidian';
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
 import { SearchComponent } from './SearchComponent.ts';
@@ -30,6 +31,36 @@ describe('SearchComponent', () => {
       expect(() => {
         search.onChanged();
       }).not.toThrow();
+    });
+
+    it('should call the onChange callback with the input value', () => {
+      const search = SearchComponent.create__(createDiv());
+      const callback = vi.fn();
+      search.onChange(callback);
+      search.inputEl.value = 'query';
+      search.inputEl.dispatchEvent(new Event('input'));
+      expect(callback).toHaveBeenCalledWith('query');
+    });
+  });
+
+  describe('clearButtonEl', () => {
+    it('should empty the input and call the onChange callback on click', () => {
+      const search = SearchComponent.create__(createDiv());
+      const callback = vi.fn();
+      search.setValue('query').onChange(callback);
+      search.clearButtonEl.click();
+      expect(search.getValue()).toBe('');
+      expect(callback).toHaveBeenCalledWith('');
+    });
+
+    it('should do nothing on click while disabled', () => {
+      const search = SearchComponent.create__(createDiv());
+      const callback = vi.fn();
+      search.setValue('query').onChange(callback);
+      search.setDisabled(true);
+      search.clearButtonEl.click();
+      expect(search.getValue()).toBe('query');
+      expect(callback).not.toHaveBeenCalled();
     });
   });
 

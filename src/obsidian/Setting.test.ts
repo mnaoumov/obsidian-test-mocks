@@ -86,9 +86,24 @@ describe('Setting', () => {
     it('should toggle disabled class', () => {
       const setting = Setting.create__(createDiv());
       setting.setDisabled(true);
+      expect(setting.disabled).toBe(true);
       expect(setting.settingEl.classList.contains('is-disabled')).toBe(true);
       setting.setDisabled(false);
+      expect(setting.disabled).toBe(false);
       expect(setting.settingEl.classList.contains('is-disabled')).toBe(false);
+    });
+
+    it('should disable and enable every component', () => {
+      const setting = Setting.create__(createDiv());
+      setting.addText(() => {
+        noop();
+      }).addToggle(() => {
+        noop();
+      });
+      setting.setDisabled(true);
+      expect(setting.components.map((component) => component.disabled)).toEqual([true, true]);
+      setting.setDisabled(false);
+      expect(setting.components.map((component) => component.disabled)).toEqual([false, false]);
     });
   });
 
@@ -141,14 +156,23 @@ describe('Setting', () => {
   });
 
   describe('clear', () => {
-    it('should clear components', () => {
+    it('should clear components and their elements', () => {
       const setting = Setting.create__(createDiv());
       setting.addText(() => {
         noop();
       });
       expect(setting.components.length).toBeGreaterThan(0);
-      setting.clear();
+      expect(setting.clear()).toBe(setting);
       expect(setting.components).toEqual([]);
+      expect(setting.controlEl.childElementCount).toBe(0);
+    });
+
+    it('should drop the error element and the is-invalid class', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setErrorMessage('error');
+      setting.clear();
+      expect(setting.errorEl).toBeNull();
+      expect(setting.settingEl.classList.contains('is-invalid')).toBe(false);
     });
   });
 

@@ -47,11 +47,12 @@ describe('TextComponent', () => {
   });
 
   describe('onChange', () => {
-    it('should register an onChange callback', () => {
+    it('should call the onChange callback when the input changes', () => {
       const component = TextComponent.create__(createDiv());
       const callback = vi.fn();
       component.onChange(callback);
-      component.setValue('new value');
+      component.inputEl.value = 'new value';
+      component.inputEl.dispatchEvent(new Event('input'));
       expect(callback).toHaveBeenCalledWith('new value');
     });
 

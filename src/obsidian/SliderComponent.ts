@@ -11,24 +11,42 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 const DEFAULT_MAX = 100;
+const DEFAULT_STEP = 1;
+const HALF = 0.5;
+const JSDOM_UNTOUCHED_VALUE = '50';
+const PRETTY_FRACTION_DIGITS = 2;
 
 /**
  * Mock of Obsidian's `SliderComponent`.
  *
- * The value and limits are kept in memory; limits are mirrored onto {@link SliderComponent.sliderEl}'s attributes,
- * and {@link SliderComponent.setValue} invokes the change callback.
+ * As in Obsidian, the value lives in {@link SliderComponent.sliderEl}, and the limits are its `min`, `max` and `step`
+ * attributes. A browser keeps a range input's value inside those limits and on a step; jsdom does not, so the mock
+ * applies the same rules itself whenever it reads the value. {@link SliderComponent.setValue} calls the change
+ * callback only when the value actually changes, and the element's `input` and `change` events call it as Obsidian
+ * does, depending on {@link SliderComponent.instant}.
  */
 export class SliderComponent extends ValueComponent<number> {
+  /**
+   * The callback registered with {@link SliderComponent.onChange}, or `null`.
+   */
+  public changeCallback: ((value: number) => unknown) | null = null;
+
+  /**
+   * The formatter set with {@link SliderComponent.setDisplayFormat}, or `null`.
+   */
+  public displayFormat: ((value: number) => string) | null = null;
+
+  /**
+   * Whether the change callback runs on every `input` event rather than only on `change`.
+   */
+  public instant = false;
+
   /**
    * The underlying `<input type="range">` element.
    */
   public sliderEl: HTMLInputElement;
 
-  private _onChange: ((value: number) => unknown) | null = null;
-  private max = DEFAULT_MAX;
-  private min = 0;
-  private step: 'any' | number = 1;
-  private value = 0;
+  private hasExplicitValue = false;
 
   /**
    * Creates a slider and appends its range input to the container.
@@ -39,7 +57,20 @@ export class SliderComponent extends ValueComponent<number> {
     super();
     this.sliderEl = containerEl.createEl('input');
     this.sliderEl.type = 'range';
+    this.sliderEl.addClass('slider');
     const self = strictProxy(this);
+    this.sliderEl.addEventListener('input', () => {
+      self.hasExplicitValue = true;
+      if (self.instant) {
+        self.changeCallback?.(self.getValue());
+      }
+    });
+    this.sliderEl.addEventListener('change', () => {
+      self.hasExplicitValue = true;
+      if (!self.instant) {
+        self.changeCallback?.(self.getValue());
+      }
+    });
     self.constructor3__(containerEl);
     return self;
   }
@@ -84,21 +115,45 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   /**
-   * Gets the slider's current value.
+   * Gets the slider's current value, the way a browser reports a range input's `valueAsNumber`.
    *
-   * @returns The value, `0` until one is set.
+   * @returns The element's value clamped to the limits and rounded to the nearest step; the middle of the range
+   * until a value is set.
    */
   public override getValue(): number {
-    return this.value;
+    const min = parseAttribute(this.sliderEl.getAttribute('min'), 0);
+    const max = Math.max(min, parseAttribute(this.sliderEl.getAttribute('max'), DEFAULT_MAX));
+    const midpoint = min + (max - min) * HALF;
+    // Jsdom reports an untouched range input as `50` whatever its limits, where a browser reports the midpoint.
+    const isUntouched = !this.hasExplicitValue && this.sliderEl.value === JSDOM_UNTOUCHED_VALUE;
+    const rawValue = isUntouched ? NaN : Number.parseFloat(this.sliderEl.value);
+    const value = Math.min(max, Math.max(min, Number.isFinite(rawValue) ? rawValue : midpoint));
+    const stepAttribute = this.sliderEl.getAttribute('step');
+    if (stepAttribute?.toLowerCase() === 'any') {
+      return value;
+    }
+    const parsedStep = parseAttribute(stepAttribute, DEFAULT_STEP);
+    const step = parsedStep > 0 ? parsedStep : DEFAULT_STEP;
+    let stepped = min + Math.round((value - min) / step) * step;
+    if (stepped > max) {
+      stepped = min + Math.floor((max - min) / step) * step;
+    }
+    return stepped;
   }
 
   /**
    * Gets the value formatted for display.
    *
-   * @returns The value as a string; the mock ignores any custom display format.
+   * @returns The value passed through the display format when one is set; otherwise the value with two decimals
+   * when the step is `any` or below 1, or as a plain number.
    */
   public getValuePretty(): string {
-    return String(this.value);
+    const value = this.getValue();
+    if (this.displayFormat) {
+      return this.displayFormat(value);
+    }
+    const step = this.sliderEl.step;
+    return step === 'any' || Number.parseFloat(step) < 1 ? value.toFixed(PRETTY_FRACTION_DIGITS) : value.toString();
   }
 
   /**
@@ -108,23 +163,36 @@ export class SliderComponent extends ValueComponent<number> {
    * @returns This component, for chaining.
    */
   public onChange(callback: (value: number) => unknown): this {
-    this._onChange = callback;
+    this.changeCallback = callback;
     return this;
   }
 
   /**
-   * Sets a custom formatter for the value shown inline next to the slider. A no-op in the mock.
+   * Disables or enables the slider and its range input.
    *
-   * @param _format - Formats a value for display.
+   * @param disabled - Whether the slider is disabled.
    * @returns This component, for chaining.
    */
-  public setDisplayFormat(_format: (value: number) => string): this {
+  public override setDisabled(disabled: boolean): this {
+    super.setDisabled(disabled);
+    this.sliderEl.disabled = disabled;
     return this;
   }
 
   /**
-   * Shows the value in a tooltip while dragging. Obsidian deprecates it, since the value is now always shown inline.
-   * A no-op in the mock.
+   * Sets a custom formatter for the value shown next to the slider, used by {@link SliderComponent.getValuePretty}.
+   *
+   * @param format - Formats a value for display.
+   * @returns This component, for chaining.
+   */
+  public setDisplayFormat(format: (value: number) => string): this {
+    this.displayFormat = format;
+    return this;
+  }
+
+  /**
+   * Shows the value in a tooltip while dragging. Obsidian deprecates it, since the value is now always shown inline,
+   * and its implementation does nothing either.
    *
    * @returns This component, for chaining.
    */
@@ -133,17 +201,20 @@ export class SliderComponent extends ValueComponent<number> {
   }
 
   /**
-   * Sets whether the value updates while the slider is being dragged. A no-op in the mock.
+   * Sets whether the change callback runs while the slider is dragged (`input` events) rather than on release
+   * (`change` events).
    *
-   * @param _instant - Whether to update the value during dragging.
+   * @param instant - Whether to call the change callback during dragging.
    * @returns This component, for chaining.
    */
-  public setInstant(_instant: boolean): this {
+  public setInstant(instant: boolean): this {
+    this.instant = instant;
     return this;
   }
 
   /**
-   * Sets the slider's range and step, and mirrors them onto the input's `min`, `max` and `step` attributes.
+   * Sets the slider's range and step as the input's `min`, `max` and `step` attributes. The value is re-read against
+   * the new limits, as a browser does.
    *
    * @param min - The minimum value; `null` means `0`.
    * @param max - The maximum value; `null` means `100`.
@@ -151,24 +222,28 @@ export class SliderComponent extends ValueComponent<number> {
    * @returns This component, for chaining.
    */
   public setLimits(min: null | number, max: null | number, step: 'any' | number): this {
-    this.min = min ?? 0;
-    this.max = max ?? DEFAULT_MAX;
-    this.step = step;
-    this.sliderEl.setAttribute('min', String(this.min));
-    this.sliderEl.setAttribute('max', String(this.max));
-    this.sliderEl.setAttribute('step', String(this.step));
+    this.sliderEl.setAttrs({ max, min, step });
     return this;
   }
 
   /**
-   * Sets the slider's value. The mock stores it without clamping to the limits and invokes the change callback.
+   * Sets the slider's value. When the element's value changes, it is stored and the change callback is called with
+   * `value` as given; an unchanged value does nothing. The value read back is kept within the limits and on a step.
    *
    * @param value - The new value.
    * @returns This component, for chaining.
    */
   public override setValue(value: number): this {
-    this.value = value;
-    this._onChange?.(value);
+    if (this.getValue() !== value) {
+      this.hasExplicitValue = true;
+      this.sliderEl.value = String(value);
+      this.changeCallback?.(value);
+    }
     return this;
   }
+}
+
+function parseAttribute(value: null | string, fallback: number): number {
+  const parsed = Number.parseFloat(value ?? '');
+  return Number.isFinite(parsed) ? parsed : fallback;
 }

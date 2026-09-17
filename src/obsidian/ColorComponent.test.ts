@@ -57,15 +57,21 @@ describe('ColorComponent', () => {
   });
 
   describe('getValue', () => {
-    it('should return empty string initially', () => {
+    it('should return black initially, as a color input does', () => {
       const color = createColor();
-      expect(color.getValue()).toBe('');
+      expect(color.getValue()).toBe('#000000');
     });
 
     it('should return the value after setValue', () => {
       const color = createColor();
       color.setValue('#ff0000');
       expect(color.getValue()).toBe('#ff0000');
+    });
+
+    it('should read a value written directly to the element', () => {
+      const color = createColor();
+      color.colorPickerEl.value = '#123456';
+      expect(color.getValue()).toBe('#123456');
     });
   });
 
@@ -77,12 +83,30 @@ describe('ColorComponent', () => {
       expect(color.colorPickerEl.value).toBe('#00ff00');
     });
 
-    it('should invoke onChange callback', () => {
+    it('should invoke onChange callback when the value changes', () => {
       const color = createColor();
       const callback = vi.fn();
       color.onChange(callback);
       color.setValue('#0000ff');
       expect(callback).toHaveBeenCalledWith('#0000ff');
+      expect(color.changeCallback).toBe(callback);
+    });
+
+    it('should not invoke onChange callback when the value is unchanged', () => {
+      const color = createColor();
+      color.setValue('#0000ff');
+      const callback = vi.fn();
+      color.onChange(callback);
+      color.setValue('#0000ff');
+      expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('should pass the value the input holds to the callback', () => {
+      const color = createColor();
+      const callback = vi.fn();
+      color.onChange(callback);
+      color.setValue('#FF0000');
+      expect(callback).toHaveBeenCalledWith('#ff0000');
     });
 
     it('should return this for chaining', () => {
@@ -98,6 +122,33 @@ describe('ColorComponent', () => {
     });
   });
 
+  describe('change event', () => {
+    it('should invoke onChange callback with the current value', () => {
+      const color = createColor();
+      const callback = vi.fn();
+      color.onChange(callback);
+      color.colorPickerEl.value = '#abcdef';
+      color.colorPickerEl.dispatchEvent(new Event('change'));
+      expect(callback).toHaveBeenCalledWith('#abcdef');
+    });
+
+    it('should not throw without a callback', () => {
+      const color = createColor();
+      expect(() => {
+        color.colorPickerEl.dispatchEvent(new Event('change'));
+      }).not.toThrow();
+    });
+  });
+
+  describe('setDisabled', () => {
+    it('should disable the input and return this', () => {
+      const color = createColor();
+      expect(color.setDisabled(true)).toBe(color);
+      expect(color.disabled).toBe(true);
+      expect(color.colorPickerEl.disabled).toBe(true);
+    });
+  });
+
   describe('onChange', () => {
     it('should return this for chaining', () => {
       const color = createColor();
@@ -107,42 +158,21 @@ describe('ColorComponent', () => {
   });
 
   describe('getValueRgb', () => {
-    it('should parse red hex to RGB', () => {
+    it.each([
+      ['#ff0000', { b: 0, g: 0, r: 255 }],
+      ['#00ff00', { b: 0, g: 255, r: 0 }],
+      ['#0000ff', { b: 255, g: 0, r: 0 }],
+      ['#123456', { b: 86, g: 52, r: 18 }]
+    ])('should parse %s', (hex, rgb) => {
       const color = createColor();
-      color.setValue('#ff0000');
-      const rgb = color.getValueRgb();
-      const FULL_RED = 255;
-      expect(rgb.r).toBe(FULL_RED);
-      expect(rgb.g).toBe(0);
-      expect(rgb.b).toBe(0);
+      color.setValue(hex);
+      expect(color.getValueRgb()).toEqual(rgb);
     });
 
-    it('should parse green hex to RGB', () => {
+    it('should return black for a value that is not a hex color', () => {
       const color = createColor();
-      color.setValue('#00ff00');
-      const rgb = color.getValueRgb();
-      const FULL_GREEN = 255;
-      expect(rgb.r).toBe(0);
-      expect(rgb.g).toBe(FULL_GREEN);
-      expect(rgb.b).toBe(0);
-    });
-
-    it('should parse blue hex to RGB', () => {
-      const color = createColor();
-      color.setValue('#0000ff');
-      const rgb = color.getValueRgb();
-      const FULL_BLUE = 255;
-      expect(rgb.r).toBe(0);
-      expect(rgb.g).toBe(0);
-      expect(rgb.b).toBe(FULL_BLUE);
-    });
-
-    it('should handle empty value as black', () => {
-      const color = createColor();
-      const rgb = color.getValueRgb();
-      expect(rgb.r).toBe(0);
-      expect(rgb.g).toBe(0);
-      expect(rgb.b).toBe(0);
+      Object.defineProperty(color.colorPickerEl, 'value', { configurable: true, value: 'red' });
+      expect(color.getValueRgb()).toEqual({ b: 0, g: 0, r: 0 });
     });
   });
 
@@ -161,153 +191,47 @@ describe('ColorComponent', () => {
   });
 
   describe('getValueHsl', () => {
-    it('should return zero HSL for black', () => {
+    it.each([
+      ['#000000', { h: 0, l: 0, s: 0 }],
+      ['#808080', { h: 0, l: 50, s: 0 }],
+      ['#ff0000', { h: 0, l: 50, s: 100 }],
+      ['#00ff00', { h: 120, l: 50, s: 100 }],
+      ['#0000ff', { h: 240, l: 50, s: 100 }],
+      ['#ff8080', { h: 0, l: 75, s: 100 }],
+      ['#ff0080', { h: 330, l: 50, s: 100 }],
+      ['#400000', { h: 0, l: 13, s: 100 }]
+    ])('should convert %s to integer HSL', (hex, hsl) => {
       const color = createColor();
-      color.setValue('#000000');
-      const hsl = color.getValueHsl();
-      expect(hsl.h).toBe(0);
-      expect(hsl.s).toBe(0);
-      expect(hsl.l).toBe(0);
-    });
-
-    it('should return achromatic HSL for gray', () => {
-      const color = createColor();
-      color.setValue('#808080');
-      const hsl = color.getValueHsl();
-      expect(hsl.h).toBe(0);
-      expect(hsl.s).toBe(0);
-      expect(hsl.l).toBeGreaterThan(0);
-    });
-
-    it('should return correct HSL for pure red', () => {
-      const color = createColor();
-      color.setValue('#ff0000');
-      const hsl = color.getValueHsl();
-      expect(hsl.h).toBe(0);
-      expect(hsl.s).toBe(1);
-      const HALF = 0.5;
-      expect(hsl.l).toBe(HALF);
-    });
-
-    it('should return correct HSL for pure green', () => {
-      const color = createColor();
-      color.setValue('#00ff00');
-      const hsl = color.getValueHsl();
-      // Green hue is at 120 degrees = 1/3
-      const GREEN_HUE = 0.3333;
-      expect(hsl.h).toBeCloseTo(GREEN_HUE);
-      expect(hsl.s).toBe(1);
-    });
-
-    it('should return correct HSL for pure blue', () => {
-      const color = createColor();
-      color.setValue('#0000ff');
-      const hsl = color.getValueHsl();
-      // Blue hue is at 240 degrees = 2/3
-      const BLUE_HUE = 0.6667;
-      expect(hsl.h).toBeCloseTo(BLUE_HUE);
-      expect(hsl.s).toBe(1);
-    });
-
-    it('should handle light colors with l > 0.5', () => {
-      const color = createColor();
-      // Light pink: rgb(255, 200, 200)
-      color.setValue('#ffc8c8');
-      const hsl = color.getValueHsl();
-      const HALF = 0.5;
-      expect(hsl.l).toBeGreaterThan(HALF);
-    });
-
-    it('should handle red-dominant color where green < blue', () => {
-      const color = createColor();
-      // Color where max=r but g < b, covering the gn < bn branch
-      color.setValue('#ff0080');
-      const hsl = color.getValueHsl();
-      expect(hsl.h).toBeGreaterThan(0);
-      expect(hsl.s).toBe(1);
+      color.setValue(hex);
+      expect(color.getValueHsl()).toEqual(hsl);
     });
   });
 
   describe('setValueHsl', () => {
-    it('should convert achromatic HSL to gray hex', () => {
+    it.each([
+      [{ h: 0, l: 50, s: 0 }, '#808080'],
+      [{ h: 0, l: 50, s: 100 }, '#ff0000'],
+      [{ h: 180, l: 50, s: 100 }, '#00ffff'],
+      [{ h: 0, l: 75, s: 50 }, '#df9f9f'],
+      [{ h: 270, l: 50, s: 100 }, '#7f00ff'],
+      [{ h: 60, l: 50, s: 100 }, '#ffff00'],
+      [{ h: 0, l: 25, s: 100 }, '#800000']
+    ])('should convert %j to %s', (hsl, hex) => {
       const color = createColor();
-      const HALF = 0.5;
-      color.setValueHsl({ h: 0, l: HALF, s: 0 });
-      const rgb = color.getValueRgb();
-      const GRAY = 128;
-      expect(rgb.r).toBe(GRAY);
-      expect(rgb.g).toBe(GRAY);
-      expect(rgb.b).toBe(GRAY);
+      color.setValueHsl(hsl);
+      expect(color.getValue()).toBe(hex);
     });
 
-    it('should round-trip through RGB for saturated colors', () => {
+    it('should round-trip integer HSL', () => {
       const color = createColor();
-      const HALF = 0.5;
-      color.setValueHsl({ h: 0, l: HALF, s: 1 });
-      const rgb = color.getValueRgb();
-      const FULL_CHANNEL = 255;
-      expect(rgb.r).toBe(FULL_CHANNEL);
-      expect(rgb.g).toBe(0);
-      expect(rgb.b).toBe(0);
+      const hsl = { h: 120, l: 50, s: 100 };
+      color.setValueHsl(hsl);
+      expect(color.getValueHsl()).toEqual(hsl);
     });
 
     it('should return this for chaining', () => {
       const color = createColor();
       expect(color.setValueHsl({ h: 0, l: 0, s: 0 })).toBe(color);
-    });
-
-    it('should handle HSL with low lightness', () => {
-      const color = createColor();
-      const LOW_LIGHT = 0.25;
-      color.setValueHsl({ h: 0, l: LOW_LIGHT, s: 1 });
-      const rgb = color.getValueRgb();
-      expect(rgb.r).toBeGreaterThan(0);
-    });
-
-    it('should handle hue in different segments', () => {
-      const color = createColor();
-      // Cyan-ish: hue = 0.5 (180 degrees)
-      const HALF = 0.5;
-      color.setValueHsl({ h: HALF, l: HALF, s: 1 });
-      const rgb = color.getValueRgb();
-      expect(rgb.r).toBe(0);
-      const FULL_CHANNEL = 255;
-      expect(rgb.g).toBe(FULL_CHANNEL);
-      expect(rgb.b).toBe(FULL_CHANNEL);
-    });
-
-    it('should handle light colors with l greater than half', () => {
-      const color = createColor();
-      const LIGHT = 0.75;
-      const MEDIUM_SAT = 0.5;
-      color.setValueHsl({ h: 0, l: LIGHT, s: MEDIUM_SAT });
-      const rgb = color.getValueRgb();
-      // Light pinkish color
-      expect(rgb.r).toBeGreaterThan(rgb.g);
-    });
-
-    it('should handle hue in the blue-purple segment', () => {
-      const color = createColor();
-      // Purple: hue = 0.75 (270 degrees)
-      const PURPLE_HUE = 0.75;
-      const HALF = 0.5;
-      color.setValueHsl({ h: PURPLE_HUE, l: HALF, s: 1 });
-      const rgb = color.getValueRgb();
-      // Purple has high blue and red
-      const FULL_CHANNEL = 255;
-      expect(rgb.b).toBe(FULL_CHANNEL);
-    });
-
-    it('should handle hue in the yellow segment', () => {
-      const color = createColor();
-      // Yellow: hue = 1/6 (60 degrees)
-      const YELLOW_HUE = 0.1667;
-      const HALF = 0.5;
-      color.setValueHsl({ h: YELLOW_HUE, l: HALF, s: 1 });
-      const rgb = color.getValueRgb();
-      const FULL_CHANNEL = 255;
-      expect(rgb.r).toBe(FULL_CHANNEL);
-      expect(rgb.g).toBe(FULL_CHANNEL);
     });
   });
 });

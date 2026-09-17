@@ -12,11 +12,14 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 
+const MAX_SECRET_ID_LENGTH = 64;
+const SECRET_ID_REG_EXP = /^[a-z0-9-]+$/;
+
 /**
  * Mock of Obsidian's `SecretStorage`, which stores secret values by id.
  *
- * Secrets are kept in an in-memory map for the lifetime of the instance. Ids are not validated and no events are
- * triggered.
+ * Secrets are kept in an in-memory map for the lifetime of the instance, so nothing is encrypted or persisted. As in
+ * Obsidian, {@link SecretStorage.setSecret} validates the id and triggers `changed`.
  */
 export class SecretStorage extends Events {
   private readonly store = new Map<string, string>();
@@ -93,13 +96,17 @@ export class SecretStorage extends Events {
   }
 
   /**
-   * Stores a secret, replacing any existing value under the same id. Obsidian requires a lowercase alphanumeric id
-   * with optional dashes and throws otherwise; the mock accepts any id.
+   * Stores a secret, replacing any existing value under the same id, and triggers `changed`.
    *
-   * @param id - The secret id.
+   * @param id - The secret id: lowercase letters, digits and dashes, at most 64 characters.
    * @param secret - The secret value to store.
+   * @throws Error with Obsidian's message when the id is invalid.
    */
   public setSecret(id: string, secret: string): void {
+    if (!SECRET_ID_REG_EXP.test(id) || id.length > MAX_SECRET_ID_LENGTH) {
+      throw new Error('Secret ID is invalid. Use only lowercase letters, numbers and dashes. 64 characters max.');
+    }
     this.store.set(id, secret);
+    this.trigger('changed');
   }
 }

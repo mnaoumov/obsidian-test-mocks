@@ -11,6 +11,8 @@ import type {
   Setting as SettingOriginal
 } from 'obsidian';
 
+import type { BaseComponent } from './BaseComponent.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
@@ -20,20 +22,39 @@ import { Setting } from './Setting.ts';
 /**
  * Mock of Obsidian's `SettingGroup`, which groups setting rows under an optional heading.
  *
- * Every added row or control is created in {@link SettingGroup.listEl} and handed to its callback synchronously.
+ * The DOM mirrors Obsidian's: {@link SettingGroup.groupEl} holds a search container (`.setting-group-search`),
+ * {@link SettingGroup.listEl}, and a heading row (a name and {@link SettingGroup.controlEl}) that is attached at the
+ * top of the group only while it has a heading or a control. Every added row or control is handed to its callback synchronously.
  */
 export class SettingGroup {
   /**
-   * The group's outer element, holding the heading and the list.
+   * The components added to the group itself (its search input and extra buttons), in the order they were added.
+   */
+  public components: BaseComponent[] = [];
+
+  /**
+   * The element in the heading row that holds the group's extra buttons.
+   */
+  public controlEl: HTMLDivElement;
+
+  /**
+   * The group's outer element, holding the heading, the search container and the list.
    */
   public groupEl: HTMLDivElement;
 
   /**
-   * The element the group's settings and controls are added to.
+   * The element the group's settings are added to.
    */
   public listEl: HTMLDivElement;
+
+  /**
+   * The setting rows added with {@link SettingGroup.addSetting}, in order.
+   */
+  public settings: Setting[] = [];
+
   private readonly headerEl: HTMLDivElement;
   private readonly headerInnerEl: HTMLDivElement;
+  private readonly searchContainerEl: HTMLDivElement;
 
   /**
    * Creates the group inside `containerEl`, without a heading.
@@ -41,10 +62,12 @@ export class SettingGroup {
    * @param containerEl - The element to create the group in.
    */
   public constructor(containerEl: HTMLElement) {
-    this.groupEl = containerEl.createDiv();
-    this.headerEl = createDiv();
-    this.headerInnerEl = this.headerEl.createDiv();
-    this.listEl = this.groupEl.createDiv();
+    this.groupEl = containerEl.createDiv('setting-group');
+    this.headerEl = createDiv('setting-item setting-item-heading');
+    this.headerInnerEl = this.headerEl.createDiv('setting-item-name');
+    this.controlEl = this.headerEl.createDiv('setting-item-control');
+    this.searchContainerEl = this.groupEl.createDiv({ attr: { tabIndex: -1 }, cls: 'setting-group-search' });
+    this.listEl = this.groupEl.createDiv('setting-items');
     const self = strictProxy(this);
     self.constructor__(containerEl);
     return self;
@@ -71,49 +94,53 @@ export class SettingGroup {
   }
 
   /**
-   * Adds CSS classes to the group's list element.
+   * Adds CSS classes to the group's outer element.
    *
    * @param classes - The class names to add.
    * @returns This group, for chaining.
    */
   public addClass(...classes: string[]): this {
-    this.listEl.classList.add(...classes);
+    this.groupEl.addClass(...classes);
     return this;
   }
 
   /**
-   * Adds an extra (icon) button to the group.
+   * Adds an extra (icon) button to the group's heading row, attaching the heading row if it is not already shown.
    *
    * @param callback - Called with the new button, to configure it.
    * @returns This group, for chaining.
    */
   public addExtraButton(callback: (component: ExtraButtonComponentOriginal) => unknown): this {
-    const comp = ExtraButtonComponent.create__(this.listEl);
+    this.showHeader();
+    const comp = ExtraButtonComponent.create__(this.controlEl);
+    this.components.push(comp);
     callback(comp.asOriginalType2__());
     return this;
   }
 
   /**
-   * Adds a search input to the group. Obsidian places it at the start of the group, for filtering its rows or for
-   * quick entry; the mock appends it to {@link SettingGroup.listEl}.
+   * Adds a search input to the group's search container, at the start of the group, for filtering its rows or for
+   * quick entry.
    *
    * @param callback - Called with the new search component, to configure it.
    * @returns This group, for chaining.
    */
   public addSearch(callback: (component: SearchComponentOriginal) => unknown): this {
-    const comp = SearchComponent.create__(this.listEl);
+    const comp = SearchComponent.create__(this.searchContainerEl);
+    this.components.push(comp);
     callback(comp.asOriginalType4__());
     return this;
   }
 
   /**
-   * Adds a setting row to the group.
+   * Adds a setting row to the group's list.
    *
    * @param callback - Called with the new setting, to configure it.
    * @returns This group, for chaining.
    */
   public addSetting(callback: (setting: SettingOriginal) => void): this {
     const setting = Setting.create__(this.listEl);
+    this.settings.push(setting);
     callback(setting.asOriginalType__());
     return this;
   }
@@ -138,21 +165,31 @@ export class SettingGroup {
   }
 
   /**
-   * Sets the group's heading. A non-empty heading is inserted at the top of {@link SettingGroup.groupEl}; an empty
-   * one removes the heading element when it is shown.
+   * Sets the group's heading. The heading row is attached at the top of {@link SettingGroup.groupEl} while the
+   * heading is non-empty or {@link SettingGroup.controlEl} holds a control, and detached otherwise.
+   *
+   * Obsidian tests whether the heading row is shown with `isShown()`, which is always `false` without layout, so the
+   * mock tests whether the row is attached instead.
    *
    * @param text - The heading, as text or as a fragment.
    * @returns This group, for chaining.
    */
   public setHeading(text: DocumentFragment | string): this {
     this.headerInnerEl.setText(text);
+    const shouldShow = Boolean(text) || this.controlEl.childElementCount > 0;
 
-    if (text && !this.headerEl.isShown()) {
-      this.groupEl.prepend(this.headerEl);
-    } else if (!text && this.headerEl.isShown()) {
+    if (shouldShow) {
+      this.showHeader();
+    } else {
       this.headerEl.detach();
     }
 
     return this;
+  }
+
+  private showHeader(): void {
+    if (this.headerEl.parentElement !== this.groupEl) {
+      this.groupEl.prepend(this.headerEl);
+    }
   }
 }

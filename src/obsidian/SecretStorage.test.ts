@@ -3,7 +3,8 @@ import type { SecretStorage as SecretStorageOriginal } from 'obsidian';
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
 import { App } from './App.ts';
@@ -22,6 +23,32 @@ describe('SecretStorage', () => {
       const storage = SecretStorage.create2__(app);
       storage.setSecret('api-key', 'abc123');
       expect(storage.getSecret('api-key')).toBe('abc123');
+    });
+
+    it('should trigger changed when a secret is set', () => {
+      const app = App.createConfigured__();
+      const storage = SecretStorage.create2__(app);
+      const callback = vi.fn();
+      storage.on('changed', callback);
+      storage.setSecret('api-key', 'abc123');
+      expect(callback).toHaveBeenCalledOnce();
+    });
+
+    it.each(['API-KEY', 'api_key', '', 'a'.repeat(65)])('should reject the invalid id %j', (id) => {
+      const app = App.createConfigured__();
+      const storage = SecretStorage.create2__(app);
+      expect(() => {
+        storage.setSecret(id, 'abc123');
+      }).toThrow('Secret ID is invalid. Use only lowercase letters, numbers and dashes. 64 characters max.');
+      expect(storage.listSecrets()).toEqual([]);
+    });
+
+    it('should accept a 64-character id', () => {
+      const app = App.createConfigured__();
+      const storage = SecretStorage.create2__(app);
+      const id = 'a'.repeat(64);
+      storage.setSecret(id, 'abc123');
+      expect(storage.getSecret(id)).toBe('abc123');
     });
 
     it('should return null for unknown id', () => {

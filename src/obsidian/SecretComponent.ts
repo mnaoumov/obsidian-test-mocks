@@ -15,11 +15,14 @@ import { BaseComponent } from './BaseComponent.ts';
 /**
  * Mock of Obsidian's `SecretComponent`, a control whose value is the id of a secret in `SecretStorage`.
  *
- * Nothing is rendered and no value is stored: {@link SecretComponent.setValue} only forwards the value to the
- * callback registered with {@link SecretComponent.onChange}.
+ * Nothing is rendered. As in Obsidian, {@link SecretComponent.setValue} does not call the change callback, and there is no `getValue`: in Obsidian the
+ * callback runs only when the user picks or clears a secret in its UI, which the mock does not render.
  */
 export class SecretComponent extends BaseComponent {
-  private _onChange: ((value: string) => unknown) | null = null;
+  /**
+   * The callback registered with {@link SecretComponent.onChange}, if any.
+   */
+  public changeCallback?: (value: string) => unknown;
 
   /**
    * Creates the secret control.
@@ -82,18 +85,19 @@ export class SecretComponent extends BaseComponent {
    * @returns This component, for chaining.
    */
   public onChange(callback: (value: string) => unknown): this {
-    this._onChange = callback;
+    this.changeCallback = callback;
     return this;
   }
 
   /**
-   * Selects a secret. The mock stores nothing and calls the {@link SecretComponent.onChange} callback, if any.
+   * Selects a secret. Obsidian only renders the choice, which the mock does not, and does not call the change
+   * callback.
    *
-   * @param value - The secret id.
+   * @param _value - The secret id.
    * @returns This component, for chaining.
    */
-  public setValue(value: string): this {
-    this._onChange?.(value);
+  public setValue(_value: string): this {
+    noop();
     return this;
   }
 }
