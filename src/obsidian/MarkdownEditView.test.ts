@@ -52,6 +52,45 @@ describe('MarkdownEditView', () => {
       editView.editor__.undo();
       expect(editView.get()).toBe('second');
     });
+
+    it('should reset an editor that has no state of its own, whatever clear says', () => {
+      const editView = createEditView();
+      editView.set('first', false);
+      editView.editor__.undo();
+      expect(editView.get()).toBe('first');
+    });
+
+    it('should change only what differs, leaving a cursor outside it where it was', () => {
+      const editView = createEditView();
+      editView.set('hello world', true);
+      editView.editor__.setCursor({ ch: 2, line: 0 });
+
+      editView.set('hello brave world', false);
+
+      expect(editView.get()).toBe('hello brave world');
+      expect(editView.editor__.getCursor()).toEqual({ ch: 2, line: 0 });
+    });
+
+    it('should record no change when the text is identical', () => {
+      const editView = createEditView();
+      editView.set('a', true);
+      editView.editor__.replaceRange('b', { ch: 1, line: 0 });
+
+      editView.set('ab', false);
+      editView.editor__.undo();
+
+      expect(editView.get()).toBe('a');
+    });
+
+    it('should diff rather than reset once clear has given the editor a state', () => {
+      const editView = createEditView();
+      editView.clear();
+
+      editView.set('fresh', false);
+      editView.editor__.undo();
+
+      expect(editView.get()).toBe('');
+    });
   });
 
   describe('clear', () => {

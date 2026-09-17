@@ -12,6 +12,7 @@ import type {
 import type { MarkdownView } from './MarkdownView.ts';
 import type { TFile } from './TFile.ts';
 
+import { setMarkdownEditorText } from '../internal/markdown-editor-set.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
@@ -49,6 +50,10 @@ export class MarkdownEditView {
   public get file(): TFile {
     return ensureNonNullable(this.view.file);
   }
+
+  // Obsidian's `cmInit`: false until the edit view has been given an editor state of its own, which is what makes
+  // its first `set` reset rather than diff, whatever `clear` says.
+  private isEditorInitialized = false;
 
   private scroll = 0;
 
@@ -112,6 +117,7 @@ export class MarkdownEditView {
    */
   public clear(): void {
     this.editor__.resetState__('');
+    this.isEditorInitialized = true;
   }
 
   /**
@@ -156,14 +162,16 @@ export class MarkdownEditView {
    *
    * @param data - The new text.
    * @param clear - Whether to reset editor state, as when a different file is loaded: the undo and redo history is
-   * dropped and the cursor moves to the start. Otherwise the text is set with {@link Editor.setValue}, as a change
-   * that undo can revert.
+   * dropped and the cursor moves to the start. An edit view that has never been given a state of its own resets
+   * either way, as Obsidian's does. Otherwise only the lines that differ are changed, as one change that undo can
+   * revert and that the selection is mapped through; identical text is no change at all.
    */
   public set(data: string, clear: boolean): void {
-    if (clear) {
+    if (clear || !this.isEditorInitialized) {
       this.editor__.resetState__(data);
+      this.isEditorInitialized = true;
     } else {
-      this.editor__.setValue(data);
+      setMarkdownEditorText(this.editor__, data);
     }
   }
 }
