@@ -1,3 +1,9 @@
+/**
+ * @file
+ *
+ * Mock of Obsidian's `FileManager`, which creates, renames and deletes files on the vault's behalf.
+ */
+
 import type {
   DataWriteOptions as DataWriteOptionsOriginal,
   FileManager as FileManagerOriginal
@@ -17,29 +23,73 @@ import { ensureNonNullable } from '../internal/type-guards.ts';
 import { parseYaml } from './functions/parseYaml.ts';
 import { stringifyYaml } from './functions/stringifyYaml.ts';
 
+/**
+ * Mock of Obsidian's `FileManager`.
+ *
+ * Every operation goes straight to the mock `app.vault`: no user preference is consulted and no prompt is shown.
+ */
 export class FileManager {
+  /**
+   * Creates a file manager bound to an app. Use {@link FileManager.create__} from tests.
+   *
+   * @param app - The app whose vault the manager operates on.
+   */
   protected constructor(private readonly app: App) {
     const self = strictProxy(this);
     self.constructor__(app);
     return self;
   }
 
+  /**
+   * Mock-only factory: creates a file manager, spyable via `vi.spyOn(FileManager, 'create__')`.
+   *
+   * @param app - The app whose vault the manager operates on.
+   * @returns The new file manager.
+   */
   public static create__(app: App): FileManager {
     return new FileManager(app);
   }
 
+  /**
+   * Mock-only: views a value typed as Obsidian's `FileManager` as this mock.
+   *
+   * @param value - The value typed as the original `FileManager`.
+   * @returns The same object, typed as the mock.
+   */
   public static fromOriginalType__(value: FileManagerOriginal): FileManager {
     return strictProxy(value, FileManager);
   }
 
+  /**
+   * Mock-only: views this mock as Obsidian's `FileManager` type.
+   *
+   * @returns The same object, typed as the original `FileManager`.
+   */
   public asOriginalType__(): FileManagerOriginal {
     return strictProxy<FileManagerOriginal>(this);
   }
 
+  /**
+   * Mock-only construction hook, called at the end of the constructor; a no-op meant for
+   * `vi.spyOn(FileManager.prototype, 'constructor__')`.
+   *
+   * @param _app - The app the manager was created with.
+   */
   public constructor__(_app: App): void {
     noop();
   }
 
+  /**
+   * Generates a Markdown link to a file based on the user's preferences.
+   *
+   * The mock ignores preferences and the source path: it always emits a wikilink to the file's basename.
+   *
+   * @param file - The file to link to.
+   * @param _sourcePath - The path of the note the link is stored in; ignored by the mock.
+   * @param subpath - A heading or block subpath, appended after `#` when given.
+   * @param alias - The display text, appended after `|` when non-empty.
+   * @returns The wikilink, such as `[[note#heading|alias]]`.
+   */
   public generateMarkdownLink(file: TFile, _sourcePath: string, subpath?: string, alias?: string): string {
     let link = file.basename;
     if (subpath) {
@@ -48,11 +98,30 @@ export class FileManager {
     return alias ? `[[${link}|${alias}]]` : `[[${link}]]`;
   }
 
+  /**
+   * Resolves a unique path for an attachment being saved, according to the user's attachment settings.
+   *
+   * The mock neither applies settings nor deduplicates: it returns `filename` unchanged.
+   *
+   * @param filename - The name of the attachment being saved.
+   * @param _sourcePath - The path of the note the attachment belongs to; ignored by the mock.
+   * @returns The attachment path, which in the mock is `filename` itself.
+   */
   public async getAvailablePathForAttachment(filename: string, _sourcePath?: string): Promise<string> {
     await noopAsync();
     return filename;
   }
 
+  /**
+   * Gets the folder new files should be created in, given the user's preferences.
+   *
+   * The mock always behaves like the "same folder as current file" preference: it returns the folder containing
+   * `sourcePath` when that folder exists in the vault, and the vault root otherwise.
+   *
+   * @param sourcePath - The path of the currently open file, or an empty string when there is none.
+   * @param _newFilePath - The path of the file about to be created; ignored by the mock.
+   * @returns The folder to create the new file in.
+   */
   public getNewFileParent(sourcePath: string, _newFilePath?: string): TFolder {
     const lastSlash = sourcePath.lastIndexOf('/');
     if (lastSlash > 0) {
@@ -65,6 +134,17 @@ export class FileManager {
     return this.app.vault.getRoot();
   }
 
+  /**
+   * Atomically reads, modifies and saves a note's frontmatter.
+   *
+   * The mock reads the note from the vault, parses its leading `---` block as YAML (an empty object when there is
+   * none), lets `$function` mutate that object, and writes the note back with the re-serialized frontmatter
+   * followed by the original body.
+   *
+   * @param file - The Markdown file to modify.
+   * @param $function - A callback that mutates the frontmatter object synchronously.
+   * @param options - Write options passed on to `vault.modify`.
+   */
   public async processFrontMatter(file: TFile, $function: (frontmatter: Record<string, unknown>) => void, options?: DataWriteOptionsOriginal): Promise<void> {
     const content = await this.app.vault.read(file);
     let frontmatter: Record<string, unknown> = {};
@@ -87,14 +167,37 @@ export class FileManager {
     await this.app.vault.modify(file, newContent, options);
   }
 
+  /**
+   * Asks the user to confirm deleting a file or folder, and deletes it if they do.
+   *
+   * The mock shows no prompt: it trashes the file to the system trash right away.
+   *
+   * @param file - The file or folder to delete.
+   */
   public async promptForDeletion(file: TAbstractFile): Promise<void> {
     await this.app.vault.trash(file, true);
   }
 
+  /**
+   * Renames or moves a file, updating links to it according to the user's preferences.
+   *
+   * The mock delegates to `vault.rename` and does not update any links.
+   *
+   * @param file - The file or folder to rename.
+   * @param newPath - The new vault path.
+   */
   public async renameFile(file: TAbstractFile, newPath: string): Promise<void> {
     await this.app.vault.rename(file, newPath);
   }
 
+  /**
+   * Removes a file or folder according to the user's trash preference (the vault's `.trash` folder or the system
+   * trash).
+   *
+   * The mock always uses the system trash, via `vault.trash`.
+   *
+   * @param file - The file or folder to remove.
+   */
   public async trashFile(file: TAbstractFile): Promise<void> {
     await this.app.vault.trash(file, true);
   }

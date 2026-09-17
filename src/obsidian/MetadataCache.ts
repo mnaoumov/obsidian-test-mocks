@@ -1,3 +1,9 @@
+/**
+ * @file
+ *
+ * Mock of Obsidian's `MetadataCache`, which indexes each note's links, headings, tags and frontmatter.
+ */
+
 import type {
   CachedMetadata as CachedMetadataOriginal,
   MetadataCache as MetadataCacheOriginal
@@ -17,14 +23,52 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
 import { TFile as TFileClass } from './TFile.ts';
 
+/**
+ * Mock of Obsidian's `MetadataCache`.
+ *
+ * It indexes Markdown files synchronously whenever the vault fires `create` or `modify`: the content is parsed by
+ * the mock's own Markdown parser, the link graph is rebuilt for that file and `changed` is triggered. It fires no
+ * `deleted`, `resolve` or `resolved` events, and does not react to renames or deletions.
+ */
 export class MetadataCache extends Events {
+  /**
+   * The app the cache belongs to.
+   */
   public app: App;
+
+  /**
+   * Mock-only: the parsed metadata of each indexed file, keyed by file path; what {@link MetadataCache.getCache}
+   * and {@link MetadataCache.getFileCache} read.
+   */
   public cache__ = new Map<string, CachedMetadataOriginal>();
+
+  /**
+   * The content hash, modification time and size recorded for each indexed file, keyed by file path.
+   */
   public fileCache: Record<string, FileCacheEntry> = {};
+
+  /**
+   * The parsed metadata keyed by content hash, so files with identical content share one entry.
+   */
   public metadataCache: Record<string, CachedMetadataOriginal> = {};
+
+  /**
+   * The resolved links: maps each source file path to the destination file paths it links to, with link counts.
+   */
   public resolvedLinks: Record<string, Record<string, number>> = {};
+
+  /**
+   * The unresolved links: maps each source file path to the link paths that match no file, with link counts.
+   */
   public unresolvedLinks: Record<string, Record<string, number>> = {};
 
+  /**
+   * Creates a metadata cache that indexes a vault's files as they are created or modified. Use
+   * {@link MetadataCache.create2__} from tests.
+   *
+   * @param app - The app the cache belongs to.
+   * @param vault - The vault whose `create` and `modify` events trigger indexing.
+   */
   protected constructor(app: App, vault: Vault) {
     super();
     this.app = app;
@@ -39,14 +83,33 @@ export class MetadataCache extends Events {
     return self;
   }
 
+  /**
+   * Mock-only factory: creates a metadata cache, spyable via `vi.spyOn(MetadataCache, 'create2__')`. The subclass
+   * variant of {@link Events.create__}.
+   *
+   * @param app - The app the cache belongs to.
+   * @param vault - The vault to index.
+   * @returns The new metadata cache.
+   */
   public static create2__(app: App, vault: Vault): MetadataCache {
     return new MetadataCache(app, vault);
   }
 
+  /**
+   * Mock-only: views a value typed as Obsidian's `MetadataCache` as this mock.
+   *
+   * @param value - The value typed as the original `MetadataCache`.
+   * @returns The same object, typed as the mock.
+   */
   public static fromOriginalType2__(value: MetadataCacheOriginal): MetadataCache {
     return strictProxy(value, MetadataCache);
   }
 
+  /**
+   * Mock-only: views this mock as Obsidian's `MetadataCache` type.
+   *
+   * @returns The same object, typed as the original `MetadataCache`.
+   */
   public asOriginalType2__(): MetadataCacheOriginal {
     return strictProxy<MetadataCacheOriginal>(this);
   }
@@ -63,22 +126,61 @@ export class MetadataCache extends Events {
     return parseMarkdownContent(content);
   }
 
+  /**
+   * Mock-only construction hook, called at the end of the constructor; a no-op meant for
+   * `vi.spyOn(MetadataCache.prototype, 'constructor2__')`.
+   *
+   * @param _app - The app the cache was created with.
+   * @param _vault - The vault the cache was created with.
+   */
   public constructor2__(_app: App, _vault: Vault): void {
     noop();
   }
 
+  /**
+   * Generates the linktext for a file: its name when that is unique in the vault, its full path otherwise.
+   *
+   * The mock never checks uniqueness or uses the full path: it always returns the file name.
+   *
+   * @param file - The file to link to.
+   * @param _sourcePath - The path of the note the link is in; ignored by the mock.
+   * @param omitMdExtension - Whether to drop the `.md` extension from a Markdown file's name.
+   * @returns The file's basename for a Markdown file when `omitMdExtension` is set, and its name otherwise.
+   */
   public fileToLinktext(file: TFile, _sourcePath: string, omitMdExtension?: boolean): string {
     return omitMdExtension && file.extension === 'md' ? file.basename : file.name;
   }
 
+  /**
+   * Gets the cached metadata of a file by path.
+   *
+   * @param path - The file's vault path.
+   * @returns The file's metadata, or `null` when it has not been indexed.
+   */
   public getCache(path: string): CachedMetadataOriginal | null {
     return this.cache__.get(path) ?? null;
   }
 
+  /**
+   * Gets the cached metadata of a file.
+   *
+   * @param file - The file to look up.
+   * @returns The file's metadata, or `null` when it has not been indexed.
+   */
   public getFileCache(file: TFile): CachedMetadataOriginal | null {
     return this.cache__.get(file.path) ?? null;
   }
 
+  /**
+   * Gets the best-matching file for a linkpath.
+   *
+   * The mock tries, in order: a file at exactly `linkpath`, a file at `linkpath` plus `.md`, then the first vault
+   * file whose basename or name equals `linkpath`. It does not prefer files near the source path.
+   *
+   * @param linkpath - The path part of a link, without any `#` subpath.
+   * @param _sourcePath - The path of the note the link is in; ignored by the mock.
+   * @returns The matching file, or `null` when none matches.
+   */
   // eslint-disable-next-line unicorn/name-replacements -- `getFirstLinkpathDest` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
   public getFirstLinkpathDest(linkpath: string, _sourcePath: string): null | TFile {
     const found = this.app.vault.getFileByPath(linkpath);
@@ -184,6 +286,9 @@ const HEX_RADIX = 16;
 /**
  * Deterministic djb2-style hash of file content, used to key `metadataCache`.
  * Uses modular arithmetic (no bitwise ops) to stay within a safe integer.
+ *
+ * @param content - The file content to hash.
+ * @returns The hash, as a hexadecimal string.
  */
 function hashContent(content: string): string {
   let hash = HASH_INITIAL;
