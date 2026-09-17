@@ -117,20 +117,24 @@ describe('HTMLElement.prototype extensions', () => {
   });
 
   describe('on / off', () => {
-    it('should register and invoke a delegated listener', () => {
+    it('should register and invoke a delegated listener for a matching target', () => {
       const el = document.createElement('div');
+      const span = el.createSpan();
       const listener = vi.fn();
       on.call(el, 'click', 'span', listener);
       el.dispatchEvent(new Event('click'));
-      expect(listener).toHaveBeenCalledOnce();
+      expect(listener).not.toHaveBeenCalled();
+      span.dispatchEvent(new Event('click', { bubbles: true }));
+      expect(listener).toHaveBeenCalledExactlyOnceWith(expect.any(Event), span);
     });
 
     it('should unregister a delegated listener', () => {
       const el = document.createElement('div');
+      const span = el.createSpan();
       const listener = vi.fn();
       on.call(el, 'click', 'span', listener);
       off.call(el, 'click', 'span', listener);
-      el.dispatchEvent(new Event('click'));
+      span.dispatchEvent(new Event('click', { bubbles: true }));
       expect(listener).not.toHaveBeenCalled();
     });
   });

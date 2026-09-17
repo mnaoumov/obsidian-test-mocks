@@ -4,6 +4,8 @@
  * Mocks of the lookup, visibility, style and event helpers Obsidian adds to `HTMLElement.prototype`.
  */
 
+import type { DelegatedListener } from '../internal/delegated-event-registry.ts';
+
 import {
   delegatedOff,
   delegatedOn
@@ -59,42 +61,42 @@ export function isShown(this: HTMLElement): boolean {
 }
 
 /**
- * Removes a delegated event listener registered with {@link on}.
+ * Removes a delegated event listener registered with {@link on}. As in Obsidian, every registration whose selector,
+ * listener and options are all identical to the ones given is removed.
  *
  * @param type - The event type the listener was registered for.
- * @param _selector - The selector the listener was registered with. Ignored by the mock, which looks the listener
- * up by event type and listener alone.
+ * @param selector - The selector the listener was registered with.
  * @param listener - The listener to remove.
- * @param options - The options the listener was registered with, passed on to `removeEventListener`.
+ * @param options - The options the listener was registered with, compared by identity.
  */
 export function off(
   this: HTMLElement,
   type: string,
-  _selector: string,
+  selector: string,
   listener: unknown,
   options?: AddEventListenerOptions | boolean
 ): void {
-  delegatedOff(this, type, listener, options);
+  delegatedOff(this, type, selector, listener, options);
 }
 
 /**
- * Adds a delegated event listener: Obsidian calls it only for events whose target matches `selector`, passing the
- * matching element as `delegateTarget`. The mock ignores the selector and calls the listener for every event, with
- * the event target as `delegateTarget`.
+ * Adds a delegated event listener, as Obsidian does: it is called only for events whose target, or an ancestor of
+ * it up to this element, matches `selector`, with that matching element as `delegateTarget`. The registration is
+ * kept in `_EVENTS`.
  *
  * @param type - The event type to listen for.
- * @param _selector - The CSS selector events are filtered by. Ignored by the mock.
+ * @param selector - The CSS selector events are filtered by.
  * @param listener - The listener to call, with the element as `this`.
  * @param options - Standard `addEventListener` options.
  */
 export function on(
   this: HTMLElement,
   type: string,
-  _selector: string,
-  listener: (this: HTMLElement, event: Event, delegateTarget: HTMLElement) => unknown,
+  selector: string,
+  listener: DelegatedListener<HTMLElement>,
   options?: AddEventListenerOptions | boolean
 ): void {
-  delegatedOn(this, type, listener, options);
+  delegatedOn(this, type, selector, listener, options);
 }
 
 /**

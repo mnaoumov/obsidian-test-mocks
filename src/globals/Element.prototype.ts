@@ -113,21 +113,18 @@ export function isActiveElement(this: Element): boolean {
 }
 
 /**
- * Walks up the ancestors to find the nearest one matching a selector. The element itself is not checked.
+ * Finds the nearest element matching a selector, as Obsidian does: the element itself is checked first, then each
+ * ancestor in turn.
  *
  * @param selector - The CSS selector to match.
- * @param lastParent - An ancestor to stop at; it and anything above it are not checked.
- * @returns The nearest matching ancestor, or `null` when none matches.
+ * @param lastParent - An ancestor to stop at; it is still checked, but nothing above it is.
+ * @returns The element itself or the nearest matching ancestor, or `null` when none matches.
  */
 export function matchParent(this: Element, selector: string, lastParent?: Element): Element | null {
-  let current = this.parentElement;
-  while (current && current !== lastParent) {
-    if (current.matches(selector)) {
-      return current;
-    }
-    current = current.parentElement;
+  if (this.matches(selector)) {
+    return this;
   }
-  return null;
+  return this === lastParent || !this.parentElement ? null : matchParent.call(this.parentElement, selector, lastParent);
 }
 
 /**

@@ -40,6 +40,18 @@ export interface CoordsLeftTop {
   top: number;
 }
 
+/**
+ * A delegated listener registration, as Obsidian keeps it in an element's or document's `_EVENTS` record: the
+ * selector and listener it was registered with, its options, and the wrapper actually added with
+ * `addEventListener`.
+ */
+export interface EventListenerInfo {
+  callback: EventListener;
+  listener: unknown;
+  options?: AddEventListenerOptions | boolean | undefined;
+  selector: string;
+}
+
 /* eslint-disable unicorn/name-replacements -- `ctx` / `e` / `fn` are the member names on Obsidian's own `EventRef`, which `offref` and every consumer read by name. */
 /**
  * A registered event handler as Obsidian stores it in `Events._`, and the shape of the `EventRef` returned for it:

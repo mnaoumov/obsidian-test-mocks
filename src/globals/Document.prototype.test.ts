@@ -17,18 +17,21 @@ describe('Document.prototype extensions', () => {
   });
 
   describe('on / off', () => {
-    it('should register and invoke a delegated event listener', () => {
+    it('should register and invoke a delegated event listener for a matching target', () => {
       const listener = vi.fn();
+      const div = document.body.createDiv();
       on.call(document, 'click', 'div', listener);
-      document.dispatchEvent(new Event('click'));
-      expect(listener).toHaveBeenCalledOnce();
+      div.dispatchEvent(new Event('click', { bubbles: true }));
+      expect(listener).toHaveBeenCalledExactlyOnceWith(expect.any(Event), div);
+      off.call(document, 'click', 'div', listener);
     });
 
     it('should unregister a delegated event listener', () => {
       const listener = vi.fn();
+      const div = document.body.createDiv();
       on.call(document, 'click', 'div', listener);
       off.call(document, 'click', 'div', listener);
-      document.dispatchEvent(new Event('click'));
+      div.dispatchEvent(new Event('click', { bubbles: true }));
       expect(listener).not.toHaveBeenCalled();
     });
 
