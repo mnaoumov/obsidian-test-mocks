@@ -117,13 +117,12 @@ export function onClickEvent(
  * Calls a listener when the element is inserted into the DOM. The mock observes nothing: it calls the listener once,
  * immediately.
  *
- * @param _this - The element to watch. Unused by the mock.
  * @param listener - The callback to call when the element is inserted.
  * @param _once - Whether the listener fires only once. Unused by the mock.
  * @returns A function that removes the handler; a no-op in the mock.
  */
 export function onNodeInserted(
-  _this: HTMLElement,
+  this: HTMLElement,
   listener: () => unknown,
   _once?: boolean
 ): () => void {
@@ -136,12 +135,11 @@ export function onNodeInserted(
  * Calls a listener when the element is migrated to another window. The mock never calls it, since tests have a
  * single window.
  *
- * @param _this - The element to watch. Unused by the mock.
  * @param _listener - The callback to call with the new window. Never called by the mock.
  * @returns A function that removes the handler; a no-op in the mock.
  */
 export function onWindowMigrated(
-  _this: HTMLElement,
+  this: HTMLElement,
   _listener: (win: Window) => unknown
 ): () => void {
   return noop;

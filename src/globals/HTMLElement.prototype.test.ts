@@ -149,13 +149,20 @@ describe('HTMLElement.prototype extensions', () => {
     it('should invoke the listener immediately', () => {
       const el = document.createElement('div');
       const listener = vi.fn();
-      onNodeInserted(el, listener);
+      onNodeInserted.call(el, listener);
+      expect(listener).toHaveBeenCalledOnce();
+    });
+
+    it('should invoke the listener when called through the installed prototype', () => {
+      const el = document.createElement('div');
+      const listener = vi.fn();
+      el.onNodeInserted(listener);
       expect(listener).toHaveBeenCalledOnce();
     });
 
     it('should return a cleanup function that does not throw', () => {
       const el = document.createElement('div');
-      const cleanup = onNodeInserted(el, vi.fn());
+      const cleanup = onNodeInserted.call(el, vi.fn());
       expect(typeof cleanup).toBe('function');
       cleanup();
       expect(true).toBe(true);
@@ -165,10 +172,18 @@ describe('HTMLElement.prototype extensions', () => {
   describe('onWindowMigrated', () => {
     it('should return a cleanup function that does not throw', () => {
       const el = document.createElement('div');
-      const cleanup = onWindowMigrated(el, vi.fn());
+      const cleanup = onWindowMigrated.call(el, vi.fn());
       expect(typeof cleanup).toBe('function');
       cleanup();
       expect(true).toBe(true);
+    });
+
+    it('should not invoke the listener when called through the installed prototype', () => {
+      const el = document.createElement('div');
+      const listener = vi.fn();
+      const cleanup = el.onWindowMigrated(listener);
+      expect(typeof cleanup).toBe('function');
+      expect(listener).not.toHaveBeenCalled();
     });
   });
 
