@@ -7,12 +7,21 @@
  * parent from the placeholder an unattached item starts with, and a `WorkspaceContainer` from any other item. Both
  * classes sit below `WorkspaceItem` in the inheritance chain, so an `instanceof` would be an import cycle that fails
  * at module evaluation. Registering them here instead keeps the check in one place.
+ *
+ * The view type a leaf showing nothing reports lives here for the same reason: `WorkspaceLeaf` answers with it and
+ * `Workspace` compares against it, and neither may import the other.
  */
 
 import {
   bypassStrictProxy,
   strictProxy
 } from './strict-proxy.ts';
+
+/**
+ * The view type Obsidian reports for a leaf showing its empty view — the "New tab" page. A mock leaf holds `null`
+ * where Obsidian holds `WorkspaceLeaf._empty`, so this is what such a leaf's view type reads as.
+ */
+export const EMPTY_VIEW_TYPE = 'empty';
 
 const containers = new WeakSet();
 const parentPlaceholders = new WeakSet();

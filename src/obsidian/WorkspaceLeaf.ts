@@ -23,7 +23,10 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { createParentPlaceholder } from '../internal/workspace-layout.ts';
+import {
+  createParentPlaceholder,
+  EMPTY_VIEW_TYPE
+} from '../internal/workspace-layout.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 // Held on an object so the counter can advance from inside the constructor without assigning to a module-level binding (`unicorn/no-top-level-assignment-in-function`).
@@ -147,6 +150,20 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   /**
+   * Whether the leaf may be navigated away from, which is what `Workspace.getUnpinnedLeaf` — and so `getLeaf(false)` —
+   * uses to decide whether the leaf can be reused. As in Obsidian, that is its view's `navigation` flag and the leaf
+   * not being pinned.
+   *
+   * A mock leaf holds no view where Obsidian holds its empty view, whose `navigation` is `true`, so a leaf with no
+   * view navigates.
+   *
+   * @returns Whether the leaf can navigate.
+   */
+  public canNavigate(): boolean {
+    return (this.view ? this.view.navigation : true) && !this.pinned;
+  }
+
+  /**
    * Mock-only construction hook, called at the end of the constructor; a no-op meant for
    * `vi.spyOn(WorkspaceLeaf.prototype, 'constructor3__')`.
    *
@@ -209,6 +226,20 @@ export class WorkspaceLeaf extends WorkspaceItem {
    */
   public getViewState(): ViewStateOriginal {
     return { ...this.viewState };
+  }
+
+  /**
+   * Mock-only: the view type the leaf answers with, which is what `Workspace.getLeavesOfType` and
+   * `Workspace.ensureSideLeaf` match on.
+   *
+   * Obsidian reads `leaf.view.getViewType()`, because `setViewState` builds the view. The mock's `setViewState`
+   * stores the state without building one, so the open view's type wins when there is a view and the stored view
+   * state's type stands in otherwise — falling back to `'empty'`, Obsidian's own answer for a leaf showing nothing.
+   *
+   * @returns The view type.
+   */
+  public getViewType__(): string {
+    return this.view ? this.view.getViewType() : this.viewState.type || EMPTY_VIEW_TYPE;
   }
 
   /**

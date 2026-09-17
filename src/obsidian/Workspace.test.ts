@@ -13,7 +13,9 @@ import {
 } from 'vitest';
 
 import { castTo } from '../internal/castTo.ts';
+import { noopAsync } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { View } from './View.ts';
 import { Workspace } from './Workspace.ts';
@@ -25,7 +27,13 @@ import { WorkspaceTabs } from './WorkspaceTabs.ts';
 import { WorkspaceWindow } from './WorkspaceWindow.ts';
 
 const EXPECTED_LEAF_COUNT = 2;
+const THREE_LEAVES = 3;
+const OUT_OF_RANGE_INDEX = 10;
 const EPHEMERAL_LINE = 3;
+const FULL_DIMENSION = 100;
+const HALF_DIMENSION = FULL_DIMENSION / 2;
+const THIRD_DIMENSION = FULL_DIMENSION / 3;
+const QUARTER_DIMENSION = HALF_DIMENSION / 2;
 
 class BareWorkspaceItem extends WorkspaceItem {
   public constructor() {
@@ -51,6 +59,22 @@ class OtherView extends View {
   public override getViewType(): string {
     return 'OtherView';
   }
+}
+
+/**
+ * Adds leaves to the root tab group without activating any of them, which every leaf-creating `Workspace` method
+ * now does.
+ */
+function addInactiveLeaves(app: App, count: number): WorkspaceLeaf[] {
+  const group = WorkspaceTabs.create2__(app.workspace);
+  app.workspace.rootSplit.insertChild(-1, group);
+  const leaves: WorkspaceLeaf[] = [];
+  for (let index = 0; index < count; index++) {
+    const leaf = WorkspaceLeaf.create2__(app);
+    group.insertChild(-1, leaf);
+    leaves.push(leaf);
+  }
+  return leaves;
 }
 
 function collectAllLeaves(app: App): WorkspaceLeaf[] {
@@ -110,6 +134,38 @@ describe('Workspace', () => {
       expect(newLeaf).not.toBe(existingLeaf);
     });
 
+    it('should make the new leaf active', () => {
+      const app = App.createConfigured__();
+      const existingLeaf = app.workspace.getLeaf(true);
+      const newLeaf = app.workspace.createLeafBySplit(existingLeaf);
+      expect(app.workspace.activeLeaf).toBe(newLeaf);
+    });
+
+    it('should halve the split share between the two when the direction already runs that way', () => {
+      const app = App.createConfigured__();
+      const existingLeaf = app.workspace.getLeaf(true);
+      const group = castTo<WorkspaceTabs>(existingLeaf.parent);
+      group.setDimension(HALF_DIMENSION);
+
+      const newLeaf = app.workspace.createLeafBySplit(existingLeaf, 'vertical');
+
+      expect(group.dimension).toBe(QUARTER_DIMENSION);
+      expect(castTo<WorkspaceTabs>(newLeaf.parent).dimension).toBe(QUARTER_DIMENSION);
+    });
+
+    it('should carry the split share onto the nested split of the other direction', () => {
+      const app = App.createConfigured__();
+      const existingLeaf = app.workspace.getLeaf(true);
+      const group = castTo<WorkspaceTabs>(existingLeaf.parent);
+      group.setDimension(HALF_DIMENSION);
+
+      app.workspace.createLeafBySplit(existingLeaf, 'horizontal');
+
+      const split = castTo<WorkspaceSplit>(app.workspace.rootSplit.children.at(0));
+      expect(split.dimension).toBe(HALF_DIMENSION);
+      expect(group.dimension).toBeNull();
+    });
+
     it('should put the new leaf in its own tab group after the leaf\'s when the split runs in that direction', () => {
       const app = App.createConfigured__();
       const existingLeaf = app.workspace.getLeaf(true);
@@ -158,11 +214,79 @@ describe('Workspace', () => {
       expect(newLeaf).toBeInstanceOf(WorkspaceLeaf);
     });
 
+    it('should make the new leaf active', () => {
+      const app = App.createConfigured__();
+      const newLeaf = app.workspace.createLeafInParent(app.workspace.rootSplit.asOriginalType2__(), 0);
+      expect(app.workspace.activeLeaf).toBe(newLeaf);
+    });
+
+    it('should give the leaf an equal share of a parent that already holds children', () => {
+      const app = App.createConfigured__();
+      const root = app.workspace.rootSplit.asOriginalType2__();
+      const first = app.workspace.createLeafInParent(root, 0);
+      const second = app.workspace.createLeafInParent(root, 1);
+      const third = app.workspace.createLeafInParent(root, EXPECTED_LEAF_COUNT);
+      const fourth = app.workspace.createLeafInParent(root, THREE_LEAVES);
+
+      // An empty parent sets no share at all, and the full 100 a one-child parent computes is out of the open range,
+      // so `setDimension` stores it as null - both exactly as in Obsidian.
+      expect(first.dimension).toBeNull();
+      expect(second.dimension).toBeNull();
+      expect(third.dimension).toBe(HALF_DIMENSION);
+      expect(fourth.dimension).toBe(THIRD_DIMENSION);
+    });
+
     it('should insert the leaf into the parent at the index', () => {
       const app = App.createConfigured__();
       const second = app.workspace.createLeafInParent(app.workspace.rootSplit.asOriginalType2__(), 0);
       const first = app.workspace.createLeafInParent(app.workspace.rootSplit.asOriginalType2__(), 0);
       expect(app.workspace.rootSplit.children).toEqual([first, second]);
+    });
+  });
+
+  describe('createLeafInTabGroup()', () => {
+    it('should make the new leaf active when focusNewTab is on, which is the default', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.createLeafInTabGroup();
+      expect(app.workspace.activeLeaf).toBe(leaf);
+    });
+
+    it('should leave the new leaf inactive when focusNewTab is off', () => {
+      const app = App.createConfigured__();
+      const active = app.workspace.getLeaf(true);
+      app.vault.setConfig('focusNewTab', false);
+
+      const leaf = app.workspace.createLeafInTabGroup();
+
+      expect(leaf).not.toBe(active);
+      expect(app.workspace.activeLeaf).toBe(active);
+    });
+
+    it('should create the leaf in the given group', () => {
+      const app = App.createConfigured__();
+      const group = WorkspaceTabs.create2__(app.workspace);
+      app.workspace.rootSplit.insertChild(-1, group);
+
+      const leaf = app.workspace.createLeafInTabGroup(group.asOriginalType3__());
+
+      expect(group.children).toEqual([leaf]);
+    });
+
+    it('should fall back to the root tab group when no leaf was ever active', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.createLeafInTabGroup();
+      expect(leaf.parent).toBeInstanceOf(WorkspaceTabs);
+      expect(app.workspace.rootSplit.children).toEqual([leaf.parent]);
+    });
+
+    it('should reuse the root tab group the root split already holds', () => {
+      const app = App.createConfigured__();
+      const group = WorkspaceTabs.create2__(app.workspace);
+      app.workspace.rootSplit.insertChild(-1, group);
+
+      const leaf = app.workspace.createLeafInTabGroup();
+
+      expect(leaf.parent).toBe(group);
     });
   });
 
@@ -187,12 +311,21 @@ describe('Workspace', () => {
   });
 
   describe('duplicateLeaf()', () => {
-    it('should create a new leaf', async () => {
+    it('should create a new leaf for a pane type', async () => {
       const app = App.createConfigured__();
       const leaf = app.workspace.getLeaf(true);
-      const dup = await app.workspace.duplicateLeaf(leaf);
+      const dup = await app.workspace.duplicateLeaf(leaf, 'tab');
       expect(dup).toBeInstanceOf(WorkspaceLeaf);
       expect(dup).not.toBe(leaf);
+    });
+
+    it('should duplicate into the leaf itself when no pane type is given, as Obsidian does', async () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      // With no pane type Obsidian asks `getLeaf(undefined)`, which is `getUnpinnedLeaf()` - and that hands back the
+      // active leaf whenever it can navigate.
+      const dup = await app.workspace.duplicateLeaf(leaf);
+      expect(dup).toBe(leaf);
     });
 
     it('should copy the view state and the ephemeral state', async () => {
@@ -408,12 +541,19 @@ describe('Workspace', () => {
       expect(leaf.getRoot()).toBe(app.workspace.rootSplit);
     });
 
-    it('should add a root tab group after a root split that holds only leaves', () => {
+    it('should hand back the active leaf for false, when it can navigate', () => {
       const app = App.createConfigured__();
-      const directLeaf = app.workspace.createLeafInParent(app.workspace.rootSplit.asOriginalType2__(), 0);
-      const leaf = app.workspace.getLeaf(false);
-      expect(app.workspace.rootSplit.children).toEqual([directLeaf, leaf.parent]);
-      expect(leaf.parent).toBeInstanceOf(WorkspaceTabs);
+      const leaf = app.workspace.getLeaf(true);
+      expect(app.workspace.getLeaf(false)).toBe(leaf);
+    });
+
+    it('should not reuse a pinned active leaf for false', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      leaf.setPinned(true);
+      const reused = app.workspace.getLeaf(false);
+      expect(reused).not.toBe(leaf);
+      expect(reused.parent).toBe(leaf.parent);
     });
 
     it('should add a tab right after the most recently active leaf in its tab group', () => {
@@ -475,6 +615,14 @@ describe('Workspace', () => {
       expect(collectAllLeaves(app)).toEqual([leaf]);
     });
 
+    it('should keep looking past leaves that do not match', () => {
+      const app = App.createConfigured__();
+      const first = app.workspace.getLeaf(true);
+      const second = app.workspace.getLeaf('tab');
+      expect(first).not.toBe(second);
+      expect(app.workspace.getLeafById(second.id__)).toBe(second);
+    });
+
     it('should return null for unknown id', () => {
       const app = App.createConfigured__();
       expect(app.workspace.getLeafById('nonexistent')).toBeNull();
@@ -502,6 +650,22 @@ describe('Workspace', () => {
       const app = App.createConfigured__();
       const leaf = await app.workspace.ensureSideLeaf('outline', 'right');
       expect(app.workspace.getLeavesOfType('outline')).toEqual([leaf]);
+    });
+
+    it('should prefer the open view\'s type over the stored view state, as Obsidian does', async () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      await leaf.setViewState({ type: 'markdown' });
+      await leaf.open(new DummyView(leaf).asOriginalType2__());
+
+      expect(app.workspace.getLeavesOfType('markdown')).toEqual([]);
+      expect(app.workspace.getLeavesOfType('DummyView')).toEqual([leaf]);
+    });
+
+    it('should report a leaf that has neither as showing the empty view', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      expect(app.workspace.getLeavesOfType('empty')).toEqual([leaf]);
     });
   });
 
@@ -543,8 +707,7 @@ describe('Workspace', () => {
 
     it('should return the first leaf when none was ever active', () => {
       const app = App.createConfigured__();
-      const leaf1 = app.workspace.getLeaf(true);
-      app.workspace.getLeaf(true);
+      const leaf1 = ensureNonNullable(addInactiveLeaves(app, EXPECTED_LEAF_COUNT).at(0));
       expect(app.workspace.getMostRecentLeaf()).toBe(leaf1);
     });
 
@@ -554,7 +717,7 @@ describe('Workspace', () => {
       const leaf2 = app.workspace.getLeaf(true);
       app.workspace.setActiveLeaf(leaf2);
       app.workspace.setActiveLeaf(leaf1);
-      app.workspace.getLeaf(true);
+      addInactiveLeaves(app, 1);
       expect(app.workspace.getMostRecentLeaf()).toBe(leaf1);
     });
 
@@ -619,6 +782,106 @@ describe('Workspace', () => {
       expect(unpinned).not.toBe(leaf);
       expect(unpinned).toBeInstanceOf(WorkspaceLeaf);
     });
+
+    it('should pick the most recently active leaf that is its group\'s current tab', () => {
+      const app = App.createConfigured__();
+      const first = app.workspace.getLeaf(true);
+      const second = app.workspace.getLeaf('tab');
+      const outsider = app.workspace.createLeafBySplit(second);
+      outsider.setPinned(true);
+
+      expect(first).not.toBe(second);
+      expect(app.workspace.getUnpinnedLeaf()).toBe(second);
+    });
+
+    it('should not activate the leaf when asked not to', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      const outsider = app.workspace.createLeafBySplit(leaf);
+      outsider.setPinned(true);
+
+      expect(app.workspace.getUnpinnedLeaf(false)).toBe(leaf);
+      expect(app.workspace.activeLeaf).toBe(outsider);
+    });
+
+    it('should consider every leaf of a stacked group, not only its current tab', () => {
+      const app = App.createConfigured__();
+      const first = app.workspace.getLeaf(true);
+      const second = app.workspace.getLeaf('tab');
+      const outsider = app.workspace.createLeafBySplit(second);
+      outsider.setPinned(true);
+      const group = castTo<WorkspaceTabs>(first.parent);
+      group.setStacked(true);
+      group.selectTabIndex(0);
+
+      expect(app.workspace.getUnpinnedLeaf(false)).toBe(second);
+    });
+  });
+
+  describe('getFocusedContainer()', () => {
+    it('should return the root split, the mock having one window', () => {
+      const app = App.createConfigured__();
+      expect(app.workspace.getFocusedContainer()).toBe(app.workspace.rootSplit);
+    });
+  });
+
+  describe('isAttached()', () => {
+    it('should answer false for no item', () => {
+      const app = App.createConfigured__();
+      expect(app.workspace.isAttached()).toBe(false);
+    });
+
+    it('should answer true for a leaf in the layout and false for one outside it', () => {
+      const app = App.createConfigured__();
+      const attached = app.workspace.getLeaf(true);
+      const loose = WorkspaceLeaf.create2__(app);
+      expect(app.workspace.isAttached(attached)).toBe(true);
+      expect(app.workspace.isAttached(loose)).toBe(false);
+    });
+
+    it('should answer true for a sidebar leaf and a popout leaf', () => {
+      const app = App.createConfigured__();
+      const side = castTo<WorkspaceLeaf>(app.workspace.getRightLeaf(false));
+      const popout = app.workspace.openPopoutLeaf();
+      expect(app.workspace.isAttached(side)).toBe(true);
+      expect(app.workspace.isAttached(popout)).toBe(true);
+    });
+  });
+
+  describe('iterateLeaves()', () => {
+    it('should stop the walk on a truthy callback', () => {
+      const app = App.createConfigured__();
+      const first = app.workspace.getLeaf(true);
+      app.workspace.getLeaf('tab');
+      const visited: WorkspaceLeaf[] = [];
+
+      const isStopped = app.workspace.iterateLeaves(app.workspace.rootSplit, (leaf) => {
+        visited.push(leaf);
+        return true;
+      });
+
+      expect(isStopped).toBe(true);
+      expect(visited).toEqual([first]);
+    });
+
+    it('should report false when the callback never stops it', () => {
+      const app = App.createConfigured__();
+      app.workspace.getLeaf(true);
+      expect(app.workspace.iterateLeaves(app.workspace.rootSplit, () => false)).toBe(false);
+    });
+
+    it('should accept several items', () => {
+      const app = App.createConfigured__();
+      const rootLeaf = app.workspace.getLeaf(true);
+      const sideLeaf = castTo<WorkspaceLeaf>(app.workspace.getRightLeaf(false));
+      const visited: WorkspaceLeaf[] = [];
+
+      app.workspace.iterateLeaves([app.workspace.rootSplit, app.workspace.rightSplit], (leaf) => {
+        visited.push(leaf);
+      });
+
+      expect(visited).toEqual([rootLeaf, sideLeaf]);
+    });
   });
 
   describe('iterateAllLeaves()', () => {
@@ -636,6 +899,22 @@ describe('Workspace', () => {
       const rightLeaf = app.workspace.getRightLeaf(false);
       const leftLeaf = app.workspace.getLeftLeaf(false);
       expect(collectAllLeaves(app)).toEqual([rootLeaf, leftLeaf, rightLeaf, popoutLeaf]);
+    });
+
+    it('should let a truthy callback stop only the part it is in', () => {
+      const app = App.createConfigured__();
+      const rootLeaf = app.workspace.getLeaf(true);
+      app.workspace.getLeaf('tab');
+      const leftLeaf = app.workspace.getLeftLeaf(false);
+      const visited: WorkspaceLeaf[] = [];
+
+      app.workspace.iterateAllLeaves((leaf) => {
+        visited.push(leaf);
+        return true;
+      });
+
+      // Obsidian starts one walk per part and discards all four answers, so the sidebar is still visited.
+      expect(visited).toEqual([rootLeaf, leftLeaf]);
     });
   });
 
@@ -678,6 +957,16 @@ describe('Workspace', () => {
       expect(leaf.getContainer()).toBe(win);
       expect(app.workspace.floatingSplit.children).toEqual([win]);
       expect(collectRootLeaves(app)).toEqual([]);
+    });
+
+    it('should give up the leaf\'s share of the split it came from', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      leaf.setDimension(HALF_DIMENSION);
+
+      app.workspace.moveLeafToPopout(leaf);
+
+      expect(leaf.dimension).toBeNull();
     });
   });
 
@@ -785,12 +1074,25 @@ describe('Workspace', () => {
       }).not.toThrow();
     });
 
-    it('should clear activeLeaf if it matches', () => {
+    it('should leave activeLeaf pointing at the removed leaf, as Obsidian does', () => {
       const app = App.createConfigured__();
       const leaf = app.workspace.getLeaf(true);
       app.workspace.setActiveLeaf(leaf);
       app.workspace.removeLeaf__(leaf);
-      expect(app.workspace.activeLeaf).toBeNull();
+      // Obsidian clears nothing here: `updateLayout` notices the active leaf is detached and picks another one.
+      expect(app.workspace.activeLeaf).toBe(leaf);
+    });
+
+    it('should let updateLayout pick another active leaf once the layout is ready', () => {
+      const app = App.createConfigured__();
+      const kept = app.workspace.getLeaf(true);
+      const removed = app.workspace.getLeaf('tab');
+      app.workspace.setLayoutReady__();
+
+      app.workspace.removeLeaf__(removed);
+      app.workspace.updateLayout();
+
+      expect(app.workspace.activeLeaf).toBe(kept);
     });
 
     it('should not clear activeLeaf if it does not match', () => {
@@ -806,9 +1108,10 @@ describe('Workspace', () => {
   describe('revealLeaf()', () => {
     it('should not make the leaf active', async () => {
       const app = App.createConfigured__();
-      const leaf = app.workspace.getLeaf(true);
-      await app.workspace.revealLeaf(leaf);
-      expect(app.workspace.activeLeaf).toBeNull();
+      const active = app.workspace.getLeaf(true);
+      const revealed = ensureNonNullable(addInactiveLeaves(app, 1).at(0));
+      await app.workspace.revealLeaf(revealed);
+      expect(app.workspace.activeLeaf).toBe(active);
     });
 
     it('should expand the collapsed sidebar the leaf is in', async () => {
@@ -862,8 +1165,9 @@ describe('Workspace', () => {
 
     it('should stamp a strictly increasing activeTime', () => {
       const app = App.createConfigured__();
-      const leaf1 = app.workspace.getLeaf(true);
-      const leaf2 = app.workspace.getLeaf(true);
+      const leaves = addInactiveLeaves(app, EXPECTED_LEAF_COUNT);
+      const leaf1 = ensureNonNullable(leaves.at(0));
+      const leaf2 = ensureNonNullable(leaves.at(1));
       expect(leaf1.activeTime).toBe(0);
       app.workspace.setActiveLeaf(leaf1);
       app.workspace.setActiveLeaf(leaf2);
@@ -871,13 +1175,83 @@ describe('Workspace', () => {
       expect(leaf2.activeTime).toBeGreaterThan(leaf1.activeTime);
     });
 
-    it('should trigger active-leaf-change event', () => {
+    it('should trigger active-leaf-change, deferred, once the layout is ready', () => {
       const app = App.createConfigured__();
-      const leaf = app.workspace.getLeaf(true);
+      app.workspace.setLayoutReady__();
+      const leaf = ensureNonNullable(addInactiveLeaves(app, 1).at(0));
       const handler = vi.fn();
       app.workspace.on('active-leaf-change', handler);
+
       app.workspace.setActiveLeaf(leaf);
+      expect(handler).not.toHaveBeenCalled();
+
+      app.workspace.requestActiveLeafEvents.run();
       expect(handler).toHaveBeenCalledWith(leaf);
+    });
+
+    it('should not trigger active-leaf-change until the layout is ready', () => {
+      const app = App.createConfigured__();
+      const leaf = ensureNonNullable(addInactiveLeaves(app, 1).at(0));
+      const handler = vi.fn();
+      app.workspace.on('active-leaf-change', handler);
+
+      app.workspace.setActiveLeaf(leaf);
+      app.workspace.requestActiveLeafEvents.run();
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should trigger file-open when the active file changed', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': '' } });
+      app.workspace.setLayoutReady__();
+      const leaf = ensureNonNullable(addInactiveLeaves(app, 1).at(0));
+      await leaf.openFile(ensureNonNullable(app.vault.getFileByPath('note.md')));
+      const handler = vi.fn();
+      app.workspace.on('file-open', handler);
+
+      app.workspace.setActiveLeaf(leaf);
+      app.workspace.requestActiveLeafEvents.run();
+
+      expect(handler).toHaveBeenCalledWith(app.vault.getFileByPath('note.md'));
+    });
+
+    it('should do nothing for a leaf that is already active', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const leaf = app.workspace.getLeaf(true);
+      app.workspace.requestActiveLeafEvents.run();
+      const handler = vi.fn();
+      app.workspace.on('active-leaf-change', handler);
+
+      const activeTime = leaf.activeTime;
+      app.workspace.setActiveLeaf(leaf);
+      app.workspace.requestActiveLeafEvents.run();
+
+      expect(leaf.activeTime).toBe(activeTime);
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should adopt a leaf outside the layout into the root tab group the root split already holds', () => {
+      const app = App.createConfigured__();
+      const placed = app.workspace.getLeaf(true);
+      const loose = WorkspaceLeaf.create2__(app);
+
+      app.workspace.setActiveLeaf(loose);
+
+      expect(loose.parent).toBe(placed.parent);
+      expect(app.workspace.activeLeaf).toBe(loose);
+    });
+
+    it('should show the leaf in its tab group', () => {
+      const app = App.createConfigured__();
+      const leaves = addInactiveLeaves(app, EXPECTED_LEAF_COUNT);
+      const second = ensureNonNullable(leaves.at(1));
+
+      app.workspace.setActiveLeaf(second);
+
+      const group = castTo<WorkspaceTabs>(second.parent);
+      expect(group.currentTab).toBe(1);
+      expect(app.workspace.activeTabGroup).toBe(group);
     });
   });
 
@@ -918,6 +1292,175 @@ describe('Workspace', () => {
       const leaf = app.workspace.getLeaf(true);
       const newLeaf = app.workspace.splitActiveLeaf();
       expect(app.workspace.rootSplit.children).toEqual([leaf.parent, newLeaf.parent]);
+    });
+  });
+
+  describe('onLayoutChange() / requestUpdateLayout() / updateLayout()', () => {
+    it('should do nothing until the layout is ready', () => {
+      const app = App.createConfigured__();
+      app.workspace.updateLayout();
+      expect(app.workspace.rootSplit.children).toEqual([]);
+    });
+
+    it('should re-populate an emptied root split, keeping the last group\'s stacking', async () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const leaf = app.workspace.getLeaf(true);
+      castTo<WorkspaceTabs>(leaf.parent).setStacked(true);
+
+      leaf.detach();
+      await noopAsync();
+
+      const group = castTo<WorkspaceTabs>(app.workspace.rootSplit.children.at(0));
+      expect(group).toBeInstanceOf(WorkspaceTabs);
+      expect(group.isStacked).toBe(true);
+      expect(collectRootLeaves(app).length).toBe(1);
+      expect(app.workspace.activeLeaf).toBe(group.children.at(0));
+    });
+
+    it('should populate and activate an empty ready workspace', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+
+      app.workspace.updateLayout();
+
+      const leaves = collectRootLeaves(app);
+      expect(leaves.length).toBe(1);
+      expect(app.workspace.activeLeaf).toBe(leaves.at(0));
+    });
+
+    it('should fall back past an active tab group that is no longer attached', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const kept = app.workspace.getLeaf(true);
+      const detached = app.workspace.createLeafBySplit(kept);
+      expect(app.workspace.activeTabGroup).toBe(detached.parent);
+
+      // Detaching the group's only leaf takes the group out of the layout with it.
+      detached.detach();
+      app.workspace.updateLayout();
+
+      expect(app.workspace.activeLeaf).toBe(kept);
+    });
+
+    it('should prefer the active tab group\'s current tab when re-picking', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const kept = app.workspace.getLeaf(true);
+      const detached = app.workspace.getLeaf('tab');
+      const other = app.workspace.createLeafBySplit(detached);
+      app.workspace.setActiveLeaf(detached);
+
+      detached.detach();
+      app.workspace.updateLayout();
+
+      expect(app.workspace.activeLeaf).toBe(kept);
+      expect(app.workspace.activeLeaf).not.toBe(other);
+    });
+
+    it('should keep activeTabGroup in step when the active leaf is still attached', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const leaf = app.workspace.getLeaf(true);
+      app.workspace.activeTabGroup = null;
+
+      app.workspace.updateLayout();
+
+      expect(app.workspace.activeTabGroup).toBe(leaf.parent);
+    });
+
+    it('should clear a link group that is down to a single leaf', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const first = app.workspace.getLeaf(true);
+      const second = app.workspace.getLeaf('tab');
+      first.setGroup('group-1');
+      second.setGroup('group-1');
+
+      second.detach();
+      app.workspace.updateLayout();
+
+      expect(first.getGroup__()).toBeNull();
+    });
+
+    it('should leave a link group with several leaves alone', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const first = app.workspace.getLeaf(true);
+      const second = app.workspace.getLeaf('tab');
+      first.setGroup('group-1');
+      second.setGroup('group-1');
+
+      app.workspace.updateLayout();
+
+      expect(first.getGroup__()).toBe('group-1');
+      expect(second.getGroup__()).toBe('group-1');
+    });
+
+    it('should trigger layout-change, debounced, once the layout is ready', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const handler = vi.fn();
+      app.workspace.on('layout-change', handler);
+
+      app.workspace.updateLayout();
+      expect(handler).not.toHaveBeenCalled();
+
+      app.workspace.requestLayoutChangeEvents.run();
+      expect(handler).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not trigger layout-change before the layout is ready', () => {
+      const app = App.createConfigured__();
+      const handler = vi.fn();
+      app.workspace.on('layout-change', handler);
+
+      app.workspace.requestLayoutChangeEvents();
+      app.workspace.requestLayoutChangeEvents.run();
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should keep activeTabGroup null for an active leaf that is not in a tab group', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const leaf = app.workspace.createLeafInParent(app.workspace.rootSplit.asOriginalType2__(), 0);
+
+      app.workspace.updateLayout();
+
+      expect(leaf.parent).toBe(app.workspace.rootSplit);
+      expect(app.workspace.activeTabGroup).toBeNull();
+    });
+
+    it('should fall back when the active tab group holds no leaf at its current tab', () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const kept = app.workspace.getLeaf(true);
+      const detached = app.workspace.getLeaf('tab');
+      const group = castTo<WorkspaceTabs>(detached.parent);
+
+      detached.detach();
+      // Obsidian clamps `currentTab` while it renders the tab headers, which the mock does not model - so the
+      // fall-through is what answers an index nothing sits at.
+      group.currentTab = OUT_OF_RANGE_INDEX;
+      app.workspace.updateLayout();
+
+      expect(app.workspace.activeLeaf).toBe(kept);
+    });
+
+    it('should coalesce every layout change before the microtask into one update', async () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const updateLayoutSpy = vi.spyOn(app.workspace, 'updateLayout');
+
+      app.workspace.onLayoutChange();
+      app.workspace.onLayoutChange();
+      app.workspace.requestUpdateLayout();
+      expect(updateLayoutSpy).not.toHaveBeenCalled();
+
+      await noopAsync();
+
+      expect(updateLayoutSpy).toHaveBeenCalledTimes(1);
     });
   });
 
