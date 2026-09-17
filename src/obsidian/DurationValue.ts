@@ -12,59 +12,28 @@ import type {
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
+import { DateValue } from './DateValue.ts';
 import { NotNullValue } from './NotNullValue.ts';
+import { moment } from './vars/moment.ts';
 
-const MILLISECONDS_IN_SECOND = 1000;
-const SECONDS_IN_MINUTE = 60;
-const MINUTES_IN_HOUR = 60;
-const HOURS_IN_DAY = 24;
 const DAYS_IN_WEEK = 7;
-const DAYS_IN_MONTH = 30;
-const DAYS_IN_YEAR = 365;
-const MILLISECONDS_IN_MINUTE = MILLISECONDS_IN_SECOND * SECONDS_IN_MINUTE;
-const MILLISECONDS_IN_HOUR = MILLISECONDS_IN_MINUTE * MINUTES_IN_HOUR;
-const MILLISECONDS_IN_DAY = MILLISECONDS_IN_HOUR * HOURS_IN_DAY;
-const MILLISECONDS_IN_MONTH = MILLISECONDS_IN_DAY * DAYS_IN_MONTH;
-const MILLISECONDS_IN_YEAR = MILLISECONDS_IN_DAY * DAYS_IN_YEAR;
-
-type DurationComponent = 'days' | 'hours' | 'minutes' | 'months' | 'seconds' | 'years';
 
 /**
- * Maps each unit token accepted by {@link DurationValue.parseFromString} to the
- * duration component it fills. Mirrors obsidian's parser: single units only, with
- * `mo`/`ms`/`hr`/`yr`/`min`/`sec` intentionally absent. Weeks fill `days` (×7).
+ * Obsidian's ISO 8601 duration pattern. It is deliberately a verbatim copy: it is unanchored, and its `T` is
+ * mandatory, so `P3D` does not match it and falls through to {@link SINGLE_UNIT_PATTERN}.
  */
-const DURATION_UNIT_COMPONENTS: Record<string, DurationComponent> = {
-  d: 'days',
-  day: 'days',
-  days: 'days',
-  h: 'hours',
-  hour: 'hours',
-  hours: 'hours',
-  m: 'minutes',
-  minute: 'minutes',
-  minutes: 'minutes',
-  month: 'months',
-  months: 'months',
-  s: 'seconds',
-  second: 'seconds',
-  seconds: 'seconds',
-  w: 'days',
-  week: 'days',
-  weeks: 'days',
-  y: 'years',
-  year: 'years',
-  years: 'years'
-};
+const ISO_DURATION_PATTERN = /P(?:(?<years>[.,\d]+)Y)?(?:(?<months>[.,\d]+)M)?(?:(?<weeks>[.,\d]+)W)?(?:(?<days>[.,\d]+)D)?T(?:(?<hours>[.,\d]+)H)?(?:(?<minutes>[.,\d]+)M)?(?:(?<seconds>[.,\d]+)S)?/;
 
-const WEEK_UNITS = new Set(['w', 'week', 'weeks']);
+/**
+ * Obsidian's single-unit pattern, such as `3 days`, `-2h` or `1M`: `M` is months and `m` is minutes.
+ */
+const SINGLE_UNIT_PATTERN = /^(?<amount>-?\d+) ?(?<unit>[dhm]|[swy]|M|(?:second|minute|hour|day|week|month|year)s?)$/;
+
+type DurationComponents = [years: number, months: number, days: number, hours: number, minutes: number, seconds: number];
 
 /**
  * Mock of Obsidian's `DurationValue`, a Bases `Value` wrapping a duration, which can shift a `DateValue` or result
  * from subtracting one date from another.
- *
- * The mock keeps the duration's components and converts them to milliseconds with fixed 30-day months and 365-day
- * years. It does not do date arithmetic or formatting.
  */
 export class DurationValue extends NotNullValue {
   /**
@@ -79,13 +48,13 @@ export class DurationValue extends NotNullValue {
    * @param milliseconds - The number of milliseconds.
    */
   public constructor(
-    private readonly years: number,
-    private readonly months: number,
-    private readonly days: number,
-    private readonly hours: number,
-    private readonly minutes: number,
-    private readonly seconds: number,
-    private readonly milliseconds: number
+    public years: number,
+    public months: number,
+    public days: number,
+    public hours: number,
+    public minutes: number,
+    public seconds: number,
+    public milliseconds: number
   ) {
     super();
     const self = strictProxy(this);
@@ -139,45 +108,80 @@ export class DurationValue extends NotNullValue {
   }
 
   /**
-   * Parses a duration from a string. Obsidian documents ISO 8601 durations; the mock accepts a single signed
-   * integer and unit, such as `3 days`, `-2h` or `1 week` (weeks become seven days).
+   * Parses a duration from a string, as Obsidian does.
    *
-   * @param input - The string to parse; surrounding whitespace is ignored.
-   * @returns The parsed duration, or `null` when the string or its unit is not recognized.
+   * It first searches the string for an ISO 8601 duration with a time part, such as `P1Y2M3DT4H5M6S` or `PT0S`. The
+   * search is unanchored, and a duration without `T`, such as `P3D`, does not match. Weeks add seven days each.
+   * Failing that, the whole string must be one signed integer and unit, with at most one space between them:
+   * `3 days`, `-2h`, `1 week`. The units are `s`, `m` (minutes), `h`, `d`, `w`, `M` (months) and `y`, or the words
+   * `second`, `minute`, `hour`, `day`, `week`, `month` and `year`, singular or plural.
+   *
+   * @param input - The string to parse.
+   * @returns The parsed duration, or `null` when the string has neither shape.
    */
   public static parseFromString(input: string): DurationValue | null {
-    const groups = /^(?<value>-?\d+)\s*(?<unit>[a-z]+)$/.exec(input.trim())?.groups;
+    const isoGroups = ISO_DURATION_PATTERN.exec(input)?.groups;
+    if (isoGroups) {
+      return DurationValue.create__(
+        parseIsoPart(isoGroups['years']),
+        parseIsoPart(isoGroups['months']),
+        DAYS_IN_WEEK * parseIsoPart(isoGroups['weeks']) + parseIsoPart(isoGroups['days']),
+        parseIsoPart(isoGroups['hours']),
+        parseIsoPart(isoGroups['minutes']),
+        parseIsoPart(isoGroups['seconds']),
+        0
+      );
+    }
+
+    const groups = SINGLE_UNIT_PATTERN.exec(input)?.groups;
     if (!groups) {
       return null;
     }
-    const unit = ensureNonNullable(groups['unit']);
-    const component = DURATION_UNIT_COMPONENTS[unit];
-    if (!component) {
-      return null;
-    }
-    let value = Number(ensureNonNullable(groups['value']));
-    if (WEEK_UNITS.has(unit)) {
-      value *= DAYS_IN_WEEK;
-    }
-    /*
-     * The computed key has to come LAST: it names one of the six literal keys before it, so hoisting it to the
-     * front — as `unicorn/no-immediate-mutation`'s fixer does — lets the `0` that follows overwrite the parsed
-     * value. `perfectionist/sort-objects` cannot see that dependency and would sort it back into place.
-     */
-    // eslint-disable-next-line perfectionist/sort-objects -- See the note above: the computed key must stay last.
-    const components = { days: 0, hours: 0, minutes: 0, months: 0, seconds: 0, years: 0, [component]: value };
-    return DurationValue.create__(components.years, components.months, components.days, components.hours, components.minutes, components.seconds, 0);
+    const amount = Number.parseFloat(ensureNonNullable(groups['amount']));
+    const components = getSingleUnitComponents(ensureNonNullable(groups['unit']), amount);
+    return DurationValue.create__(...components, 0);
   }
 
   /**
-   * Shifts a date by this duration. The mock does no date arithmetic.
+   * Shifts a date by this duration, one calendar component at a time: years, months, days, then hours, minutes,
+   * seconds and milliseconds.
    *
    * @param value - The date to shift.
-   * @param _subtract - Whether to subtract the duration instead of adding it.
-   * @returns The given date, unchanged.
+   * @param subtract - Whether to subtract the duration instead of adding it.
+   * @returns A new date value. It has its time when `value` has, or when any of this duration's hours, minutes,
+   * seconds or milliseconds is non-zero.
    */
-  public addToDate(value: DateValueOriginal, _subtract?: boolean): DateValueOriginal {
-    return value;
+  public addToDate(value: DateValueOriginal, subtract?: boolean): DateValueOriginal {
+    const sign = subtract ? -1 : 1;
+    const source = DateValue.fromOriginalType3__(value);
+    const date = new Date(source.date);
+    let hasTime = source.time;
+    if (this.years !== 0) {
+      date.setFullYear(date.getFullYear() + sign * this.years);
+    }
+    if (this.months !== 0) {
+      date.setMonth(date.getMonth() + sign * this.months);
+    }
+    if (this.days !== 0) {
+      date.setDate(date.getDate() + sign * this.days);
+    }
+    if (this.hours !== 0) {
+      date.setHours(date.getHours() + sign * this.hours);
+      hasTime = true;
+    }
+    if (this.minutes !== 0) {
+      date.setMinutes(date.getMinutes() + sign * this.minutes);
+      hasTime = true;
+    }
+    if (this.seconds !== 0) {
+      date.setSeconds(date.getSeconds() + sign * this.seconds);
+      hasTime = true;
+    }
+    if (this.milliseconds !== 0) {
+      date.setMilliseconds(date.getMilliseconds() + sign * this.milliseconds);
+      hasTime = true;
+    }
+    return DateValue.create__(date, hasTime).asOriginalType3__();
   }
 
   /**
@@ -215,35 +219,88 @@ export class DurationValue extends NotNullValue {
   }
 
   /**
-   * Converts this duration to milliseconds.
+   * Converts this duration to milliseconds, as Obsidian does: by adding it to the current date and measuring the
+   * difference. Months and years therefore have their calendar length from now, and the result depends on the
+   * current date (and the local time zone's daylight-saving shifts).
    *
-   * @returns The total length in milliseconds, counting a month as 30 days and a year as 365 days.
+   * @returns The length of the duration in milliseconds, measured from now.
    */
   public getMilliseconds(): number {
-    return this.milliseconds
-      + this.seconds * MILLISECONDS_IN_SECOND
-      + this.minutes * MILLISECONDS_IN_MINUTE
-      + this.hours * MILLISECONDS_IN_HOUR
-      + this.days * MILLISECONDS_IN_DAY
-      + this.months * MILLISECONDS_IN_MONTH
-      + this.years * MILLISECONDS_IN_YEAR;
+    const now = DateValue.create__(new Date());
+    return DateValue.fromOriginalType3__(this.addToDate(now.asOriginalType3__())).date.getTime() - now.date.getTime();
   }
 
   /**
    * Checks whether the value counts as true in a Bases formula.
    *
-   * @returns Always `true`, even for a zero-length duration.
+   * @returns Whether any component of the duration is non-zero.
    */
   public isTruthy(): boolean {
-    return true;
+    return this.years !== 0
+      || this.months !== 0
+      || this.days !== 0
+      || this.hours !== 0
+      || this.minutes !== 0
+      || this.seconds !== 0
+      || this.milliseconds !== 0;
   }
 
   /**
-   * Formats the duration as text. Not implemented in the mock.
+   * Formats the duration as text.
    *
-   * @returns Always `''`.
+   * @returns Moment's humanized text for the duration's components, such as `3 days` or `a few seconds`.
    */
   public toString(): string {
-    return '';
+    return moment.duration({
+      days: this.days,
+      hours: this.hours,
+      milliseconds: this.milliseconds,
+      minutes: this.minutes,
+      months: this.months,
+      seconds: this.seconds,
+      years: this.years
+    }).humanize();
   }
+}
+
+function getSingleUnitComponents(unit: string, amount: number): DurationComponents {
+  switch (unit) {
+    case 'd':
+    case 'day':
+    case 'days': {
+      return [0, 0, amount, 0, 0, 0];
+    }
+    case 'h':
+    case 'hour':
+    case 'hours': {
+      return [0, 0, 0, amount, 0, 0];
+    }
+    case 'M':
+    case 'month':
+    case 'months': {
+      return [0, amount, 0, 0, 0, 0];
+    }
+    case 'm':
+    case 'minute':
+    case 'minutes': {
+      return [0, 0, 0, 0, amount, 0];
+    }
+    case 'w':
+    case 'week':
+    case 'weeks': {
+      return [0, 0, DAYS_IN_WEEK * amount, 0, 0, 0];
+    }
+    case 'y':
+    case 'year':
+    case 'years': {
+      return [amount, 0, 0, 0, 0, 0];
+    }
+    default: {
+      return [0, 0, 0, 0, 0, amount];
+    }
+  }
+}
+
+function parseIsoPart(part: string | undefined): number {
+  return part === undefined ? 0 : Number.parseInt(part, 10);
 }

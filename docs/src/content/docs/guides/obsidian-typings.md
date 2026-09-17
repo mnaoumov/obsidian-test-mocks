@@ -49,11 +49,14 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `BasesViewConfig` | `setOrder` |
 | `ColorComponent` | `colorPickerEl` |
 | `Component` | `_children`, `_events`, `_loaded` |
-| `DateValue` | `date` |
+| `DateValue` | `date`, `printDate`, `printTime`, `time` |
 | `DropdownComponent` | `changeCallback` |
 | `DurationValue` | `days`, `hours`, `milliseconds`, `minutes`, `months`, `seconds`, `years` |
 | `Events` | `_` |
 | `FileManager` | `app` |
+| `FileValue` | `app`, `file` |
+| `LinkValue` | `app`, `display`, `sourcePath` |
+| `ListValue` | `data`, `join`, `lazyEvaluator` |
 | `MarkdownEditView` | `view` |
 | `MarkdownPreviewView` | `onload` |
 | `MarkdownRenderer` | `onload` |

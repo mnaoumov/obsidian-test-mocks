@@ -15,17 +15,15 @@ import { NotNullValue } from './NotNullValue.ts';
 
 /**
  * Mock of Obsidian's `FileValue`: a non-null value wrapping a file.
- *
- * The mock does not keep the file: it is always truthy and renders as an empty string.
  */
 export class FileValue extends NotNullValue {
   /**
    * Creates a file value.
    *
    * @param app - The app the file belongs to.
-   * @param file - The wrapped file; not stored by the mock.
+   * @param file - The wrapped file.
    */
-  public constructor(app: App, file: TFile) {
+  public constructor(public app: App, public file: TFile) {
     super();
     const self = strictProxy(this);
     self.constructor3__(app, file);
@@ -85,9 +83,9 @@ export class FileValue extends NotNullValue {
   /**
    * Renders the value as a string.
    *
-   * @returns An empty string in the mock, since the file is not stored.
+   * @returns The wrapped file's vault path.
    */
   public toString(): string {
-    return '';
+    return this.file.path;
   }
 }

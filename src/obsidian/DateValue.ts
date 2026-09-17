@@ -11,6 +11,11 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 import { moment } from './vars/moment.ts';
 
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,9})?)?(?:Z|[+-]\d{2}(?::?\d{2})?)?$/;
+const YEAR_FORMAT_LENGTH = 4;
+const TWO_DIGITS_FORMAT_LENGTH = 2;
+
 /**
  * Mock of Obsidian's `DateValue`, a Bases `Value` wrapping a `Date`, optionally with its time of day.
  */
@@ -19,12 +24,13 @@ export class DateValue extends NotNullValue {
    * Creates a value wrapping a date.
    *
    * @param date - The wrapped date.
-   * @param showTime - Whether the time of day is part of the value, and so of {@link DateValue.toString}.
+   * @param time - Whether the time of day is part of the value, and so of {@link DateValue.toString}. Defaults to
+   * `true`, as in Obsidian.
    */
-  public constructor(private readonly date: Date, private readonly showTime?: boolean) {
+  public constructor(public date: Date, public time = true) {
     super();
     const self = strictProxy(this);
-    self.constructor3__(date, showTime);
+    self.constructor3__(date, time);
     return self;
   }
 
@@ -32,7 +38,7 @@ export class DateValue extends NotNullValue {
    * Mock-only factory: creates a date value, spyable via `vi.spyOn(DateValue, 'create__')`.
    *
    * @param date - The wrapped date.
-   * @param showTime - Whether the time of day is part of the value.
+   * @param showTime - Whether the time of day is part of the value. Defaults to `true`.
    * @returns The new date value.
    */
   public static create__(date: Date, showTime?: boolean): DateValue {
@@ -51,15 +57,18 @@ export class DateValue extends NotNullValue {
   }
 
   /**
-   * Parses a date value from an ISO 8601 date or date-time string, such as `2025-12-31` or `2025-12-31T23:59`.
-   * The mock parses with the `Date` constructor and never marks the result as showing the time.
+   * Parses a date value from a string, as Obsidian does. `YYYY-MM-DD` gives a value without its time, at local
+   * midnight. `YYYY-MM-DD HH:mm` or `YYYY-MM-DDTHH:mm`, with optional seconds, fraction and zone, gives a value with
+   * its time. Any other string is rejected.
    *
    * @param input - The string to parse.
-   * @returns The parsed value, or `null` when the string is not a valid date.
+   * @returns The parsed value, or `null` when the string has neither shape.
    */
   public static parseFromString(input: string): DateValue | null {
-    const date = new Date(input);
-    return Number.isNaN(date.getTime()) ? null : DateValue.create__(date);
+    if (DATE_TIME_PATTERN.test(input)) {
+      return DateValue.create__(new Date(input), true);
+    }
+    return DATE_ONLY_PATTERN.test(input) ? DateValue.create__(new Date(`${input}T00:00:00`), false) : null;
   }
 
   /**
@@ -86,11 +95,11 @@ export class DateValue extends NotNullValue {
   /**
    * Drops the time portion of this value.
    *
-   * @returns A new date value over the same `Date` that no longer shows the time. The mock does not zero the
-   * underlying time.
+   * @returns This value when it has no time. Otherwise, a new value without its time, at local midnight of the same
+   * day.
    */
   public dateOnly(): DateValue {
-    return DateValue.create__(this.date, false);
+    return this.time ? DateValue.create__(new Date(`${this.printDate()}T00:00:00`), false) : this;
   }
 
   /**
@@ -103,6 +112,25 @@ export class DateValue extends NotNullValue {
   }
 
   /**
+   * Formats the date part of the value.
+   *
+   * @returns The local date as `YYYY-MM-DD`.
+   */
+  public printDate(): string {
+    const year = String(this.date.getFullYear()).padStart(YEAR_FORMAT_LENGTH, '0');
+    return `${year}-${padTwoDigits(this.date.getMonth() + 1)}-${padTwoDigits(this.date.getDate())}`;
+  }
+
+  /**
+   * Formats the time part of the value.
+   *
+   * @returns The local time as `HH:mm:ss`.
+   */
+  public printTime(): string {
+    return `${padTwoDigits(this.date.getHours())}:${padTwoDigits(this.date.getMinutes())}:${padTwoDigits(this.date.getSeconds())}`;
+  }
+
+  /**
    * Describes the date relative to now.
    *
    * @returns Moment's `fromNow` text, such as `3 days ago`.
@@ -112,22 +140,15 @@ export class DateValue extends NotNullValue {
   }
 
   /**
-   * Formats the date as `YYYY-MM-DD`, followed by `THH:mm:ss` when the value shows the time.
+   * Formats the value as `YYYY-MM-DD`, followed by `THH:mm:ss` when it has its time.
    *
-   * @returns The formatted date, in local time. The mock writes the month as `Date.getMonth` returns it, zero-based,
-   * so January is `00`.
+   * @returns The formatted date, in local time.
    */
   public toString(): string {
-    const YEAR_FORMAT_LENGTH = 4;
-    const MONTH_FORMAT_LENGTH = 2;
-    const DAY_FORMAT_LENGTH = 2;
-    const HOUR_FORMAT_LENGTH = 2;
-    const MINUTE_FORMAT_LENGTH = 2;
-    const SECOND_FORMAT_LENGTH = 2;
-    let $string = `${this.date.getFullYear().toString().padStart(YEAR_FORMAT_LENGTH, '0')}-${this.date.getMonth().toString().padStart(MONTH_FORMAT_LENGTH, '0')}-${this.date.getDate().toString().padStart(DAY_FORMAT_LENGTH, '0')}`;
-    if (this.showTime) {
-      $string += `T${this.date.getHours().toString().padStart(HOUR_FORMAT_LENGTH, '0')}:${this.date.getMinutes().toString().padStart(MINUTE_FORMAT_LENGTH, '0')}:${this.date.getSeconds().toString().padStart(SECOND_FORMAT_LENGTH, '0')}`;
-    }
-    return $string;
+    return this.time ? `${this.printDate()}T${this.printTime()}` : this.printDate();
   }
+}
+
+function padTwoDigits(value: number): string {
+  return String(value).padStart(TWO_DIGITS_FORMAT_LENGTH, '0');
 }
