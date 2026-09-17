@@ -13,6 +13,10 @@ import { StringValue } from './StringValue.ts';
 describe('LinkValue', () => {
   const mockApp = strictProxy<App>({});
 
+  it('should carry the link icon', () => {
+    expect(LinkValue.create2__(mockApp, 'note', 'source.md').icon).toBe('lucide-link');
+  });
+
   describe('parseFromString', () => {
     it('should parse a simple wiki link', () => {
       const result = LinkValue.parseFromString(mockApp, '[[note]]', 'source.md');

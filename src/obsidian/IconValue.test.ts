@@ -9,6 +9,10 @@ import {
 import { IconValue } from './IconValue.ts';
 
 describe('IconValue', () => {
+  it('should carry the image icon', () => {
+    expect(new IconValue().icon).toBe('lucide-image');
+  });
+
   it('should create an instance via create2__', () => {
     const value = IconValue.create2__('icon-name');
     expect(value).toBeInstanceOf(IconValue);

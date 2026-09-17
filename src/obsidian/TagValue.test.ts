@@ -9,6 +9,10 @@ import {
 import { TagValue } from './TagValue.ts';
 
 describe('TagValue', () => {
+  it('should inherit the string icon, as a tag does in Obsidian', () => {
+    expect(new TagValue('#test').icon).toBe('lucide-text');
+  });
+
   it('should create an instance via create2__', () => {
     const value = TagValue.create2__('#test');
     expect(value).toBeInstanceOf(TagValue);

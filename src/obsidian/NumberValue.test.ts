@@ -11,6 +11,10 @@ import { NumberValue } from './NumberValue.ts';
 const TEST_NUMBER = 7;
 
 describe('NumberValue', () => {
+  it('should carry the number icon', () => {
+    expect(new NumberValue().icon).toBe('lucide-binary');
+  });
+
   it('should create an instance via create__', () => {
     const value = NumberValue.create__();
     expect(value).toBeInstanceOf(NumberValue);

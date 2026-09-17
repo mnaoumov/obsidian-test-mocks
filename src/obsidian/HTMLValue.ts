@@ -15,6 +15,11 @@ import { StringValue } from './StringValue.ts';
  */
 export class HTMLValue extends StringValue {
   /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-code-2';
+
+  /**
    * Creates an HTML value.
    *
    * @param value - The raw HTML string.

@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { DateValue } from './DateValue.ts';
 import { DurationValue } from './DurationValue.ts';
 import { moment } from './vars/moment.ts';
@@ -18,6 +19,70 @@ function getComponents(value: DurationValue | null): Components | null {
 }
 
 describe('DurationValue', () => {
+  it('should carry the calendar-range icon', () => {
+    expect(new DurationValue(0, 0, 0, 0, 0, 0, 0).icon).toBe('lucide-calendar-range');
+  });
+
+  describe('keys', () => {
+    it('should add the eight units to the inherited keys, in Obsidian\'s order', () => {
+      expect(new DurationValue(0, 0, 0, 0, 0, 0, 0).keys()).toEqual([
+        'years',
+        'months',
+        'days',
+        'weeks',
+        'hours',
+        'minutes',
+        'seconds',
+        'milliseconds'
+      ]);
+    });
+  });
+
+  describe('objectAccess', () => {
+    const MILLISECONDS_IN_HOUR = 60 * 60 * 1000;
+    const HOURS = 36;
+    const FIXED_LENGTH = new DurationValue(0, 0, 0, 0, 0, 0, HOURS * MILLISECONDS_IN_HOUR);
+    const WEEKS_PRECISION = 6;
+
+    function unitOf(value: DurationValue, key: string): number {
+      return Number(ensureNonNullable(value.objectAccess(key)).toString());
+    }
+
+    // The measurement runs from the current date, so a calendar unit's length depends on it. Mid-June, at
+    // noon, is a month away from an end-of-month overflow and from every daylight-saving shift there is.
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 5, 15, 12, 0, 0));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should measure a fixed-length duration in each sub-calendar unit', () => {
+      expect(unitOf(FIXED_LENGTH, 'milliseconds')).toBe(HOURS * MILLISECONDS_IN_HOUR);
+      expect(unitOf(FIXED_LENGTH, 'seconds')).toBe(HOURS * 60 * 60);
+      expect(unitOf(FIXED_LENGTH, 'minutes')).toBe(HOURS * 60);
+      expect(unitOf(FIXED_LENGTH, 'hours')).toBe(HOURS);
+      expect(unitOf(FIXED_LENGTH, 'days')).toBe(1.5);
+      expect(unitOf(FIXED_LENGTH, 'weeks')).toBeCloseTo(1.5 / 7, WEEKS_PRECISION);
+    });
+
+    it('should measure a calendar unit from the current date', () => {
+      expect(unitOf(new DurationValue(1, 0, 0, 0, 0, 0, 0), 'years')).toBe(1);
+      expect(unitOf(new DurationValue(0, 1, 0, 0, 0, 0, 0), 'months')).toBe(1);
+      expect(unitOf(new DurationValue(0, 0, 1, 0, 0, 0, 0), 'days')).toBe(1);
+    });
+
+    it('should ignore the key\'s case', () => {
+      expect(unitOf(new DurationValue(0, 0, 1, 0, 0, 0, 0), 'DAYS')).toBe(1);
+    });
+
+    it('should answer null for any other key', () => {
+      expect(new DurationValue(0, 0, 1, 0, 0, 0, 0).objectAccess('fortnights')).toBeNull();
+    });
+  });
+
   it('should be falsy when every component is zero', () => {
     const value = new DurationValue(0, 0, 0, 0, 0, 0, 0);
     expect(value.isTruthy()).toBe(false);

@@ -24,6 +24,28 @@ class BareValue extends Value {
 }
 
 describe('Value', () => {
+  describe('icon', () => {
+    it('should default to the unknown-type icon', () => {
+      expect(new BareValue().icon).toBe('lucide-file-question');
+    });
+
+    it('should be inherited by a value type that declares none', () => {
+      expect(NullValue.value.icon).toBe('lucide-file-question');
+    });
+  });
+
+  describe('keys', () => {
+    it('should expose no keys on the base value', () => {
+      expect(new BareValue().keys()).toEqual([]);
+    });
+  });
+
+  describe('objectAccess', () => {
+    it('should answer null for every key on the base value', () => {
+      expect(new BareValue().objectAccess('anything')).toBeNull();
+    });
+  });
+
   describe('static equals', () => {
     it('should return true when both are null', () => {
       expect(Value.equals(null, null)).toBe(true);

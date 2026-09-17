@@ -58,7 +58,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `FileManager` | `app` |
 | `FileValue` | `app`, `file` |
 | `LinkValue` | `app`, `display`, `sourcePath` |
-| `ListValue` | `data`, `join`, `lazyEvaluator` |
+| `ListValue` | `compare`, `data`, `earliest`, `flatten`, `getDates`, `getNumbers`, `join`, `latest`, `lazyEvaluator`, `max`, `mean`, `median`, `min`, `reverse`, `slice`, `sort`, `stddev`, `sum`, `unique` |
 | `MarkdownEditView` | `type`, `view` |
 | `MarkdownPreviewView` | `onload`, `type` |
 | `MarkdownRenderer` | `onload` |
@@ -76,9 +76,10 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `SliderComponent` | `changeCallback` |
 | `SuggestModal` | `instructionsEl` |
 | `TAbstractFile` | `deleted` |
-| `TFile` | `name` |
+| `TFile` | `getShortName`, `name` |
 | `TFolder` | `getParentPrefix` |
 | `ToggleComponent` | `changeCallback`, `on` |
+| `Value` | `icon`, `keys`, `objectAccess` |
 | `Vault` | `config`, `exists`, `fileMap`, `getAbstractFileByPathInsensitive`, `getAvailablePath`, `getAvailablePathForAttachments`, `getConfig`, `setConfig` |
 | `Workspace` | `activeLeafEvents`, `activeTabGroup`, `app`, `createLeafInTabGroup`, `floatingSplit`, `getFocusedContainer`, `isAttached`, `iterateLeaves`, `lastActiveFile`, `lastTabGroupStacked`, `onLayoutChange`, `requestActiveLeafEvents`, `requestLayoutChangeEvents`, `requestUpdateLayout`, `splitLeaf`, `updateLayout` |
 | `WorkspaceItem` | `detach`, `dimension`, `setDimension`, `setParent` |

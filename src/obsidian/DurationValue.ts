@@ -9,14 +9,33 @@ import type {
   DurationValue as DurationValueOriginal
 } from 'obsidian';
 
+import type { Value } from './Value.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { DateValue } from './DateValue.ts';
 import { NotNullValue } from './NotNullValue.ts';
+import { NumberValue } from './NumberValue.ts';
 import { moment } from './vars/moment.ts';
 
 const DAYS_IN_WEEK = 7;
+
+type DurationUnit = 'days' | 'hours' | 'milliseconds' | 'minutes' | 'months' | 'seconds' | 'weeks' | 'years';
+
+/**
+ * The units {@link DurationValue.objectAccess} answers for, keyed by their lower-cased name.
+ */
+const DURATION_UNITS: Record<string, DurationUnit> = {
+  days: 'days',
+  hours: 'hours',
+  milliseconds: 'milliseconds',
+  minutes: 'minutes',
+  months: 'months',
+  seconds: 'seconds',
+  weeks: 'weeks',
+  years: 'years'
+};
 
 /**
  * Obsidian's ISO 8601 duration pattern. It is deliberately a verbatim copy: it is unanchored, and its `T` is
@@ -36,6 +55,11 @@ type DurationComponents = [years: number, months: number, days: number, hours: n
  * from subtracting one date from another.
  */
 export class DurationValue extends NotNullValue {
+  /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-calendar-range';
+
   /**
    * Creates a duration from its components.
    *
@@ -243,6 +267,44 @@ export class DurationValue extends NotNullValue {
       || this.minutes !== 0
       || this.seconds !== 0
       || this.milliseconds !== 0;
+  }
+
+  /**
+   * Lists the property keys {@link DurationValue.objectAccess} answers for.
+   *
+   * @returns The inherited keys followed by the eight units, in Obsidian's own order.
+   */
+  public override keys(): string[] {
+    return [
+      ...super.keys(),
+      'years',
+      'months',
+      'days',
+      'weeks',
+      'hours',
+      'minutes',
+      'seconds',
+      'milliseconds'
+    ];
+  }
+
+  /**
+   * Measures the duration in a named unit.
+   *
+   * @param key - The unit name, matched without regard to case.
+   * @returns The duration as a `NumberValue` in that unit, and otherwise whatever the base answers. It is
+   * measured as Obsidian measures it — by shifting the current date by this duration and taking moment's
+   * fractional difference — so a duration in months or years has its calendar length FROM NOW, and the
+   * answer depends on the current date and the local time zone's daylight-saving shifts.
+   */
+  public override objectAccess(key: string): null | Value {
+    const unit = DURATION_UNITS[key.toLowerCase()];
+    if (unit === undefined) {
+      return super.objectAccess(key);
+    }
+    const now = DateValue.create__(new Date());
+    const shifted = DateValue.fromOriginalType3__(this.addToDate(now.asOriginalType3__()));
+    return NumberValue.create__(moment(shifted.date).diff(now.date, unit, true));
   }
 
   /**

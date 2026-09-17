@@ -9,6 +9,10 @@ import {
 import { HTMLValue } from './HTMLValue.ts';
 
 describe('HTMLValue', () => {
+  it('should carry the code icon', () => {
+    expect(new HTMLValue().icon).toBe('lucide-code-2');
+  });
+
   it('should create an instance via create2__', () => {
     const value = HTMLValue.create2__('test');
     expect(value).toBeInstanceOf(HTMLValue);

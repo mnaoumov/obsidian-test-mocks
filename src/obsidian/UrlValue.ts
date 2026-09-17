@@ -16,6 +16,11 @@ import { StringValue } from './StringValue.ts';
  */
 export class UrlValue extends StringValue {
   /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-link';
+
+  /**
    * Creates a URL value.
    *
    * @param value - The URL.

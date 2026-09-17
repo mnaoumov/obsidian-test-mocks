@@ -641,3 +641,45 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   `purpose`, then attaches the container to `modalEl`; when empty it detaches the container. The
   builder queries `.prompt-instruction > span:nth-child(2)` (the purpose span) to inject
   checkbox/dropdown inputs and registers option-toggle shortcuts on the (already-modeled) `modal.scope`.
+
+- **Every Bases `Value` carries an icon, a key list and property access** (2026-09-17, read in Obsidian 1.14.2's
+  `app.js`). `Value.icon` is the lucide name for the value's type, assigned per class in the constructor as
+  Obsidian assigns it, so a subclass that declares none inherits the one above it: `lucide-file-question` on the
+  base and on `NullValue`, `lucide-text` on `StringValue` and on `TagValue`, `lucide-binary`,
+  `lucide-check-square`, `lucide-regex`, `lucide-calendar-range`, `lucide-file`, `lucide-code-2`,
+  `lucide-image` on `IconValue` and `ImageValue`, `lucide-link` on `UrlValue` and `LinkValue`, and
+  `lucide-list` on `ListValue` AND on `ObjectValue` — the app really does give an object the list icon.
+  `DateValue` picks by its own `time`: `lucide-clock` with it, `lucide-calendar` without, which
+  `RelativeDateValue` inherits.
+  - **`keys()` lists what a formula's `.` access can reach and `objectAccess(key)` reads it**, matched without
+    regard to case. `StringValue` and `ListValue` add `length`; `DateValue` adds `year` / `month` (from `1`) /
+    `day` / `hour` / `minute` / `second` / `millisecond` / `timestamp`, all local; `DurationValue` adds the
+    eight units, each measured Obsidian's way by shifting *now* and taking moment's fractional difference, so a
+    calendar unit depends on the current date; `ObjectValue` REPLACES the list with its own keys and routes
+    access to `getInsensitive`, so an unknown key gives `NullValue.value` rather than `null`. Everything else
+    inherits the base, which lists nothing and answers `null`.
+  - **`FileValue.objectAccess` is partial, deliberately.** It answers `file`, `name`, `basename`, `fullname`,
+    `path`, `folder`, `ext`, `ctime`, `mtime` and `size`, and `keys()` advertises all fifteen keys Obsidian
+    does — but `links`, `embeds`, `backlinks`, `tags` and `properties` read as `null`, because each needs one
+    of `FileValue.getLinks` / `getEmbeds` / `getBacklinks` / `getTags` / `getProps`, which stay unmocked (L2).
+    `folder` throws when the file has no parent folder, where Obsidian reads it unguarded.
+
+- **`ListValue` does its own aggregating, quirks included** (2026-09-17, `iK` in Obsidian 1.14.2's `app.js`).
+  `compare`, `slice`, `reverse`, `flatten`, `sort`, `unique`, `getNumbers`, `getDates`, `earliest`, `latest`,
+  `sum`, `mean`, `median`, `min`, `max` and `stddev` are all Obsidian's own, and four of their habits surprise:
+  - **`getNumbers` and `getDates` read the RAW elements**, never through `get`, so nothing is converted or
+    cached by asking. Only a raw number or a `NumberValue` counts as a number — a numeric string does not —
+    and only a raw string, a `StringValue` (parsed with `DateValue.parseFromString`) or a `DateValue` counts as
+    a date.
+  - **`mean` divides by the whole list's length**, not by the count of numbers, so `[1, 2, 3, 'x']` averages
+    `1.5`. **`stddev` is the POPULATION deviation.**
+  - **`unique` buckets by string form in a plain object** and reads the buckets back in key order, so elements
+    whose string form is an integer come first, in numeric order: `['b', 2, 'a', 1]` uniques to `1, 2, b, a`.
+    It answers CONVERTED elements, where `slice` / `reverse` / `flatten` / `sort` move the elements as they are.
+  - **`sort` compares two numbers numerically and anything else through Obsidian's collator** (no locale,
+    base sensitivity, numeric), so case and accents do not separate two elements and `item 9` sorts before
+    `item 10`.
+  - **`equals` and `looseEquals` are element-wise now**, built on `compare`, where they used to inherit
+    `Value`'s comparison of the two lists' string forms. So `['1, 2']` no longer equals `[1, 2]`, and
+    `looseEquals` unwraps a ONE-element list against a non-list value: `[1]` loosely equals `1`, `[1, 2]`
+    equals nothing but a list.

@@ -15,6 +15,34 @@ import { ObjectValue } from './ObjectValue.ts';
 import { StringValue } from './StringValue.ts';
 
 describe('ObjectValue', () => {
+  it('should carry the list icon, which is what Obsidian gives an object', () => {
+    expect(new ObjectValue({}).icon).toBe('lucide-list');
+  });
+
+  describe('keys', () => {
+    it('should report the wrapped object\'s own keys, in its own order, instead of the inherited list', () => {
+      // Built from ordered entries rather than from a literal, whose keys the formatter would sort.
+      const data: Record<string, unknown> = Object.fromEntries([['b', 2], ['a', 1]]);
+      expect(new ObjectValue(data).keys()).toEqual(['b', 'a']);
+    });
+
+    it('should be empty for an empty object', () => {
+      expect(new ObjectValue({}).keys()).toEqual([]);
+    });
+  });
+
+  describe('objectAccess', () => {
+    it('should read a property, ignoring the key\'s case', () => {
+      const value = new ObjectValue({ Title: 'note' });
+      expect(value.objectAccess('title')?.toString()).toBe('note');
+      expect(value.objectAccess('Title')?.toString()).toBe('note');
+    });
+
+    it('should answer NullValue rather than null for an unknown key', () => {
+      expect(new ObjectValue({}).objectAccess('missing')).toBe(NullValue.value);
+    });
+  });
+
   it('should create an instance via create__', () => {
     const value = ObjectValue.create__({});
     expect(value).toBeInstanceOf(ObjectValue);

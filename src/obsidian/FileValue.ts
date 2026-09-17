@@ -8,15 +8,25 @@ import type { FileValue as FileValueOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
+import type { Value } from './Value.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
+import { DateValue } from './DateValue.ts';
 import { NotNullValue } from './NotNullValue.ts';
+import { NumberValue } from './NumberValue.ts';
+import { StringValue } from './StringValue.ts';
 
 /**
  * Mock of Obsidian's `FileValue`: a non-null value wrapping a file.
  */
 export class FileValue extends NotNullValue {
+  /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-file';
+
   /**
    * Creates a file value.
    *
@@ -78,6 +88,84 @@ export class FileValue extends NotNullValue {
    */
   public isTruthy(): boolean {
     return true;
+  }
+
+  /**
+   * Lists the property keys {@link FileValue.objectAccess} answers for.
+   *
+   * @returns The inherited keys followed by Obsidian's fifteen file keys, the five this mock does not back
+   * included — the list is what the app advertises, not what the mock can answer.
+   */
+  public override keys(): string[] {
+    return [
+      ...super.keys(),
+      'file',
+      'name',
+      'basename',
+      'fullname',
+      'path',
+      'folder',
+      'ext',
+      'ctime',
+      'mtime',
+      'size',
+      'links',
+      'embeds',
+      'backlinks',
+      'tags',
+      'properties'
+    ];
+  }
+
+  /**
+   * Reads a named property of the wrapped file.
+   *
+   * `links`, `embeds`, `backlinks`, `tags` and `properties` are NOT answered: each needs one of
+   * `FileValue.getLinks`, `getEmbeds`, `getBacklinks`, `getTags` and `getProps`, which stay unmocked (L2),
+   * so they fall through to the base and read as `null` rather than as a list.
+   *
+   * @param key - The property key, matched without regard to case.
+   * @returns This value itself for `file`; the file's display name, basename, full name, path, folder path
+   * or extension as a `StringValue`; its creation or modification time as a `DateValue`; its size as a
+   * `NumberValue`; and otherwise whatever the base answers.
+   * @throws {Error} For `folder` when the file has no parent folder, where Obsidian reads it unguarded.
+   */
+  public override objectAccess(key: string): null | Value {
+    switch (key.toLowerCase()) {
+      case 'basename': {
+        return StringValue.create__(this.file.basename);
+      }
+      case 'ctime': {
+        return DateValue.create__(new Date(this.file.stat.ctime));
+      }
+      case 'ext': {
+        return StringValue.create__(this.file.extension);
+      }
+      case 'file': {
+        return this;
+      }
+      case 'folder': {
+        return StringValue.create__(ensureNonNullable(this.file.parent, 'The file has no parent folder.').path);
+      }
+      case 'fullname': {
+        return StringValue.create__(this.file.name);
+      }
+      case 'mtime': {
+        return DateValue.create__(new Date(this.file.stat.mtime));
+      }
+      case 'name': {
+        return StringValue.create__(this.file.getShortName());
+      }
+      case 'path': {
+        return StringValue.create__(this.file.path);
+      }
+      case 'size': {
+        return NumberValue.create__(this.file.stat.size);
+      }
+      default: {
+        return super.objectAccess(key);
+      }
+    }
   }
 
   /**

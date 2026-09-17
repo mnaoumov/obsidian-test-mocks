@@ -15,6 +15,11 @@ import { StringValue } from './StringValue.ts';
  */
 export class ImageValue extends StringValue {
   /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-image';
+
+  /**
    * Creates an image value.
    *
    * @param value - The path of the image resource.

@@ -6,9 +6,33 @@ import {
   it
 } from 'vitest';
 
+import { NumberValue } from './NumberValue.ts';
 import { StringValue } from './StringValue.ts';
 
 describe('StringValue', () => {
+  it('should carry the text icon', () => {
+    expect(new StringValue().icon).toBe('lucide-text');
+  });
+
+  describe('keys', () => {
+    it('should add length to the inherited keys', () => {
+      expect(new StringValue('abc').keys()).toEqual(['length']);
+    });
+  });
+
+  describe('objectAccess', () => {
+    it('should answer the string length, whatever the key\'s case', () => {
+      const value = new StringValue('abcd');
+      expect(value.objectAccess('length')).toBeInstanceOf(NumberValue);
+      expect(value.objectAccess('length')?.toString()).toBe('4');
+      expect(value.objectAccess('LENGTH')?.toString()).toBe('4');
+    });
+
+    it('should answer null for any other key', () => {
+      expect(new StringValue('abcd').objectAccess('size')).toBeNull();
+    });
+  });
+
   it('should create an instance via create__', () => {
     const value = StringValue.create__();
     expect(value).toBeInstanceOf(StringValue);
