@@ -1,4 +1,6 @@
 /**
+ * @file
+ *
  * Renders declarative setting definitions the way Obsidian 1.13 does.
  *
  * Mirrors the shipped renderer (Obsidian 1.13.x `app.js`), function for function:
@@ -33,6 +35,10 @@ import { Setting } from '../obsidian/Setting.ts';
 import { SettingGroup } from '../obsidian/SettingGroup.ts';
 import { castTo } from './castTo.ts';
 
+/**
+ * A group rendered by {@link renderSettingDefinitions}: its definition, the `SettingGroup` created for it and the
+ * rows rendered inside it.
+ */
 export interface RenderedSettingGroup {
   children: RenderedSettingRow[];
   definition: SettingDefinitionGroupOriginal;
@@ -40,6 +46,10 @@ export interface RenderedSettingGroup {
   settingGroup: SettingGroup;
 }
 
+/**
+ * A row rendered by {@link renderSettingDefinitions}: its definition, the `Setting` created for it, whether its
+ * `visible` predicate last evaluated to `true`, and the cleanup its `render` callback returned, if any.
+ */
 export interface RenderedSettingRow {
   cleanup: (() => void) | null;
   definition: SettingGroupItemOriginal;
@@ -78,6 +88,7 @@ export function applyDomState(groups: RenderedSettingGroup[]): void {
 /**
  * Resolves a declarative predicate that may be a value, a function, or absent (`z2`).
  *
+ * @typeParam T - The predicate's value type.
  * @param predicate - The predicate.
  * @param defaultValue - The value to use when the predicate is absent or throws.
  * @returns The resolved value.

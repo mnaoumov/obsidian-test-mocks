@@ -1,3 +1,9 @@
+/**
+ * @file
+ *
+ * Mock of the community-plugin registry Obsidian exposes as `app.plugins`.
+ */
+
 import type { Plugin as PluginOriginal } from 'obsidian';
 
 import type { App } from '../obsidian/App.ts';
@@ -23,6 +29,9 @@ import { strictProxy } from './strict-proxy.ts';
  * `undefined`.
  */
 export class Plugins extends Events {
+  /**
+   * The app this registry belongs to.
+   */
   public app: App;
   /**
    * The ids of the enabled plugins.
@@ -31,8 +40,16 @@ export class Plugins extends Events {
    * mock has no notion of a plugin that is installed but switched off, so the two always agree.
    */
   public enabledPlugins = new Set<string>();
+  /**
+   * The loaded plugin instances, keyed by plugin id.
+   */
   public plugins: Record<string, PluginOriginal> = {};
 
+  /**
+   * Creates an empty registry.
+   *
+   * @param app - The app this registry belongs to.
+   */
   protected constructor(app: App) {
     super();
     this.app = app;
@@ -41,18 +58,42 @@ export class Plugins extends Events {
     return self;
   }
 
+  /**
+   * Mock-only factory: creates a plugin registry, spyable via `vi.spyOn(Plugins, 'create2__')`. Numbered because
+   * it is the subclass variant of the `Events` factory.
+   *
+   * @param app - The app this registry belongs to.
+   * @returns The new registry.
+   */
   public static create2__(app: App): Plugins {
     return new Plugins(app);
   }
 
+  /**
+   * Mock-only construction hook, called at the end of the constructor; a no-op meant for
+   * `vi.spyOn(Plugins.prototype, 'constructor2__')`.
+   *
+   * @param _app - The app the registry was created with.
+   */
   public constructor2__(_app: App): void {
     noop();
   }
 
+  /**
+   * Gets a loaded plugin by id.
+   *
+   * @param id - The plugin id.
+   * @returns The plugin instance, or `null` when no plugin with that id is registered.
+   */
   public getPlugin(id: string): null | PluginOriginal {
     return this.plugins[id] ?? null;
   }
 
+  /**
+   * Gets the folder community plugins are installed in.
+   *
+   * @returns The vault's config folder followed by `/plugins`.
+   */
   public getPluginFolder(): string {
     return `${this.app.vault.configDir}/plugins`;
   }

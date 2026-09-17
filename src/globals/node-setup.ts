@@ -1,5 +1,16 @@
+/**
+ * @file
+ *
+ * Installs and removes the `constructorWin`, `doc` and `win` members Obsidian adds to `Node.prototype`.
+ */
+
 const NODE_MEMBER_NAMES = ['constructorWin', 'doc', 'win'];
 
+/**
+ * Defines `constructorWin`, `doc` and `win` on `Node.prototype`: `doc` is the node's owner document, falling back to
+ * the global document; `win` is that document's window, falling back to the global window; `constructorWin` is the
+ * global window.
+ */
 export function setupNodePrototype(): void {
   Object.defineProperties(Node.prototype, {
     constructorWin: {
@@ -33,6 +44,9 @@ export function setupNodePrototype(): void {
   });
 }
 
+/**
+ * Deletes the members {@link setupNodePrototype} defined.
+ */
 export function teardownNodePrototype(): void {
   for (const name of NODE_MEMBER_NAMES) {
     Reflect.deleteProperty(Node.prototype, name);

@@ -1,5 +1,16 @@
+/**
+ * @file
+ *
+ * Installs and removes the `doc`, `instanceOf`, `targetNode` and `win` members Obsidian adds to `UIEvent.prototype`.
+ */
+
 const UI_EVENT_MEMBER_NAMES = ['doc', 'instanceOf', 'targetNode', 'win'];
 
+/**
+ * Defines `doc`, `instanceOf`, `targetNode` and `win` on `UIEvent.prototype`. The mock has a single window, so `win`
+ * is always the global window and `doc` its document; `targetNode` is the event target when it is a node, otherwise
+ * `null`.
+ */
 export function setupUIEventPrototype(): void {
   Object.defineProperties(UIEvent.prototype, {
     doc: {
@@ -30,6 +41,9 @@ export function setupUIEventPrototype(): void {
   });
 }
 
+/**
+ * Deletes the members {@link setupUIEventPrototype} defined.
+ */
 export function teardownUIEventPrototype(): void {
   for (const name of UI_EVENT_MEMBER_NAMES) {
     Reflect.deleteProperty(UIEvent.prototype, name);

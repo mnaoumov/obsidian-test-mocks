@@ -1,3 +1,9 @@
+/**
+ * @file
+ *
+ * Mock of Obsidian's `DurationValue`, the Bases value wrapping a duration.
+ */
+
 import type {
   DateValue as DateValueOriginal,
   DurationValue as DurationValueOriginal
@@ -53,7 +59,25 @@ const DURATION_UNIT_COMPONENTS: Record<string, DurationComponent> = {
 
 const WEEK_UNITS = new Set(['w', 'week', 'weeks']);
 
+/**
+ * Mock of Obsidian's `DurationValue`, a Bases `Value` wrapping a duration, which can shift a `DateValue` or result
+ * from subtracting one date from another.
+ *
+ * The mock keeps the duration's components and converts them to milliseconds with fixed 30-day months and 365-day
+ * years. It does not do date arithmetic or formatting.
+ */
 export class DurationValue extends NotNullValue {
+  /**
+   * Creates a duration from its components.
+   *
+   * @param years - The number of years.
+   * @param months - The number of months.
+   * @param days - The number of days.
+   * @param hours - The number of hours.
+   * @param minutes - The number of minutes.
+   * @param seconds - The number of seconds.
+   * @param milliseconds - The number of milliseconds.
+   */
   public constructor(
     private readonly years: number,
     private readonly months: number,
@@ -69,6 +93,18 @@ export class DurationValue extends NotNullValue {
     return self;
   }
 
+  /**
+   * Mock-only factory: creates a duration, spyable via `vi.spyOn(DurationValue, 'create__')`.
+   *
+   * @param years - The number of years.
+   * @param months - The number of months.
+   * @param days - The number of days.
+   * @param hours - The number of hours.
+   * @param minutes - The number of minutes.
+   * @param seconds - The number of seconds.
+   * @param milliseconds - The number of milliseconds.
+   * @returns The new duration.
+   */
   public static create__(
     years: number,
     months: number,
@@ -81,14 +117,34 @@ export class DurationValue extends NotNullValue {
     return new DurationValue(years, months, days, hours, minutes, seconds, milliseconds);
   }
 
+  /**
+   * Creates a duration from a number of milliseconds.
+   *
+   * @param milliseconds - The length of the duration.
+   * @returns A duration whose only non-zero component is its milliseconds.
+   */
   public static fromMilliseconds(milliseconds: number): DurationValue {
     return DurationValue.create__(0, 0, 0, 0, 0, 0, milliseconds);
   }
 
+  /**
+   * Mock-only: views a value typed as Obsidian's `DurationValue` as this mock. The numbered subclass variant of
+   * `fromOriginalType__`.
+   *
+   * @param value - The value typed as the original `DurationValue`.
+   * @returns The same object, typed as the mock.
+   */
   public static fromOriginalType3__(value: DurationValueOriginal): DurationValue {
     return strictProxy(value, DurationValue);
   }
 
+  /**
+   * Parses a duration from a string. Obsidian documents ISO 8601 durations; the mock accepts a single signed
+   * integer and unit, such as `3 days`, `-2h` or `1 week` (weeks become seven days).
+   *
+   * @param input - The string to parse; surrounding whitespace is ignored.
+   * @returns The parsed duration, or `null` when the string or its unit is not recognized.
+   */
   public static parseFromString(input: string): DurationValue | null {
     const groups = /^(?<value>-?\d+)\s*(?<unit>[a-z]+)$/.exec(input.trim())?.groups;
     if (!groups) {
@@ -113,14 +169,39 @@ export class DurationValue extends NotNullValue {
     return DurationValue.create__(components.years, components.months, components.days, components.hours, components.minutes, components.seconds, 0);
   }
 
+  /**
+   * Shifts a date by this duration. The mock does no date arithmetic.
+   *
+   * @param value - The date to shift.
+   * @param _subtract - Whether to subtract the duration instead of adding it.
+   * @returns The given date, unchanged.
+   */
   public addToDate(value: DateValueOriginal, _subtract?: boolean): DateValueOriginal {
     return value;
   }
 
+  /**
+   * Mock-only: views this mock as Obsidian's `DurationValue` type. The numbered subclass variant of
+   * `asOriginalType__`.
+   *
+   * @returns The same object, typed as the original `DurationValue`.
+   */
   public asOriginalType3__(): DurationValueOriginal {
     return strictProxy<DurationValueOriginal>(this);
   }
 
+  /**
+   * Mock-only construction hook, called at the end of the constructor; a no-op meant for
+   * `vi.spyOn(DurationValue.prototype, 'constructor3__')`.
+   *
+   * @param _years - The years the duration was created with.
+   * @param _months - The months the duration was created with.
+   * @param _days - The days the duration was created with.
+   * @param _hours - The hours the duration was created with.
+   * @param _minutes - The minutes the duration was created with.
+   * @param _seconds - The seconds the duration was created with.
+   * @param _milliseconds - The milliseconds the duration was created with.
+   */
   public constructor3__(
     _years: number,
     _months: number,
@@ -133,6 +214,11 @@ export class DurationValue extends NotNullValue {
     noop();
   }
 
+  /**
+   * Converts this duration to milliseconds.
+   *
+   * @returns The total length in milliseconds, counting a month as 30 days and a year as 365 days.
+   */
   public getMilliseconds(): number {
     return this.milliseconds
       + this.seconds * MILLISECONDS_IN_SECOND
@@ -143,10 +229,20 @@ export class DurationValue extends NotNullValue {
       + this.years * MILLISECONDS_IN_YEAR;
   }
 
+  /**
+   * Checks whether the value counts as true in a Bases formula.
+   *
+   * @returns Always `true`, even for a zero-length duration.
+   */
   public isTruthy(): boolean {
     return true;
   }
 
+  /**
+   * Formats the duration as text. Not implemented in the mock.
+   *
+   * @returns Always `''`.
+   */
   public toString(): string {
     return '';
   }

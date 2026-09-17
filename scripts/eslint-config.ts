@@ -9,7 +9,10 @@ import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescrip
 // eslint-disable-next-line import-x/no-rename-default -- The default export name `plugin` says nothing about which plugin it is.
 import astro from 'eslint-plugin-astro';
 import { flatConfigs as eslintPluginImportXFlatConfigs } from 'eslint-plugin-import-x';
+// eslint-disable-next-line import-x/no-rename-default, import-x/no-named-as-default -- The default export name `index` is too confusing.
+import jsdoc from 'eslint-plugin-jsdoc';
 import { configs as perfectionistConfigs } from 'eslint-plugin-perfectionist';
+import eslintPluginTsdoc from 'eslint-plugin-tsdoc';
 // eslint-disable-next-line import-x/no-rename-default -- The default export name `index` is too confusing.
 import unicorn from 'eslint-plugin-unicorn';
 import { defineConfig } from 'eslint/config';
@@ -33,6 +36,12 @@ const typeScriptFiles = [
 const testFiles = [
   'src/**/*.test.ts',
   'scripts/**/*.test.ts'
+];
+
+// The published library. The jsdoc/tsdoc rules are scoped to it (minus its tests), the way
+// `obsidian-dev-utils` scopes them to its `sourceFiles`: build scripts are not part of the documented surface.
+const sourceFiles = [
+  'src/**/*.ts'
 ];
 
 export const config: Linter.Config[] = defineConfig(
@@ -61,6 +70,8 @@ export const config: Linter.Config[] = defineConfig(
   ...getAstroConfigTypeCheckingConfigs(),
   ...getStylisticConfigs(),
   ...getImportXConfigs(),
+  ...getTsdocsConfigs(),
+  ...getJsdocsConfigs(),
   ...getPerfectionistConfigs(),
   ...getUnicornConfigs(),
   ...getEslintImportResolverTypescriptConfigs(),
@@ -461,6 +472,150 @@ function getImportXConfigs(): Linter.Config[] {
   ]);
 }
 
+/**
+ * Require TSDoc on every exported member of the published library, with the rule set `obsidian-dev-utils` uses.
+ *
+ * Kept deliberately, not as drift: this package once left jsdoc/tsdoc out on the grounds that its surface mirrors
+ * Obsidian's API name for name, so Obsidian's own docs describe it. That is not a reason to skip docs — a consumer
+ * reads THESE declarations, and a mock's behavior (what it tracks, what it no-ops, what a `__` helper does) is
+ * exactly what Obsidian's docs cannot say.
+ */
+function getJsdocsConfigs(): Linter.Config[] {
+  return defineConfig([
+    {
+      // eslint-disable-next-line import-x/no-named-as-default-member -- `configs` is the plugin's configuration namespace.
+      ...jsdoc.configs['flat/recommended-typescript-error'],
+      files: sourceFiles,
+      ignores: testFiles
+    },
+    {
+      files: sourceFiles,
+      ignores: testFiles,
+      plugins: {
+        jsdoc
+      },
+      rules: {
+        'jsdoc/check-tag-names': [
+          'error',
+          {
+            definedTags: [
+              'remarks',
+              'typeParam'
+            ]
+          }
+        ],
+        'jsdoc/check-template-names': 'error',
+        /*
+         * Empty JSDoc blocks are never a valid substitute for real documentation, regardless of how they appear
+         * (hand-written or inserted by `jsdoc/require-jsdoc`'s autofix as a placeholder). `enableFixer: false` keeps
+         * the empty block in place and reports it, forcing a real description to be written instead of silently
+         * deleting the placeholder and re-triggering `require-jsdoc`.
+         */
+        'jsdoc/no-blank-blocks': ['error', { enableFixer: false }],
+        /*
+         * Inherited from `flat/recommended-typescript-error`, restated here to record that it is kept deliberately
+         * and not disabled: it forbids a valued `@default` and a `@param foo=5` default in function-shaped contexts, which is
+         * exactly the boundary that is wanted — the tag documents a type member, whose declaration cannot show its
+         * default, and never a parameter, whose initializer already does. Both checks share the rule's single
+         * `contexts` list, so keeping either means keeping both. Note the autofix STRIPS the tag's value rather than
+         * reporting it, so `--fix` would silently delete such a doc.
+         */
+        'jsdoc/no-defaults': 'error',
+        'jsdoc/require-description': 'error',
+        'jsdoc/require-file-overview': [
+          'error',
+          {
+            tags: {
+              file: {
+                initialCommentsOnly: true,
+                mustExist: true,
+                preventDuplicates: true
+              }
+            }
+          }
+        ],
+        'jsdoc/require-jsdoc': [
+          'error',
+          {
+            contexts: [
+              {
+                context: 'ExportNamedDeclaration > FunctionDeclaration'
+              },
+              {
+                context: 'ExportDefaultDeclaration > FunctionDeclaration'
+              },
+              {
+                context: 'ExportNamedDeclaration > VariableDeclaration > VariableDeclarator > ArrowFunctionExpression'
+              },
+              {
+                context: 'ExportDefaultDeclaration > ArrowFunctionExpression'
+              },
+              {
+                context: 'ExportNamedDeclaration MethodDefinition:not([accessibility="private"])'
+              },
+              {
+                context: 'ExportDefaultDeclaration MethodDefinition:not([accessibility="private"])'
+              },
+              {
+                context: 'ExportNamedDeclaration > ClassDeclaration > ClassBody > PropertyDefinition:not([accessibility=\'private\'])'
+              },
+              {
+                context: 'ExportDefaultDeclaration > ClassDeclaration > ClassBody > PropertyDefinition:not([accessibility=\'private\'])'
+              },
+              {
+                context: 'ExportNamedDeclaration > ClassDeclaration > ClassBody > TSAbstractPropertyDefinition:not([accessibility=\'private\'])'
+              },
+              {
+                context: 'ExportDefaultDeclaration > ClassDeclaration > ClassBody > TSAbstractPropertyDefinition:not([accessibility=\'private\'])'
+              },
+              {
+                context: 'ExportNamedDeclaration > TSInterfaceDeclaration'
+              },
+              {
+                context: 'ExportNamedDeclaration > TSTypeAliasDeclaration'
+              },
+              {
+                context: 'ExportNamedDeclaration > TSEnumDeclaration'
+              },
+              {
+                context: 'ExportNamedDeclaration > ClassDeclaration'
+              },
+              {
+                context: 'ExportDefaultDeclaration > ClassDeclaration'
+              }
+            ],
+            publicOnly: false,
+            require: {
+              ArrowFunctionExpression: false,
+              ClassDeclaration: false,
+              ClassExpression: false,
+              FunctionDeclaration: false,
+              MethodDefinition: false
+            }
+          }
+        ],
+        'jsdoc/require-template': 'error',
+        'jsdoc/require-template-description': 'error',
+        'jsdoc/require-throws-type': 'off',
+        'jsdoc/tag-lines': [
+          'error',
+          'any',
+          {
+            startLines: 1
+          }
+        ]
+      },
+      settings: {
+        jsdoc: {
+          tagNamePreference: {
+            template: 'typeParam'
+          }
+        }
+      }
+    }
+  ]);
+}
+
 function getLocalPluginConfigs(): Linter.Config[] {
   return defineConfig([{
     files: typeScriptFiles,
@@ -533,6 +688,18 @@ function getStylisticConfigs(): Linter.Config[] {
             allowTemplateLiterals: 'never'
           }
         ]
+      }
+    }
+  ]);
+}
+
+function getTsdocsConfigs(): Linter.Config[] {
+  return defineConfig([
+    {
+      files: sourceFiles,
+      ignores: testFiles,
+      plugins: {
+        tsdoc: eslintPluginTsdoc
       }
     }
   ]);

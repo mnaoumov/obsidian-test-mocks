@@ -1,3 +1,13 @@
+/**
+ * @file
+ *
+ * Mock of Obsidian's `Platform`, describing the device and app the plugin runs in.
+ */
+
+/**
+ * Flags describing the platform. The mock reports the desktop app on Windows, with a fixed desktop
+ * `resourcePathPrefix`; tests can overwrite the flags to simulate another platform.
+ */
 export const Platform = {
   isAndroidApp: false,
   isDesktop: true,
