@@ -21,6 +21,14 @@ export abstract class Value {
   public static type: string;
 
   /**
+   * The lucide icon name standing for this value's type.
+   *
+   * Obsidian assigns it in each class's constructor rather than reading it off the prototype, so a subclass
+   * that wants its own icon overrides this field and every other subclass inherits the one above it.
+   */
+  public icon = 'lucide-file-question';
+
+  /**
    * Creates a value.
    */
   public constructor() {
@@ -33,11 +41,13 @@ export abstract class Value {
    * Compares two possibly-null values: two `null`s are equal, a `null` never equals a value, and otherwise
    * `a.equals(b)` decides.
    *
+   * @param this - Unused; declared `void` so the function can be passed on as a comparator, which
+   * {@link ListValue.compare} does.
    * @param a - The first value.
    * @param b - The second value.
    * @returns Whether the values are equal.
    */
-  public static equals(a: null | Value, b: null | Value): boolean {
+  public static equals(this: void, a: null | Value, b: null | Value): boolean {
     return a === null || b === null ? a === b : a.equals(b);
   }
 
@@ -55,11 +65,13 @@ export abstract class Value {
    * Loosely compares two possibly-null values: two `null`s are equal, a `null` never equals a value, and otherwise
    * `a.looseEquals(b)` decides.
    *
+   * @param this - Unused; declared `void` so the function can be passed on as a comparator, which
+   * {@link ListValue.compare} does.
    * @param a - The first value.
    * @param b - The second value.
    * @returns Whether the values are loosely equal.
    */
-  public static looseEquals(a: null | Value, b: null | Value): boolean {
+  public static looseEquals(this: void, a: null | Value, b: null | Value): boolean {
     return a === null || b === null ? a === b : a.looseEquals(b);
   }
 
@@ -98,6 +110,16 @@ export abstract class Value {
   public abstract isTruthy(): boolean;
 
   /**
+   * Lists the property keys {@link Value.objectAccess} answers for, which is what a Bases formula's `.`
+   * access can reach on this value.
+   *
+   * @returns No keys: the base value exposes none. A subclass concatenates its own onto this.
+   */
+  public keys(): string[] {
+    return [];
+  }
+
+  /**
    * Compares this value with a value of any type. The mock compares their string forms.
    *
    * @param other - The value to compare with.
@@ -105,6 +127,17 @@ export abstract class Value {
    */
   public looseEquals(other: Value): boolean {
     return this.toString() === other.toString();
+  }
+
+  /**
+   * Reads a named sub-property of this value, as a Bases formula's `.` access does.
+   *
+   * @param _key - The property key, matched without regard to case.
+   * @returns `null`: the base value exposes no properties. A subclass answers the keys it owns and defers
+   * the rest to this.
+   */
+  public objectAccess(_key: string): null | Value {
+    return null;
   }
 
   /**

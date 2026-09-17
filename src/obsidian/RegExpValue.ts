@@ -17,6 +17,11 @@ import { NotNullValue } from './NotNullValue.ts';
  */
 export class RegExpValue extends NotNullValue {
   /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-regex';
+
+  /**
    * Creates a value wrapping `regexp`.
    *
    * @param regexp - The regular expression to wrap.

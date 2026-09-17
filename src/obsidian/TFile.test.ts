@@ -16,6 +16,20 @@ function createVault(): Vault {
 }
 
 describe('TFile', () => {
+  describe('getShortName', () => {
+    it('should drop the extension of a markdown file', () => {
+      expect(TFile.create__(createVault(), 'folder/note.md').getShortName()).toBe('note');
+    });
+
+    it('should keep the whole name of any other file', () => {
+      expect(TFile.create__(createVault(), 'folder/image.png').getShortName()).toBe('image.png');
+    });
+
+    it('should keep the whole name of a file with no extension', () => {
+      expect(TFile.create__(createVault(), 'LICENSE').getShortName()).toBe('LICENSE');
+    });
+  });
+
   it('should create an instance via create__', () => {
     const vault = createVault();
     const file = TFile.create__(vault, 'folder/note.md');

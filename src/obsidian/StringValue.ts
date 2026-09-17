@@ -6,14 +6,22 @@
 
 import type { StringValue as StringValueOriginal } from 'obsidian';
 
+import type { Value } from './Value.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { NumberValue } from './NumberValue.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
 
 /**
  * Mock of Obsidian's `StringValue`: a primitive value holding a string.
  */
 export class StringValue extends PrimitiveValue<string> {
+  /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-text';
+
   /**
    * Creates a string value.
    *
@@ -63,5 +71,24 @@ export class StringValue extends PrimitiveValue<string> {
    */
   public constructor4__(_value = ''): void {
     noop();
+  }
+
+  /**
+   * Lists the property keys {@link StringValue.objectAccess} answers for.
+   *
+   * @returns The inherited keys followed by `length`.
+   */
+  public override keys(): string[] {
+    return [...super.keys(), 'length'];
+  }
+
+  /**
+   * Reads a named sub-property of this value.
+   *
+   * @param key - The property key, matched without regard to case.
+   * @returns The string's length as a `NumberValue` for `length`, and otherwise whatever the base answers.
+   */
+  public override objectAccess(key: string): null | Value {
+    return key.toLowerCase() === 'length' ? NumberValue.create__(this.value__.length) : super.objectAccess(key);
   }
 }

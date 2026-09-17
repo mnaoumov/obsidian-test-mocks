@@ -9,6 +9,10 @@ import {
 import { UrlValue } from './UrlValue.ts';
 
 describe('UrlValue', () => {
+  it('should carry the link icon', () => {
+    expect(UrlValue.create2__('https://example.com').icon).toBe('lucide-link');
+  });
+
   it('should create an instance via create2__', () => {
     const value = UrlValue.create2__('https://example.com');
     expect(value).toBeInstanceOf(UrlValue);

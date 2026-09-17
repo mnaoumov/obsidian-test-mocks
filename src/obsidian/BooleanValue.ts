@@ -15,6 +15,11 @@ import { PrimitiveValue } from './PrimitiveValue.ts';
  */
 export class BooleanValue extends PrimitiveValue<boolean> {
   /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-check-square';
+
+  /**
    * Creates a value wrapping a boolean.
    *
    * @param value - The wrapped boolean; `false` when omitted.

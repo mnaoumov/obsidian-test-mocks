@@ -6,9 +6,12 @@
 
 import type { DateValue as DateValueOriginal } from 'obsidian';
 
+import type { Value } from './Value.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
+import { NumberValue } from './NumberValue.ts';
 import { moment } from './vars/moment.ts';
 
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -17,7 +20,8 @@ const YEAR_FORMAT_LENGTH = 4;
 const TWO_DIGITS_FORMAT_LENGTH = 2;
 
 /**
- * Mock of Obsidian's `DateValue`, a Bases `Value` wrapping a `Date`, optionally with its time of day.
+ * Mock of Obsidian's `DateValue`, a Bases `Value` wrapping a `Date`, optionally with its time of day. The
+ * icon follows that: `lucide-clock` when the value has its time, `lucide-calendar` when it does not.
  */
 export class DateValue extends NotNullValue {
   /**
@@ -29,6 +33,7 @@ export class DateValue extends NotNullValue {
    */
   public constructor(public date: Date, public time = true) {
     super();
+    this.icon = this.time ? 'lucide-clock' : 'lucide-calendar';
     const self = strictProxy(this);
     self.constructor3__(date, time);
     return self;
@@ -109,6 +114,64 @@ export class DateValue extends NotNullValue {
    */
   public isTruthy(): boolean {
     return true;
+  }
+
+  /**
+   * Lists the property keys {@link DateValue.objectAccess} answers for.
+   *
+   * @returns The inherited keys followed by the eight date parts, whether or not the value shows its time.
+   */
+  public override keys(): string[] {
+    return [
+      ...super.keys(),
+      'year',
+      'month',
+      'day',
+      'hour',
+      'minute',
+      'second',
+      'millisecond',
+      'timestamp'
+    ];
+  }
+
+  /**
+   * Reads a named part of the date.
+   *
+   * @param key - The property key, matched without regard to case.
+   * @returns The part as a `NumberValue` — `month` counted from `1`, `timestamp` in milliseconds since the
+   * epoch, and every other part read in local time — and otherwise whatever the base answers.
+   */
+  public override objectAccess(key: string): null | Value {
+    switch (key.toLowerCase()) {
+      case 'day': {
+        return NumberValue.create__(this.date.getDate());
+      }
+      case 'hour': {
+        return NumberValue.create__(this.date.getHours());
+      }
+      case 'millisecond': {
+        return NumberValue.create__(this.date.getMilliseconds());
+      }
+      case 'minute': {
+        return NumberValue.create__(this.date.getMinutes());
+      }
+      case 'month': {
+        return NumberValue.create__(this.date.getMonth() + 1);
+      }
+      case 'second': {
+        return NumberValue.create__(this.date.getSeconds());
+      }
+      case 'timestamp': {
+        return NumberValue.create__(this.date.getTime());
+      }
+      case 'year': {
+        return NumberValue.create__(this.date.getFullYear());
+      }
+      default: {
+        return super.objectAccess(key);
+      }
+    }
   }
 
   /**

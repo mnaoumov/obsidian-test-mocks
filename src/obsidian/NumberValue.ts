@@ -15,6 +15,11 @@ import { PrimitiveValue } from './PrimitiveValue.ts';
  */
 export class NumberValue extends PrimitiveValue<number> {
   /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-binary';
+
+  /**
    * Creates a value wrapping `value`.
    *
    * @param value - The number to wrap; `0` when omitted.

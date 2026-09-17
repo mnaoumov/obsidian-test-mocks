@@ -20,6 +20,13 @@ import { Value } from './Value.ts';
  */
 export class ObjectValue extends NotNullValue {
   /**
+   * The lucide icon name standing for this value's type.
+   *
+   * `lucide-list` rather than an object-shaped glyph, which is Obsidian's own choice, not a copy error.
+   */
+  public override icon = 'lucide-list';
+
+  /**
    * Creates a value wrapping `data`.
    *
    * @param data - The object to wrap, stored as {@link ObjectValue.data}. The object passed in, not a copy.
@@ -121,6 +128,16 @@ export class ObjectValue extends NotNullValue {
   }
 
   /**
+   * Lists the property keys {@link ObjectValue.objectAccess} answers for.
+   *
+   * @returns The wrapped object's own enumerable keys. It REPLACES the inherited list rather than adding to
+   * it, as Obsidian's own override does.
+   */
+  public override keys(): string[] {
+    return Object.keys(this.data);
+  }
+
+  /**
    * Converts a raw property to a `Value`, as Obsidian's default evaluator does.
    *
    * @param _key - The property's name.
@@ -132,6 +149,17 @@ export class ObjectValue extends NotNullValue {
    */
   public lazyEvaluator(_key: string, raw: unknown): Value {
     return lazyEvaluate(raw);
+  }
+
+  /**
+   * Reads a named property of the wrapped object.
+   *
+   * @param key - The property key, matched without regard to case.
+   * @returns Whatever {@link ObjectValue.getInsensitive} answers, so an unknown key gives `NullValue.value`
+   * rather than the `null` the base answers.
+   */
+  public override objectAccess(key: string): null | Value {
+    return this.getInsensitive(key);
   }
 
   /**

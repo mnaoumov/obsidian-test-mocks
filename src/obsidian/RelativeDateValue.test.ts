@@ -10,6 +10,11 @@ import { DateValue } from './DateValue.ts';
 import { RelativeDateValue } from './RelativeDateValue.ts';
 
 describe('RelativeDateValue', () => {
+  it('should inherit the date icons, which follow the time rather than the class', () => {
+    expect(RelativeDateValue.create2__(new Date(), true).icon).toBe('lucide-clock');
+    expect(RelativeDateValue.create2__(new Date(), false).icon).toBe('lucide-calendar');
+  });
+
   it('should create an instance via create2__', () => {
     const value = RelativeDateValue.create2__(new Date());
     expect(value).toBeInstanceOf(RelativeDateValue);

@@ -8,6 +8,55 @@ import { DateValue } from './DateValue.ts';
 import { moment } from './vars/moment.ts';
 
 describe('DateValue', () => {
+  describe('icon', () => {
+    it('should be the clock when the value has its time', () => {
+      expect(new DateValue(new Date(), true).icon).toBe('lucide-clock');
+    });
+
+    it('should be the calendar when the value has no time', () => {
+      expect(new DateValue(new Date(), false).icon).toBe('lucide-calendar');
+    });
+  });
+
+  describe('keys', () => {
+    it('should add the eight date parts to the inherited keys', () => {
+      expect(new DateValue(new Date(), false).keys()).toEqual([
+        'year',
+        'month',
+        'day',
+        'hour',
+        'minute',
+        'second',
+        'millisecond',
+        'timestamp'
+      ]);
+    });
+  });
+
+  describe('objectAccess', () => {
+    const SAMPLE = new Date(2026, 8, 17, 13, 45, 6, 78);
+
+    it('should answer each date part in local time, counting the month from one', () => {
+      const value = new DateValue(SAMPLE);
+      expect(value.objectAccess('year')?.toString()).toBe('2026');
+      expect(value.objectAccess('month')?.toString()).toBe('9');
+      expect(value.objectAccess('day')?.toString()).toBe('17');
+      expect(value.objectAccess('hour')?.toString()).toBe('13');
+      expect(value.objectAccess('minute')?.toString()).toBe('45');
+      expect(value.objectAccess('second')?.toString()).toBe('6');
+      expect(value.objectAccess('millisecond')?.toString()).toBe('78');
+      expect(value.objectAccess('timestamp')?.toString()).toBe(String(SAMPLE.getTime()));
+    });
+
+    it('should ignore the key\'s case', () => {
+      expect(new DateValue(SAMPLE).objectAccess('YEAR')?.toString()).toBe('2026');
+    });
+
+    it('should answer null for any other key', () => {
+      expect(new DateValue(SAMPLE).objectAccess('week')).toBeNull();
+    });
+  });
+
   const YEAR = 2024;
   const JANUARY = 0;
   const DAY = 5;

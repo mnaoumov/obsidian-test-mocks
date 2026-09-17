@@ -31,6 +31,11 @@ export class LinkValue extends StringValue {
   public display: null | StringValue;
 
   /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-link';
+
+  /**
    * The path of the note the link is in, used to resolve relative targets.
    */
   public sourcePath: string;

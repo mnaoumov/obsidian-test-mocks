@@ -91,4 +91,14 @@ export class TFile extends TAbstractFile {
   public constructor2__(_vault: Vault, _path: string): void {
     noop();
   }
+
+  /**
+   * Gets the name Obsidian shows for the file.
+   *
+   * @returns The basename for a markdown file, whose extension the app hides, and the full name for any
+   * other file.
+   */
+  public getShortName(): string {
+    return this.extension === 'md' ? this.basename : this.name;
+  }
 }

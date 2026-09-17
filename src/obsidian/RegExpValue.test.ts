@@ -9,6 +9,10 @@ import {
 import { RegExpValue } from './RegExpValue.ts';
 
 describe('RegExpValue', () => {
+  it('should carry the regex icon', () => {
+    expect(new RegExpValue(/test/).icon).toBe('lucide-regex');
+  });
+
   it('should create an instance via create__', () => {
     const value = RegExpValue.create__(/test/);
     expect(value).toBeInstanceOf(RegExpValue);

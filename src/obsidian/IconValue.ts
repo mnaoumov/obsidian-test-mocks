@@ -15,6 +15,11 @@ import { StringValue } from './StringValue.ts';
  */
 export class IconValue extends StringValue {
   /**
+   * The lucide icon name standing for this value's type.
+   */
+  public override icon = 'lucide-image';
+
+  /**
    * Creates an icon value.
    *
    * @param value - The icon id.

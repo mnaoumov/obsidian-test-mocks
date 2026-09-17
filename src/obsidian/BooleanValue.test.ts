@@ -7,6 +7,10 @@ import {
 import { BooleanValue } from './BooleanValue.ts';
 
 describe('BooleanValue', () => {
+  it('should carry the boolean icon', () => {
+    expect(new BooleanValue().icon).toBe('lucide-check-square');
+  });
+
   it('should default to false', () => {
     const value = new BooleanValue();
     expect(value.value__).toBe(false);
