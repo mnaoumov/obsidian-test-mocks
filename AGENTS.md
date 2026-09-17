@@ -328,11 +328,18 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   `createFolder('a/b')` creates/links intermediate ancestors.
 - **The vault refuses what Obsidian refuses** (2026-09-17, measured on a real Obsidian 1.14.2): `create` /
   `createBinary` throw `File already exists.` and `createFolder` throws `Folder already exists.` when the adapter
-  reports anything at the path; the adapter's `copy` never overwrites a file, `rename` onto an existing path throws
-  `Destination file already exists!`, and a non-recursive `rmdir` of a non-empty folder throws. Seed a test vault with
-  `createSync__` / `createFolderSync__`, which stay lenient on purpose. Deleting or trashing a folder stops tracking every
-  descendant, firing `delete` for each before the folder; `copy` accepts folders; `getAllFolders()` leaves the root
-  out unless passed `true`.
+  reports anything at the path; the adapter's `copy` never overwrites a file, and `rename` onto an existing path throws
+  `Destination file already exists!`. Seed a test vault with `createSync__` / `createFolderSync__`, which stay lenient
+  on purpose. Deleting or trashing a folder stops tracking every descendant, firing `delete` for each before the
+  folder, and every removed entry's `parent` is `null` by the time its `delete` fires; deleting or trashing the root
+  does nothing; `copy` accepts folders; `getAllFolders()` leaves the root out unless passed `true`.
+- **The two adapters differ where Obsidian's do** (2026-09-17, read in Obsidian 1.14.2's `app.js`). `rmdir` of a
+  missing path throws `ENOENT … lstat` on both. The desktop `FileSystemAdapter` (the one `App` uses) runs
+  `fs.rm(path, { recursive })`, so `rmdir(path, false)` refuses ANY folder, an empty one included, with `EISDIR` —
+  which means `vault.delete(folder)` throws unless passed `force: true`, exactly as in the app. The mobile
+  `CapacitorAdapter` ignores `recursive` and always removes the whole folder. The desktop adapter also refuses to copy
+  a FILE into a missing folder (`ENOENT … copyfile`), while a copied folder still gets its parents created; the mobile
+  copy is native and is left creating parents.
 
 - **Attachment-path resolution is modeled end to end** (added 2026-07-28) — anything calling
   `obsidian-dev-utils`' `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`

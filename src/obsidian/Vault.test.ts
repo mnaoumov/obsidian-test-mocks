@@ -17,6 +17,7 @@ import { castTo } from '../internal/castTo.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
+import { CapacitorAdapter } from './CapacitorAdapter.ts';
 import { TFile } from './TFile.ts';
 import { TFolder } from './TFolder.ts';
 import { Vault } from './Vault.ts';
@@ -185,6 +186,19 @@ describe('Vault', () => {
       expect(app.vault.getFileByPath('src/sub/a.md')).not.toBeNull();
     });
 
+    it('should refuse to copy a file into a missing folder on desktop, tracking nothing', async () => {
+      const app = App.createConfigured__({ files: { 'C/b.md': 'cb' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('C/b.md'));
+      const handler = vi.fn();
+      app.vault.on('create', handler);
+
+      await expect(app.vault.copy(file, 'Q/R/b.md')).rejects.toThrow(
+        'ENOENT: no such file or directory, copyfile \'/mock-vault/C/b.md\' -> \'/mock-vault/Q/R/b.md\''
+      );
+      expect(app.vault.getAbstractFileByPath('Q')).toBeNull();
+      expect(handler).not.toHaveBeenCalled();
+    });
+
     it('should merge a copied folder into an existing folder', async () => {
       const app = App.createConfigured__({ files: { 'dest/other.md': 'O', 'src/a.md': 'A' } });
       const destination = ensureNonNullable(app.vault.getFolderByPath('dest'));
@@ -309,11 +323,63 @@ describe('Vault', () => {
       expect(app.vault.getFileByPath('note.md')).toBeNull();
     });
 
-    it('should delete a folder', async () => {
+    it('should delete a folder when forced', async () => {
       const app = App.createConfigured__({ files: { 'folder/': '' } });
       const folder = ensureNonNullable(app.vault.getFolderByPath('folder'));
-      await app.vault.delete(folder);
+      await app.vault.delete(folder, true);
       expect(app.vault.getFolderByPath('folder')).toBeNull();
+    });
+
+    it('should refuse to delete even an empty folder without force on desktop, leaving it tracked', async () => {
+      const app = App.createConfigured__({ files: { 'folder/': '' } });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('folder'));
+      const handler = vi.fn();
+      app.vault.on('delete', handler);
+
+      await expect(app.vault.delete(folder)).rejects.toThrow('Path is a directory: rm returned EISDIR (is a directory) /mock-vault/folder');
+      expect(app.vault.getFolderByPath('folder')).toBe(folder);
+      expect(folder.deleted).toBe(false);
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should delete a non-empty folder without force on mobile, whose rmdir is always recursive', async () => {
+      const vault = Vault.create2__(CapacitorAdapter.create__('/mock-vault', null));
+      const folder = vault.createFolderSync__('folder');
+      vault.createSync__('folder/note.md', 'content');
+
+      await vault.delete(folder);
+
+      expect(vault.getFolderByPath('folder')).toBeNull();
+      expect(vault.getFileByPath('folder/note.md')).toBeNull();
+      await expect(vault.adapter.exists('folder/note.md')).resolves.toBe(false);
+    });
+
+    it('should do nothing when deleting the root', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const root = app.vault.getRoot();
+      const handler = vi.fn();
+      app.vault.on('delete', handler);
+
+      await app.vault.delete(root, true);
+
+      expect(app.vault.getRoot()).toBe(root);
+      expect(root.deleted).toBe(false);
+      expect(app.vault.getFileByPath('note.md')).not.toBeNull();
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should clear parent before firing delete', async () => {
+      const app = App.createConfigured__({ files: { 'folder/note.md': 'content' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('folder/note.md'));
+      let parentSeenByHandler: unknown = 'not called';
+      app.vault.on('delete', () => {
+        parentSeenByHandler = file.parent;
+      });
+
+      await app.vault.delete(file);
+
+      expect(parentSeenByHandler).toBeNull();
+      expect(file.parent).toBeNull();
     });
 
     it('should trigger delete event', async () => {
@@ -378,6 +444,9 @@ describe('Vault', () => {
       expect(app.vault.getFiles()).toEqual([]);
       expect(folder.children).toEqual([]);
       expect(sub.children).toEqual([]);
+      for (const entry of [folder, sub, a, b]) {
+        expect(entry.parent).toBeNull();
+      }
     });
   });
 
@@ -752,6 +821,16 @@ describe('Vault', () => {
       expect(handler).toHaveBeenCalledWith(file);
     });
 
+    it('should do nothing when trashing the root', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const root = app.vault.getRoot();
+
+      await app.vault.trash(root, false);
+
+      expect(root.deleted).toBe(false);
+      expect(app.vault.getFileByPath('note.md')).not.toBeNull();
+    });
+
     it('should untrack every descendant of a trashed folder, firing delete for each before the folder', async () => {
       const app = App.createConfigured__({ files: { 'T/sub/a.md': 'a' } });
       const file = ensureNonNullable(app.vault.getFileByPath('T/sub/a.md'));
@@ -826,6 +905,7 @@ describe('Vault', () => {
       expect(parent.children).toContain(file);
       app.vault.deleteVaultAbstractFile__('folder/file.md');
       expect(parent.children).not.toContain(file);
+      expect(file.parent).toBeNull();
     });
 
     it('should remove the file from case-insensitive lookup', () => {

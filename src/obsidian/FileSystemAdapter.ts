@@ -85,6 +85,26 @@ export class FileSystemAdapter extends InMemoryAdapter {
   }
 
   /**
+   * Copies a file, or a folder together with everything under it, as the in-memory adapter does, except that a FILE
+   * is never copied into a missing folder: Obsidian's desktop adapter copies a file with `fs.copyFile`, which does not
+   * create parents, while it creates a copied folder with a recursive `mkdir`, which does.
+   *
+   * @param normalizedPath - The vault-relative path of the file or folder to copy.
+   * @param normalizedNewPath - The vault-relative path of the copy.
+   * @throws Error `ENOENT: no such file or directory, copyfile …` when a file's destination folder does not exist, and
+   * whatever {@link InMemoryAdapter.copy} throws.
+   */
+  public override async copy(normalizedPath: string, normalizedNewPath: string): Promise<void> {
+    if (this.statSync__(normalizedPath)?.type === 'file' && this.statSync__(getParentPath(normalizedNewPath))?.type !== 'folder') {
+      throw new Error(
+        `ENOENT: no such file or directory, copyfile '${this.getFullPath(normalizedPath)}' -> '${this.getFullPath(normalizedNewPath)}'`
+      );
+    }
+
+    await super.copy(normalizedPath, normalizedNewPath);
+  }
+
+  /**
    * Gets the absolute path of the vault folder on disk.
    *
    * @returns The base path the adapter was created with.
@@ -114,4 +134,27 @@ export class FileSystemAdapter extends InMemoryAdapter {
   public override getFullPath(normalizedPath: string): string {
     return `${this.basePath}/${normalizedPath}`;
   }
+
+  /**
+   * Removes a folder. Obsidian's desktop adapter runs `fs.rm(path, { recursive })`, so without `recursive` it
+   * refuses ANY folder, an empty one included.
+   *
+   * @param normalizedPath - The vault-relative path of the folder.
+   * @param recursive - Whether to delete everything under the folder too.
+   * @throws Error `ENOENT: no such file or directory, lstat …` when nothing exists at `normalizedPath`, and
+   * `Path is a directory: rm returned EISDIR (is a directory) …` when `recursive` is not set.
+   */
+  public override async rmdir(normalizedPath: string, recursive: boolean): Promise<void> {
+    if (!recursive) {
+      this.ensureExistsForRmdir(normalizedPath);
+      throw new Error(`Path is a directory: rm returned EISDIR (is a directory) ${this.getFullPath(normalizedPath)}`);
+    }
+
+    await super.rmdir(normalizedPath, true);
+  }
+}
+
+function getParentPath(normalizedPath: string): string {
+  const lastSlashIndex = normalizedPath.lastIndexOf('/');
+  return lastSlashIndex === -1 ? '' : normalizedPath.slice(0, lastSlashIndex);
 }

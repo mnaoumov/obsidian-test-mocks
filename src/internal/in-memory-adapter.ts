@@ -111,7 +111,8 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   /**
    * Copies a file, or a folder together with everything under it, stamping each copied file with the current time
    * and creating missing parent folders of the destination. As in Obsidian, a file is never copied over an existing
-   * file, while a folder copied onto an existing folder merges into it.
+   * file, while a folder copied onto an existing folder merges into it. The desktop `FileSystemAdapter` mock refuses
+   * to copy a file into a missing folder, as the desktop app does; the mobile app's native copy is not modelled.
    *
    * @param normalizedPath - The vault-relative path of the file or folder to copy.
    * @param normalizedNewPath - The vault-relative path of the copy.
@@ -403,25 +404,21 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   }
 
   /**
-   * Removes a folder. Unless `recursive` is set, the folder must be empty.
+   * Removes a folder together with everything under it.
    *
-   * On desktop, Obsidian 1.14.2 refuses a non-recursive removal even of an empty folder (`EISDIR` from `fs.rm`),
-   * while its mobile adapter removes it; the mock removes an empty folder, as the mobile adapter does.
+   * `recursive` is ignored here, as Obsidian 1.14.2's mobile adapter ignores it: its `rmdir` always removes
+   * recursively, a non-empty folder included. The desktop `FileSystemAdapter` mock overrides this to refuse a
+   * non-recursive removal, as the desktop app does.
    *
    * @param normalizedPath - The vault-relative path of the folder.
-   * @param recursive - Whether to delete everything under the folder too.
-   * @throws Error when `recursive` is not set and the folder is not empty.
+   * @param _recursive - Whether to delete everything under the folder too; ignored.
+   * @throws Error `ENOENT: no such file or directory, lstat …` when nothing exists at `normalizedPath`.
    */
   // eslint-disable-next-line unicorn/consistent-boolean-name -- `recursive` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
-  public async rmdir(normalizedPath: string, recursive: boolean): Promise<void> {
+  public async rmdir(normalizedPath: string, _recursive: boolean): Promise<void> {
     await noopAsync();
+    this.ensureExistsForRmdir(normalizedPath);
     const prefix = `${normalizedPath}/`;
-    if (!recursive) {
-      const hasChildren = [...this.textFiles.keys(), ...this.binaryFiles.keys(), ...this.directories].some((key) => key.startsWith(prefix));
-      if (hasChildren) {
-        throw new Error(`Directory not empty: ${normalizedPath}`);
-      }
-    }
 
     for (const key of this.textFiles.keys()) {
       if (!key.startsWith(prefix)) {
@@ -558,6 +555,18 @@ export class InMemoryAdapter implements DataAdapterOriginal {
       size: data.length
     });
     this.ensureParentDirectories(normalizedPath);
+  }
+
+  /**
+   * Throws what Obsidian's desktop `fs.rm` throws for a missing path, before anything is removed.
+   *
+   * @param normalizedPath - The vault-relative path about to be removed.
+   * @throws Error `ENOENT: no such file or directory, lstat …` when nothing exists at `normalizedPath`.
+   */
+  protected ensureExistsForRmdir(normalizedPath: string): void {
+    if (!this.existsSync(normalizedPath, true)) {
+      throw new Error(`ENOENT: no such file or directory, lstat '${this.getFullPath(normalizedPath)}'`);
+    }
   }
 
   private addLowerCaseKey(path: string): void {

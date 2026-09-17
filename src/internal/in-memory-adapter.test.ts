@@ -4,6 +4,7 @@ import {
   it
 } from 'vitest';
 
+import { CapacitorAdapter } from '../obsidian/CapacitorAdapter.ts';
 import { FileSystemAdapter } from '../obsidian/FileSystemAdapter.ts';
 import { InMemoryAdapter } from './in-memory-adapter.ts';
 
@@ -14,6 +15,11 @@ const TIMESTAMP_D = 200;
 
 function createAdapter(): FileSystemAdapter {
   return FileSystemAdapter.create__('/vault');
+}
+
+// The desktop adapter overrides `copy` and `rmdir`, so the base behavior it replaces is reached through the mobile one.
+function createMobileAdapter(): CapacitorAdapter {
+  return CapacitorAdapter.create__('/vault', null);
 }
 
 describe('InMemoryAdapter', () => {
@@ -184,7 +190,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should create parent directories for the destination', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('source.md', 'data');
       await adapter.copy('source.md', 'dir/dest.md');
 
@@ -301,6 +307,7 @@ describe('InMemoryAdapter', () => {
       const adapter = createAdapter();
       adapter.insensitive = true;
       await adapter.write('Original.md', 'content');
+      await adapter.mkdir('Copy');
       await adapter.copy('Original.md', 'Copy/Backup.md');
 
       expect(await adapter.exists('copy/backup.md')).toBe(true);
@@ -647,28 +654,21 @@ describe('InMemoryAdapter', () => {
   });
 
   describe('rmdir()', () => {
-    it('should throw when removing a non-empty directory non-recursively', async () => {
-      const adapter = createAdapter();
+    it('should remove a non-empty directory even non-recursively, as the mobile app does', async () => {
+      const adapter = createMobileAdapter();
       await adapter.write('dir/a.md', 'data');
-
-      await expect(adapter.rmdir('dir', false)).rejects.toThrow('Directory not empty: dir');
-      expect(await adapter.exists('dir')).toBe(true);
-      expect(await adapter.read('dir/a.md')).toBe('data');
-    });
-
-    it('should throw when a non-recursively removed directory holds only a sub-directory', async () => {
-      const adapter = createAdapter();
       await adapter.mkdir('dir/sub');
-
-      await expect(adapter.rmdir('dir', false)).rejects.toThrow('Directory not empty: dir');
-    });
-
-    it('should remove a directory non-recursively', async () => {
-      const adapter = createAdapter();
-      await adapter.mkdir('dir');
       await adapter.rmdir('dir', false);
 
       expect(await adapter.exists('dir')).toBe(false);
+      expect(await adapter.exists('dir/a.md')).toBe(false);
+      expect(await adapter.exists('dir/sub')).toBe(false);
+    });
+
+    it('should throw ENOENT when nothing exists at the path', async () => {
+      const adapter = createMobileAdapter();
+
+      await expect(adapter.rmdir('missing', true)).rejects.toThrow('ENOENT: no such file or directory, lstat \'/vault/missing\'');
     });
 
     it('should remove a directory and all contents recursively', async () => {
@@ -968,7 +968,7 @@ describe('InMemoryAdapter', () => {
 
   describe('rmdir() non-recursive', () => {
     it('should only remove the directory entry without touching files', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.mkdir('empty-dir');
       expect(await adapter.exists('empty-dir')).toBe(true);
       await adapter.rmdir('empty-dir', false);
@@ -978,7 +978,7 @@ describe('InMemoryAdapter', () => {
 
   describe('copy() binary file to new directory', () => {
     it('should copy binary file and create parent dirs', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.writeBinary('source.bin', Uint8Array.of(1).buffer);
       await adapter.copy('source.bin', 'dest/copy.bin');
 
