@@ -108,15 +108,13 @@ export function empty(this: Node): void {
 }
 
 /**
- * Gets the position of a node among its parent's children. The mock looks `other` up in its own parent's child
- * list, whichever node that is.
+ * Gets the position of a node among this node's children.
  *
  * @param other - The child node to locate.
- * @returns The index of `other` among its parent's child nodes, or `-1` when it has no parent.
+ * @returns The index of `other` among this node's child nodes, or `-1` when it is not a child of this node.
  */
 export function indexOf(this: Node, other: Node): number {
-  const parent = other.parentNode;
-  return parent ? [...parent.childNodes].indexOf(other as ChildNode) : -1;
+  return [...this.childNodes].indexOf(other as ChildNode);
 }
 
 /**

@@ -201,6 +201,26 @@ describe('Node.prototype extensions', () => {
       const orphan = document.createElement('div');
       expect(indexOf.call(document.createElement('div'), orphan)).toBe(-1);
     });
+
+    it('should return -1 when node is a child of another parent', () => {
+      const parent = document.createElement('div');
+      const otherParent = document.createElement('div');
+      const c1 = document.createElement('span');
+      const c2 = document.createElement('span');
+      otherParent.append(c1);
+      otherParent.append(c2);
+      expect(indexOf.call(parent, c2)).toBe(-1);
+    });
+
+    it('should search the receiver when called through the installed prototype', () => {
+      const parent = document.createElement('div');
+      const c1 = document.createElement('span');
+      const c2 = document.createElement('span');
+      parent.append(c1);
+      parent.append(c2);
+      expect(parent.indexOf(c2)).toBe(1);
+      expect(c2.indexOf(c2)).toBe(-1);
+    });
   });
 
   describe('insertAfter', () => {
