@@ -12,10 +12,10 @@ describe('FileValue', () => {
   function createFileValue(): FileValue {
     const app = App.createConfigured__({
       files: {
-        'test.md': ''
+        'folder/test.md': ''
       }
     });
-    const file = ensureNonNullable(app.vault.getFileByPath('test.md'));
+    const file = ensureNonNullable(app.vault.getFileByPath('folder/test.md'));
     return new FileValue(app, file);
   }
 
@@ -24,13 +24,13 @@ describe('FileValue', () => {
     expect(value.isTruthy()).toBe(true);
   });
 
-  it('should return empty string for toString', () => {
+  it('should render as the file path', () => {
     const value = createFileValue();
-    expect(String(value)).toBe('');
+    expect(String(value)).toBe('folder/test.md');
   });
 
   describe('create__', () => {
-    it('should create an instance via factory method', () => {
+    it('should create an instance that keeps the app and the file', () => {
       const app = App.createConfigured__({
         files: {
           'test.md': ''
@@ -39,6 +39,8 @@ describe('FileValue', () => {
       const file = ensureNonNullable(app.vault.getFileByPath('test.md'));
       const value = FileValue.create__(app, file);
       expect(value).toBeInstanceOf(FileValue);
+      expect(value.app).toBe(app);
+      expect(value.file).toBe(file);
     });
   });
 
