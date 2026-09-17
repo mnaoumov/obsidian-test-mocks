@@ -91,6 +91,23 @@ describe('DropdownComponent', () => {
     });
   });
 
+  describe('setDisabled', () => {
+    it('should write the flag to selectEl, as Obsidian does', () => {
+      const dropdown = createDropdown();
+      dropdown.setDisabled(true);
+      expect(dropdown.disabled).toBe(true);
+      expect(dropdown.selectEl.disabled).toBe(true);
+      dropdown.setDisabled(false);
+      expect(dropdown.disabled).toBe(false);
+      expect(dropdown.selectEl.disabled).toBe(false);
+    });
+
+    it('should return this for chaining', () => {
+      const dropdown = createDropdown();
+      expect(dropdown.setDisabled(true)).toBe(dropdown);
+    });
+  });
+
   describe('setValue', () => {
     it('should set the selectEl value', () => {
       const dropdown = createDropdown();

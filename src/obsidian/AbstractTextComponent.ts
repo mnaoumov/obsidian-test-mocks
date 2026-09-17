@@ -104,6 +104,18 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
   }
 
   /**
+   * Enables or disables the component, writing the flag to the wrapped element as Obsidian does.
+   *
+   * @param disabled - Whether the component is disabled.
+   * @returns This component, for chaining.
+   */
+  public override setDisabled(disabled: boolean): this {
+    super.setDisabled(disabled);
+    this.inputEl.disabled = disabled;
+    return this;
+  }
+
+  /**
    * Sets the element's placeholder text.
    *
    * @param placeholder - The placeholder to show while the element is empty.

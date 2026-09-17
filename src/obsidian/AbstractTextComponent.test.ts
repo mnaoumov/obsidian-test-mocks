@@ -147,6 +147,23 @@ describe('AbstractTextComponent', () => {
     });
   });
 
+  describe('setDisabled', () => {
+    it('should write the flag to inputEl, as Obsidian does', () => {
+      const component = createTextComponent();
+      component.setDisabled(true);
+      expect(component.disabled).toBe(true);
+      expect(component.inputEl.disabled).toBe(true);
+      component.setDisabled(false);
+      expect(component.disabled).toBe(false);
+      expect(component.inputEl.disabled).toBe(false);
+    });
+
+    it('should return this for chaining', () => {
+      const component = createTextComponent();
+      expect(component.setDisabled(true)).toBe(component);
+    });
+  });
+
   describe('setPlaceholder', () => {
     it('should set the placeholder on inputEl', () => {
       const component = createTextComponent();
