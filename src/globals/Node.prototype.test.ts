@@ -5,6 +5,7 @@ import {
   vi
 } from 'vitest';
 
+import { noop } from '../internal/noop.ts';
 import {
   appendText,
   createDiv,
@@ -185,6 +186,17 @@ describe('Node.prototype extensions', () => {
       empty.call(el);
       expect(el.childNodes).toHaveLength(0);
     });
+
+    it('should remove the last child first', () => {
+      const el = document.createElement('div');
+      const first = document.createElement('span');
+      const last = document.createElement('span');
+      el.append(first, last);
+      const observer = new MutationObserver(noop);
+      observer.observe(el, { childList: true });
+      empty.call(el);
+      expect(removedNodes(observer.takeRecords())).toEqual([last, first]);
+    });
   });
 
   describe('indexOf', () => {
@@ -233,12 +245,33 @@ describe('Node.prototype extensions', () => {
       expect(parent.childNodes[1]).toBe(second);
     });
 
-    it('should append when reference is null', () => {
+    it('should insert the node first when reference is null', () => {
       const parent = document.createElement('div');
+      const existing = document.createElement('span');
+      parent.append(existing);
       const child = document.createElement('span');
       const result = insertAfter.call(parent, child, null);
-      expect(parent.lastChild).toBe(child);
+      expect([...parent.childNodes]).toEqual([child, existing]);
       expect(result).toBe(child);
+    });
+
+    it('should insert the node after the last child', () => {
+      const parent = document.createElement('div');
+      const existing = document.createElement('span');
+      parent.append(existing);
+      const child = document.createElement('span');
+      insertAfter.call(parent, child, existing);
+      expect([...parent.childNodes]).toEqual([existing, child]);
+    });
+
+    it('should throw when the reference is not a child of this node', () => {
+      const parent = document.createElement('div');
+      const other = document.createElement('div');
+      const reference = document.createElement('span');
+      const sibling = document.createElement('span');
+      other.append(reference, sibling);
+      expect(() => insertAfter.call(parent, document.createElement('span'), reference)).toThrow();
+      expect([...other.childNodes]).toEqual([reference, sibling]);
     });
   });
 
@@ -264,5 +297,43 @@ describe('Node.prototype extensions', () => {
       expect(parent.firstChild).toBe(newChildren[0]);
       expect(parent.childNodes[1]).toBe(newChildren[1]);
     });
+
+    it('should keep children that are already in place attached', () => {
+      const parent = document.createElement('div');
+      const kept1 = document.createElement('span');
+      const dropped = document.createElement('span');
+      const kept2 = document.createElement('span');
+      parent.append(kept1, dropped, kept2);
+      const added = document.createElement('p');
+      const observer = new MutationObserver(noop);
+      observer.observe(parent, { childList: true });
+      setChildrenInPlace.call(parent, [kept1, kept2, added]);
+      const records = observer.takeRecords();
+      expect([...parent.childNodes]).toEqual([kept1, kept2, added]);
+      expect(removedNodes(records)).toEqual([dropped]);
+      expect(records.flatMap((record) => [...record.addedNodes])).toEqual([added]);
+    });
+
+    it('should move only the misplaced children when reordering', () => {
+      const parent = document.createElement('div');
+      const a = document.createElement('span');
+      const b = document.createElement('span');
+      const c = document.createElement('span');
+      parent.append(a, b, c);
+      setChildrenInPlace.call(parent, [c, a, b]);
+      expect([...parent.childNodes]).toEqual([c, a, b]);
+    });
+
+    it('should remove every trailing child that is not wanted', () => {
+      const parent = document.createElement('div');
+      const kept = document.createElement('span');
+      parent.append(kept, document.createElement('span'), document.createElement('span'));
+      setChildrenInPlace.call(parent, [kept]);
+      expect([...parent.childNodes]).toEqual([kept]);
+    });
   });
 });
+
+function removedNodes(records: MutationRecord[]): Node[] {
+  return records.flatMap((record) => [...record.removedNodes]);
+}

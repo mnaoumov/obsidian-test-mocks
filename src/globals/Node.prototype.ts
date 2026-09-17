@@ -99,11 +99,11 @@ export function detach(this: Node): void {
 }
 
 /**
- * Removes all of this node's children.
+ * Removes all of this node's children, last first, as Obsidian does.
  */
 export function empty(this: Node): void {
-  while (this.firstChild) {
-    this.removeChild(this.firstChild);
+  while (this.lastChild) {
+    this.removeChild(this.lastChild);
   }
 }
 
@@ -118,20 +118,15 @@ export function indexOf(this: Node, other: Node): number {
 }
 
 /**
- * Inserts a node right after a reference child, or appends it to this node when there is no reference child.
+ * Inserts a node into this node right after a reference child, or as the first child when there is no reference child.
  *
  * @typeParam T - The inserted node's type.
  * @param node - The node to insert.
- * @param child - The child to insert after, or `null` to append to this node.
+ * @param child - The child of this node to insert after, or `null` to insert `node` first.
  * @returns The inserted node.
  */
 export function insertAfter<T extends Node>(this: Node, node: T, child: Node | null): T {
-  if (!child) {
-    // eslint-disable-next-line unicorn/prefer-dom-node-append -- The receiver is a `Node`, which has no `append()` — only the `ParentNode` mixin does. Obsidian declares these members and `DomElementInfo.parent` on `Node`, so the mock has to match.
-    this.appendChild(node);
-    return node;
-  }
-  child.parentNode?.insertBefore(node, child.nextSibling);
+  this.insertBefore(node, child ? child.nextSibling : this.firstChild);
   return node;
 }
 
@@ -147,14 +142,29 @@ export function instanceOf<T>(this: Node, type: new () => T): this is T {
 }
 
 /**
- * Replaces this node's children with the given nodes, in order.
+ * Replaces this node's children with the given nodes, in order. A node that is already a child in the right place stays
+ * attached; only the unwanted children are removed and only the misplaced nodes are inserted, as Obsidian does.
  *
  * @param children - The new child nodes.
  */
 export function setChildrenInPlace(this: Node, children: Node[]): void {
-  empty.call(this);
+  const wanted = new Set(children);
+  let current = this.firstChild;
   for (const child of children) {
-    // eslint-disable-next-line unicorn/prefer-dom-node-append -- The receiver is a `Node`, which has no `append()` — only the `ParentNode` mixin does. Obsidian declares these members and `DomElementInfo.parent` on `Node`, so the mock has to match.
-    this.appendChild(child);
+    while (current && !wanted.has(current)) {
+      const unwanted = current;
+      current = current.nextSibling;
+      this.removeChild(unwanted);
+    }
+    if (child === current) {
+      current = current.nextSibling;
+    } else {
+      this.insertBefore(child, current);
+    }
+  }
+  while (current) {
+    const unwanted = current;
+    current = current.nextSibling;
+    this.removeChild(unwanted);
   }
 }
