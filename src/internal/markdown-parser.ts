@@ -150,15 +150,12 @@ function collectFrontmatterLinks(key: string, value: string, links: FrontmatterL
   while (match) {
     const link = ensureNonNullable(match.groups?.['link']);
     const display = match.groups?.['display'];
-    const entry: FrontmatterLinkCache = {
+    links.push({
       key,
       link,
-      original: match[0]
-    };
-    if (display !== undefined) {
-      entry.displayText = display;
-    }
-    links.push(entry);
+      original: match[0],
+      ...(display !== undefined && { displayText: display })
+    });
     match = wikiRegex.exec(value);
   }
 }

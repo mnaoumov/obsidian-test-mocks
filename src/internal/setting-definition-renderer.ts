@@ -130,11 +130,7 @@ function getDisabledPredicate(definition: SettingGroupItemOriginal): (() => bool
    * action and control variants, so it is read off the raw object. Obsidian also falls back to
    * `control.disabled`; that fallback belongs with `control` rows, which are not modeled here.
    */
-  if (!('disabled' in definition)) {
-    return undefined;
-  }
-
-  return castTo<SettingRowDisabled>(definition).disabled;
+  return ('disabled' in definition) ? castTo<SettingRowDisabled>(definition).disabled : undefined;
 }
 
 function isGroupDefinition(item: SettingDefinitionItemOriginal): item is SettingDefinitionGroupOriginal {
@@ -147,11 +143,7 @@ function isPageDefinition(item: SettingGroupItemOriginal): item is SettingDefini
 }
 
 function isRenderable(item: SettingGroupItemOriginal): boolean {
-  if (isPageDefinition(item)) {
-    return Boolean(item.items) || Boolean(item.page);
-  }
-
-  return Boolean(item.name) || Boolean(item.render) || Boolean(item.control) || Boolean(item.action);
+  return isPageDefinition(item) ? Boolean(item.items) || Boolean(item.page) : Boolean(item.name) || Boolean(item.render) || Boolean(item.control) || Boolean(item.action);
 }
 
 function renderGroup(definition: SettingDefinitionGroupOriginal, containerEl: HTMLElement): RenderedSettingGroup {

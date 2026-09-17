@@ -15,10 +15,7 @@ export abstract class Value {
   }
 
   public static equals(a: null | Value, b: null | Value): boolean {
-    if (a === null || b === null) {
-      return a === b;
-    }
-    return a.equals(b);
+    return a === null || b === null ? a === b : a.equals(b);
   }
 
   public static fromOriginalType__(value: ValueOriginal): Value {
@@ -26,10 +23,7 @@ export abstract class Value {
   }
 
   public static looseEquals(a: null | Value, b: null | Value): boolean {
-    if (a === null || b === null) {
-      return a === b;
-    }
-    return a.looseEquals(b);
+    return a === null || b === null ? a === b : a.looseEquals(b);
   }
 
   public asOriginalType__(): ValueOriginal {

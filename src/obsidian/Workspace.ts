@@ -128,10 +128,7 @@ export class Workspace extends Events {
   }
 
   public getActiveFile(): null | TFile {
-    if (this.activeLeaf) {
-      return this.activeLeaf.file__;
-    }
-    return null;
+    return this.activeLeaf ? this.activeLeaf.file__ : null;
   }
 
   public getActiveViewOfType<T extends ViewOriginal>(_type: ConstructorOriginal<T>): null | T {
@@ -182,10 +179,7 @@ export class Workspace extends Events {
   }
 
   public getMostRecentLeaf(_root?: WorkspaceParentOriginal): null | WorkspaceLeaf {
-    if (this.leaves.length === 0) {
-      return null;
-    }
-    return ensureNonNullable(this.leaves.at(-1));
+    return this.leaves.length === 0 ? null : ensureNonNullable(this.leaves.at(-1));
   }
 
   public getRightLeaf(_split: boolean): null | WorkspaceLeaf {

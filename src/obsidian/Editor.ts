@@ -212,13 +212,15 @@ export abstract class Editor {
 
   public redo(): void {
     const entry = this.redoStack.pop();
-    if (entry !== undefined) {
-      this.undoStack.push(this.content);
-      this.content = entry;
-      const endPos = this.offsetToPos(this.content.length);
-      this.anchor = { ...endPos };
-      this.head = { ...endPos };
+    if (entry === undefined) {
+      return;
     }
+
+    this.undoStack.push(this.content);
+    this.content = entry;
+    const endPos = this.offsetToPos(this.content.length);
+    this.anchor = { ...endPos };
+    this.head = { ...endPos };
   }
 
   public refresh(): void {
@@ -310,13 +312,15 @@ export abstract class Editor {
 
   public undo(): void {
     const entry = this.undoStack.pop();
-    if (entry !== undefined) {
-      this.redoStack.push(this.content);
-      this.content = entry;
-      const endPos = this.offsetToPos(this.content.length);
-      this.anchor = { ...endPos };
-      this.head = { ...endPos };
+    if (entry === undefined) {
+      return;
     }
+
+    this.redoStack.push(this.content);
+    this.content = entry;
+    const endPos = this.offsetToPos(this.content.length);
+    this.anchor = { ...endPos };
+    this.head = { ...endPos };
   }
 
   public wordAt(pos: EditorPositionOriginal): EditorRangeOriginal | null {
@@ -483,16 +487,10 @@ export abstract class Editor {
   }
 
   private maxPos(a: EditorPositionOriginal, b: EditorPositionOriginal): EditorPositionOriginal {
-    if (a.line > b.line || (a.line === b.line && a.ch > b.ch)) {
-      return { ...a };
-    }
-    return { ...b };
+    return a.line > b.line || (a.line === b.line && a.ch > b.ch) ? { ...a } : { ...b };
   }
 
   private minPos(a: EditorPositionOriginal, b: EditorPositionOriginal): EditorPositionOriginal {
-    if (a.line < b.line || (a.line === b.line && a.ch < b.ch)) {
-      return { ...a };
-    }
-    return { ...b };
+    return a.line < b.line || (a.line === b.line && a.ch < b.ch) ? { ...a } : { ...b };
   }
 }

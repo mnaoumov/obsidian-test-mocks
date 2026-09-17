@@ -36,10 +36,7 @@ export class ObjectValue extends NotNullValue {
   }
 
   public isEmpty(): boolean {
-    if (typeof this.data !== 'object' || this.data === null) {
-      return true;
-    }
-    return Object.keys(this.data).length === 0;
+    return typeof this.data !== 'object' || this.data === null || Object.keys(this.data).length === 0;
   }
 
   public isTruthy(): boolean {

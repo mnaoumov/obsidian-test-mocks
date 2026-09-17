@@ -107,13 +107,11 @@ export class InMemoryAdapter implements DataAdapterOriginal {
   // eslint-disable-next-line unicorn/consistent-boolean-name -- `sensitive` is Obsidian's own parameter name on the signature being mocked, so a boolean prefix would make the mock stop matching it.
   public async exists(normalizedPath: string, sensitive?: boolean): Promise<boolean> {
     await noopAsync();
-    if (sensitive || !this.insensitive) {
-      return this.textFiles.has(normalizedPath)
+    return sensitive || !this.insensitive
+      ? this.textFiles.has(normalizedPath)
         || this.binaryFiles.has(normalizedPath)
-        || this.directories.has(normalizedPath);
-    }
-
-    return this.lowerCaseKeys.has(normalizedPath.toLowerCase());
+        || this.directories.has(normalizedPath)
+      : this.lowerCaseKeys.has(normalizedPath.toLowerCase());
   }
 
   public getFullPath(normalizedPath: string): string {
@@ -325,16 +323,14 @@ export class InMemoryAdapter implements DataAdapterOriginal {
     }
 
     const meta = this.fileMeta.get(normalizedPath);
-    if (!meta) {
-      return null;
-    }
-
-    return {
-      ctime: meta.ctime,
-      mtime: meta.mtime,
-      size: meta.size,
-      type: 'file'
-    };
+    return meta
+      ? {
+        ctime: meta.ctime,
+        mtime: meta.mtime,
+        size: meta.size,
+        type: 'file'
+      }
+      : null;
   }
 
   public async trashLocal(normalizedPath: string): Promise<void> {
@@ -407,10 +403,12 @@ export class InMemoryAdapter implements DataAdapterOriginal {
 
   private moveMapEntry<V>(map: Map<string, V>, oldKey: string, newKey: string): void {
     const value = map.get(oldKey);
-    if (value !== undefined) {
-      map.set(newKey, value);
-      map.delete(oldKey);
+    if (value === undefined) {
+      return;
     }
+
+    map.set(newKey, value);
+    map.delete(oldKey);
   }
 
   private rebuildLowerCaseKeys(): void {

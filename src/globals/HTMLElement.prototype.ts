@@ -14,12 +14,7 @@ export function findAll(this: HTMLElement, selector: string): HTMLElement[] {
 }
 
 export function findAllSelf(this: HTMLElement, selector: string): HTMLElement[] {
-  const out: HTMLElement[] = [];
-  if (this.matches(selector)) {
-    out.push(this);
-  }
-  out.push(...this.querySelectorAll<HTMLElement>(selector));
-  return out;
+  return [...(this.matches(selector) ? [this] : []), ...this.querySelectorAll<HTMLElement>(selector)];
 }
 
 export function hide(this: HTMLElement): void {

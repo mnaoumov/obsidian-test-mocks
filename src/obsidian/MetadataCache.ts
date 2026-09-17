@@ -68,10 +68,7 @@ export class MetadataCache extends Events {
   }
 
   public fileToLinktext(file: TFile, _sourcePath: string, omitMdExtension?: boolean): string {
-    if (omitMdExtension && file.extension === 'md') {
-      return file.basename;
-    }
-    return file.name;
+    return omitMdExtension && file.extension === 'md' ? file.basename : file.name;
   }
 
   public getCache(path: string): CachedMetadataOriginal | null {

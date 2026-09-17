@@ -72,10 +72,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public getDisplayText(): string {
-    if (this.view) {
-      return this.view.getDisplayText();
-    }
-    return '';
+    return this.view ? this.view.getDisplayText() : '';
   }
 
   public getEphemeralState(): Record<string, unknown> {
@@ -87,10 +84,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   public getIcon(): IconNameOriginal {
-    if (this.view) {
-      return this.view.getIcon();
-    }
-    return '';
+    return this.view ? this.view.getIcon() : '';
   }
 
   public getViewState(): ViewStateOriginal {

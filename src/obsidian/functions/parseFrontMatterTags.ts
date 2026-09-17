@@ -9,10 +9,9 @@ export function parseFrontMatterTags(frontmatter: unknown): null | string[] {
   if (typeof raw === 'string') {
     return [raw.startsWith('#') ? raw : `#${raw}`];
   }
-  if (Array.isArray(raw)) {
-    return raw
+  return Array.isArray(raw)
+    ? raw
       .filter((t): t is string => typeof t === 'string')
-      .map((t) => (t.startsWith('#') ? t : `#${t}`));
-  }
-  return null;
+      .map((t) => (t.startsWith('#') ? t : `#${t}`))
+    : null;
 }

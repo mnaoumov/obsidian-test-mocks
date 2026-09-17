@@ -5,8 +5,5 @@ export function parseFrontMatterStringArray(frontmatter: unknown, key: RegExp | 
   if (typeof entry === 'string') {
     return [entry];
   }
-  if (Array.isArray(entry)) {
-    return entry.filter((item): item is string => typeof item === 'string');
-  }
-  return null;
+  return Array.isArray(entry) ? entry.filter((item): item is string => typeof item === 'string') : null;
 }

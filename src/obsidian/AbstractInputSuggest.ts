@@ -33,10 +33,7 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   }
 
   public getValue(): string {
-    if (this.textInputEl instanceof HTMLInputElement) {
-      return this.textInputEl.value;
-    }
-    return this.textInputEl.textContent;
+    return this.textInputEl instanceof HTMLInputElement ? this.textInputEl.value : this.textInputEl.textContent;
   }
 
   public onSelect(callback: (value: T, event: KeyboardEvent | MouseEvent) => unknown): this {
