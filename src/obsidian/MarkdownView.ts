@@ -10,6 +10,7 @@ import type {
   MarkdownView as MarkdownViewOriginal
 } from 'obsidian';
 
+import { setMarkdownEditorText } from '../internal/markdown-editor-set.ts';
 import { MarkdownSubViewImpl } from '../internal/markdown-sub-view-impl.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
@@ -47,6 +48,10 @@ export class MarkdownView extends TextFileView {
    * The view's reading mode.
    */
   public previewMode: MarkdownPreviewView;
+
+  // Obsidian's `cmInit` on the edit mode this view drives: false until that mode has been given an editor state of
+  // its own, which is what makes the first `setViewData` reset rather than diff, whatever `clear` says.
+  private isEditorInitialized = false;
 
   private readonly mode: 'preview' | 'source' = 'source';
 
@@ -113,6 +118,7 @@ export class MarkdownView extends TextFileView {
   public clear(): void {
     this.data = '';
     this.editor.resetState__('');
+    this.isEditorInitialized = true;
   }
 
   /**
@@ -158,15 +164,17 @@ export class MarkdownView extends TextFileView {
    *
    * @param data - The new text.
    * @param clear - Whether a different file is being loaded, so editor state is reset: the undo and redo history is
-   * dropped and the cursor moves to the start. Otherwise the text is set with {@link Editor.setValue}, as a change
-   * that undo can revert.
+   * dropped and the cursor moves to the start. A view whose editor has never been given a state of its own resets
+   * either way, as Obsidian's edit mode does. Otherwise only the lines that differ are changed, as one change that
+   * undo can revert and that the selection is mapped through; identical text is no change at all.
    */
   public setViewData(data: string, clear: boolean): void {
     this.data = data;
-    if (clear) {
+    if (clear || !this.isEditorInitialized) {
       this.editor.resetState__(data);
+      this.isEditorInitialized = true;
     } else {
-      this.editor.setValue(data);
+      setMarkdownEditorText(this.editor, data);
     }
   }
 

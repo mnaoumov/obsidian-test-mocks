@@ -81,6 +81,35 @@ describe('MarkdownView', () => {
       view.editor.undo();
       expect(view.editor.getValue()).toBe('second');
     });
+
+    it('should reset an editor that has no state of its own, whatever clear says', () => {
+      const view = createMarkdownView();
+      view.setViewData('first', false);
+      view.editor.undo();
+      expect(view.editor.getValue()).toBe('first');
+    });
+
+    it('should change only what differs, leaving a cursor outside it where it was', () => {
+      const view = createMarkdownView();
+      view.setViewData('hello world', true);
+      view.editor.setCursor({ ch: 2, line: 0 });
+
+      view.setViewData('hello brave world', false);
+
+      expect(view.editor.getValue()).toBe('hello brave world');
+      expect(view.editor.getCursor()).toEqual({ ch: 2, line: 0 });
+    });
+
+    it('should record no editor change when the text is identical', () => {
+      const view = createMarkdownView();
+      view.setViewData('a', true);
+      view.editor.replaceRange('b', { ch: 1, line: 0 });
+
+      view.setViewData('ab', false);
+      view.editor.undo();
+
+      expect(view.editor.getValue()).toBe('a');
+    });
   });
 
   describe('clear', () => {

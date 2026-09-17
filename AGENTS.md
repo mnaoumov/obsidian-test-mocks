@@ -401,6 +401,18 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   it), so `WorkspaceLeaf.create2__(app)` followed by `setActiveLeaf` still works; and `activeTime` is kept strictly
   increasing, so two activations in one millisecond still order.
 
+- **The Markdown edit view dispatches a minimal line diff, not a whole-document replace** (2026-09-17, read in
+  Obsidian 1.14.2's `app.js`). `MarkdownView.setViewData(data, false)` and `MarkdownEditView.set(data, false)` compare
+  the old and new text line by line: the common leading lines are trimmed, then the common trailing ones, and when
+  exactly one line differs the change is narrowed to the characters that differ within it. The one resulting change
+  goes through `Editor.transaction`, so it is a single undo step and the selection is MAPPED through it — a cursor
+  outside the changed lines does not move, where a whole-document replace would have collapsed it to the start.
+  Setting text identical to what is already there dispatches nothing at all and records no undo step. Both also
+  mirror Obsidian's `cmInit`: an editor that has never been given a state of its own is RESET by the first call
+  whatever `clear` says, so the `false` path only diffs after a `setViewData(_, true)` / `set(_, true)` / `clear()`.
+  The shared implementation is `src/internal/markdown-editor-set.ts`; `Editor.setValue` is untouched and still
+  replaces the whole document, because that is what Obsidian's own `setValue` does.
+
 - **`Keymap.isModifier` / `Keymap.isModEvent` read the event.** They were unconditional `false` stubs
   until 2026-07-27, which made every modifier-branching behavior untestable without a spy — and let a
   test that forgot the spy silently exercise only the no-modifier path while looking green. Both now
