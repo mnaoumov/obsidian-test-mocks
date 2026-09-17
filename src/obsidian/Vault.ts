@@ -293,15 +293,22 @@ export class Vault extends Events {
   }
 
   /**
-   * Deletes a file, or a folder recursively, and stops tracking it. For a folder, every descendant is untracked and
-   * marked `deleted` too, each firing its own `delete` depth-first before the folder's.
+   * Deletes a file or a folder and stops tracking it. For a folder, every descendant is untracked and marked `deleted`
+   * too, each firing its own `delete` depth-first before the folder's. As in Obsidian, `force` goes straight to the
+   * adapter as `rmdir`'s `recursive`, and deleting the root does nothing.
    *
    * @param file - The file or folder to delete.
-   * @param _force - Whether to delete a folder even when it has hidden children; ignored by the mock.
+   * @param force - Whether to remove a folder recursively. Without it the desktop `FileSystemAdapter` refuses any
+   * folder, an empty one included, while the mobile `CapacitorAdapter` removes it anyway.
+   * @throws Error from the adapter, in which case nothing is untracked.
    */
-  public async delete(file: TAbstractFile, _force?: boolean): Promise<void> {
+  public async delete(file: TAbstractFile, force = false): Promise<void> {
+    if (file === this.fileMap['/']) {
+      return;
+    }
+
     if (file instanceof TFolder) {
-      await this.adapter.rmdir(file.path, true);
+      await this.adapter.rmdir(file.path, force);
     } else {
       await this.adapter.remove(file.path);
     }
@@ -309,9 +316,10 @@ export class Vault extends Events {
   }
 
   /**
-   * Mock-only: stops tracking the entry at `path`, marks it `deleted` and detaches it from its parent, without
-   * touching the adapter or firing an event. Does nothing when no entry is tracked there. A folder's descendants are
-   * left tracked; untrack each of them the same way.
+   * Mock-only: stops tracking the entry at `path`, marks it `deleted` and detaches it from its parent, setting its
+   * `parent` to `null` as Obsidian does before it fires `delete`, without touching the adapter or firing an event.
+   * Does nothing when no entry is tracked there. A folder's descendants are left tracked; untrack each of them the
+   * same way.
    *
    * @param path - The exact path of the entry.
    */
@@ -333,6 +341,7 @@ export class Vault extends Events {
     if (index !== -1) {
       file.parent.children.splice(index, 1);
     }
+    file.parent = null;
   }
 
   /**
@@ -790,12 +799,17 @@ export class Vault extends Events {
 
   /**
    * Moves a file or folder to the system or the local trash. The mock deletes it from the adapter outright and stops
-   * tracking it and, for a folder, its descendants, firing `delete` for each, as {@link Vault.delete} does.
+   * tracking it and, for a folder, its descendants, firing `delete` for each, as {@link Vault.delete} does. As in
+   * Obsidian, trashing the root does nothing.
    *
    * @param file - The file or folder to trash.
    * @param _system - Whether to try the system trash first; ignored by the mock.
    */
   public async trash(file: TAbstractFile, _system: boolean): Promise<void> {
+    if (file === this.fileMap['/']) {
+      return;
+    }
+
     if (file instanceof TFolder) {
       await this.adapter.rmdir(file.path, true);
     } else {

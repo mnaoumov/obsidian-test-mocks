@@ -64,6 +64,83 @@ describe('FileSystemAdapter', () => {
     });
   });
 
+  describe('copy', () => {
+    it('should refuse to copy a file into a missing folder, as fs.copyFile does', async () => {
+      const adapter = createAdapter();
+      await adapter.write('source.md', 'data');
+
+      await expect(adapter.copy('source.md', 'Q/R/dest.md')).rejects.toThrow(
+        'ENOENT: no such file or directory, copyfile \'/mock-vault/source.md\' -> \'/mock-vault/Q/R/dest.md\''
+      );
+      expect(await adapter.exists('Q')).toBe(false);
+    });
+
+    it('should copy a file into an existing folder', async () => {
+      const adapter = createAdapter();
+      await adapter.write('source.md', 'data');
+      await adapter.mkdir('Q');
+      await adapter.copy('source.md', 'Q/dest.md');
+
+      expect(await adapter.read('Q/dest.md')).toBe('data');
+    });
+
+    it('should copy a file to the vault root', async () => {
+      const adapter = createAdapter();
+      await adapter.write('dir/source.md', 'data');
+      await adapter.copy('dir/source.md', 'dest.md');
+
+      expect(await adapter.read('dest.md')).toBe('data');
+    });
+
+    it('should create the missing parents of a copied folder, as a recursive mkdir does', async () => {
+      const adapter = createAdapter();
+      await adapter.write('src/a.md', 'A');
+      await adapter.copy('src', 'Q/R/dest');
+
+      expect(await adapter.read('Q/R/dest/a.md')).toBe('A');
+    });
+
+    it('should report a missing source rather than a missing destination folder', async () => {
+      const adapter = createAdapter();
+
+      await expect(adapter.copy('missing.md', 'Q/dest.md')).rejects.toThrow('File not found: missing.md');
+    });
+  });
+
+  describe('rmdir', () => {
+    it('should refuse a non-recursive removal of a non-empty folder with EISDIR', async () => {
+      const adapter = createAdapter();
+      await adapter.write('dir/a.md', 'data');
+
+      await expect(adapter.rmdir('dir', false)).rejects.toThrow('Path is a directory: rm returned EISDIR (is a directory) /mock-vault/dir');
+      expect(await adapter.read('dir/a.md')).toBe('data');
+    });
+
+    it('should refuse a non-recursive removal of an EMPTY folder too', async () => {
+      const adapter = createAdapter();
+      await adapter.mkdir('dir');
+
+      await expect(adapter.rmdir('dir', false)).rejects.toThrow('Path is a directory: rm returned EISDIR (is a directory) /mock-vault/dir');
+      expect(await adapter.exists('dir')).toBe(true);
+    });
+
+    it('should throw ENOENT for a missing path, recursive or not', async () => {
+      const adapter = createAdapter();
+
+      await expect(adapter.rmdir('NOPE', false)).rejects.toThrow('ENOENT: no such file or directory, lstat \'/mock-vault/NOPE\'');
+      await expect(adapter.rmdir('NOPE', true)).rejects.toThrow('ENOENT: no such file or directory, lstat \'/mock-vault/NOPE\'');
+    });
+
+    it('should remove a folder recursively', async () => {
+      const adapter = createAdapter();
+      await adapter.write('dir/a.md', 'data');
+      await adapter.rmdir('dir', true);
+
+      expect(await adapter.exists('dir')).toBe(false);
+      expect(await adapter.exists('dir/a.md')).toBe(false);
+    });
+  });
+
   describe('readLocalFile', () => {
     it('should resolve to an ArrayBuffer', async () => {
       const buffer = await FileSystemAdapter.readLocalFile('any/path');
