@@ -24,7 +24,9 @@ class MockEditor extends Editor {}
 /**
  * Mock of Obsidian's `MarkdownEditView`.
  *
- * The text lives in its own mock editor, {@link MarkdownEditView.editor__}; the scroll position is only remembered.
+ * The text lives in the view's editor, {@link MarkdownEditView.editor}; the scroll position is only remembered.
+ * A `MarkdownView` registers one of these as its source mode, so its `editor`, `getViewData()` and `data` all
+ * read this one buffer.
  */
 export class MarkdownEditView {
   /**
@@ -33,14 +35,19 @@ export class MarkdownEditView {
   public app: App;
 
   /**
-   * Mock-only: the in-memory editor holding the edit view's text.
+   * The in-memory editor holding the edit view's text; the editor its Markdown view exposes as `editor`.
    */
-  public editor__: Editor;
+  public editor: Editor;
 
   /**
    * The hover popover currently shown for this view, or `null` when there is none.
    */
   public hoverPopover: HoverPopoverOriginal | null = null;
+
+  /**
+   * The mode this view is, as `MarkdownView.registerMode` keys it and `MarkdownView.getMode()` reports it.
+   */
+  public readonly type = 'source';
 
   /**
    * The file open in the owning Markdown view.
@@ -66,7 +73,7 @@ export class MarkdownEditView {
    */
   public constructor(view: MarkdownView) {
     this.app = view.app;
-    this.editor__ = new MockEditor();
+    this.editor = new MockEditor();
     this.view = view;
     const self = strictProxy(this);
     self.constructor__(view);
@@ -116,7 +123,7 @@ export class MarkdownEditView {
    * the cursor moves to the start.
    */
   public clear(): void {
-    this.editor__.resetState__('');
+    this.editor.resetState__('');
     this.isEditorInitialized = true;
   }
 
@@ -136,7 +143,7 @@ export class MarkdownEditView {
    * @returns The current text.
    */
   public get(): string {
-    return this.editor__.getValue();
+    return this.editor.getValue();
   }
 
   /**
@@ -154,7 +161,7 @@ export class MarkdownEditView {
    * @returns The selected text.
    */
   public getSelection(): string {
-    return this.editor__.getSelection();
+    return this.editor.getSelection();
   }
 
   /**
@@ -168,10 +175,10 @@ export class MarkdownEditView {
    */
   public set(data: string, clear: boolean): void {
     if (clear || !this.isEditorInitialized) {
-      this.editor__.resetState__(data);
+      this.editor.resetState__(data);
       this.isEditorInitialized = true;
     } else {
-      setMarkdownEditorText(this.editor__, data);
+      setMarkdownEditorText(this.editor, data);
     }
   }
 }

@@ -18,13 +18,20 @@ import { MarkdownRenderer } from './MarkdownRenderer.ts';
  * Mock of Obsidian's `MarkdownPreviewView`.
  *
  * Nothing is rendered: the text passed to {@link MarkdownPreviewView.set} and the scroll position are only
- * remembered, independently of the owning view's own data.
+ * remembered. The owning view registers it as its reading mode, so `setViewData(data, true)` and `clear()` reach
+ * it as they reach the edit mode; the mock is never IN reading mode, so `getViewData()` never reads it.
  */
 export class MarkdownPreviewView extends MarkdownRenderer {
   /**
    * The element the preview renders into; shared with the owning Markdown view.
    */
   public override containerEl: HTMLElement;
+
+  /**
+   * The mode this view is, as `MarkdownView.registerMode` keys it and `MarkdownView.getMode()` reports it.
+   */
+  public readonly type = 'preview';
+
   /**
    * The file open in the owning Markdown view.
    *

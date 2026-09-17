@@ -59,10 +59,10 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `FileValue` | `app`, `file` |
 | `LinkValue` | `app`, `display`, `sourcePath` |
 | `ListValue` | `data`, `join`, `lazyEvaluator` |
-| `MarkdownEditView` | `view` |
-| `MarkdownPreviewView` | `onload` |
+| `MarkdownEditView` | `type`, `view` |
+| `MarkdownPreviewView` | `onload`, `type` |
 | `MarkdownRenderer` | `onload` |
-| `MarkdownView` | `getEphemeralState`, `onload` |
+| `MarkdownView` | `editMode`, `getEphemeralState`, `modes`, `onload` |
 | `Menu` | `dom`, `items`, `setSectionSubmenu` |
 | `MenuItem` | `checked`, `disabled`, `section`, `setSubmenu`, `submenu` |
 | `MetadataCache` | `app`, `computeMetadataAsync`, `fileCache`, `metadataCache` |

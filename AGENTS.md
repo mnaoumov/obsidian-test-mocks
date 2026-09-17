@@ -453,6 +453,32 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   back to the root tab group where Obsidian throws `No tab group found.`, so `getLeaf('tab')` works on a workspace
   no test has populated.
 
+- **`MarkdownView` owns no text: its MODES do, and `currentMode` is the edit view** (2026-09-17, read in Obsidian
+  1.14.2's `app.js`). The mock used to keep four disconnected buffers — `MarkdownView.data`, its own `editor`, a
+  `currentMode` nothing else wrote, and a `MarkdownEditView` built from a view but holding a separate editor of its
+  own. It now mirrors Obsidian: `modes` holds `{ source: editMode, preview: previewMode }`, `currentMode` IS
+  `editMode`, and that mode owns the editor. So `view.editor` is `view.editMode.editor` (a GETTER, as in the app),
+  `getViewData()` is `currentMode.get()`, and `setViewData(data, true)` reaches EVERY mode while
+  `setViewData(data, false)` reaches only the current one — `clear()` clears them all. What changes for a consumer:
+  - **An edit through any one surface is visible through the others.** `view.editor.replaceRange(…)`,
+    `view.editMode.set(…)` and `view.setViewData(…)` all write the same buffer, and `view.getViewData()`,
+    `view.currentMode.get()` and `view.data` all read it. The class doc's old admission that "edits made through
+    the editor alone are not copied back to `data`" is gone with the second buffer.
+  - **`data` is a read-through accessor**, which is a deliberate departure. Obsidian keeps it as a plain field and
+    refreshes it from `currentMode.get()` on every CodeMirror update, through `onInternalDataChange`; the mock has
+    no update listener to fire that, so a stored copy would go stale exactly where the app's never does. Writing
+    `view.data = x` sets the current mode, the way `TextFileView.setData` does in the app. `TextFileView.data` is
+    therefore an accessor pair too — a base-class FIELD cannot be overridden by a subclass accessor, since its own
+    property on the instance shadows the prototype.
+  - **`MarkdownEditView.editor__` is now `MarkdownEditView.editor`.** `obsidian-typings` declares that member on
+    `MarkdownBaseView`, so Obsidian really has it and the `__` suffix was asserting the opposite (L4). Both edit
+    and preview views also carry their real `type` (`'source'` / `'preview'`), which is what `modes` is keyed by
+    and what `getMode()` reports.
+  - **`MarkdownSubViewImpl` is gone.** It was the stand-in current mode; with both real modes carrying
+    `get`/`set`/`clear` there is nothing left for it to stand in for. `registerMode`, `sourceMode`, `setData` and
+    `onInternalDataChange` stay unmocked: the mock registers exactly the two modes, and with `data` reading
+    through the mode the last two would be self-assignments.
+
 - **The Markdown edit view dispatches a minimal line diff, not a whole-document replace** (2026-09-17, read in
   Obsidian 1.14.2's `app.js`). `MarkdownView.setViewData(data, false)` and `MarkdownEditView.set(data, false)` compare
   the old and new text line by line: the common leading lines are trimmed, then the common trailing ones, and when

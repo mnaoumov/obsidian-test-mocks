@@ -2,7 +2,7 @@
  * @file
  *
  * The minimal line diff Obsidian's Markdown edit view dispatches when it is handed new text for the file it is
- * already showing, shared by the `MarkdownEditView` and `MarkdownView` mocks.
+ * already showing. It backs `MarkdownEditView.set`, which is what `MarkdownView.setViewData` delegates to.
  */
 
 import type { EditorPosition as EditorPositionOriginal } from 'obsidian';

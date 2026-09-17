@@ -39,6 +39,12 @@ describe('MarkdownView', () => {
       const view = createMarkdownView();
       expect(view.getMode()).toBe('source');
     });
+
+    it('should report the current mode type', () => {
+      const view = createMarkdownView();
+      view.currentMode = view.previewMode;
+      expect(view.getMode()).toBe('preview');
+    });
   });
 
   describe('canAcceptExtension', () => {
@@ -53,6 +59,24 @@ describe('MarkdownView', () => {
     });
   });
 
+  describe('modes', () => {
+    it('should register the edit mode as the source mode and start in it', () => {
+      const view = createMarkdownView();
+      expect(view.modes.source).toBe(view.editMode);
+      expect(view.currentMode).toBe(view.editMode);
+    });
+
+    it('should register the preview mode as the preview mode', () => {
+      const view = createMarkdownView();
+      expect(view.modes.preview).toBe(view.previewMode);
+    });
+
+    it('should expose the edit mode\'s editor as its own', () => {
+      const view = createMarkdownView();
+      expect(view.editor).toBe(view.editMode.editor);
+    });
+  });
+
   describe('getViewData / setViewData', () => {
     it('should set and get view data', () => {
       const view = createMarkdownView();
@@ -64,6 +88,25 @@ describe('MarkdownView', () => {
       const view = createMarkdownView();
       view.setViewData('editor sync', false);
       expect(view.editor.getValue()).toBe('editor sync');
+    });
+
+    it('should set the text through the current mode', () => {
+      const view = createMarkdownView();
+      view.setViewData('through the mode', false);
+      expect(view.currentMode.get()).toBe('through the mode');
+    });
+
+    it('should reach every mode when clearing', () => {
+      const view = createMarkdownView();
+      view.setViewData('for every mode', true);
+      expect(view.previewMode.get()).toBe('for every mode');
+      expect(view.editMode.get()).toBe('for every mode');
+    });
+
+    it('should reach only the current mode when not clearing', () => {
+      const view = createMarkdownView();
+      view.setViewData('only the current mode', false);
+      expect(view.previewMode.get()).toBe('');
     });
 
     it('should set the editor text as a change undo can revert when not clearing', () => {
@@ -112,13 +155,53 @@ describe('MarkdownView', () => {
     });
   });
 
+  describe('data', () => {
+    it('should read the current mode\'s text', () => {
+      const view = createMarkdownView();
+      view.setViewData('set through the view', false);
+      expect(view.data).toBe('set through the view');
+    });
+
+    it('should see an edit made through the editor alone', () => {
+      const view = createMarkdownView();
+      view.setViewData('a', true);
+      view.editor.replaceRange('b', { ch: 1, line: 0 });
+      expect(view.data).toBe('ab');
+      expect(view.getViewData()).toBe('ab');
+    });
+
+    it('should see an edit made through the edit mode alone', () => {
+      const view = createMarkdownView();
+      view.editMode.set('through the edit mode', true);
+      expect(view.data).toBe('through the edit mode');
+      expect(view.editor.getValue()).toBe('through the edit mode');
+      expect(view.getViewData()).toBe('through the edit mode');
+    });
+
+    it('should write through to the current mode', () => {
+      const view = createMarkdownView();
+      view.data = 'assigned';
+      expect(view.getViewData()).toBe('assigned');
+      expect(view.editor.getValue()).toBe('assigned');
+    });
+  });
+
   describe('clear', () => {
     it('should clear data and editor', () => {
       const view = createMarkdownView();
       view.setViewData('content', false);
       view.clear();
       expect(view.getViewData()).toBe('');
+      expect(view.data).toBe('');
       expect(view.editor.getValue()).toBe('');
+    });
+
+    it('should clear every mode', () => {
+      const view = createMarkdownView();
+      view.setViewData('content', true);
+      view.clear();
+      expect(view.previewMode.get()).toBe('');
+      expect(view.editMode.get()).toBe('');
     });
 
     it('should drop the editor history', () => {
@@ -144,6 +227,7 @@ describe('MarkdownView', () => {
       const view = createMarkdownView();
       view.currentMode.set('via current mode', false);
       expect(view.currentMode.get()).toBe('via current mode');
+      expect(view.getViewData()).toBe('via current mode');
     });
 
     it('should track scroll', () => {
