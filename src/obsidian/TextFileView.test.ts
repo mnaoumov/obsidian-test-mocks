@@ -45,6 +45,15 @@ describe('TextFileView', () => {
     expect(view.data).toBe('');
   });
 
+  it('should hold the data written to it', () => {
+    const app = App.createConfigured__();
+    const leaf = WorkspaceLeaf.create2__(app);
+    const view = new ConcreteTextFileView(leaf);
+    view.setViewData('stored', false);
+    expect(view.data).toBe('stored');
+    expect(view.getViewData()).toBe('stored');
+  });
+
   describe('onLoadFile', () => {
     it('should resolve without error', async () => {
       const app = App.createConfigured__();

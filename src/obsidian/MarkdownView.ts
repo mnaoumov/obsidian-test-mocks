@@ -6,38 +6,40 @@
 
 import type {
   HoverPopover as HoverPopoverOriginal,
-  MarkdownSubView as MarkdownSubViewOriginal,
   MarkdownView as MarkdownViewOriginal
 } from 'obsidian';
 
-import { setMarkdownEditorText } from '../internal/markdown-editor-set.ts';
-import { MarkdownSubViewImpl } from '../internal/markdown-sub-view-impl.ts';
+import type {
+  MarkdownViewMode,
+  MarkdownViewModes
+} from '../internal/markdown-view-modes.ts';
+import type { Editor } from './Editor.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { Editor } from './Editor.ts';
+import { MarkdownEditView } from './MarkdownEditView.ts';
 import { MarkdownPreviewView } from './MarkdownPreviewView.ts';
 import { TextFileView } from './TextFileView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
-class MockEditor extends Editor {}
-
 /**
  * Mock of Obsidian's `MarkdownView`.
  *
- * The view is always in source mode. Its text is kept both in the inherited `data` and in an in-memory
- * {@link MarkdownView.editor}, which {@link MarkdownView.setViewData} and {@link MarkdownView.clear} keep in step;
- * edits made through the editor alone are not copied back to `data`.
+ * The view is always in source mode, and owns no text of its own: as in Obsidian, its modes do. `currentMode` IS
+ * {@link MarkdownView.editMode}, which holds the editor, so {@link MarkdownView.editor},
+ * {@link MarkdownView.getViewData} and the inherited `data` are three views onto that one buffer — an edit made
+ * through any of them is visible through the others.
  */
 export class MarkdownView extends TextFileView {
   /**
-   * The active sub-view (source or preview). In the mock, a standalone sub-view that only stores what it is given.
+   * The active sub-view. Always {@link MarkdownView.editMode} in the mock, which is never in reading mode.
    */
-  public currentMode: MarkdownSubViewOriginal;
+  public currentMode: MarkdownViewMode;
 
   /**
-   * The editor for the view's text; an in-memory mock editor.
+   * The view's editing mode, which owns the editor and the text.
    */
-  public editor: Editor;
+  public editMode: MarkdownEditView;
 
   /**
    * The hover popover currently shown for this view, or `null` when there is none.
@@ -45,15 +47,53 @@ export class MarkdownView extends TextFileView {
   public hoverPopover: HoverPopoverOriginal | null = null;
 
   /**
+   * The modes registered on the view, keyed by each mode's `type`.
+   */
+  public modes: MarkdownViewModes;
+
+  /**
    * The view's reading mode.
    */
   public previewMode: MarkdownPreviewView;
 
-  // Obsidian's `cmInit` on the edit mode this view drives: false until that mode has been given an editor state of
-  // its own, which is what makes the first `setViewData` reset rather than diff, whatever `clear` says.
-  private isEditorInitialized = false;
+  /**
+   * The file's contents, read through the current mode rather than stored beside it.
+   *
+   * Obsidian keeps `data` as a plain field and refreshes it from `currentMode.get()` on every CodeMirror update,
+   * through `onInternalDataChange`. The mock has no such update listener, so a stored copy would go stale the
+   * moment a test typed into the editor; reading through the mode is what reproduces the invariant that listener
+   * maintains.
+   *
+   * @returns The current mode's text.
+   */
+  public override get data(): string {
+    return this.currentMode.get();
+  }
 
-  private readonly mode: 'preview' | 'source' = 'source';
+  /**
+   * Replaces the file's contents through the current mode, the way `TextFileView.setData` does in Obsidian.
+   *
+   * @param value - The new text.
+   */
+  public override set data(value: string) {
+    this.currentMode.set(value, false);
+  }
+
+  /**
+   * The editor for the view's text.
+   *
+   * @returns The editing mode's editor, as in Obsidian, where `MarkdownView.editor` is a getter over
+   * `editMode.editor`.
+   */
+  public get editor(): Editor {
+    return this.editMode.editor;
+  }
+
+  // Every registered mode, as Obsidian's `for (const key in this.modes)` walks them. `Object.values` cannot type
+  // an interface with no index signature, and the mock registers exactly these two.
+  private get registeredModes(): MarkdownViewMode[] {
+    return [this.modes.preview, this.modes.source];
+  }
 
   /**
    * Creates a Markdown view in a leaf.
@@ -62,9 +102,13 @@ export class MarkdownView extends TextFileView {
    */
   public constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-    this.editor = new MockEditor();
-    this.currentMode = new MarkdownSubViewImpl();
-    this.previewMode = MarkdownPreviewView.create3__(this);
+    this.modes = {
+      preview: MarkdownPreviewView.create3__(this),
+      source: MarkdownEditView.create__(this)
+    };
+    this.editMode = this.modes.source;
+    this.previewMode = this.modes.preview;
+    this.currentMode = this.modes.source;
 
     const self = strictProxy(this);
     self.constructor7__(leaf);
@@ -112,13 +156,13 @@ export class MarkdownView extends TextFileView {
   }
 
   /**
-   * Clears the view's text, both the stored data and the editor. The editor gets a fresh state, as in Obsidian: its
-   * undo and redo history is dropped and the cursor moves to the start.
+   * Clears every registered mode, as Obsidian does. The editor gets a fresh state: its undo and redo history is
+   * dropped and the cursor moves to the start.
    */
   public clear(): void {
-    this.data = '';
-    this.editor.resetState__('');
-    this.isEditorInitialized = true;
+    for (const mode of this.registeredModes) {
+      mode.clear();
+    }
   }
 
   /**
@@ -134,20 +178,19 @@ export class MarkdownView extends TextFileView {
   /**
    * Gets whether the view is in source (editing) or preview (reading) mode.
    *
-   * @returns Always `'source'` in the mock.
+   * @returns The current mode's `type`, which is always `'source'` in the mock.
    */
   public getMode(): 'preview' | 'source' {
-    return this.mode;
+    return this.currentMode.type;
   }
 
   /**
    * Gets the view's text, as it would be saved to the file.
    *
-   * @returns The inherited `data`, as last stored by {@link MarkdownView.setViewData} or
-   * {@link MarkdownView.clear}.
+   * @returns The current mode's text, as in Obsidian, where `getViewData` is `currentMode.get()`.
    */
   public getViewData(): string {
-    return this.data;
+    return this.currentMode.get();
   }
 
   /**
@@ -160,22 +203,24 @@ export class MarkdownView extends TextFileView {
   }
 
   /**
-   * Replaces the view's text, updating both the stored data and the editor.
+   * Replaces the view's text through its modes, as Obsidian does: a clearing set reaches EVERY registered mode,
+   * and a non-clearing one only the current mode.
    *
    * @param data - The new text.
    * @param clear - Whether a different file is being loaded, so editor state is reset: the undo and redo history is
-   * dropped and the cursor moves to the start. A view whose editor has never been given a state of its own resets
-   * either way, as Obsidian's edit mode does. Otherwise only the lines that differ are changed, as one change that
-   * undo can revert and that the selection is mapped through; identical text is no change at all.
+   * dropped and the cursor moves to the start. A mode that has never been given a state of its own resets either
+   * way. Otherwise only the lines that differ are changed, as one change that undo can revert and that the
+   * selection is mapped through; identical text is no change at all.
    */
   public setViewData(data: string, clear: boolean): void {
-    this.data = data;
-    if (clear || !this.isEditorInitialized) {
-      this.editor.resetState__(data);
-      this.isEditorInitialized = true;
-    } else {
-      setMarkdownEditorText(this.editor, data);
+    if (clear) {
+      for (const mode of this.registeredModes) {
+        mode.set(data, true);
+      }
+      return;
     }
+
+    this.currentMode.set(data, false);
   }
 
   /**

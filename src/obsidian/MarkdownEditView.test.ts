@@ -30,6 +30,11 @@ describe('MarkdownEditView', () => {
     expect(editView.app).toBeDefined();
   });
 
+  it('should be the source mode', () => {
+    const editView = createEditView();
+    expect(editView.type).toBe('source');
+  });
+
   describe('get / set', () => {
     it('should set and get data', () => {
       const editView = createEditView();
@@ -41,7 +46,7 @@ describe('MarkdownEditView', () => {
       const editView = createEditView();
       editView.set('first', true);
       editView.set('second', false);
-      editView.editor__.undo();
+      editView.editor.undo();
       expect(editView.get()).toBe('first');
     });
 
@@ -49,35 +54,35 @@ describe('MarkdownEditView', () => {
       const editView = createEditView();
       editView.set('first', false);
       editView.set('second', true);
-      editView.editor__.undo();
+      editView.editor.undo();
       expect(editView.get()).toBe('second');
     });
 
     it('should reset an editor that has no state of its own, whatever clear says', () => {
       const editView = createEditView();
       editView.set('first', false);
-      editView.editor__.undo();
+      editView.editor.undo();
       expect(editView.get()).toBe('first');
     });
 
     it('should change only what differs, leaving a cursor outside it where it was', () => {
       const editView = createEditView();
       editView.set('hello world', true);
-      editView.editor__.setCursor({ ch: 2, line: 0 });
+      editView.editor.setCursor({ ch: 2, line: 0 });
 
       editView.set('hello brave world', false);
 
       expect(editView.get()).toBe('hello brave world');
-      expect(editView.editor__.getCursor()).toEqual({ ch: 2, line: 0 });
+      expect(editView.editor.getCursor()).toEqual({ ch: 2, line: 0 });
     });
 
     it('should record no change when the text is identical', () => {
       const editView = createEditView();
       editView.set('a', true);
-      editView.editor__.replaceRange('b', { ch: 1, line: 0 });
+      editView.editor.replaceRange('b', { ch: 1, line: 0 });
 
       editView.set('ab', false);
-      editView.editor__.undo();
+      editView.editor.undo();
 
       expect(editView.get()).toBe('a');
     });
@@ -87,7 +92,7 @@ describe('MarkdownEditView', () => {
       editView.clear();
 
       editView.set('fresh', false);
-      editView.editor__.undo();
+      editView.editor.undo();
 
       expect(editView.get()).toBe('');
     });
@@ -105,7 +110,7 @@ describe('MarkdownEditView', () => {
       const editView = createEditView();
       editView.set('content', false);
       editView.clear();
-      editView.editor__.undo();
+      editView.editor.undo();
       expect(editView.get()).toBe('');
     });
   });

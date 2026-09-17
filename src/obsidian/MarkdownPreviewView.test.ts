@@ -30,6 +30,11 @@ describe('MarkdownPreviewView', () => {
     expect(view).toBeInstanceOf(MarkdownPreviewView);
   });
 
+  it('should be the preview mode', async () => {
+    const view = await createPreviewView();
+    expect(view.type).toBe('preview');
+  });
+
   describe('get / set', () => {
     it('should set and get data', async () => {
       const view = await createPreviewView();

@@ -25,8 +25,26 @@ import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 export abstract class TextFileView extends EditableFileView {
   /**
    * The file's contents held in memory; empty until a subclass sets it.
+   *
+   * @returns The text last written to it.
    */
-  public data = '';
+  public get data(): string {
+    return this.dataValue;
+  }
+
+  /**
+   * Stores the file's contents in memory.
+   *
+   * @param value - The text to hold.
+   */
+  public set data(value: string) {
+    this.dataValue = value;
+  }
+
+  // Backs `data`. It is an accessor rather than a field because `MarkdownView` overrides it to read through its
+  // current mode, and a base-class FIELD would win: its own property on the instance shadows a prototype accessor
+  // the subclass defines.
+  private dataValue = '';
 
   /**
    * Creates the view in a leaf.
