@@ -133,17 +133,11 @@ export function getAllAugmentedMemberNames(): Set<string> {
 
   for (const sourceFile of typingsSourceFiles) {
     sourceFile.forEachChild((node) => {
-      if (!isModuleDeclaration(node) || !isStringLiteral(node.name) || node.name.text !== OBSIDIAN_MODULE_NAME) {
-        return;
-      }
-      if (!node.body || !('statements' in node.body)) {
+      if (!isModuleDeclaration(node) || !isStringLiteral(node.name) || node.name.text !== OBSIDIAN_MODULE_NAME || !node.body || !('statements' in node.body)) {
         return;
       }
       for (const statement of node.body.statements) {
-        if (!isClassDeclaration(statement) && !isInterfaceDeclaration(statement)) {
-          continue;
-        }
-        if (!statement.name) {
+        if ((!isClassDeclaration(statement) && !isInterfaceDeclaration(statement)) || !statement.name) {
           continue;
         }
         const symbol = checker.getSymbolAtLocation(statement.name);

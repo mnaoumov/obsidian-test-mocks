@@ -28,15 +28,13 @@ function doesProjectTypeCheckPass(): boolean {
   const rootCanonical = toCanonical(root);
   const { fileNames, options } = parseTsConfig(join(root, 'tsconfig.json'));
 
-  if (!options.skipLibCheck) {
-    return true;
-  }
-
-  return checkProjectTypes({
-    options,
-    rootNames: fileNames,
-    shouldKeepFile: (fileName) => shouldKeepProjectFile(fileName, rootCanonical)
-  });
+  return options.skipLibCheck
+    ? checkProjectTypes({
+      options,
+      rootNames: fileNames,
+      shouldKeepFile: (fileName) => shouldKeepProjectFile(fileName, rootCanonical)
+    })
+    : true;
 }
 
 async function main(): Promise<void> {

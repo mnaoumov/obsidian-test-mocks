@@ -164,11 +164,13 @@ export class Vault extends Events {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- This is a simple in-memory map for tests.
     delete this.fileMapLowerCase[path.toLowerCase()];
     file.deleted = true;
-    if (file.parent) {
-      const index = file.parent.children.indexOf(file);
-      if (index !== -1) {
-        file.parent.children.splice(index, 1);
-      }
+    if (!file.parent) {
+      return;
+    }
+
+    const index = file.parent.children.indexOf(file);
+    if (index !== -1) {
+      file.parent.children.splice(index, 1);
     }
   }
 
@@ -182,10 +184,7 @@ export class Vault extends Events {
    */
   public async exists(path: string, isCaseSensitive?: boolean): Promise<boolean> {
     await noopAsync();
-    if (isCaseSensitive) {
-      return this.getAbstractFileByPath(path) !== null;
-    }
-    return this.getAbstractFileByPathInsensitive(path) !== null;
+    return (isCaseSensitive ? this.getAbstractFileByPath(path) : this.getAbstractFileByPathInsensitive(path)) !== null;
   }
 
   public getAbstractFileByPath(path: string): null | TAbstractFile {
@@ -487,11 +486,13 @@ export class Vault extends Events {
     const lastSlash = path.lastIndexOf('/');
     const parentKey = lastSlash > 0 ? path.slice(0, lastSlash) : '/';
     const parentFile = this.fileMap[parentKey];
-    if (parentFile instanceof TFolder) {
-      file.parent = parentFile;
-      if (!parentFile.children.includes(file)) {
-        parentFile.children.push(file);
-      }
+    if (!(parentFile instanceof TFolder)) {
+      return;
+    }
+
+    file.parent = parentFile;
+    if (!parentFile.children.includes(file)) {
+      parentFile.children.push(file);
     }
   }
 

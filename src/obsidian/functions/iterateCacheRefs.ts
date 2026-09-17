@@ -10,13 +10,8 @@ import { assert } from '../../internal/type-guards.ts';
 import { iterateRefs } from './iterateRefs.ts';
 
 export function iterateCacheRefs(cache: CachedMetadataOriginal, callback: (ref: ReferenceCacheOriginal) => MaybeReturn<boolean>): boolean {
-  if (cache.links && iterateRefs(cache.links, referenceCallback)) {
-    return true;
-  }
-  if (cache.embeds && iterateRefs(cache.embeds, referenceCallback)) {
-    return true;
-  }
-  return false;
+  return (cache.links !== undefined && iterateRefs(cache.links, referenceCallback))
+    || (cache.embeds !== undefined && iterateRefs(cache.embeds, referenceCallback));
 
   function referenceCallback(ref: ReferenceOriginal): MaybeReturn<boolean> {
     const maybeReferenceCache = ref as Partial<ReferenceCacheOriginal>;

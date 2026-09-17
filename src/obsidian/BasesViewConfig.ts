@@ -47,10 +47,7 @@ export class BasesViewConfig {
 
   public getAsPropertyId(key: string): BasesPropertyIdOriginal | null {
     const value = this.config.get(key);
-    if (typeof value === 'string') {
-      return value as BasesPropertyIdOriginal;
-    }
-    return null;
+    return typeof value === 'string' ? (value as BasesPropertyIdOriginal) : null;
   }
 
   public getDisplayName(propertyId: BasesPropertyIdOriginal): string {

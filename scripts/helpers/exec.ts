@@ -49,27 +49,23 @@ export function exec(command: CommandPart[] | string, options: ExecOption = {}):
     const commandLine = toCommandLine($arguments);
 
     const maxCommandLength = getMaxCommandLength();
-    if (commandLine.length > maxCommandLength) {
-      return Promise.reject(
+    return commandLine.length > maxCommandLength
+      ? Promise.reject(
         new Error(
           `Command line is too long (${String(commandLine.length)} chars, max ${String(maxCommandLength)} on ${process.platform}). Consider using ExecArgument with batchedArguments.`
         )
-      );
-    }
-
-    return execString(commandLine, options, $arguments);
+      )
+      : execString(commandLine, options, $arguments);
   }
 
   const maxCommandLength = getMaxCommandLength();
-  if (command.length > maxCommandLength) {
-    return Promise.reject(
+  return command.length > maxCommandLength
+    ? Promise.reject(
       new Error(
         `Command line is too long (${String(command.length)} chars, max ${String(maxCommandLength)} on ${process.platform}). Consider using ExecArgument with batchedArguments.`
       )
-    );
-  }
-
-  return execString(command, options);
+    )
+    : execString(command, options);
 }
 
 function argvQuote(argument: string): string {
@@ -211,11 +207,7 @@ async function executeBatches(baseCommand: string, batches: string[][], options:
     }
   }
 
-  if (options.shouldIncludeDetails) {
-    return { exitCode: 0, exitSignal: null, stderr: '', stdout: results.join('\n') };
-  }
-
-  return results.join('\n');
+  return options.shouldIncludeDetails ? { exitCode: 0, exitSignal: null, stderr: '', stdout: results.join('\n') } : results.join('\n');
 }
 
 function getMaxCommandLength(): number {
@@ -310,8 +302,5 @@ function spawnViaShell(
 }
 
 function trimEnd($string: string, suffix: string): string {
-  if ($string.endsWith(suffix)) {
-    return $string.slice(0, -suffix.length);
-  }
-  return $string;
+  return $string.endsWith(suffix) ? $string.slice(0, -suffix.length) : $string;
 }

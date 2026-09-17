@@ -67,19 +67,5 @@ function isPromiseResolveWithNoArguments(node: TSESTree.CallExpression): boolean
   const callee = node.callee;
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison -- AST node type string literals match the TSESTree enum values.
-  if (callee.type !== 'MemberExpression') {
-    return false;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison -- AST node type string literals match the TSESTree enum values.
-  if (callee.object.type !== 'Identifier' || callee.object.name !== 'Promise') {
-    return false;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison -- AST node type string literals match the TSESTree enum values.
-  if (callee.property.type !== 'Identifier' || callee.property.name !== 'resolve') {
-    return false;
-  }
-
-  return true;
+  return callee.type === 'MemberExpression' && callee.object.type === 'Identifier' && callee.object.name === 'Promise' && callee.property.type === 'Identifier' && callee.property.name === 'resolve';
 }

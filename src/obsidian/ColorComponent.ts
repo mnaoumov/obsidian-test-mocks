@@ -143,8 +143,5 @@ function hue2rgb(p: number, q: number, t: number): number {
   if (tn < HSL_HALF) {
     return q;
   }
-  if (tn < TWO_THIRDS) {
-    return p + (q - p) * (TWO_THIRDS - tn) * HSL_SEGMENT_COUNT;
-  }
-  return p;
+  return tn < TWO_THIRDS ? p + (q - p) * (TWO_THIRDS - tn) * HSL_SEGMENT_COUNT : p;
 }

@@ -246,10 +246,7 @@ function compareClass(name: string, obsidianSymbol: TsSymbol, mockSymbol: TsSymb
 }
 
 function formatViolations(violations: string[]): string {
-  if (violations.length === 0) {
-    return '';
-  }
-  return `${String(violations.length)} conformance violation(s):\n${violations.map((violation) => `  - ${violation}`).join('\n')}`;
+  return violations.length === 0 ? '' : `${String(violations.length)} conformance violation(s):\n${violations.map((violation) => `  - ${violation}`).join('\n')}`;
 }
 
 function globalAugmentations(sourceFile: SourceFile): Map<string, Map<string, boolean>> {

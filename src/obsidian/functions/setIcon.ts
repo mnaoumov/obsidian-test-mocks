@@ -5,8 +5,10 @@ import { sanitizeHTMLToDom } from './sanitizeHTMLToDom.ts';
 
 export function setIcon(parent: HTMLElement, iconId: IconNameOriginal): void {
   const svgContent = iconRegistry.get(iconId);
-  if (svgContent) {
-    parent.empty();
-    parent.append(sanitizeHTMLToDom(svgContent));
+  if (!svgContent) {
+    return;
   }
+
+  parent.empty();
+  parent.append(sanitizeHTMLToDom(svgContent));
 }

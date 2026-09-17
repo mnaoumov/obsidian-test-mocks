@@ -754,11 +754,7 @@ describe('Editor core methods', () => {
       editor.processLines(
         (_line, text) => (text.startsWith('d') ? text : null),
         (_line, _text, value) => {
-          if (value) {
-            return { from: pos(1, 0), text: 'DEF', to: pos(1, CH_3) };
-          }
-          // eslint-disable-next-line unicorn/no-useless-undefined -- The other branch returns a value, so this project's `noImplicitReturns` requires the explicit `return`.
-          return undefined;
+          return value ? { from: pos(1, 0), text: 'DEF', to: pos(1, CH_3) } : undefined;
         }
       );
       expect(editor.getValue()).toBe('abc\nDEF\nxyz');

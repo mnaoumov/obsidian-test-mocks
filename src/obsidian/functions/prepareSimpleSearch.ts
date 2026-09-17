@@ -7,13 +7,11 @@ export function prepareSimpleSearch(query: string): (text: string) => null | Sea
     const lowerText = text.toLowerCase();
     const index = lowerText.indexOf(lowerQuery);
 
-    if (index === -1) {
-      return null;
-    }
-
-    return {
-      matches: [[index, index + query.length]],
-      score: -index
-    };
+    return index === -1
+      ? null
+      : {
+        matches: [[index, index + query.length]],
+        score: -index
+      };
   };
 }

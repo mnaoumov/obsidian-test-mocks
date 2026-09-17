@@ -60,10 +60,7 @@ export function empty(this: Node): void {
 
 export function indexOf(this: Node, other: Node): number {
   const parent = other.parentNode;
-  if (!parent) {
-    return -1;
-  }
-  return [...parent.childNodes].indexOf(other as ChildNode);
+  return parent ? [...parent.childNodes].indexOf(other as ChildNode) : -1;
 }
 
 export function insertAfter<T extends Node>(this: Node, node: T, child: Node | null): T {

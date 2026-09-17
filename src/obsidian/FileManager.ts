@@ -45,10 +45,7 @@ export class FileManager {
     if (subpath) {
       link += `#${subpath}`;
     }
-    if (alias) {
-      return `[[${link}|${alias}]]`;
-    }
-    return `[[${link}]]`;
+    return alias ? `[[${link}|${alias}]]` : `[[${link}]]`;
   }
 
   public async getAvailablePathForAttachment(filename: string, _sourcePath?: string): Promise<string> {

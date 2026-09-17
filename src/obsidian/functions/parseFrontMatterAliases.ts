@@ -9,8 +9,5 @@ export function parseFrontMatterAliases(frontmatter: unknown): null | string[] {
   if (typeof aliases === 'string') {
     return [aliases];
   }
-  if (Array.isArray(aliases)) {
-    return aliases.filter((a): a is string => typeof a === 'string');
-  }
-  return null;
+  return Array.isArray(aliases) ? aliases.filter((a): a is string => typeof a === 'string') : null;
 }
