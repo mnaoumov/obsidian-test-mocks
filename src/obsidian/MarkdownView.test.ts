@@ -65,6 +65,22 @@ describe('MarkdownView', () => {
       view.setViewData('editor sync', false);
       expect(view.editor.getValue()).toBe('editor sync');
     });
+
+    it('should set the editor text as a change undo can revert when not clearing', () => {
+      const view = createMarkdownView();
+      view.setViewData('first', true);
+      view.setViewData('second', false);
+      view.editor.undo();
+      expect(view.editor.getValue()).toBe('first');
+    });
+
+    it('should drop the editor history when clearing', () => {
+      const view = createMarkdownView();
+      view.setViewData('first', false);
+      view.setViewData('second', true);
+      view.editor.undo();
+      expect(view.editor.getValue()).toBe('second');
+    });
   });
 
   describe('clear', () => {
@@ -73,6 +89,14 @@ describe('MarkdownView', () => {
       view.setViewData('content', false);
       view.clear();
       expect(view.getViewData()).toBe('');
+      expect(view.editor.getValue()).toBe('');
+    });
+
+    it('should drop the editor history', () => {
+      const view = createMarkdownView();
+      view.setViewData('content', false);
+      view.clear();
+      view.editor.undo();
       expect(view.editor.getValue()).toBe('');
     });
   });

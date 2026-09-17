@@ -12,7 +12,7 @@ class ConcreteEditor extends Editor {}
 
 function createEditor(content = ''): ConcreteEditor {
   const editor = new ConcreteEditor();
-  editor.setValue(content);
+  editor.resetState__(content);
   return editor;
 }
 
@@ -434,10 +434,58 @@ describe('Editor core methods', () => {
       expect(editor.getValue()).toBe('new content');
     });
 
-    it('should reset cursor on setValue', () => {
-      const editor = createEditor('old');
+    it('should move a cursor inside the old document to the start', () => {
+      const editor = createEditor('old text');
       editor.setCursor(pos(LINE_1, CH_3));
       editor.setValue('new');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, 0));
+    });
+
+    it('should keep a cursor at the end of the old document at the end of the new one', () => {
+      const editor = createEditor('old');
+      editor.setCursor(pos(LINE_1, CH_3));
+      editor.setValue('new\ntext');
+      expect(editor.getCursor()).toEqual(pos(LINE_2, 4));
+    });
+
+    it('should keep a whole-document selection selecting the whole new document', () => {
+      const editor = createEditor('old');
+      editor.setSelection(pos(LINE_1, CH_3), pos(LINE_1, 0));
+      editor.setValue('hello');
+      expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, CH_5));
+      expect(editor.getCursor('head')).toEqual(pos(LINE_1, 0));
+    });
+
+    it('should record a change undo can revert and clear the redo history', () => {
+      const editor = createEditor('first');
+      editor.setValue('second');
+      editor.undo();
+      expect(editor.getValue()).toBe('first');
+      editor.setValue('third');
+      editor.redo();
+      expect(editor.getValue()).toBe('third');
+      editor.undo();
+      expect(editor.getValue()).toBe('first');
+    });
+
+    it('should record nothing when replacing an empty document with an empty one', () => {
+      const editor = createEditor('first');
+      editor.setValue('');
+      editor.setValue('');
+      editor.undo();
+      expect(editor.getValue()).toBe('first');
+    });
+  });
+
+  describe('resetState__', () => {
+    it('should replace the document, move the cursor to the start and drop the history', () => {
+      const editor = createEditor('first');
+      editor.setValue('second');
+      editor.undo();
+      editor.resetState__('third');
+      editor.undo();
+      editor.redo();
+      expect(editor.getValue()).toBe('third');
       expect(editor.getCursor()).toEqual(pos(LINE_1, 0));
     });
   });
@@ -574,6 +622,32 @@ describe('Editor core methods', () => {
       const NEGATIVE = -5;
       expect(editor.offsetToPos(NEGATIVE)).toEqual(pos(LINE_1, 0));
     });
+
+    it('should resolve a line before the first to the start of the document', () => {
+      const editor = createEditor('hello\nworld');
+      expect(editor.posToOffset(pos(-1, CH_3))).toBe(0);
+    });
+
+    it('should resolve a line past the last to the end of the document', () => {
+      const editor = createEditor('hello\nworld');
+      expect(editor.posToOffset(pos(LINE_3, 0))).toBe(CH_11);
+    });
+
+    it('should resolve a non-finite column to the end of its line', () => {
+      const editor = createEditor('hello\nworld');
+      expect(editor.posToOffset(pos(LINE_1, Infinity))).toBe(CH_5);
+    });
+
+    it('should count a negative column back from the end of its line, stopping at its start', () => {
+      const editor = createEditor('hello\nworld');
+      expect(editor.posToOffset(pos(LINE_2, -2))).toBe(9);
+      expect(editor.posToOffset(pos(LINE_2, -CH_8))).toBe(CH_6);
+    });
+
+    it('should not clamp a column past the end of its line', () => {
+      const editor = createEditor('hello\nworld');
+      expect(editor.posToOffset(pos(LINE_1, CH_8))).toBe(CH_8);
+    });
   });
 
   describe('replaceRange', () => {
@@ -632,6 +706,171 @@ describe('Editor core methods', () => {
         ]
       });
       expect(editor.getValue()).toBe('Hi world');
+    });
+
+    it('should resolve every change against the document before the transaction', () => {
+      const editor = createEditor('hello world');
+      editor.transaction({
+        changes: [
+          { from: pos(LINE_1, 0), text: 'Hi', to: pos(LINE_1, CH_5) },
+          { from: pos(LINE_1, CH_6), text: 'there', to: pos(LINE_1, CH_11) }
+        ]
+      });
+      expect(editor.getValue()).toBe('Hi there');
+    });
+
+    it('should apply changes listed out of document order where their positions say', () => {
+      const editor = createEditor('hello world');
+      editor.transaction({
+        changes: [
+          { from: pos(LINE_1, CH_6), text: 'there', to: pos(LINE_1, CH_11) },
+          { from: pos(LINE_1, 0), text: 'Hi', to: pos(LINE_1, CH_5) }
+        ]
+      });
+      expect(editor.getValue()).toBe('Hi there');
+    });
+
+    it('should keep insertions at one position in the order they are listed', () => {
+      const editor = createEditor('ab');
+      editor.transaction({
+        changes: [
+          { from: pos(LINE_1, 1), text: '1' },
+          { from: pos(LINE_1, 1), text: '2' }
+        ]
+      });
+      expect(editor.getValue()).toBe('a12b');
+    });
+
+    it('should put a later insertion after an earlier replacement starting at the same position', () => {
+      const editor = createEditor('hello world');
+      editor.transaction({
+        changes: [
+          { from: pos(LINE_1, CH_6), text: 'there', to: pos(LINE_1, CH_11) },
+          { from: pos(LINE_1, CH_6), text: '!' }
+        ]
+      });
+      expect(editor.getValue()).toBe('hello there!');
+    });
+
+    it('should not let a deletion ending where an earlier insertion starts swallow it', () => {
+      const editor = createEditor('hello world');
+      editor.transaction({
+        changes: [
+          { from: pos(LINE_1, CH_6), text: 'big ' },
+          { from: pos(LINE_1, 0), text: '', to: pos(LINE_1, CH_6) }
+        ]
+      });
+      expect(editor.getValue()).toBe('big world');
+    });
+
+    it('should map a later change overlapping an earlier replacement past that replacement', () => {
+      const editor = createEditor('abcdefgh');
+      editor.transaction({
+        changes: [
+          { from: pos(LINE_1, CH_2), text: 'X', to: pos(LINE_1, CH_5) },
+          { from: pos(LINE_1, CH_3), text: '', to: pos(LINE_1, CH_6) },
+          { from: pos(LINE_1, 1), text: '', to: pos(LINE_1, CH_3) }
+        ]
+      });
+      expect(editor.getValue()).toBe('aXgh');
+    });
+
+    it('should record the whole transaction as one undo step', () => {
+      const editor = createEditor('hello world');
+      editor.transaction({
+        changes: [
+          { from: pos(LINE_1, 0), text: 'Hi', to: pos(LINE_1, CH_5) },
+          { from: pos(LINE_1, CH_6), text: 'there', to: pos(LINE_1, CH_11) }
+        ]
+      });
+      editor.undo();
+      expect(editor.getValue()).toBe('hello world');
+    });
+
+    it('should record nothing for changes that change nothing', () => {
+      const editor = createEditor('hello');
+      editor.setValue('world');
+      editor.transaction({ changes: [{ from: pos(LINE_1, CH_2), text: '' }] });
+      editor.undo();
+      expect(editor.getValue()).toBe('hello');
+    });
+
+    it('should map the cursor through the changes when no selection is given', () => {
+      const editor = createEditor('hello world');
+      editor.setCursor(pos(LINE_1, CH_8));
+      editor.transaction({
+        changes: [
+          { from: pos(LINE_1, 0), text: 'Hi', to: pos(LINE_1, CH_5) },
+          { from: pos(LINE_1, CH_8), text: '__' }
+        ]
+      });
+      expect(editor.getValue()).toBe('Hi wo__rld');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_5));
+    });
+
+    it('should move a cursor inside a replaced range to its start', () => {
+      const editor = createEditor('hello world');
+      editor.setCursor(pos(LINE_1, CH_3));
+      editor.transaction({ changes: [{ from: pos(LINE_1, CH_2), text: 'XYZ', to: pos(LINE_1, CH_5) }] });
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_2));
+    });
+
+    it('should not grow a selection range over insertions at its edges', () => {
+      const editor = createEditor('hello world');
+      editor.setSelection(pos(LINE_1, CH_6), pos(LINE_1, CH_11));
+      editor.transaction({
+        changes: [
+          { from: pos(LINE_1, CH_6), text: '<' },
+          { from: pos(LINE_1, CH_11), text: '>' }
+        ]
+      });
+      expect(editor.getValue()).toBe('hello <world>');
+      expect(editor.getSelection()).toBe('world');
+    });
+
+    it('should move a selection start inside a replaced range past the inserted text', () => {
+      const editor = createEditor('hello world');
+      editor.setSelection(pos(LINE_1, CH_2), pos(LINE_1, 4));
+      editor.transaction({ changes: [{ from: pos(LINE_1, 1), text: 'XY', to: pos(LINE_1, CH_3) }] });
+      expect(editor.getValue()).toBe('hXYlo world');
+      expect(editor.getSelection()).toBe('l');
+    });
+
+    it('should throw for a change that reaches past the end of the document', () => {
+      const editor = createEditor('hi');
+      const OUT_OF_RANGE = 10;
+      expect(() => {
+        editor.transaction({ changes: [{ from: pos(LINE_1, 0), text: '', to: pos(LINE_1, OUT_OF_RANGE) }] });
+      }).toThrow(RangeError);
+      expect(editor.getValue()).toBe('hi');
+    });
+
+    it('should keep the direction of a mapped backward selection', () => {
+      const editor = createEditor('hello world');
+      editor.setSelection(pos(LINE_1, CH_11), pos(LINE_1, CH_6));
+      editor.transaction({ changes: [{ from: pos(LINE_1, 0), text: '> ' }] });
+      expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, 13));
+      expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_8));
+    });
+
+    it('should replace the selection and put the cursor after the inserted text', () => {
+      const editor = createEditor('hello world');
+      editor.setSelection(pos(LINE_1, CH_11), pos(LINE_1, CH_6));
+      editor.transaction({ replaceSelection: 'there' });
+      expect(editor.getValue()).toBe('hello there');
+      expect(editor.getCursor()).toEqual(pos(LINE_1, CH_11));
+    });
+
+    it('should resolve the selection against the document after the changes', () => {
+      const editor = createEditor('hello world');
+      editor.transaction({
+        changes: [{ from: pos(LINE_1, 0), text: 'Hi', to: pos(LINE_1, CH_5) }],
+        replaceSelection: '>',
+        selection: { from: pos(LINE_1, CH_8) }
+      });
+      expect(editor.getValue()).toBe('>Hi world');
+      expect(editor.getCursor('anchor')).toEqual(pos(LINE_1, CH_8));
+      expect(editor.getCursor('head')).toEqual(pos(LINE_1, CH_8));
     });
 
     it('should apply selection from transaction', () => {
@@ -728,23 +967,69 @@ describe('Editor core methods', () => {
       });
     });
 
-    it('should return null when position is at non-word char', () => {
+    it('should find the word just before the position', () => {
       const editor = createEditor('hello world');
-      const result = editor.wordAt(pos(LINE_1, CH_5));
-      expect(result).toBeNull();
+      expect(editor.wordAt(pos(LINE_1, CH_5))).toEqual({
+        from: pos(LINE_1, 0),
+        to: pos(LINE_1, CH_5)
+      });
     });
 
-    it('should return null for empty line', () => {
+    it('should find the word at the end of a line', () => {
+      const editor = createEditor('one\ntwo\nthree');
+      expect(editor.wordAt(pos(LINE_2, CH_3))).toEqual({
+        from: pos(LINE_2, 0),
+        to: pos(LINE_2, CH_3)
+      });
+    });
+
+    it('should find the word at the start of a line', () => {
+      const editor = createEditor('one\ntwo');
+      expect(editor.wordAt(pos(LINE_2, 0))).toEqual({
+        from: pos(LINE_2, 0),
+        to: pos(LINE_2, CH_3)
+      });
+    });
+
+    it('should return null when neither adjacent character is a word character', () => {
+      const editor = createEditor('a - b');
+      expect(editor.wordAt(pos(LINE_1, CH_2))).toBeNull();
+    });
+
+    it('should return null for an empty line', () => {
+      const editor = createEditor('one\n\ntwo');
+      expect(editor.wordAt(pos(LINE_2, 0))).toBeNull();
+    });
+
+    it('should return null for an empty document', () => {
       const editor = createEditor('');
-      const result = editor.wordAt(pos(LINE_1, 0));
-      expect(result).toBeNull();
+      expect(editor.wordAt(pos(LINE_1, 0))).toBeNull();
     });
 
-    it('should return null when ch exceeds line length', () => {
+    it('should treat letters beyond ASCII, digits and underscores as word characters', () => {
+      const editor = createEditor('x café_42 y');
+      expect(editor.wordAt(pos(LINE_1, CH_3))).toEqual({
+        from: pos(LINE_1, CH_2),
+        to: pos(LINE_1, 9)
+      });
+    });
+
+    it('should step over letters outside the basic multilingual plane whole', () => {
+      const editor = createEditor('- \u{1D400}\u{1D401} -');
+      expect(editor.wordAt(pos(LINE_1, CH_2))).toEqual({
+        from: pos(LINE_1, CH_2),
+        to: pos(LINE_1, CH_6)
+      });
+      expect(editor.wordAt(pos(LINE_1, CH_6))).toEqual({
+        from: pos(LINE_1, CH_2),
+        to: pos(LINE_1, CH_6)
+      });
+    });
+
+    it('should throw when the position resolves past the end of the document', () => {
       const editor = createEditor('hi');
       const OUT_OF_RANGE = 10;
-      const result = editor.wordAt(pos(LINE_1, OUT_OF_RANGE));
-      expect(result).toBeNull();
+      expect(() => editor.wordAt(pos(LINE_1, OUT_OF_RANGE))).toThrow(RangeError);
     });
   });
 
