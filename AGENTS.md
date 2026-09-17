@@ -149,7 +149,9 @@ wrong one by accident. `npm test` is a bare `vitest run`, which runs every proje
 
 ### Linting
 
-The ESLint config (`scripts/eslint-config.ts`) tracks `obsidian-dev-utils`' strict config, minus what is specific to a plugin shipping into the Obsidian renderer (`eslint-plugin-n`'s Node-16 floor, `eslint-plugin-obsidianmd`, jsdoc/tsdoc). It runs `eslint-plugin-unicorn`'s `recommended` on top of the tseslint/stylistic/import-x/perfectionist stack.
+The ESLint config (`scripts/eslint-config.ts`) tracks `obsidian-dev-utils`' strict config, minus what is specific to a plugin shipping into the Obsidian renderer (`eslint-plugin-n`'s Node-16 floor, `eslint-plugin-obsidianmd`). It runs `eslint-plugin-unicorn`'s `recommended` on top of the tseslint/stylistic/import-x/perfectionist stack.
+
+It loads `eslint-plugin-jsdoc` and `eslint-plugin-tsdoc` with the same rule set as `obsidian-dev-utils`, scoped to non-test `src/**`: every exported function, class, interface, type alias, enum, and every non-private method and property of an exported class needs a TSDoc description, and every source file an `@file` overview. Mirroring Obsidian's API name for name is NOT a reason to skip one — a consumer reads these declarations, and what a mock tracks, no-ops or adds (`__` helpers) is exactly what Obsidian's own docs cannot say. `jsdoc/no-blank-blocks` runs without its fixer, so an empty placeholder block is reported rather than accepted; write a real description.
 
 Two rules are scoped off where they cannot be satisfied, both for the same reason — the mock surface answers to Obsidian's names, not ours:
 
