@@ -25,13 +25,14 @@ export class QueryController extends Component {
    *
    * @param app - The app instance.
    * @param plugin - The plugin instance the controller belongs to.
-   * @param viewHeaderEl - The element holding the view's header.
+   * @param containerEl - The element the controller renders into; Obsidian creates the view header and the view
+   * container inside it.
    * @param currentFile - The file the query is shown for, if any.
    */
-  public constructor(app: App, plugin: unknown, viewHeaderEl: HTMLElement, currentFile?: null | TFile) {
+  public constructor(app: App, plugin: unknown, containerEl: HTMLElement, currentFile?: null | TFile) {
     super();
     const self = strictProxy(this);
-    self.constructor2__(app, plugin, viewHeaderEl, currentFile);
+    self.constructor2__(app, plugin, containerEl, currentFile);
     return self;
   }
 
@@ -41,12 +42,13 @@ export class QueryController extends Component {
    *
    * @param app - The app instance.
    * @param plugin - The plugin instance the controller belongs to.
-   * @param viewHeaderEl - The element holding the view's header.
+   * @param containerEl - The element the controller renders into; Obsidian creates the view header and the view
+   * container inside it.
    * @param currentFile - The file the query is shown for, if any.
    * @returns The new query controller.
    */
-  public static create2__(app: App, plugin: unknown, viewHeaderEl: HTMLElement, currentFile?: null | TFile): QueryController {
-    return new QueryController(app, plugin, viewHeaderEl, currentFile);
+  public static create2__(app: App, plugin: unknown, containerEl: HTMLElement, currentFile?: null | TFile): QueryController {
+    return new QueryController(app, plugin, containerEl, currentFile);
   }
 
   /**
@@ -74,10 +76,10 @@ export class QueryController extends Component {
    *
    * @param _app - The app the controller was created with.
    * @param _plugin - The plugin the controller was created with.
-   * @param _viewHeaderEl - The view header element the controller was created with.
+   * @param _containerEl - The container element the controller was created with.
    * @param _currentFile - The current file the controller was created with.
    */
-  public constructor2__(_app: App, _plugin: unknown, _viewHeaderEl: HTMLElement, _currentFile?: null | TFile): void {
+  public constructor2__(_app: App, _plugin: unknown, _containerEl: HTMLElement, _currentFile?: null | TFile): void {
     noop();
   }
 }

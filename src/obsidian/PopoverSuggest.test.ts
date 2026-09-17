@@ -6,16 +6,13 @@ import {
   it
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { PopoverSuggest } from './PopoverSuggest.ts';
 import { Scope } from './Scope.ts';
 
 class ConcretePopoverSuggest extends PopoverSuggest<string> {
-  public getSuggestions(_query: unknown): string[] {
-    return [];
-  }
-
   public renderSuggestion(_value: string, _el: HTMLElement): void {
     noop();
   }
@@ -73,6 +70,11 @@ describe('PopoverSuggest', () => {
   });
 
   describe('fromOriginalType__', () => {
+    it('should overlay the mock-only members onto a value that lacks them', () => {
+      const mock = PopoverSuggest.fromOriginalType__(castTo<PopoverSuggestOriginal<string>>({}));
+      expect(typeof mock.asOriginalType__).toBe('function');
+    });
+
     it('should return the same instance typed as the mock type', () => {
       const app = App.createConfigured__();
       const suggest = new ConcretePopoverSuggest(app);

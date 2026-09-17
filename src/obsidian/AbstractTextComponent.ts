@@ -54,7 +54,7 @@ export abstract class AbstractTextComponent<T extends HTMLInputElement | HTMLTex
    * @returns The same object, typed as the mock.
    */
   public static fromOriginalType3__<T extends HTMLInputElement | HTMLTextAreaElement>(value: AbstractTextComponentOriginal<T>): AbstractTextComponent<T> {
-    return strictProxy<AbstractTextComponent<T>>(value);
+    return strictProxy<AbstractTextComponent<T>>(value, AbstractTextComponent);
   }
 
   /**

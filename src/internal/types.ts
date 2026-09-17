@@ -72,17 +72,6 @@ export interface FileCacheEntry {
 export type MaybeReturn<T> = T | void;
 
 /**
- * The window-level members Obsidian adds to the global scope: the active window and document, `sleep` and
- * `nextFrame`.
- */
-export interface ObsidianGlobal {
-  activeDocument: Document | undefined;
-  activeWindow: typeof globalThis | Window;
-  nextFrame(callback: () => void): void;
-  sleep(ms: number): Promise<void>;
-}
-
-/**
  * The parts of a wikilink's link text, as `parseLinktext` returns them: the file path and the subpath, which is a
  * heading or block reference.
  */

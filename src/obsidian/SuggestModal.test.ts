@@ -7,6 +7,7 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { noop } from '../internal/noop.ts';
 import { App } from './App.ts';
 import { SuggestModal } from './SuggestModal.ts';
@@ -155,6 +156,11 @@ describe('SuggestModal', () => {
   });
 
   describe('fromOriginalType2__', () => {
+    it('should overlay the mock-only members onto a value that lacks them', () => {
+      const mock = SuggestModal.fromOriginalType2__(castTo<SuggestModalOriginal<string>>({}));
+      expect(typeof mock.asOriginalType2__).toBe('function');
+    });
+
     it('should return the same instance typed as the mock type', () => {
       const app = App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);

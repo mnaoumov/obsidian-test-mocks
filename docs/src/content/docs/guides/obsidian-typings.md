@@ -44,7 +44,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 <!-- BEGIN GENERATED: implemented-internals -->
 | Class | Members |
 | --- | --- |
-| `AbstractInputSuggest` | `textInputEl` |
+| `AbstractInputSuggest` | `selectCb`, `textInputEl` |
 | `AbstractTextComponent` | `changeCallback` |
 | `App` | `appId`, `changeTheme`, `getTheme`, `isMobile`, `plugins`, `setTheme` |
 | `BasesViewConfig` | `setOrder` |

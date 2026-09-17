@@ -66,9 +66,10 @@ export class MenuItem {
    */
   public warning__ = false;
 
-  private constructor(_menu: unknown) {
-    const mock = strictProxy(this);
-    return mock;
+  private constructor(menu: unknown) {
+    const self = strictProxy(this);
+    self.constructor__(menu);
+    return self;
   }
 
   /**
@@ -102,9 +103,8 @@ export class MenuItem {
   }
 
   /**
-   * Mock-only construction hook, meant for `vi.spyOn(MenuItem.prototype, 'constructor__')`; a no-op.
-   *
-   * Unlike the other mocks, the constructor does not call it.
+   * Mock-only construction hook, called at the end of the constructor; a no-op meant for
+   * `vi.spyOn(MenuItem.prototype, 'constructor__')`.
    *
    * @param _menu - The menu the item belongs to.
    */

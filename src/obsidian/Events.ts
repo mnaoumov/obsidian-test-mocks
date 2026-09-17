@@ -20,7 +20,10 @@ import { strictProxy } from '../internal/strict-proxy.ts';
  * Handlers are kept per event name and run synchronously, in registration order, by {@link Events.trigger}.
  */
 export class Events {
-  private _: Record<string, EventsEntry[]> = {};
+  /**
+   * The registered handlers, keyed by event name, in registration order. Obsidian keeps them under this name too.
+   */
+  public _: Record<string, EventsEntry[]> = {};
 
   /**
    * Creates an emitter with no handlers.

@@ -19,7 +19,8 @@ const DEFAULT_LIMIT = 100;
  * `<div>` with `contentEditable` set.
  *
  * The mock reads and writes the element's value, and records the selection callback in
- * {@link AbstractInputSuggest.onSelectCallback__} without ever calling it; no popover is shown.
+ * {@link AbstractInputSuggest.selectCb}, which {@link AbstractInputSuggest.selectSuggestion} calls; no popover is
+ * shown.
  *
  * @typeParam T - The type of a suggestion.
  */
@@ -29,10 +30,11 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
    */
   public limit = DEFAULT_LIMIT;
   /**
-   * Mock-only: the callback last registered through {@link AbstractInputSuggest.onSelect}, which a test can call to
-   * simulate the user picking a suggestion.
+   * The callback last registered through {@link AbstractInputSuggest.onSelect}, or `undefined` when none was.
+   * {@link AbstractInputSuggest.selectSuggestion} calls it.
    */
-  public onSelectCallback__?: (value: T, event: KeyboardEvent | MouseEvent) => unknown;
+  // eslint-disable-next-line unicorn/name-replacements -- `selectCb` is the member name in Obsidian's own `AbstractInputSuggest`.
+  public selectCb?: (value: T, event: KeyboardEvent | MouseEvent) => unknown;
   /**
    * The text input element this suggest is attached to.
    */
@@ -59,7 +61,7 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
    * @returns The same object, typed as the mock.
    */
   public static fromOriginalType2__<T>(value: AbstractInputSuggestOriginal<T>): AbstractInputSuggest<T> {
-    return strictProxy<AbstractInputSuggest<T>>(value);
+    return strictProxy<AbstractInputSuggest<T>>(value, AbstractInputSuggest);
   }
 
   /**
@@ -92,15 +94,27 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
   }
 
   /**
-   * Registers a callback to handle the user selecting a suggestion. The mock stores it in
-   * {@link AbstractInputSuggest.onSelectCallback__}, replacing any earlier one, and never calls it itself.
+   * Registers a callback to handle the user selecting a suggestion. It is stored in
+   * {@link AbstractInputSuggest.selectCb}, replacing any earlier one.
    *
    * @param callback - Called with the selected suggestion and the event that selected it.
    * @returns This suggest, for chaining.
    */
   public onSelect(callback: (value: T, event: KeyboardEvent | MouseEvent) => unknown): this {
-    this.onSelectCallback__ = callback;
+    // eslint-disable-next-line unicorn/name-replacements -- `selectCb` is the member name in Obsidian's own `AbstractInputSuggest`.
+    this.selectCb = callback;
     return this;
+  }
+
+  /**
+   * Called when the user picks a suggestion, by click or keyboard. As in Obsidian, it calls the callback registered
+   * through {@link AbstractInputSuggest.onSelect}, if any.
+   *
+   * @param value - The chosen suggestion.
+   * @param event - The event that picked it.
+   */
+  public selectSuggestion(value: T, event: KeyboardEvent | MouseEvent): void {
+    this.selectCb?.(value, event);
   }
 
   /**
@@ -115,4 +129,12 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
       this.textInputEl.textContent = value;
     }
   }
+
+  /**
+   * Computes the suggestions for a query.
+   *
+   * @param query - The text typed into the input element.
+   * @returns The matching suggestions, directly or as a promise.
+   */
+  protected abstract getSuggestions(query: string): Promise<T[]> | T[];
 }

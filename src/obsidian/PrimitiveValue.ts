@@ -42,7 +42,7 @@ export abstract class PrimitiveValue<T> extends NotNullValue {
    * @returns The same object, typed as the mock.
    */
   public static fromOriginalType3__<T>(value: PrimitiveValueOriginal<T>): PrimitiveValue<T> {
-    return strictProxy<PrimitiveValue<T>>(value);
+    return strictProxy<PrimitiveValue<T>>(value, PrimitiveValue);
   }
 
   /**

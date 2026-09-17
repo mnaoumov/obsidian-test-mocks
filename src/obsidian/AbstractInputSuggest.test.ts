@@ -1,24 +1,24 @@
+import type { AbstractInputSuggest as AbstractInputSuggestOriginal } from 'obsidian';
+
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { noop } from '../internal/noop.ts';
 import { AbstractInputSuggest } from './AbstractInputSuggest.ts';
 import { App } from './App.ts';
 
 class ConcreteInputSuggest extends AbstractInputSuggest<string> {
-  public override getSuggestions(_query: string): string[] {
-    return ['suggestion'];
-  }
-
   public override renderSuggestion(_value: string, _el: HTMLElement): void {
     noop();
   }
 
-  public override selectSuggestion(_value: string, _event: KeyboardEvent | MouseEvent): void {
-    noop();
+  protected override getSuggestions(_query: string): string[] {
+    return ['suggestion'];
   }
 }
 
@@ -56,6 +56,11 @@ describe('AbstractInputSuggest', () => {
       const mock = AbstractInputSuggest.fromOriginalType2__(suggest.asOriginalType2__());
       expect(mock).toBe(suggest);
     });
+
+    it('should overlay the mock-only members onto a value that lacks them', () => {
+      const mock = AbstractInputSuggest.fromOriginalType2__(castTo<AbstractInputSuggestOriginal<string>>({}));
+      expect(typeof mock.asOriginalType2__).toBe('function');
+    });
   });
 
   describe('getValue', () => {
@@ -92,7 +97,27 @@ describe('AbstractInputSuggest', () => {
       }
       const result = suggest.onSelect(callback);
       expect(result).toBe(suggest);
-      expect(suggest.onSelectCallback__).toBe(callback);
+      expect(suggest.selectCb).toBe(callback);
+    });
+  });
+
+  describe('selectSuggestion', () => {
+    it('should call the registered callback with the value and the event', () => {
+      const input = createEl('input');
+      const suggest = createSuggestWithInput(input);
+      const callback = vi.fn();
+      suggest.onSelect(callback);
+      const event = new MouseEvent('click');
+      suggest.selectSuggestion('suggestion', event);
+      expect(callback).toHaveBeenCalledWith('suggestion', event);
+    });
+
+    it('should do nothing when no callback was registered', () => {
+      const input = createEl('input');
+      const suggest = createSuggestWithInput(input);
+      expect(() => {
+        suggest.selectSuggestion('suggestion', new MouseEvent('click'));
+      }).not.toThrow();
     });
   });
 

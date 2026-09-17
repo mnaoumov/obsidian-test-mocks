@@ -10,6 +10,7 @@ import {
   vi
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { noop } from '../internal/noop.ts';
 import { ensureGenericObject } from '../internal/type-guards.ts';
 import { App } from './App.ts';
@@ -84,6 +85,11 @@ describe('FuzzySuggestModal', () => {
   });
 
   describe('fromOriginalType3__', () => {
+    it('should overlay the mock-only members onto a value that lacks them', () => {
+      const mock = FuzzySuggestModal.fromOriginalType3__(castTo<FuzzySuggestModalOriginal<string>>({}));
+      expect(typeof mock.asOriginalType3__).toBe('function');
+    });
+
     it('should return the same instance typed as the mock type', () => {
       const modal = createModal();
       const mock = FuzzySuggestModal.fromOriginalType3__(modal.asOriginalType3__());

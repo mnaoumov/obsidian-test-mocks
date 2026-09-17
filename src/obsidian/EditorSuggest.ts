@@ -68,7 +68,7 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
    * @returns The same object, typed as the mock.
    */
   public static fromOriginalType2__<T>(value: EditorSuggestOriginal<T>): EditorSuggest<T> {
-    return strictProxy<EditorSuggest<T>>(value);
+    return strictProxy<EditorSuggest<T>>(value, EditorSuggest);
   }
 
   /**
@@ -97,7 +97,7 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
    * @param _context - The context built from {@link EditorSuggest.onTrigger}'s result.
    * @returns The suggestions, or a promise of them.
    */
-  public abstract override getSuggestions(_context: EditorSuggestContextOriginal): Promise<T[]> | T[];
+  public abstract getSuggestions(_context: EditorSuggestContextOriginal): Promise<T[]> | T[];
 
   /**
    * Decides, from the cursor and the text around it, whether the suggester should open. Obsidian calls it on every

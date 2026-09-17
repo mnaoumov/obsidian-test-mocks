@@ -105,6 +105,14 @@ describe('MenuItem', () => {
   });
 
   describe('constructor__', () => {
+    it('should be called by the constructor with the menu', () => {
+      const spy = vi.spyOn(MenuItem.prototype, 'constructor__');
+      const menu = Menu.create2__();
+      MenuItem.create__(menu);
+      expect(spy).toHaveBeenCalledWith(menu);
+      spy.mockRestore();
+    });
+
     it('should not throw', () => {
       const item = MenuItem.create__(null);
       expect(() => {
