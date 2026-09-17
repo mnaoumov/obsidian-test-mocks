@@ -133,6 +133,18 @@ export class DropdownComponent extends ValueComponent<string> {
   }
 
   /**
+   * Enables or disables the dropdown, writing the flag to the `<select>` element as Obsidian does.
+   *
+   * @param disabled - Whether the dropdown is disabled.
+   * @returns This dropdown, for chaining.
+   */
+  public override setDisabled(disabled: boolean): this {
+    super.setDisabled(disabled);
+    this.selectEl.disabled = disabled;
+    return this;
+  }
+
+  /**
    * Selects a value by writing it to the `<select>` element, which ignores a value with no matching option. As in
    * Obsidian, the change handler is not called.
    *

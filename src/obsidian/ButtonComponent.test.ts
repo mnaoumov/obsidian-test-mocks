@@ -7,6 +7,10 @@ import {
   vi
 } from 'vitest';
 
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { ensureGenericObject } from '../internal/type-guards.ts';
 import { ButtonComponent } from './ButtonComponent.ts';
 
@@ -144,6 +148,23 @@ describe('ButtonComponent', () => {
     });
   });
 
+  describe('setDisabled', () => {
+    it('should write the flag to buttonEl, as Obsidian does', () => {
+      const button = createButton();
+      button.setDisabled(true);
+      expect(button.disabled).toBe(true);
+      expect(button.buttonEl.disabled).toBe(true);
+      button.setDisabled(false);
+      expect(button.disabled).toBe(false);
+      expect(button.buttonEl.disabled).toBe(false);
+    });
+
+    it('should return this for chaining', () => {
+      const button = createButton();
+      expect(button.setDisabled(true)).toBe(button);
+    });
+  });
+
   describe('setIcon', () => {
     it('should set data-icon attribute on buttonEl', () => {
       const button = createButton();
@@ -194,11 +215,90 @@ describe('ButtonComponent', () => {
       expect(handler).toHaveBeenCalledOnce();
     });
 
+    it('should pass a synthetic click event when given none', () => {
+      const button = createButton();
+      const handler = vi.fn();
+      button.onClick(handler);
+      button.simulateClick__();
+      expect(handler.mock.calls[0]?.[0]).toMatchObject({ type: 'click' });
+    });
+
+    it('should pass the event it is given', () => {
+      const button = createButton();
+      const handler = vi.fn();
+      const event = new MouseEvent('click');
+      button.onClick(handler);
+      button.simulateClick__(event);
+      expect(handler).toHaveBeenCalledWith(event);
+    });
+
+    it('should not invoke the handler when the button is disabled, as Obsidian does not', () => {
+      const button = createButton();
+      const handler = vi.fn();
+      button.onClick(handler);
+      button.setDisabled(true);
+      button.simulateClick__();
+      expect(handler).not.toHaveBeenCalled();
+      expect(button.buttonEl.classList.contains('mod-loading')).toBe(false);
+    });
+
     it('should not throw if no handler is registered', () => {
       const button = createButton();
       expect(() => {
         button.simulateClick__();
       }).not.toThrow();
+    });
+
+    it('should carry mod-loading while the handler is pending', () => {
+      const button = createButton();
+      button.onClick(() => new Promise<void>(noop));
+      button.simulateClick__();
+      expect(button.buttonEl.classList.contains('mod-loading')).toBe(true);
+    });
+
+    it('should remove mod-loading once the handler settles', async () => {
+      const button = createButton();
+      button.onClick(noopAsync);
+      button.simulateClick__();
+      expect(button.buttonEl.classList.contains('mod-loading')).toBe(true);
+      await vi.waitFor(() => {
+        expect(button.buttonEl.classList.contains('mod-loading')).toBe(false);
+      });
+    });
+
+    it('should remove mod-loading and log when the handler rejects', async () => {
+      const button = createButton();
+      const error = new Error('handler failed');
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      try {
+        button.onClick(() => Promise.reject(error));
+        button.simulateClick__();
+        await vi.waitFor(() => {
+          expect(consoleErrorSpy).toHaveBeenCalledWith(error);
+        });
+        expect(button.buttonEl.classList.contains('mod-loading')).toBe(false);
+      } finally {
+        consoleErrorSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('click listener', () => {
+    it('should run the handler on a real click of buttonEl', () => {
+      const button = createButton();
+      const handler = vi.fn();
+      button.onClick(handler);
+      button.buttonEl.dispatchEvent(new MouseEvent('click'));
+      expect(handler).toHaveBeenCalledOnce();
+    });
+
+    it('should not run the handler of a disabled button', () => {
+      const button = createButton();
+      const handler = vi.fn();
+      button.onClick(handler);
+      button.setDisabled(true);
+      button.buttonEl.dispatchEvent(new MouseEvent('click'));
+      expect(handler).not.toHaveBeenCalled();
     });
   });
 });

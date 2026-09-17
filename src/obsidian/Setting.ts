@@ -41,6 +41,10 @@ import { ToggleComponent } from './ToggleComponent.ts';
 /**
  * Mock of Obsidian's `Setting`, a settings row with an info area (name and description) and a control area.
  *
+ * The row is built as Obsidian builds it: `settingEl` (`setting-item`) holds `infoEl` (`setting-item-info`), which
+ * holds `nameEl` (`setting-item-name`) and `descEl` (`setting-item-description`), followed by `controlEl`
+ * (`setting-item-control`).
+ *
  * Each `add*` method creates the real mock component in {@link Setting.controlEl}, hands it to the callback
  * synchronously, and (except for {@link Setting.addDisplayValue}, as in Obsidian) records it in
  * {@link Setting.components}.
@@ -92,11 +96,11 @@ export class Setting {
    * @param containerEl - The element to create the row in.
    */
   public constructor(containerEl: HTMLElement) {
-    this.settingEl = containerEl.createDiv();
-    this.controlEl = this.settingEl.createDiv();
-    this.infoEl = this.settingEl.createDiv();
-    this.nameEl = this.infoEl.createDiv();
-    this.descEl = this.infoEl.createDiv();
+    this.settingEl = containerEl.createDiv({ attr: { tabIndex: -1 }, cls: 'setting-item' });
+    this.infoEl = this.settingEl.createDiv('setting-item-info');
+    this.nameEl = this.infoEl.createDiv('setting-item-name');
+    this.descEl = this.infoEl.createDiv('setting-item-description');
+    this.controlEl = this.settingEl.createDiv('setting-item-control');
     const self = strictProxy(this);
     self.constructor__(containerEl);
     return self;
@@ -335,17 +339,13 @@ export class Setting {
   }
 
   /**
-   * Sets the row's description. A string replaces the text of {@link Setting.descEl}; a fragment is appended to it.
+   * Sets the row's description, replacing the content of {@link Setting.descEl} with the text or the fragment.
    *
    * @param desc - The description, as text or as a fragment.
    * @returns This setting, for chaining.
    */
   public setDesc(desc: DocumentFragment | string): this {
-    if (typeof desc === 'string') {
-      this.descEl.textContent = desc;
-    } else {
-      this.descEl.append(desc);
-    }
+    this.descEl.setText(desc);
     return this;
   }
 
@@ -367,19 +367,21 @@ export class Setting {
 
   /**
    * Shows a persistent validation error below the setting and adds the `is-invalid` class to the row. An empty
-   * string or `null` removes the error element and the class.
+   * string or `null` hides the error element and removes the class. As in Obsidian, the element is created once, in
+   * {@link Setting.controlEl}, and is then kept and re-shown rather than detached — so {@link Setting.errorEl} stays
+   * set until {@link Setting.clear} drops it.
    *
    * @param message - The error message, or an empty string or `null` to clear it.
    * @returns This setting, for chaining.
    */
   public setErrorMessage(message: null | string): this {
     if (message) {
-      this.errorEl ??= this.controlEl.createDiv();
-      this.errorEl.textContent = message;
+      this.errorEl ??= this.controlEl.createDiv('setting-item-error');
+      this.errorEl.setText(message);
+      this.errorEl.show();
       this.settingEl.addClass('is-invalid');
     } else {
-      this.errorEl?.detach();
-      this.errorEl = null;
+      this.errorEl?.hide();
       this.settingEl.removeClass('is-invalid');
     }
     return this;
@@ -396,17 +398,13 @@ export class Setting {
   }
 
   /**
-   * Sets the row's name. A string replaces the text of {@link Setting.nameEl}; a fragment is appended to it.
+   * Sets the row's name, replacing the content of {@link Setting.nameEl} with the text or the fragment.
    *
    * @param name - The name, as text or as a fragment.
    * @returns This setting, for chaining.
    */
   public setName(name: DocumentFragment | string): this {
-    if (typeof name === 'string') {
-      this.nameEl.textContent = name;
-    } else {
-      this.nameEl.append(name);
-    }
+    this.nameEl.setText(name);
     return this;
   }
 

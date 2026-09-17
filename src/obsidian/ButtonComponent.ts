@@ -17,8 +17,9 @@ import { BaseComponent } from './BaseComponent.ts';
  * Mock of Obsidian's `ButtonComponent`.
  *
  * The button element is really created in the container, and styling calls toggle the same CSS classes Obsidian
- * uses. The click handler is not attached to the element: a test fires it with
- * {@link ButtonComponent.simulateClick__}.
+ * uses. As in Obsidian, a click on {@link ButtonComponent.buttonEl} runs the handler unless the button is disabled,
+ * with the `mod-loading` class on for as long as the handler is pending; {@link ButtonComponent.simulateClick__} does
+ * the same without an event.
  */
 export class ButtonComponent extends BaseComponent {
   /**
@@ -28,7 +29,7 @@ export class ButtonComponent extends BaseComponent {
   private clickHandler?: (event: MouseEvent) => unknown;
 
   /**
-   * Creates a button inside a container.
+   * Creates a button inside a container, with the click listener Obsidian attaches.
    *
    * @param containerEl - The element the `<button>` is appended to.
    */
@@ -36,6 +37,9 @@ export class ButtonComponent extends BaseComponent {
     super();
     this.buttonEl = containerEl.createEl('button');
     const self = strictProxy(this);
+    this.buttonEl.addEventListener('click', (event) => {
+      self.simulateClick__(event);
+    });
     self.constructor2__(containerEl);
     return self;
   }
@@ -82,8 +86,7 @@ export class ButtonComponent extends BaseComponent {
   }
 
   /**
-   * Sets the handler run when the button is clicked. The mock stores it, replacing any previous one, and runs it
-   * only from {@link ButtonComponent.simulateClick__}.
+   * Sets the handler run when the button is clicked, replacing any previous one.
    *
    * @param callback - The click handler.
    * @returns This button, for chaining.
@@ -157,6 +160,19 @@ export class ButtonComponent extends BaseComponent {
   }
 
   /**
+   * Enables or disables the button, writing the flag to the `<button>` element as Obsidian does. A disabled button
+   * ignores clicks.
+   *
+   * @param disabled - Whether the button is disabled.
+   * @returns This button, for chaining.
+   */
+  public override setDisabled(disabled: boolean): this {
+    super.setDisabled(disabled);
+    this.buttonEl.disabled = disabled;
+    return this;
+  }
+
+  /**
    * Sets the button's icon. Obsidian renders the icon; the mock only records its id in the element's
    * `data-icon` attribute.
    *
@@ -192,10 +208,27 @@ export class ButtonComponent extends BaseComponent {
   }
 
   /**
-   * Mock-only: simulates a click by calling the handler set with {@link ButtonComponent.onClick}, if any, with a
-   * synthetic `click` event.
+   * Mock-only: simulates a click by calling the handler set with {@link ButtonComponent.onClick}, if any, unless the
+   * button is disabled. As in Obsidian, {@link ButtonComponent.buttonEl} carries the `mod-loading` class until the
+   * handler settles, which is one microtask even for a handler that is not async. A handler that rejects is logged
+   * rather than left as an unhandled rejection, which would fail an unrelated test.
+   *
+   * @param event - The event to pass to the handler; a synthetic `click` event by default.
    */
-  public simulateClick__(): void {
-    this.clickHandler?.(new Event('click') as MouseEvent);
+  public simulateClick__(event?: MouseEvent): void {
+    const clickHandler = this.clickHandler;
+    if (this.disabled || !clickHandler) {
+      return;
+    }
+
+    this.buttonEl.addClass('mod-loading');
+    const result = clickHandler(event ?? (new Event('click') as MouseEvent));
+    const removeLoading = (): void => {
+      this.buttonEl.removeClass('mod-loading');
+    };
+    Promise.resolve(result).then(removeLoading).catch((error: unknown) => {
+      removeLoading();
+      console.error(error);
+    });
   }
 }

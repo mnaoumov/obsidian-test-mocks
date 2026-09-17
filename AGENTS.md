@@ -479,7 +479,8 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     a group); and a `page` renders as its own name/desc row without navigation — render its `items` by passing
     them in explicitly.
   - `Setting.setDisabled` propagates to the components on the row, as in real Obsidian (since 2026-09-17), so
-    `component.disabled` answers for a row the renderer disabled.
+    `component.disabled` — and, for the components that own an element, that element's own `disabled` — answers for a
+    row the renderer disabled.
 
 - **Setting components follow Obsidian's change-callback rules** (2026-09-17, read from Obsidian 1.14.2's
   `app.js`). A text, text area, search or moment-format component's `setValue` never calls `onChange`; its
@@ -490,6 +491,26 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   plugin's `onChange` handler should dispatch the element's event instead (`input` for text, `change` for a
   dropdown, slider or color picker) or call `onClick` / `simulateClick__`. The slider applies a browser's range rules
   itself (jsdom does not): the value is clamped, stepped from `min`, and starts at the middle of the range.
+
+- **A disabled component is disabled in the DOM, not only in its flag** (2026-09-17, read in Obsidian 1.14.2's
+  `app.js`). `setDisabled` writes `buttonEl.disabled`, `inputEl.disabled` (so text, text area, search and moment
+  format) and `selectEl.disabled`, alongside the `is-disabled` class the toggle and extra button already carried and
+  the `disabled` flag `BaseComponent` keeps. Since `Setting.setDisabled` propagates to the row's components, a row the
+  declarative renderer disables now reads as disabled from the elements too. `ButtonComponent` also carries the click
+  listener Obsidian attaches: a real click on `buttonEl` runs the handler unless the button is disabled, with
+  `mod-loading` on the element until the handler settles — one microtask even for a handler that is not async, exactly
+  as Obsidian's `await` does. `simulateClick__(event?)` is that same path without an event and stays `void`-returning,
+  so a consumer's `no-floating-promises` does not fire on its existing call sites; a handler that rejects is
+  `console.error`ed rather than left as an unhandled rejection, which would fail an unrelated test.
+
+- **A `Setting` row is built exactly as Obsidian builds it** (2026-09-17, `Zx` in Obsidian 1.14.2's `app.js`):
+  `settingEl` (`setting-item`, `tabindex="-1"`) holds `infoEl` (`setting-item-info`) with `nameEl`
+  (`setting-item-name`) and `descEl` (`setting-item-description`), followed by `controlEl` (`setting-item-control`) —
+  so those selectors resolve in jsdom, and `infoEl` comes BEFORE `controlEl`, which the mock used to build the other
+  way round with no class on any element. `setName` / `setDesc` REPLACE the element's content (`setText`) instead of
+  appending a fragment to whatever was there. `setErrorMessage` creates `errorEl` once, as a `setting-item-error` div
+  in `controlEl`, and an empty string or `null` HIDES it and keeps it — `errorEl` stays set, and only `clear()` drops
+  it, as in Obsidian.
 
 - **`Modal`'s DOM mirrors Obsidian** (added 2026-08-09). The mock used to build
   `containerEl > modalEl > [contentEl, titleEl]` with no classes and no backdrop; it now builds Obsidian

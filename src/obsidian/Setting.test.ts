@@ -37,6 +37,21 @@ describe('Setting', () => {
     expect(containerEl.children.length).toBeGreaterThan(0);
   });
 
+  it('should build the DOM tree Obsidian builds', () => {
+    const containerEl = createDiv();
+    const setting = Setting.create__(containerEl);
+
+    expect(setting.settingEl.className).toBe('setting-item');
+    expect(setting.settingEl.getAttribute('tabindex')).toBe('-1');
+    expect(setting.infoEl.className).toBe('setting-item-info');
+    expect(setting.nameEl.className).toBe('setting-item-name');
+    expect(setting.descEl.className).toBe('setting-item-description');
+    expect(setting.controlEl.className).toBe('setting-item-control');
+
+    expect([...setting.settingEl.children]).toEqual([setting.infoEl, setting.controlEl]);
+    expect([...setting.infoEl.children]).toEqual([setting.nameEl, setting.descEl]);
+  });
+
   describe('setName', () => {
     it('should set string name', () => {
       const setting = Setting.create__(createDiv());
@@ -50,6 +65,16 @@ describe('Setting', () => {
       fragment.append('Fragment Name');
       setting.setName(fragment);
       expect(setting.nameEl.textContent).toContain('Fragment Name');
+    });
+
+    it('should replace the previous name rather than append to it', () => {
+      const setting = Setting.create__(createDiv());
+      const fragment = document.createDocumentFragment();
+      fragment.append('Fragment Name');
+      setting.setName('First');
+      setting.setName(fragment);
+      setting.setName('Last');
+      expect(setting.nameEl.textContent).toBe('Last');
     });
 
     it('should return this', () => {
@@ -71,6 +96,21 @@ describe('Setting', () => {
       fragment.append('Fragment Desc');
       setting.setDesc(fragment);
       expect(setting.descEl.textContent).toContain('Fragment Desc');
+    });
+
+    it('should replace the previous description rather than append to it', () => {
+      const setting = Setting.create__(createDiv());
+      const fragment = document.createDocumentFragment();
+      fragment.append('Fragment Desc');
+      setting.setDesc('First');
+      setting.setDesc(fragment);
+      setting.setDesc('Last');
+      expect(setting.descEl.textContent).toBe('Last');
+    });
+
+    it('should return this', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.setDesc('test')).toBe(setting);
     });
   });
 
@@ -112,15 +152,37 @@ describe('Setting', () => {
       const setting = Setting.create__(createDiv());
       setting.setErrorMessage('Something is wrong');
       expect(setting.errorEl?.textContent).toBe('Something is wrong');
+      expect(setting.errorEl?.className).toBe('setting-item-error');
+      expect(setting.errorEl?.parentElement).toBe(setting.controlEl);
       expect(setting.settingEl.classList.contains('is-invalid')).toBe(true);
     });
 
-    it('should clear errorEl and remove is-invalid class when message is null', () => {
+    it('should hide errorEl and remove is-invalid class when message is null, keeping the element as Obsidian does', () => {
       const setting = Setting.create__(createDiv());
       setting.setErrorMessage('error');
+      const { errorEl } = setting;
       setting.setErrorMessage(null);
-      expect(setting.errorEl).toBeNull();
+      expect(setting.errorEl).toBe(errorEl);
+      expect(errorEl?.style.display).toBe('none');
       expect(setting.settingEl.classList.contains('is-invalid')).toBe(false);
+    });
+
+    it('should re-show the same element on a later message', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setErrorMessage('first');
+      const { errorEl } = setting;
+      setting.setErrorMessage('');
+      setting.setErrorMessage('second');
+      expect(setting.errorEl).toBe(errorEl);
+      expect(errorEl?.textContent).toBe('second');
+      expect(errorEl?.style.display).toBe('');
+      expect(setting.controlEl.childElementCount).toBe(1);
+    });
+
+    it('should not throw when cleared before any message', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.setErrorMessage(null)).toBe(setting);
+      expect(setting.errorEl).toBeNull();
     });
 
     it('should return this for chaining', () => {
