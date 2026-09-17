@@ -80,8 +80,12 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `TFolder` | `getParentPrefix` |
 | `ToggleComponent` | `changeCallback`, `on` |
 | `Vault` | `config`, `exists`, `fileMap`, `getAbstractFileByPathInsensitive`, `getAvailablePath`, `getAvailablePathForAttachments`, `getConfig`, `setConfig` |
-| `Workspace` | `app` |
-| `WorkspaceLeaf` | `group`, `pinned` |
+| `Workspace` | `app`, `floatingSplit` |
+| `WorkspaceItem` | `detach`, `setParent` |
+| `WorkspaceLeaf` | `activeTime`, `group`, `pinned` |
+| `WorkspaceParent` | `allowSingleChild`, `children`, `insertChild`, `removeChild`, `replaceChild` |
+| `WorkspaceSidedock` | `allowSingleChild`, `children`, `direction` |
+| `WorkspaceSplit` | `direction`, `setDirection` |
 <!-- END GENERATED: implemented-internals -->
 
 ## The plugin registry

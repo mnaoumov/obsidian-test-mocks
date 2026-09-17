@@ -170,12 +170,15 @@ export class FileManager {
   /**
    * Asks the user to confirm deleting a file or folder, and deletes it if they do.
    *
-   * The mock shows no prompt: it trashes the file to the system trash right away.
+   * The mock shows no prompt: it behaves as if the user confirmed, deleting the file through
+   * {@link FileManager.trashFile} right away, as Obsidian does when its confirmation prompt is turned off.
    *
    * @param file - The file or folder to delete.
+   * @returns Whether the deletion was confirmed; always `true` in the mock.
    */
-  public async promptForDeletion(file: TAbstractFile): Promise<void> {
-    await this.app.vault.trash(file, true);
+  public async promptForDeletion(file: TAbstractFile): Promise<boolean> {
+    await this.trashFile(file);
+    return true;
   }
 
   /**

@@ -118,6 +118,24 @@ describe('Menu', () => {
       const menu = Menu.create2__();
       expect(menu.hide()).toBe(menu);
     });
+
+    it('should call the onHide callback', () => {
+      const menu = Menu.create2__();
+      const callback = vi.fn();
+      menu.onHide(callback);
+      menu.hide();
+      expect(callback).toHaveBeenCalledOnce();
+    });
+
+    it('should call the onHide callback only once across hide and close', () => {
+      const menu = Menu.create2__();
+      const callback = vi.fn();
+      menu.onHide(callback);
+      menu.hide();
+      menu.close();
+      menu.hide();
+      expect(callback).toHaveBeenCalledOnce();
+    });
   });
 
   describe('setNoIcon', () => {

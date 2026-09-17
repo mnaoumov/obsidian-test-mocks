@@ -75,6 +75,7 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `strict-proxy.ts` — `strictProxy()` mock wrapper that throws on unmocked property access (see L9)
 - `types.ts` — inlined type shapes (from obsidian-typings) to avoid augmentation side effects
 - `type-guards.ts` — `assert()`, `ensureNonNullable()`, and similar guards
+- `workspace-layout.ts` — the registry the workspace layout tree walks with: the parent placeholder an unattached `WorkspaceItem` holds, and which items are `WorkspaceContainer`s. It exists because both checks are needed in `WorkspaceItem`, below which both classes sit, so an `instanceof` there would be an import cycle
 
 ## TypeScript
 
@@ -382,6 +383,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   `content.slice(start.offset, end.offset)` reconstructs a reference's `original` exactly. This is what
   lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
   sliced source against `reference.original`.
+
+- **The workspace is a real layout tree** (2026-09-17, checked against Obsidian 1.14.2's bundle). Leaves sit in
+  tab groups under `rootSplit`, `leftSplit`, `rightSplit`, or a popout `WorkspaceWindow` under `floatingSplit`, and
+  `WorkspaceParent.children` / `insertChild` / `removeChild` / `replaceChild` maintain it as Obsidian does, emptied
+  parents included. So `iterateRootLeaves` skips sidebar and popout leaves, `getMostRecentLeaf` picks the highest
+  `activeTime` (which `setActiveLeaf` stamps), and `getRoot()` / `getContainer()` walk up through `parent`. Two
+  deliberate departures: `setActiveLeaf` adopts a leaf outside the layout into the root tab group (Obsidian ignores
+  it), so `WorkspaceLeaf.create2__(app)` followed by `setActiveLeaf` still works; and `activeTime` is kept strictly
+  increasing, so two activations in one millisecond still order.
 
 - **`Keymap.isModifier` / `Keymap.isModEvent` read the event.** They were unconditional `false` stubs
   until 2026-07-27, which made every modifier-branching behavior untestable without a spy — and let a

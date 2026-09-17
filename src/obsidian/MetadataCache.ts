@@ -138,17 +138,39 @@ export class MetadataCache extends Events {
   }
 
   /**
-   * Generates the linktext for a file: its name when that is unique in the vault, its full path otherwise.
-   *
-   * The mock never checks uniqueness or uses the full path: it always returns the file name.
+   * Generates the linktext for a file, following the vault's `newLinkFormat` setting as Obsidian does: the full path
+   * for `absolute`, a path relative to the source note's folder for `relative`, and otherwise (Obsidian's default,
+   * shortest) the file name when a link by that name resolves to exactly this file, or the full path when it does
+   * not.
    *
    * @param file - The file to link to.
-   * @param _sourcePath - The path of the note the link is in; ignored by the mock.
-   * @param omitMdExtension - Whether to drop the `.md` extension from a Markdown file's name.
-   * @returns The file's basename for a Markdown file when `omitMdExtension` is set, and its name otherwise.
+   * @param sourcePath - The path of the note the link is in.
+   * @param omitMdExtension - Whether to drop the `.md` extension from a Markdown file's name or path; `true` by
+   * default, as in Obsidian.
+   * @returns The linktext.
    */
-  public fileToLinktext(file: TFile, _sourcePath: string, omitMdExtension?: boolean): string {
-    return omitMdExtension && file.extension === 'md' ? file.basename : file.name;
+  public fileToLinktext(file: TFile, sourcePath: string, omitMdExtension = true): string {
+    const shouldOmitExtension = omitMdExtension && file.extension === 'md';
+    const path = shouldOmitExtension ? file.path.slice(0, -MD_EXTENSION_SUFFIX.length) : file.path;
+    const newLinkFormat = this.app.vault.getConfig('newLinkFormat');
+
+    if (newLinkFormat === 'absolute') {
+      return path;
+    }
+
+    if (newLinkFormat === 'relative') {
+      let prefix = '';
+      let folder = getParentPath(sourcePath);
+      while (folder !== '' && folder !== '/' && !path.startsWith(`${folder}/`)) {
+        prefix = `../${prefix}`;
+        folder = getParentPath(folder);
+      }
+      return prefix + (path.startsWith(`${folder}/`) ? path.slice(folder.length + 1) : path);
+    }
+
+    const name = shouldOmitExtension ? file.basename : file.name;
+    const destinations = this.getNameDestinations(stripSubpath(name));
+    return destinations.length === 1 && destinations[0] === file ? name : path;
   }
 
   /**
@@ -242,6 +264,34 @@ export class MetadataCache extends Events {
     this.trigger('changed', file, content, cache);
   }
 
+  private getFilesNamed(lowerCaseName: string): TFile[] {
+    return this.app.vault.getFiles().filter((candidate) => candidate.name.toLowerCase() === lowerCaseName);
+  }
+
+  /**
+   * Resolves a bare link name the way Obsidian's `getLinkpathDest` does: by case-insensitive file name, trying the
+   * name itself when it has an extension and the name plus `.md` otherwise, and preferring a root-level file of that
+   * name when several match.
+   *
+   * @param linkName - The link name, without a folder or subpath.
+   * @returns The files the name resolves to.
+   */
+  private getNameDestinations(linkName: string): TFile[] {
+    let key = linkName.toLowerCase();
+    let candidates = key.includes('.') ? this.getFilesNamed(key) : [];
+    if (candidates.length === 0) {
+      key += '.md';
+      candidates = this.getFilesNamed(key);
+    }
+
+    if (candidates.length <= 1) {
+      return candidates;
+    }
+
+    const rootFile = candidates.find((candidate) => candidate.path.toLowerCase() === key);
+    return rootFile ? [rootFile] : candidates;
+  }
+
   private parseFileMetadata(file: unknown): void {
     if (!(file instanceof TFileClass) || file.extension !== 'md') {
       return;
@@ -282,6 +332,13 @@ const HASH_INITIAL = 5381;
 const HASH_MULTIPLIER = 33;
 const HASH_MODULUS = 2_147_483_647;
 const HEX_RADIX = 16;
+const MD_EXTENSION_SUFFIX = '.md';
+
+// The folder part of a path, `''` for a root-level path.
+function getParentPath(path: string): string {
+  const index = path.lastIndexOf('/');
+  return index === -1 ? '' : path.slice(0, index);
+}
 
 /**
  * Deterministic djb2-style hash of file content, used to key `metadataCache`.
@@ -297,4 +354,10 @@ function hashContent(content: string): string {
     hash = (hash * HASH_MULTIPLIER + content.charCodeAt(index)) % HASH_MODULUS;
   }
   return hash.toString(HEX_RADIX);
+}
+
+// A linkpath without its `#` subpath.
+function stripSubpath(linkpath: string): string {
+  const index = linkpath.indexOf('#');
+  return index === -1 ? linkpath : linkpath.slice(0, index);
 }

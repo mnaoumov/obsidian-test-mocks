@@ -14,6 +14,8 @@ import { strictProxy } from '../internal/strict-proxy.ts';
 import { App } from './App.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
+const EXPECTED_SAVE_COUNT = 2;
+
 describe('WorkspaceLeaf', () => {
   describe('create2__()', () => {
     it('should create an instance', () => {
@@ -55,6 +57,13 @@ describe('WorkspaceLeaf', () => {
   });
 
   describe('detach()', () => {
+    it('should remove the leaf from its parent', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      leaf.detach();
+      expect(leaf.getRoot()).toBe(leaf);
+    });
+
     it('should remove the leaf from workspace leaves', () => {
       const app = App.createConfigured__();
       const leaf = app.workspace.getLeaf(true);
@@ -144,6 +153,46 @@ describe('WorkspaceLeaf', () => {
       leaf.setGroup('my-group');
       expect(leaf.getGroup__()).toBe('my-group');
     });
+
+    it('should trigger group-change with the new group', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      const handler = vi.fn();
+      leaf.on('group-change', handler);
+      leaf.setGroup('my-group');
+      expect(handler).toHaveBeenCalledExactlyOnceWith('my-group');
+    });
+
+    it('should do nothing when the group is unchanged', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      leaf.setGroup('my-group');
+      const handler = vi.fn();
+      leaf.on('group-change', handler);
+      leaf.on('pinned-change', handler);
+      leaf.setGroup('my-group');
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should pin the leaf when a leaf already in the group is pinned', () => {
+      const app = App.createConfigured__();
+      const pinnedLeaf = app.workspace.getLeaf(true);
+      const leaf = app.workspace.getLeaf(true);
+      pinnedLeaf.setGroup('my-group');
+      pinnedLeaf.setPinned(true);
+      leaf.setGroup('my-group');
+      expect(leaf.isPinned__()).toBe(true);
+    });
+
+    it('should keep a pinned leaf pinned when it leaves a group', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf(true);
+      leaf.setGroup('my-group');
+      leaf.setPinned(true);
+      leaf.setGroup(null);
+      expect(leaf.isPinned__()).toBe(true);
+      expect(leaf.getGroup__()).toBeNull();
+    });
   });
 
   describe('getIcon()', () => {
@@ -224,6 +273,32 @@ describe('WorkspaceLeaf', () => {
       leaf.togglePinned();
       expect(leaf.isPinned__()).toBe(false);
     });
+
+    it('should trigger pinned-change with the new flag and request a layout save', () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const handler = vi.fn();
+      const saveSpy = vi.spyOn(app.workspace, 'requestSaveLayout');
+      leaf.on('pinned-change', handler);
+      leaf.setPinned(true);
+      leaf.togglePinned();
+      expect(handler.mock.calls).toEqual([[true], [false]]);
+      expect(saveSpy).toHaveBeenCalledTimes(EXPECTED_SAVE_COUNT);
+    });
+
+    it('should pin and unpin the other leaves in its group', () => {
+      const app = App.createConfigured__();
+      const leaf1 = app.workspace.getLeaf(true);
+      const leaf2 = app.workspace.getLeaf(true);
+      const outsider = app.workspace.getLeaf(true);
+      leaf1.setGroup('my-group');
+      leaf2.setGroup('my-group');
+      leaf1.setPinned(true);
+      expect(leaf2.isPinned__()).toBe(true);
+      expect(outsider.isPinned__()).toBe(false);
+      leaf2.setPinned(false);
+      expect(leaf1.isPinned__()).toBe(false);
+    });
   });
 
   describe('loadIfDeferred()', () => {
@@ -292,6 +367,30 @@ describe('WorkspaceLeaf', () => {
       leaf1.setGroup('shared');
       leaf2.setGroupMember(leaf1);
       expect(leaf2.getGroup__()).toBe('shared');
+    });
+
+    it('should first put a leaf in no group into a new one', () => {
+      const app = App.createConfigured__();
+      const leaf1 = WorkspaceLeaf.create2__(app);
+      const leaf2 = WorkspaceLeaf.create2__(app);
+      leaf2.setGroupMember(leaf1);
+      expect(leaf1.getGroup__()).toMatch(/^[\da-f]{16}$/u);
+      expect(leaf2.getGroup__()).toBe(leaf1.getGroup__());
+    });
+
+    it('should do nothing when given the leaf itself', () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      leaf.setGroupMember(leaf);
+      expect(leaf.getGroup__()).toBeNull();
+    });
+
+    it('should leave the group when given null', () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      leaf.setGroup('shared');
+      leaf.setGroupMember(null);
+      expect(leaf.getGroup__()).toBeNull();
     });
   });
 

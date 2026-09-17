@@ -4,7 +4,10 @@
  * Mock of Obsidian's `WorkspaceSidedock`, the collapsible left or right sidebar split.
  */
 
-import type { WorkspaceSidedock as WorkspaceSidedockOriginal } from 'obsidian';
+import type {
+  SplitDirection as SplitDirectionOriginal,
+  WorkspaceSidedock as WorkspaceSidedockOriginal
+} from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
@@ -30,7 +33,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
    * @param side - The side of the window the sidebar is on.
    * @param id - The item id.
    */
-  protected constructor(workspace: Workspace, direction: string, side: string, id?: string) {
+  protected constructor(workspace: Workspace, direction: SplitDirectionOriginal, side: string, id?: string) {
     super(workspace, direction, id);
     const self = strictProxy(this);
     self.constructor5__(workspace, direction, side, id);
@@ -47,7 +50,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
    * @param id - The item id.
    * @returns The new sidebar split.
    */
-  public static create3__(workspace: Workspace, direction: string, side: string, id?: string): WorkspaceSidedock {
+  public static create3__(workspace: Workspace, direction: SplitDirectionOriginal, side: string, id?: string): WorkspaceSidedock {
     return new WorkspaceSidedock(workspace, direction, side, id);
   }
 
@@ -88,7 +91,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
    * @param _side - The side the sidebar was created with.
    * @param _id - The item id the sidebar was created with.
    */
-  public constructor5__(_workspace: Workspace, _direction: string, _side: string, _id?: string): void {
+  public constructor5__(_workspace: Workspace, _direction: SplitDirectionOriginal, _side: string, _id?: string): void {
     noop();
   }
 

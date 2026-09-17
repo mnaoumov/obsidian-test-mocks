@@ -14,7 +14,9 @@ import { WorkspaceContainer } from './WorkspaceContainer.ts';
 
 /**
  * Mock of Obsidian's `WorkspaceWindow`, the root split of a popout window. No window is opened: the mock is bound
- * to the global `window` and `document`, the same as `WorkspaceRoot`.
+ * to the global `window` and `document`, the same as `WorkspaceRoot`, and lays its children out vertically as
+ * Obsidian's does. The requested size is not kept: Obsidian stores it on a `size` member that neither `obsidian.d.ts`
+ * nor `obsidian-typings` declares, so the mock has no member to keep it under.
  */
 export class WorkspaceWindow extends WorkspaceContainer {
   /**
@@ -40,10 +42,10 @@ export class WorkspaceWindow extends WorkspaceContainer {
    *
    * @param workspace - The workspace the window belongs to.
    * @param id - The item id.
-   * @param size - The requested window size, which the mock does not use.
+   * @param size - The requested window size, which the mock does not keep.
    */
   protected constructor(workspace: Workspace, id?: string, size?: Record<string, number>) {
-    super(workspace, '', id);
+    super(workspace, 'vertical', id);
     const self = strictProxy(this);
     self.constructor6__(workspace, id, size);
     return self;

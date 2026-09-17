@@ -141,10 +141,10 @@ export class Menu extends Component {
   }
 
   /**
-   * Closes the menu. The mock calls the callback registered with {@link Menu.onHide}, if any.
+   * Closes the menu, through {@link Menu.hide}.
    */
   public close(): void {
-    this.onHideCallback?.();
+    this.hide();
   }
 
   /**
@@ -156,17 +156,21 @@ export class Menu extends Component {
   }
 
   /**
-   * Hides the menu. The mock does nothing, and unlike {@link Menu.close} does not call the hide callback.
+   * Hides the menu. As in Obsidian, the callback registered with {@link Menu.onHide} is cleared and then called, so it
+   * runs once however many times the menu is hidden.
    *
    * @returns This menu, for chaining.
    */
   public hide(): this {
+    const callback = this.onHideCallback;
+    this.onHideCallback = null;
+    callback?.();
     return this;
   }
 
   /**
-   * Registers a callback to run when the menu is hidden. The mock keeps only the latest callback, and runs it from
-   * {@link Menu.close}.
+   * Registers a callback to run the next time the menu is hidden, by {@link Menu.hide} or {@link Menu.close}. Only the
+   * latest callback is kept.
    *
    * @param callback - The callback to run.
    */
