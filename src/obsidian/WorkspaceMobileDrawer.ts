@@ -16,6 +16,11 @@ import { WorkspaceParent } from './WorkspaceParent.ts';
  */
 export class WorkspaceMobileDrawer extends WorkspaceParent {
   /**
+   * Whether the drawer may keep a single child; always `true`, as in Obsidian.
+   */
+  public override allowSingleChild = true;
+
+  /**
    * Whether the drawer is collapsed. Starts `false` in the mock.
    */
   public collapsed = false;

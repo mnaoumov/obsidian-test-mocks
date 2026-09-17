@@ -16,6 +16,14 @@ describe('WorkspaceWindow', () => {
     expect(win).toBeInstanceOf(WorkspaceWindow);
   });
 
+  it('should lay its children out vertically and allow a single child, as a container', () => {
+    const app = App.createConfigured__();
+    const win = WorkspaceWindow.create3__(app.workspace);
+    expect(win.direction).toBe('vertical');
+    expect(win.allowSingleChild).toBe(true);
+    expect(win.getContainer()).toBe(win);
+  });
+
   describe('doc', () => {
     it('should return the document', () => {
       const app = App.createConfigured__();

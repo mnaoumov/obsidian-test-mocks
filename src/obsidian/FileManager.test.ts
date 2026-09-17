@@ -173,6 +173,20 @@ describe('FileManager', () => {
       await app.fileManager.promptForDeletion(file);
       expect(app.vault.getFileByPath('delete-me.md')).toBeNull();
     });
+
+    it('should resolve to true, as a confirmed prompt does', async () => {
+      const app = createApp({ 'delete-me.md': '' });
+      const file = ensureNonNullable(app.vault.getFileByPath('delete-me.md'));
+      await expect(app.fileManager.promptForDeletion(file)).resolves.toBe(true);
+    });
+
+    it('should delete through trashFile', async () => {
+      const app = createApp({ 'delete-me.md': '' });
+      const file = ensureNonNullable(app.vault.getFileByPath('delete-me.md'));
+      const trashSpy = vi.spyOn(app.fileManager, 'trashFile');
+      await app.fileManager.promptForDeletion(file);
+      expect(trashSpy).toHaveBeenCalledExactlyOnceWith(file);
+    });
   });
 
   describe('renameFile', () => {

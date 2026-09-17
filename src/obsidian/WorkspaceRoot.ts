@@ -4,7 +4,10 @@
  * Mock of Obsidian's `WorkspaceRoot`, the container of the main window's editing area.
  */
 
-import type { WorkspaceRoot as WorkspaceRootOriginal } from 'obsidian';
+import type {
+  SplitDirection as SplitDirectionOriginal,
+  WorkspaceRoot as WorkspaceRootOriginal
+} from 'obsidian';
 
 import type { Workspace } from './Workspace.ts';
 
@@ -42,7 +45,7 @@ export class WorkspaceRoot extends WorkspaceContainer {
    * @param direction - The split direction.
    * @param id - The item id.
    */
-  protected constructor(workspace: Workspace, direction: string, id?: string) {
+  protected constructor(workspace: Workspace, direction: SplitDirectionOriginal, id?: string) {
     super(workspace, direction, id);
     const self = strictProxy(this);
     self.constructor6__(workspace, direction, id);
@@ -58,7 +61,7 @@ export class WorkspaceRoot extends WorkspaceContainer {
    * @param id - The item id.
    * @returns The new root split.
    */
-  public static create3__(workspace: Workspace, direction: string, id?: string): WorkspaceRoot {
+  public static create3__(workspace: Workspace, direction: SplitDirectionOriginal, id?: string): WorkspaceRoot {
     return new WorkspaceRoot(workspace, direction, id);
   }
 
@@ -91,7 +94,7 @@ export class WorkspaceRoot extends WorkspaceContainer {
    * @param _direction - The split direction the root was created with.
    * @param _id - The item id the root was created with.
    */
-  public constructor6__(_workspace: Workspace, _direction: string, _id?: string): void {
+  public constructor6__(_workspace: Workspace, _direction: SplitDirectionOriginal, _id?: string): void {
     noop();
   }
 }

@@ -7,6 +7,7 @@ import {
 } from 'vitest';
 
 import { noopAsync } from '../internal/noop.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { MetadataCache } from './MetadataCache.ts';
 
@@ -205,11 +206,75 @@ describe('MetadataCache', () => {
   });
 
   describe('fileToLinktext', () => {
-    it('should return file name by default', async () => {
+    it('should omit the md extension by default', async () => {
       const app = App.createConfigured__();
       const file = await app.vault.create('note.md', '');
       await flushMicrotasks();
-      expect(app.metadataCache.fileToLinktext(file, '')).toBe('note.md');
+      expect(app.metadataCache.fileToLinktext(file, '')).toBe('note');
+    });
+
+    it('should keep the md extension when omitMdExtension is false', async () => {
+      const app = App.createConfigured__();
+      const file = await app.vault.create('note.md', '');
+      await flushMicrotasks();
+      expect(app.metadataCache.fileToLinktext(file, '', false)).toBe('note.md');
+    });
+
+    it('should fall back to the full path when the name is not unique', () => {
+      const app = App.createConfigured__({ files: { 'a/note.md': '', 'b/note.md': '' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('a/note.md'));
+      expect(app.metadataCache.fileToLinktext(file, '')).toBe('a/note');
+      expect(app.metadataCache.fileToLinktext(file, '', false)).toBe('a/note.md');
+    });
+
+    it('should match names case-insensitively when checking uniqueness', () => {
+      const app = App.createConfigured__({ files: { 'a/Note.md': '', 'b/note.md': '' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('a/Note.md'));
+      expect(app.metadataCache.fileToLinktext(file, '')).toBe('a/Note');
+    });
+
+    it('should use the name of a root-level file even when the name is not unique', () => {
+      const app = App.createConfigured__({ files: { 'folder/note.md': '', 'note.md': '' } });
+      const rootFile = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      const nestedFile = ensureNonNullable(app.vault.getFileByPath('folder/note.md'));
+      expect(app.metadataCache.fileToLinktext(rootFile, '')).toBe('note');
+      expect(app.metadataCache.fileToLinktext(nestedFile, '')).toBe('folder/note');
+    });
+
+    it('should use the full path of a non-markdown file whose name is not unique', () => {
+      const app = App.createConfigured__({ files: { 'a/data.json': '{}', 'b/data.json': '{}' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('a/data.json'));
+      expect(app.metadataCache.fileToLinktext(file, '')).toBe('a/data.json');
+    });
+
+    it('should resolve a dotted markdown basename through its md name', () => {
+      const app = App.createConfigured__({ files: { 'folder/v1.2.md': '' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('folder/v1.2.md'));
+      expect(app.metadataCache.fileToLinktext(file, '')).toBe('v1.2');
+    });
+
+    it('should use the full path when the name holds a subpath marker', () => {
+      const app = App.createConfigured__({ files: { 'folder/a#b.md': '' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('folder/a#b.md'));
+      expect(app.metadataCache.fileToLinktext(file, '')).toBe('folder/a#b');
+    });
+
+    it('should return the full path when newLinkFormat is absolute', () => {
+      const app = App.createConfigured__({ files: { 'folder/note.md': '' } });
+      app.vault.setConfig('newLinkFormat', 'absolute');
+      const file = ensureNonNullable(app.vault.getFileByPath('folder/note.md'));
+      expect(app.metadataCache.fileToLinktext(file, 'other.md')).toBe('folder/note');
+    });
+
+    it('should return a path relative to the source note when newLinkFormat is relative', () => {
+      const app = App.createConfigured__({ files: { 'a/b/note.md': '', 'a/c/source.md': '', 'root.md': '' } });
+      app.vault.setConfig('newLinkFormat', 'relative');
+      const note = ensureNonNullable(app.vault.getFileByPath('a/b/note.md'));
+      const root = ensureNonNullable(app.vault.getFileByPath('root.md'));
+      expect(app.metadataCache.fileToLinktext(note, 'a/c/source.md')).toBe('../b/note');
+      expect(app.metadataCache.fileToLinktext(note, 'a/b/source.md')).toBe('note');
+      expect(app.metadataCache.fileToLinktext(root, 'a/c/source.md')).toBe('../../root');
+      expect(app.metadataCache.fileToLinktext(note, 'source.md')).toBe('a/b/note');
     });
 
     it('should return basename when omitMdExtension is true for md files', async () => {

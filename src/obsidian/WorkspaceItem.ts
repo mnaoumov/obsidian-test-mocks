@@ -12,31 +12,49 @@ import type {
 
 import type { Workspace } from './Workspace.ts';
 
+import { castTo } from '../internal/castTo.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import {
+  createParentPlaceholder,
+  isContainer,
+  isParentPlaceholder
+} from '../internal/workspace-layout.ts';
 import { Events } from './Events.ts';
+
+/**
+ * The part of `WorkspaceParent` an item calls on its parent, named structurally because importing the class here
+ * would be an import cycle.
+ */
+interface LayoutParent {
+  removeChild(child: WorkspaceItem): void;
+}
 
 /**
  * Mock of Obsidian's `WorkspaceItem`, the base of leaves, splits, tabs and the other layout nodes.
  *
- * The mock keeps no real layout tree: {@link WorkspaceItem.getRoot} and {@link WorkspaceItem.getContainer} both
- * answer with the item itself.
+ * Items form a real layout tree through {@link WorkspaceItem.parent} and `WorkspaceParent.children`, so
+ * {@link WorkspaceItem.getRoot} and {@link WorkspaceItem.getContainer} walk up it the way Obsidian does.
  */
 export abstract class WorkspaceItem extends Events {
   /**
-   * The direct parent of the item. Starts as an empty strict proxy, which throws on any member access until a test
-   * assigns a real parent.
+   * The direct parent of the item. An item with no parent holds an empty strict proxy instead, which throws on any
+   * member access; {@link WorkspaceItem.setParent} and `WorkspaceParent.insertChild` replace it.
    */
-  public parent: WorkspaceParentOriginal = strictProxy<WorkspaceParentOriginal>({});
+  public parent: WorkspaceParentOriginal = createParentPlaceholder<WorkspaceParentOriginal>();
+
+  private readonly layoutWorkspace: undefined | Workspace;
 
   /**
    * Creates a workspace item.
    *
-   * @param workspace - The workspace the item belongs to.
+   * @param workspace - The workspace the item belongs to; {@link WorkspaceItem.getContainer} falls back to its root
+   * split.
    * @param id - The item id.
    */
   protected constructor(workspace?: Workspace, id?: string) {
     super();
+    this.layoutWorkspace = workspace;
     const self = strictProxy(this);
     self.constructor2__(workspace, id);
     return self;
@@ -75,21 +93,59 @@ export abstract class WorkspaceItem extends Events {
   }
 
   /**
-   * Gets the root container the item lives in: the `WorkspaceRoot` or a popout `WorkspaceWindow`. The mock returns
-   * the item itself, typed as a container.
-   *
-   * @returns The item itself, typed as a `WorkspaceContainer`.
+   * Removes the item from its parent, if it has one.
    */
-  public getContainer(): WorkspaceContainerOriginal {
-    return strictProxy<WorkspaceContainerOriginal>(this);
+  public detach(): void {
+    if (this.hasParent()) {
+      castTo<LayoutParent>(this.parent).removeChild(this);
+    }
   }
 
   /**
-   * Gets the root item of the layout tree the item belongs to. The mock returns the item itself.
+   * Gets the root container the item lives in: the nearest `WorkspaceContainer` among the item and its ancestors,
+   * falling back to the workspace's root split when there is none, as Obsidian does.
    *
-   * @returns The item itself.
+   * @returns The container.
+   * @throws An `Error` when the item has no container ancestor and was created without a workspace.
    */
-  public getRoot(): this {
-    return this;
+  public getContainer(): WorkspaceContainerOriginal {
+    const container = this.findContainer();
+    if (container) {
+      return container;
+    }
+
+    if (!this.layoutWorkspace) {
+      throw new Error('The workspace item has no container ancestor and belongs to no workspace.');
+    }
+    return this.layoutWorkspace.rootSplit.asOriginalType5__();
+  }
+
+  /**
+   * Gets the root item of the layout tree the item belongs to, by walking up through its parents.
+   *
+   * @returns The topmost ancestor, or the item itself when it has no parent.
+   */
+  public getRoot(): WorkspaceItem {
+    return this.hasParent() ? castTo<WorkspaceItem>(this.parent).getRoot() : this;
+  }
+
+  /**
+   * Sets the item's parent. `WorkspaceParent` calls it when it adopts or releases a child.
+   *
+   * @param parent - The new parent, or `null` to leave the item without one.
+   */
+  public setParent(parent: null | WorkspaceParentOriginal): void {
+    this.parent = parent ?? createParentPlaceholder<WorkspaceParentOriginal>();
+  }
+
+  private findContainer(): null | WorkspaceContainerOriginal {
+    if (isContainer(this)) {
+      return castTo<WorkspaceContainerOriginal>(this);
+    }
+    return this.hasParent() ? castTo<WorkspaceItem>(this.parent).findContainer() : null;
+  }
+
+  private hasParent(): boolean {
+    return !isParentPlaceholder(this.parent);
   }
 }

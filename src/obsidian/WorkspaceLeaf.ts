@@ -23,18 +23,33 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { createParentPlaceholder } from '../internal/workspace-layout.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 // Held on an object so the counter can advance from inside the constructor without assigning to a module-level binding (`unicorn/no-top-level-assignment-in-function`).
 const leafIdCounter = { next: 1 };
 
+// Held the same way, for the id `setGroupMember` gives a leaf that is in no group yet.
+const groupIdCounter = { next: 1 };
+
+// Obsidian's group ids are 16 hexadecimal digits.
+const GROUP_ID_LENGTH = 16;
+const HEX_RADIX = 16;
+
 /**
  * Mock of Obsidian's `WorkspaceLeaf`.
  *
  * Nothing is rendered: the leaf keeps its view, opened file, view state, ephemeral state, group and pinned flag in
- * memory so a test can read them back, and {@link WorkspaceLeaf.detach} removes it from the mock workspace.
+ * memory so a test can read them back. It sits in the workspace's layout tree, and {@link WorkspaceLeaf.detach}
+ * removes it from there.
  */
 export class WorkspaceLeaf extends WorkspaceItem {
+  /**
+   * When the leaf was last made active, as a timestamp; `0` until then. `Workspace.setActiveLeaf` sets it, and
+   * `Workspace.getMostRecentLeaf` picks the leaf with the highest value.
+   */
+  public activeTime = 0;
+
   /**
    * Mock-only: the app the leaf was created for, used to reach the mock workspace.
    */
@@ -57,10 +72,10 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public readonly isDeferred = false;
 
   /**
-   * The direct parent of the leaf: a `WorkspaceTabs` on desktop, possibly a `WorkspaceMobileDrawer` on mobile. Starts
-   * as an empty strict proxy, which throws on any member access until a test assigns a real parent.
+   * The direct parent of the leaf: a `WorkspaceTabs` on desktop, possibly a `WorkspaceMobileDrawer` on mobile. A leaf
+   * with no parent holds an empty strict proxy instead, which throws on any member access.
    */
-  public override parent: WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal = strictProxy<WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal>({});
+  public override parent: WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal = createParentPlaceholder<WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal>();
 
   /**
    * The view shown in the leaf, or `null` until one is opened (Obsidian declares it non-null).
@@ -143,9 +158,9 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   /**
-   * Closes the leaf and removes it from the workspace. The mock removes it from the mock workspace's leaves.
+   * Closes the leaf and removes it from the workspace's layout tree, through the mock workspace's `removeLeaf__`.
    */
-  public detach(): void {
+  public override detach(): void {
     this.app__.workspace.removeLeaf__(this);
   }
 
@@ -256,31 +271,65 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   /**
-   * Puts the leaf into a linked-view group, whose members follow each other's navigation. The mock only stores the
-   * group name and triggers no `group-change` event.
+   * Puts the leaf into a linked-view group, whose members follow each other's navigation. As in Obsidian, a change of
+   * group first pins the leaf when it or any leaf already in the new group is pinned, then triggers `group-change`
+   * with the new group; setting the group the leaf is already in does nothing.
    *
    * @param group - The group name, or `null` to leave any group.
    */
   public setGroup(group: null | string): void {
+    if (group === this.group) {
+      return;
+    }
+
+    const shouldPin = this.pinned || (group !== null && this.app__.workspace.getGroupLeaves(group).some((leaf) => leaf.isPinned__()));
+    this.setPinned(shouldPin);
     this.group = group;
+    this.trigger('group-change', group);
   }
 
   /**
-   * Puts the leaf into the same linked-view group as another leaf.
+   * Puts the leaf into the same linked-view group as another leaf. When that leaf is in no group yet, it is first put
+   * into a new one, as Obsidian does. Passing the leaf itself does nothing, and passing `null` leaves any group.
    *
-   * @param other - The leaf whose group to join.
+   * @param other - The leaf whose group to join, or `null`.
    */
-  public setGroupMember(other: WorkspaceLeaf): void {
-    this.group = other.getGroup__();
+  public setGroupMember(other: null | WorkspaceLeaf): void {
+    if (other === this) {
+      return;
+    }
+
+    let group: null | string = null;
+    if (other) {
+      group = other.getGroup__();
+      if (group === null) {
+        group = (groupIdCounter.next++).toString(HEX_RADIX).padStart(GROUP_ID_LENGTH, '0');
+        other.setGroup(group);
+      }
+    }
+    this.setGroup(group);
   }
 
   /**
-   * Pins or unpins the leaf. The mock only stores the flag and triggers no `pinned-change` event.
+   * Pins or unpins the leaf. As in Obsidian, it triggers `pinned-change` with the new flag, requests a layout save,
+   * and pins or unpins every other leaf in the same group to match.
    *
    * @param pinned - Whether the leaf should be pinned.
    */
   public setPinned(pinned: boolean): void {
     this.pinned = pinned;
+    this.trigger('pinned-change', pinned);
+    this.app__.workspace.requestSaveLayout();
+
+    if (this.group === null) {
+      return;
+    }
+
+    for (const leaf of this.app__.workspace.getGroupLeaves(this.group)) {
+      if (leaf.isPinned__() !== pinned) {
+        leaf.setPinned(pinned);
+      }
+    }
   }
 
   /**
@@ -301,9 +350,9 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   /**
-   * Flips the leaf's pinned flag. The mock triggers no `pinned-change` event.
+   * Flips the leaf's pinned flag through {@link WorkspaceLeaf.setPinned}.
    */
   public togglePinned(): void {
-    this.pinned = !this.pinned;
+    this.setPinned(!this.pinned);
   }
 }

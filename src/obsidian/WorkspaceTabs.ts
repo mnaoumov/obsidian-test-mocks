@@ -13,17 +13,24 @@ import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { createParentPlaceholder } from '../internal/workspace-layout.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 /**
- * Mock of Obsidian's `WorkspaceTabs`, a tab group whose children are leaves. The mock tracks no tabs.
+ * Mock of Obsidian's `WorkspaceTabs`, a tab group whose children are leaves. The mock tracks the leaves but no current
+ * tab.
  */
 export class WorkspaceTabs extends WorkspaceParent {
   /**
-   * The split the tab group sits in. Starts as an empty strict proxy, which throws on any member access until a test
-   * assigns a real parent.
+   * Whether the tab group may keep a single child; always `true`, as in Obsidian.
    */
-  public override parent: WorkspaceSplitOriginal = strictProxy<WorkspaceSplitOriginal>({});
+  public override allowSingleChild = true;
+
+  /**
+   * The split the tab group sits in. A tab group with no parent holds an empty strict proxy instead, which throws on
+   * any member access.
+   */
+  public override parent: WorkspaceSplitOriginal = createParentPlaceholder<WorkspaceSplitOriginal>();
 
   /**
    * Creates a tab group. Obsidian does not construct it publicly; use {@link WorkspaceTabs.create2__}.

@@ -16,6 +16,26 @@ describe('WorkspaceSplit', () => {
     expect(split).toBeInstanceOf(WorkspaceSplit);
   });
 
+  describe('direction / setDirection()', () => {
+    it('should keep the direction it was created with', () => {
+      const app = App.createConfigured__();
+      const split = WorkspaceSplit.create2__(app.workspace, 'horizontal');
+      expect(split.direction).toBe('horizontal');
+    });
+
+    it('should change the direction', () => {
+      const app = App.createConfigured__();
+      const split = WorkspaceSplit.create2__(app.workspace, 'horizontal');
+      split.setDirection('vertical');
+      expect(split.direction).toBe('vertical');
+    });
+
+    it('should not allow a single child', () => {
+      const app = App.createConfigured__();
+      expect(WorkspaceSplit.create2__(app.workspace, 'vertical').allowSingleChild).toBe(false);
+    });
+  });
+
   describe('asOriginalType4__()', () => {
     it('should return the same instance typed as the original', () => {
       const app = App.createConfigured__();
