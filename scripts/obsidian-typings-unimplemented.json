@@ -501,7 +501,6 @@
   "MetadataCache.isUnresolved",
   "MetadataCache.isUserIgnored",
   "MetadataCache.iterateAllRefs",
-  "MetadataCache.iterateRefsForFile",
   "MetadataCache.linkResolver",
   "MetadataCache.linkResolverQueue",
   "MetadataCache.linkUpdaters",

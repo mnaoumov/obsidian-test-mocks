@@ -6,10 +6,14 @@
 
 import type {
   CachedMetadata as CachedMetadataOriginal,
-  MetadataCache as MetadataCacheOriginal
+  MetadataCache as MetadataCacheOriginal,
+  Reference as ReferenceOriginal
 } from 'obsidian';
 
-import type { FileCacheEntry } from '../internal/types.ts';
+import type {
+  FileCacheEntry,
+  MaybeReturn
+} from '../internal/types.ts';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
@@ -21,6 +25,7 @@ import {
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { Events } from './Events.ts';
+import { iterateRefs } from './functions/iterateRefs.ts';
 import { TFile as TFileClass } from './TFile.ts';
 
 /**
@@ -219,6 +224,32 @@ export class MetadataCache extends Events {
       }
     }
     return null;
+  }
+
+  /**
+   * Iterates the file's own outgoing references, stopping as soon as the callback answers `true`.
+   *
+   * Obsidian looks the file's extension up in `MetadataCache.linkUpdaters` first and hands the whole walk to that
+   * updater when one is registered, reading the metadata cache only as a fallback. **The mock always takes that
+   * fallback branch** — nothing here registers a link updater, and there is no registry to register one in — so a
+   * `.canvas` file is walked through its cached metadata like any other. That is the only behavior available here,
+   * not an omission waiting to be rediscovered.
+   *
+   * @param file - The file whose references to walk. An unindexed one yields nothing.
+   * @param callback - Called with each reference — the file's frontmatter links first, then its body links, then
+   * its embeds. Returning exactly `true` stops the walk, as {@link iterateRefs} does; any other value,
+   * `undefined` included, continues it.
+   */
+  public iterateRefsForFile(file: TFile, callback: (reference: ReferenceOriginal) => MaybeReturn<boolean>): void {
+    const cache = this.getFileCache(file);
+    if (!cache) {
+      return;
+    }
+    for (const references of [cache.frontmatterLinks, cache.links, cache.embeds]) {
+      if (iterateRefs(references ?? [], callback)) {
+        return;
+      }
+    }
   }
 
   /**
