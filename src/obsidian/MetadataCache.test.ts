@@ -53,6 +53,16 @@ describe('MetadataCache', () => {
       expect(cache).toBeNull();
     });
 
+    it('should populate cache when the frontmatter is invalid YAML', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('bad.md', '---\nkey: [unclosed\n---\n# Heading');
+
+      const cache = app.metadataCache.getFileCache(file);
+      expect(cache).not.toBeNull();
+      expect(cache?.frontmatter).toEqual({});
+      expect(cache?.headings?.[0]?.heading).toBe('Heading');
+    });
+
     it('should populate cache synchronously (no tick needed)', () => {
       const app = App.createConfigured__();
       const file = app.vault.createSync__('sync.md', '# Sync');
@@ -528,6 +538,15 @@ homepage: "[[Fm]]"
     });
   });
   describe('computeMetadataAsync', () => {
+    it('should resolve rather than reject when the frontmatter is invalid YAML', async () => {
+      const app = App.createConfigured__();
+      const arrayBuffer = new TextEncoder().encode('---\nkey: [unclosed\n---\nBody').buffer;
+
+      const cache = await app.metadataCache.computeMetadataAsync(arrayBuffer);
+
+      expect(cache.frontmatter).toEqual({});
+    });
+
     it('should parse metadata from an ArrayBuffer', async () => {
       const app = App.createConfigured__();
       const arrayBuffer = new TextEncoder().encode('# Heading').buffer;
