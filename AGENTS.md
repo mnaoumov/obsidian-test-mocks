@@ -834,6 +834,31 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
       or a date before falling back to the ordinary conversion, and reinstalls itself on every nested list
       and object so those readings reach the whole tree.
 
+- **Every Bases value class carries Obsidian's own type NAME, and two members hang off it** (2026-09-18,
+  `XG` and its subclasses in Obsidian 1.14.2's `app.js`). `Value.type` is the static Obsidian assigns per
+  class; `obsidian.d.ts` declares it on `Value` and on four subclasses, and the mock used to assign it
+  nowhere, so all seventeen read as `undefined`. The names are `Any` on the base and then `Null`, `String`,
+  `Number`, `Boolean`, `List`, `Object`, `RegExp`, `Date`, `Duration`, `File`, `URL`, `Link`, `Image` and
+  `HTML` - fourteen classes that own one.
+  - **Five value classes deliberately have NONE of their own**, and inherit the nearest name above them
+    exactly as they do in Obsidian: `NotNullValue` and `PrimitiveValue` answer `Any`, `RelativeDateValue`
+    answers `Date`, and `IconValue` and `TagValue` answer `String`. So does the internal `TagsListValue`,
+    which answers `List`. Adding a name to any of them would be inventing one.
+  - **Two names in Obsidian's own list have no class here, and that is L1 rather than a gap**: `Markdown`
+    and `Error`. `obsidian.d.ts` declares neither `MarkdownValue` nor `ErrorValue`, so neither becomes a
+    `src/obsidian/` export, and their type names go with them.
+  - **`Value.toString` is a STATIC on the class**, `return this.type`, so `String(StringValue)` is `'String'`
+    and a subclass that declares no name of its own answers the inherited one. Neither `obsidian.d.ts` nor
+    `obsidian-typings` declares it, and it is still a real Obsidian member rather than a mock-only one, so L4
+    gives it its real name with no `__` suffix. It cannot move to `src/internal/` the way
+    `ObjectValue.fromFrontMatter` did - a static whose whole effect is what `String(TheClass)` answers has to
+    live on the class.
+  - **`Value.prototype.type` is a separate accessor, and it answers the CONSTRUCTOR, not the string.** That
+    is Obsidian's own oddity: `Object.defineProperty(e.prototype,"type",{get(){return this.constructor}})`,
+    so the static `type` is a name and the instance `type` is a class object. The mock models both as they
+    are; reconciling them would be inventing a third behavior. It reaches consumers through the strict proxy
+    unchanged, because `constructor` is on the prototype chain and the trap passes it through.
+
 - **Value comparison is Obsidian's own throughout, statics AND instances** (2026-09-17, `XG` and its
   subclasses in Obsidian 1.14.2's `app.js`). The statics answer identity first, then treat a missing value as
   equal only to another missing one - by truthiness, so an `undefined` the declared signature does not admit

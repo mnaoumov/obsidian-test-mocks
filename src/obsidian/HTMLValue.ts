@@ -15,6 +15,11 @@ import { StringValue } from './StringValue.ts';
  */
 export class HTMLValue extends StringValue {
   /**
+   * The value type's identifier, `'HTML'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'HTML';
+
+  /**
    * The lucide icon name standing for this value's type.
    */
   public override icon = 'lucide-code-2';

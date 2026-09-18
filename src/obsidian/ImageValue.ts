@@ -15,6 +15,11 @@ import { StringValue } from './StringValue.ts';
  */
 export class ImageValue extends StringValue {
   /**
+   * The value type's identifier, `'Image'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'Image';
+
+  /**
    * The lucide icon name standing for this value's type.
    */
   public override icon = 'lucide-image';

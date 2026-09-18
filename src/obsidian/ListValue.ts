@@ -39,6 +39,11 @@ const HALF = 2;
  */
 export class ListValue extends NotNullValue {
   /**
+   * The value type's identifier, `'List'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'List';
+
+  /**
    * The list's elements, each a `Value` or raw data not yet converted. The array passed to the constructor, not a
    * copy.
    */

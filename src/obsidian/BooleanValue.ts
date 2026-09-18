@@ -15,6 +15,11 @@ import { PrimitiveValue } from './PrimitiveValue.ts';
  */
 export class BooleanValue extends PrimitiveValue<boolean> {
   /**
+   * The value type's identifier, `'Boolean'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'Boolean';
+
+  /**
    * The lucide icon name standing for this value's type.
    */
   public override icon = 'lucide-check-square';

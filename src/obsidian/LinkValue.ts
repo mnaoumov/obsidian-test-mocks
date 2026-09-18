@@ -25,6 +25,11 @@ const WIKILINK_CLOSE = ']]';
  */
 export class LinkValue extends StringValue {
   /**
+   * The value type's identifier, `'Link'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'Link';
+
+  /**
    * The app used to resolve the link.
    */
   public app: App;

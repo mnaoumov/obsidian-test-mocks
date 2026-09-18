@@ -9,11 +9,26 @@ import {
 
 import { castTo } from '../internal/castTo.ts';
 import { App } from './App.ts';
+import { BooleanValue } from './BooleanValue.ts';
+import { DateValue } from './DateValue.ts';
+import { DurationValue } from './DurationValue.ts';
+import { FileValue } from './FileValue.ts';
+import { HTMLValue } from './HTMLValue.ts';
+import { IconValue } from './IconValue.ts';
+import { ImageValue } from './ImageValue.ts';
+import { LinkValue } from './LinkValue.ts';
 import { ListValue } from './ListValue.ts';
+import { NotNullValue } from './NotNullValue.ts';
 import { NullValue } from './NullValue.ts';
 import { NumberValue } from './NumberValue.ts';
+import { ObjectValue } from './ObjectValue.ts';
+import { PrimitiveValue } from './PrimitiveValue.ts';
+import { RegExpValue } from './RegExpValue.ts';
+import { RelativeDateValue } from './RelativeDateValue.ts';
 import { RenderContext } from './RenderContext.ts';
 import { StringValue } from './StringValue.ts';
+import { TagValue } from './TagValue.ts';
+import { UrlValue } from './UrlValue.ts';
 import { Value } from './Value.ts';
 
 class BareValue extends Value {
@@ -40,6 +55,67 @@ describe('Value', () => {
   describe('keys', () => {
     it('should expose no keys on the base value', () => {
       expect(new BareValue().keys()).toEqual([]);
+    });
+  });
+
+  describe('static type', () => {
+    it.each([
+      { expected: 'Any', name: 'Value', valueClass: Value },
+      { expected: 'Null', name: 'NullValue', valueClass: NullValue },
+      { expected: 'String', name: 'StringValue', valueClass: StringValue },
+      { expected: 'Number', name: 'NumberValue', valueClass: NumberValue },
+      { expected: 'Boolean', name: 'BooleanValue', valueClass: BooleanValue },
+      { expected: 'List', name: 'ListValue', valueClass: ListValue },
+      { expected: 'Object', name: 'ObjectValue', valueClass: ObjectValue },
+      { expected: 'RegExp', name: 'RegExpValue', valueClass: RegExpValue },
+      { expected: 'Date', name: 'DateValue', valueClass: DateValue },
+      { expected: 'Duration', name: 'DurationValue', valueClass: DurationValue },
+      { expected: 'File', name: 'FileValue', valueClass: FileValue },
+      { expected: 'URL', name: 'UrlValue', valueClass: UrlValue },
+      { expected: 'Link', name: 'LinkValue', valueClass: LinkValue },
+      { expected: 'Image', name: 'ImageValue', valueClass: ImageValue },
+      { expected: 'HTML', name: 'HTMLValue', valueClass: HTMLValue }
+    ])('should name $name $expected, as Obsidian does', ({ expected, valueClass }) => {
+      expect(valueClass.type).toBe(expected);
+    });
+
+    it.each([
+      { expected: 'Any', name: 'NotNullValue', valueClass: NotNullValue },
+      { expected: 'Any', name: 'PrimitiveValue', valueClass: PrimitiveValue },
+      { expected: 'Date', name: 'RelativeDateValue', valueClass: RelativeDateValue },
+      { expected: 'String', name: 'IconValue', valueClass: IconValue },
+      { expected: 'String', name: 'TagValue', valueClass: TagValue }
+    ])('should leave $name on the inherited $expected, which Obsidian never overwrites', ({ expected, valueClass }) => {
+      expect(valueClass.type).toBe(expected);
+    });
+  });
+
+  describe('static toString', () => {
+    it('should answer the type name of the class it is called on', () => {
+      expect(StringValue.toString()).toBe('String');
+    });
+
+    it('should be what String() reads off a value class', () => {
+      expect(String(Value)).toBe('Any');
+      expect(String(NullValue)).toBe('Null');
+      expect(String(UrlValue)).toBe('URL');
+    });
+
+    it('should answer the inherited name for a class that declares none', () => {
+      expect(String(TagValue)).toBe('String');
+    });
+  });
+
+  describe('type', () => {
+    it('should answer the CONSTRUCTOR rather than the type name, as Obsidian does', () => {
+      const value = new StringValue('hello');
+      expect(value.type).toBe(StringValue);
+      expect(value.type).not.toBe(StringValue.type);
+    });
+
+    it('should answer the class of the instance, not the one declaring the accessor', () => {
+      expect(NullValue.value.type).toBe(NullValue);
+      expect(new BareValue().type).toBe(BareValue);
     });
   });
 
