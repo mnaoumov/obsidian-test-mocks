@@ -284,7 +284,7 @@ export class Setting {
   }
 
   /**
-   * Adds a toggle switch to the row.
+   * Adds a toggle switch to the row, marking the row `mod-toggle` once the callback has run, as Obsidian does.
    *
    * @param callback - Called with the new toggle, to configure it.
    * @returns This setting, for chaining.
@@ -293,6 +293,7 @@ export class Setting {
     const comp = ToggleComponent.create__(this.controlEl);
     this.components.push(comp);
     callback(comp.asOriginalType3__());
+    this.settingEl.addClass('mod-toggle');
     return this;
   }
 
@@ -343,13 +344,14 @@ export class Setting {
   }
 
   /**
-   * Adds a CSS class to the row's element.
+   * Adds one or more CSS classes to the row's element. As in Obsidian, the string is split on spaces first, so a
+   * multi-class string adds every class rather than throwing, and empty parts are dropped.
    *
-   * @param cls - The class name.
+   * @param cls - The class name, or several separated by spaces.
    * @returns This setting, for chaining.
    */
   public setClass(cls: string): this {
-    this.settingEl.classList.add(cls);
+    this.settingEl.addClass(...cls.split(' ').filter(Boolean));
     return this;
   }
 
