@@ -212,6 +212,15 @@ describe('FileValue', () => {
       expect(createFileValue().getTags().data).toEqual([]);
     });
 
+    it('should give a file whose frontmatter is not an object an empty list', () => {
+      const app = App.createConfigured__({
+        files: {
+          'scalar.md': '---\njust a string\n---\nBody'
+        }
+      });
+      expect(createNoteValue(app, 'scalar.md').getTags().data).toEqual([]);
+    });
+
     it('should answer the same list every time', () => {
       const value = createNoteValue(createLinkedVault(), 'folder/test.md');
       expect(value.getTags()).toBe(value.getTags());

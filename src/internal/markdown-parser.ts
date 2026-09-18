@@ -8,7 +8,6 @@
 import type {
   CachedMetadata,
   EmbedCache,
-  FrontMatterCache,
   FrontmatterLinkCache,
   HeadingCache,
   LinkCache,
@@ -21,7 +20,6 @@ import type {
 
 import { getFrontMatterInfo } from '../obsidian/functions/getFrontMatterInfo.ts';
 import { parseYaml } from '../obsidian/functions/parseYaml.ts';
-import { strictProxy } from './strict-proxy.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
 /**
@@ -290,7 +288,10 @@ function parseFrontmatter(
       cache.frontmatterLinks = frontmatterLinks;
     }
   } else {
-    cache.frontmatter = strictProxy<FrontMatterCache>({});
+    // Stored UNWRAPPED, like the parsed branch above. A frontmatter record is data rather than a mock
+    // object, so it has nothing to catch an unmocked read of: a strict proxy here throws on every absent-key
+    // read, and reading an absent key is exactly what `getAllTags` and `parseFrontMatter*` do.
+    cache.frontmatter = {};
   }
 
   cache.frontmatterPosition = makePos(lineStarts, 0, info.contentStart);

@@ -72,15 +72,22 @@ describe('parseMarkdownContent', () => {
       const content = '---\n \n---\n\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatter).toBeDefined();
+      expect(cache.frontmatter).toEqual({});
+      expect(cache.frontmatter?.['tags']).toBeUndefined();
     });
 
     it('should set empty frontmatter object when YAML parses to non-object', () => {
       const content = '---\njust a string\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatter).toBeDefined();
-      expect(typeof cache.frontmatter).toBe('object');
+      expect(cache.frontmatter).toEqual({});
+    });
+
+    it('should read an absent key as undefined when the YAML parses to a non-object', () => {
+      const content = '---\njust a string\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatter?.['tags']).toBeUndefined();
     });
 
     it('should not parse content before frontmatter as body', () => {
@@ -587,7 +594,8 @@ describe('parseMarkdownContent', () => {
       // Frontmatter regex requires at least one newline between delimiters
       const content = '---\n\n---\nBody';
       const cache = parseMarkdownContent(content);
-      expect(cache.frontmatter).toBeDefined();
+      expect(cache.frontmatter).toEqual({});
+      expect(cache.frontmatter?.['tags']).toBeUndefined();
     });
   });
 
