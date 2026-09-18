@@ -472,6 +472,14 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   back to the root tab group where Obsidian throws `No tab group found.`, so `getLeaf('tab')` works on a workspace
   no test has populated.
 
+- **The `View` base does NOT navigate, and carries `lucide-file`** (2026-09-17, read in Obsidian 1.14.2's
+  `app.js`). Obsidian's base constructor sets `icon = 'lucide-file'` and `navigation = false`; the mock had both
+  inverted. It matters because `WorkspaceLeaf.canNavigate()` reads `view.navigation`, so a bare mock view used to
+  claim the active leaf for reuse where a real one would not. `getIcon()` answers `lucide-file` when the icon has
+  been emptied, as the app does, rather than returning the empty string. Of the mocked subclasses only `FileView`
+  touches either field (`navigation = true`) — `ItemView`, `EditableFileView` and `TextFileView` set neither, and
+  `MarkdownView` sets `lucide-file`, the value the base now carries anyway.
+
 - **`MarkdownView` owns no text: its MODES do, and `currentMode` is the edit view** (2026-09-17, read in Obsidian
   1.14.2's `app.js`). The mock used to keep four disconnected buffers — `MarkdownView.data`, its own `editor`, a
   `currentMode` nothing else wrote, and a `MarkdownEditView` built from a view but holding a separate editor of its
