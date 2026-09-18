@@ -6,10 +6,11 @@
 
 import type { EditableFileView as EditableFileViewOriginal } from 'obsidian';
 
+import type { WorkspaceLeaf } from './WorkspaceLeaf.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { FileView } from './FileView.ts';
-import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 /**
  * Mock of Obsidian's abstract `EditableFileView`, which adds nothing to `FileView` in the public API.

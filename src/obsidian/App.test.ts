@@ -11,6 +11,7 @@ import {
   ensureGenericObject,
   ensureNonNullable
 } from '../internal/type-guards.ts';
+import { ViewRegistry } from '../internal/view-registry.ts';
 import { App } from './App.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { RenderContext } from './RenderContext.ts';
@@ -167,6 +168,14 @@ describe('App', () => {
     it('should expose a SecretStorage instance', () => {
       const app = App.createConfigured__();
       expect(app.secretStorage).toBeInstanceOf(SecretStorage);
+    });
+  });
+
+  describe('viewRegistry', () => {
+    it('should expose a ViewRegistry instance holding Obsidian\'s Markdown view', () => {
+      const app = App.createConfigured__();
+      expect(app.viewRegistry).toBeInstanceOf(ViewRegistry);
+      expect(app.viewRegistry.getTypeByExtension('md')).toBe('markdown');
     });
   });
 

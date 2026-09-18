@@ -9,6 +9,7 @@ import type {
   MarkdownEditView as MarkdownEditViewOriginal
 } from 'obsidian';
 
+import type { App } from './App.ts';
 import type { MarkdownView } from './MarkdownView.ts';
 import type { TFile } from './TFile.ts';
 
@@ -16,7 +17,6 @@ import { setMarkdownEditorText } from '../internal/markdown-editor-set.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
-import { App } from './App.ts';
 import { Editor } from './Editor.ts';
 
 class MockEditor extends Editor {}

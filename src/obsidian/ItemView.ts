@@ -9,10 +9,11 @@ import type {
   ItemView as ItemViewOriginal
 } from 'obsidian';
 
+import type { WorkspaceLeaf } from './WorkspaceLeaf.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { View } from './View.ts';
-import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 /**
  * Mock of Obsidian's `ItemView`.

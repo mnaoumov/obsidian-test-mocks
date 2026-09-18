@@ -4,7 +4,10 @@
  * Shared type declarations for shapes Obsidian declares inline or only in `obsidian-typings`.
  */
 
-import type { Events } from 'obsidian';
+import type {
+  Events,
+  ViewStateResult as ViewStateResultOriginal
+} from 'obsidian';
 
 /**
  * Every file and folder path in an in-memory filesystem, as `InMemoryAdapter.listAll__` returns them.
@@ -101,6 +104,29 @@ export interface SvgElementInfo {
   cls?: string | string[];
   parent?: Node;
   prepend?: boolean;
+}
+
+/**
+ * The whole of the result object Obsidian passes to `View.setState`, which the view fills in to tell the leaf what
+ * the state change implies.
+ *
+ * `obsidian.d.ts` and `obsidian-typings` both declare only `history`; Obsidian's own `setViewState` reads three more
+ * off the same object, so they are inlined here per L3 rather than claimed as mock-only members.
+ */
+export interface ViewStateResultInternal extends ViewStateResultOriginal {
+  /**
+   * Set by a view that cannot show what it was given — a file view with no file — to make the leaf go back to its
+   * empty view.
+   */
+  close?: boolean;
+  /**
+   * A callback the leaf runs once the state change has settled.
+   */
+  done?(): void;
+  /**
+   * Set by a view whose state change alters the layout, which makes the leaf ask the workspace to update it.
+   */
+  layout?: boolean;
 }
 
 /**

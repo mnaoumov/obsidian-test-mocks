@@ -9,20 +9,36 @@ import type {
   ViewStateResult as ViewStateResultOriginal
 } from 'obsidian';
 
-import type { TFile } from './TFile.ts';
+import type { ViewStateResultInternal } from '../internal/types.ts';
+import type { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
+import { castTo } from '../internal/castTo.ts';
 import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ItemView } from './ItemView.ts';
-import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
+import { TFile } from './TFile.ts';
+
+/**
+ * The text Obsidian's file views show when no file is loaded, `noFile` in the shipped `i18n.js`.
+ */
+const NO_FILE_LABEL = 'No file';
+
+/**
+ * A view state that carries a `file` entry, which {@link FileView.setState} resolves into the file to load.
+ */
+interface StateWithFileEntry {
+  file?: unknown;
+}
 
 /**
  * Mock of Obsidian's `FileView`.
  *
- * Loading a file only records it in {@link FileView.file}; the rename and unload hooks do nothing.
+ * {@link FileView.setState} resolves the `file` path in the state and loads it through
+ * {@link FileView.loadFile}, exactly as Obsidian does, so `WorkspaceLeaf.openFile` really leaves the view holding
+ * the file. The rename hook does nothing.
  */
 export abstract class FileView extends ItemView {
   /**
@@ -95,19 +111,61 @@ export abstract class FileView extends ItemView {
   /**
    * Gets the text shown in the view's tab header.
    *
-   * @returns The loaded file's basename, or an empty string when no file is loaded.
+   * @returns The loaded file's basename, or Obsidian's own `No file` when none is loaded.
    */
   public getDisplayText(): string {
-    return this.file?.basename ?? '';
+    return this.file?.basename ?? NO_FILE_LABEL;
   }
 
   /**
-   * Gets the view's serializable state.
+   * Gets the view's serializable state, which carries the loaded file's path as Obsidian's does.
    *
-   * @returns A shallow copy of the inherited view state.
+   * @returns A shallow copy of the inherited view state, with `file` added when a file is loaded.
    */
   public override getState(): Record<string, unknown> {
-    return { ...super.getState() };
+    return {
+      ...super.getState(),
+      ...this.file && { file: this.file.path }
+    };
+  }
+
+  /**
+   * Loads a file into the view, as Obsidian does: the outgoing file is unloaded through
+   * {@link FileView.onUnloadFile}, the new one is stored and passed to {@link FileView.onLoadFile}, and a hook that
+   * throws leaves the view with no file rather than a half-loaded one. Loading the file the view already holds does
+   * nothing.
+   *
+   * The user-facing notice Obsidian shows for a file that failed to load is not modeled; the error is logged, as it
+   * is there.
+   *
+   * @param file - The file to load, or `null` to unload the current one.
+   * @returns Whether the loaded file changed.
+   */
+  public async loadFile(file: null | TFile): Promise<boolean> {
+    const previous = this.file;
+    if (previous === file) {
+      return false;
+    }
+
+    if (previous) {
+      await this.onUnloadFile(previous);
+    }
+
+    this.file = null;
+    if (file) {
+      try {
+        this.file = file;
+        await this.onLoadFile(file);
+      } catch (error) {
+        this.file = null;
+        console.error(error);
+      }
+    }
+
+    if (this.app.workspace.activeLeaf === this.leaf) {
+      this.app.workspace.requestActiveLeafEvents();
+    }
+    return true;
   }
 
   /**
@@ -118,13 +176,13 @@ export abstract class FileView extends ItemView {
   }
 
   /**
-   * Called when a file is loaded into the view.
+   * Called when a file is loaded into the view, after {@link FileView.loadFile} has stored it in
+   * {@link FileView.file}. An empty hook for subclasses, as in Obsidian.
    *
-   * @param file - The file being loaded; the mock stores it in {@link FileView.file}.
+   * @param _file - The file being loaded.
    */
-  public async onLoadFile(file: TFile): Promise<void> {
+  public async onLoadFile(_file: TFile): Promise<void> {
     await noopAsync();
-    this.file = file;
   }
 
   /**
@@ -137,8 +195,8 @@ export abstract class FileView extends ItemView {
   }
 
   /**
-   * Called when a file is unloaded from the view. A no-op in the mock, which leaves {@link FileView.file} as it
-   * was.
+   * Called when a file is unloaded from the view, before {@link FileView.loadFile} clears
+   * {@link FileView.file}. An empty hook for subclasses, as in Obsidian.
    *
    * @param _file - The file being unloaded.
    */
@@ -147,12 +205,38 @@ export abstract class FileView extends ItemView {
   }
 
   /**
-   * Restores the view from a serialized state.
+   * Restores the view from a serialized state, loading the file its `file` path names, as Obsidian does. A state
+   * naming a path that is not a file unloads the current one; a view left with no file asks the leaf to close it,
+   * unless {@link FileView.allowNoFile} is set.
+   *
+   * Obsidian also schedules the linked-pane sync on the result's `done` callback; `syncState` is not modeled, so the
+   * mock does not.
    *
    * @param state - The state to restore.
    * @param result - The result object the view can update, such as to record history.
    */
   public override async setState(state: unknown, result: ViewStateResultOriginal): Promise<void> {
+    const internalResult = castTo<ViewStateResultInternal>(result);
+    let hasFileChanged = false;
+
+    if (hasFileEntry(state)) {
+      const file = typeof state.file === 'string' ? this.app.vault.getAbstractFileByPath(state.file) : null;
+      hasFileChanged = await this.loadFile(file instanceof TFile ? file : null);
+    }
+
+    if (!this.file && !this.allowNoFile) {
+      internalResult.close = true;
+    }
+
+    if (hasFileChanged) {
+      internalResult.history = true;
+      internalResult.layout = true;
+    }
+
     await super.setState(state, result);
   }
+}
+
+function hasFileEntry(state: unknown): state is StateWithFileEntry {
+  return typeof state === 'object' && state !== null && Object.hasOwn(state, 'file');
 }

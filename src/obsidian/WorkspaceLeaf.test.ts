@@ -1,5 +1,6 @@
 import type {
-  View,
+  IconName as IconNameOriginal,
+  ViewStateResult as ViewStateResultOriginal,
   WorkspaceLeaf as WorkspaceLeafOriginal
 } from 'obsidian';
 
@@ -10,21 +11,82 @@ import {
   vi
 } from 'vitest';
 
-import { noopAsync } from '../internal/noop.ts';
-import { strictProxy } from '../internal/strict-proxy.ts';
+import { EmptyView } from '../internal/empty-view.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
+import { UnknownView } from '../internal/unknown-view.ts';
 import { App } from './App.ts';
+import { ItemView } from './ItemView.ts';
+import { MarkdownView } from './MarkdownView.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 const EXPECTED_SAVE_COUNT = 2;
 
 /**
- * Opens a tab and fills it, because `getLeaf('tab')` hands back a tab that is still showing the empty view instead of
- * creating another one - so a test that wants a SECOND tab has to put something in the first.
+ * A view type nothing registers a creator for, so the leaf answers it with the unknown view.
+ */
+const UNREGISTERED_VIEW_TYPE = 'canvas';
+
+class CanvasView extends ItemView {
+  public override navigation = false;
+
+  public getDisplayText(): string {
+    return 'Canvas';
+  }
+
+  public override getIcon(): IconNameOriginal {
+    return 'star';
+  }
+
+  public getViewType(): string {
+    return UNREGISTERED_VIEW_TYPE;
+  }
+}
+
+class ReEntrantView extends ItemView {
+  public getDisplayText(): string {
+    return 'Re-entrant';
+  }
+
+  public getViewType(): string {
+    return 're-entrant';
+  }
+
+  public override async setState(_state: unknown, _result: ViewStateResultOriginal): Promise<void> {
+    await this.leaf.setViewState({ type: 'empty' });
+  }
+}
+
+class ThrowingStateView extends ItemView {
+  public getDisplayText(): string {
+    return 'Throwing';
+  }
+
+  public getViewType(): string {
+    return 'throwing';
+  }
+
+  public override async setState(_state: unknown, _result: ViewStateResultOriginal): Promise<void> {
+    await noopAsync();
+    throw new Error('State failed');
+  }
+}
+
+// Held on an object so each filled tab gets a file of its own without assigning to a module-level binding.
+const filledTabCounter = { next: 1 };
+
+/**
+ * Opens a tab and fills it with a Markdown view over a file of its own, because `getLeaf('tab')` hands back a tab
+ * that is still showing the empty view instead of creating another one - so a test that wants a SECOND tab has to put
+ * something in the first. A file view with no file closes straight back to the empty view, which is why the file is
+ * real.
  */
 async function openFilledTab(app: App): Promise<WorkspaceLeaf> {
   const leaf = app.workspace.getLeaf(true);
-  await leaf.setViewState({ type: 'markdown' });
+  await leaf.openFile(app.vault.createSync__(`filled-tab-${String(filledTabCounter.next++)}.md`, ''));
   return leaf;
 }
 
@@ -115,17 +177,16 @@ describe('WorkspaceLeaf', () => {
   });
 
   describe('getDisplayText()', () => {
-    it('should return empty string when no view', () => {
+    it('should answer the empty view\'s label for a leaf nothing has been done to', () => {
       const app = App.createConfigured__();
-      const leaf = WorkspaceLeaf.create2__(app);
-      expect(leaf.getDisplayText()).toBe('');
+      expect(WorkspaceLeaf.create2__(app).getDisplayText()).toBe('New tab');
     });
 
-    it('should return the view display text when view is set', () => {
+    it('should answer the open view\'s display text', async () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      leaf.view = strictProxy<View>({ getDisplayText: () => 'My View', getIcon: () => '', onResize: vi.fn() });
-      expect(leaf.getDisplayText()).toBe('My View');
+      await leaf.open(new CanvasView(leaf).asOriginalType2__());
+      expect(leaf.getDisplayText()).toBe('Canvas');
     });
   });
 
@@ -211,54 +272,159 @@ describe('WorkspaceLeaf', () => {
   });
 
   describe('getIcon()', () => {
-    it('should return empty string when no view', () => {
+    it('should answer the empty view\'s icon for a leaf nothing has been done to', () => {
       const app = App.createConfigured__();
-      const leaf = WorkspaceLeaf.create2__(app);
-      expect(leaf.getIcon()).toBe('');
+      expect(WorkspaceLeaf.create2__(app).getIcon()).toBe('lucide-file');
     });
 
-    it('should return the view icon when view is set', () => {
+    it('should answer the open view\'s icon', async () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      leaf.view = strictProxy<View>({ getDisplayText: () => '', getIcon: () => 'star', onResize: vi.fn() });
+      await leaf.open(new CanvasView(leaf).asOriginalType2__());
       expect(leaf.getIcon()).toBe('star');
     });
   });
 
   describe('getViewState() / setViewState()', () => {
-    it('should return default view state', () => {
+    it('should describe the empty view a leaf is born holding', () => {
       const app = App.createConfigured__();
-      const leaf = WorkspaceLeaf.create2__(app);
-      expect(leaf.getViewState()).toEqual({ type: '' });
+      expect(WorkspaceLeaf.create2__(app).getViewState()).toEqual({ state: {}, type: 'empty' });
     });
 
-    it('should set and get view state', async () => {
+    it('should report a pinned leaf as pinned', () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      leaf.setPinned(true);
+      expect(leaf.getViewState()).toEqual({ pinned: true, state: {}, type: 'empty' });
+    });
+
+    it('should build the view a registered type names', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.setViewState({ state: { file: 'note.md' }, type: 'markdown' });
+      expect(leaf.view).toBeInstanceOf(MarkdownView);
+      expect(leaf.getViewState()).toEqual({ state: { file: 'note.md' }, type: 'markdown' });
+    });
+
+    it('should give an unregistered type the unknown view, which keeps that type', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.setViewState({ type: UNREGISTERED_VIEW_TYPE });
+      expect(leaf.view).toBeInstanceOf(UnknownView);
+      expect(leaf.getViewState().type).toBe(UNREGISTERED_VIEW_TYPE);
+      expect(leaf.getDisplayText()).toBe(UNREGISTERED_VIEW_TYPE);
+      expect(leaf.getIcon()).toBe('lucide-ghost');
+    });
+
+    it('should keep the empty view for the empty type', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.setViewState({ type: UNREGISTERED_VIEW_TYPE });
+      await leaf.setViewState({ type: 'empty' });
+      expect(leaf.view).toBe(leaf._empty);
+    });
+
+    it('should not rebuild the view when the type is unchanged', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.setViewState({ type: UNREGISTERED_VIEW_TYPE });
+      const view = leaf.view;
+
+      await leaf.setViewState({ state: { scroll: 1 }, type: UNREGISTERED_VIEW_TYPE });
+
+      expect(leaf.view).toBe(view);
+      expect(leaf.getViewState().state).toEqual({ scroll: 1 });
+    });
+
+    it('should fall back to the unknown view when the creator throws', async () => {
+      const app = App.createConfigured__();
+      app.viewRegistry.registerView('broken', () => {
+        throw new Error('Creator failed');
+      });
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
+      const leaf = WorkspaceLeaf.create2__(app);
+
+      await leaf.setViewState({ type: 'broken' });
+
+      expect(leaf.view).toBeInstanceOf(UnknownView);
+      expect(leaf.getViewState().type).toBe('broken');
+      expect(errorSpy).toHaveBeenCalledWith('Failed to create view of type "broken"', expect.any(Error));
+      errorSpy.mockRestore();
+    });
+
+    it('should send the leaf back to the empty view when a file view is left with no file', async () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       await leaf.setViewState({ type: 'markdown' });
-      expect(leaf.getViewState()).toEqual({ type: 'markdown' });
+      expect(leaf.view).toBe(leaf._empty);
+    });
+
+    it('should log a view whose setState throws and carry on', async () => {
+      const app = App.createConfigured__();
+      app.viewRegistry.registerView('throwing', (leaf) => new ThrowingStateView(WorkspaceLeaf.fromOriginalType3__(leaf)).asOriginalType2__());
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
+      const leaf = WorkspaceLeaf.create2__(app);
+
+      await leaf.setViewState({ type: 'throwing' });
+
+      expect(leaf.view).toBeInstanceOf(ThrowingStateView);
+      expect(errorSpy).toHaveBeenCalledWith(expect.any(Error));
+      errorSpy.mockRestore();
     });
 
     it('should set ephemeral state when provided', async () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      await leaf.setViewState({ type: 'markdown' }, { scroll: 0 });
+      await leaf.setViewState({ type: UNREGISTERED_VIEW_TYPE }, { scroll: 0 });
       expect(leaf.getEphemeralState()).toEqual({ scroll: 0 });
     });
 
-    it('should trigger view-state-change event', async () => {
+    it('should activate the leaf when the state says so', async () => {
       const app = App.createConfigured__();
-      const leaf = WorkspaceLeaf.create2__(app);
-      const handler = vi.fn();
-      leaf.on('view-state-change', handler);
-      await leaf.setViewState({ type: 'markdown' });
-      expect(handler).toHaveBeenCalled();
+      const leaf = await openFilledTab(app);
+      const other = app.workspace.getLeaf('tab');
+      expect(app.workspace.activeLeaf).toBe(other);
+
+      await leaf.setViewState({ active: true, type: UNREGISTERED_VIEW_TYPE });
+
+      expect(app.workspace.activeLeaf).toBe(leaf);
     });
 
-    it('should return a copy, not the same object', async () => {
+    it('should join the given leaf\'s link group', async () => {
+      const app = App.createConfigured__();
+      const other = WorkspaceLeaf.create2__(app);
+      other.setGroup('shared');
+      const leaf = WorkspaceLeaf.create2__(app);
+
+      await leaf.setViewState({ group: other.asOriginalType3__(), type: UNREGISTERED_VIEW_TYPE });
+
+      expect(leaf.getGroup__()).toBe('shared');
+    });
+
+    it('should ask the workspace to update the layout when the view is rebuilt', async () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      await leaf.setViewState({ type: 'test' });
+      const layoutSpy = vi.spyOn(app.workspace, 'onLayoutChange');
+
+      await leaf.setViewState({ type: UNREGISTERED_VIEW_TYPE });
+
+      expect(layoutSpy).toHaveBeenCalled();
+    });
+
+    it('should drop a call reached from inside another one', async () => {
+      const app = App.createConfigured__();
+      app.viewRegistry.registerView('re-entrant', (leaf) => new ReEntrantView(WorkspaceLeaf.fromOriginalType3__(leaf)).asOriginalType2__());
+      const leaf = WorkspaceLeaf.create2__(app);
+
+      await leaf.setViewState({ type: 're-entrant' });
+
+      expect(leaf.getViewState().type).toBe('re-entrant');
+    });
+
+    it('should return a fresh object each time', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.setViewState({ type: UNREGISTERED_VIEW_TYPE });
       const state1 = leaf.getViewState();
       const state2 = leaf.getViewState();
       expect(state1).not.toBe(state2);
@@ -325,26 +491,21 @@ describe('WorkspaceLeaf', () => {
   });
 
   describe('onResize()', () => {
-    it('should not throw when no view', () => {
+    it('should forward the call to the open view', async () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      expect(() => {
-        leaf.onResize();
-      }).not.toThrow();
-    });
+      const view = new CanvasView(leaf);
+      await leaf.open(view.asOriginalType2__());
+      const onResize = vi.spyOn(view, 'onResize');
 
-    it('should call view.onResize when view is set', () => {
-      const app = App.createConfigured__();
-      const leaf = WorkspaceLeaf.create2__(app);
-      const onResize = vi.fn();
-      leaf.view = strictProxy<View>({ getDisplayText: () => '', getIcon: () => '', onResize });
       leaf.onResize();
+
       expect(onResize).toHaveBeenCalled();
     });
   });
 
   describe('canNavigate()', () => {
-    it('should answer true for a leaf with no view, which stands for Obsidian\'s empty view', () => {
+    it('should answer true for a leaf showing the empty view, which navigates', () => {
       const app = App.createConfigured__();
       expect(WorkspaceLeaf.create2__(app).canNavigate()).toBe(true);
     });
@@ -359,65 +520,18 @@ describe('WorkspaceLeaf', () => {
     it('should read the open view\'s navigation flag', async () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      await leaf.open(strictProxy<View>({ navigation: false }));
+      await leaf.open(new CanvasView(leaf).asOriginalType2__());
       expect(leaf.canNavigate()).toBe(false);
     });
   });
 
-  describe('getViewType__()', () => {
-    it('should report the empty view for a leaf with no view and no view state', () => {
-      const app = App.createConfigured__();
-      expect(WorkspaceLeaf.create2__(app).getViewType__()).toBe('empty');
-    });
-
-    it('should report the stored view state\'s type when there is no view', async () => {
+  describe('_empty', () => {
+    it('should be the view a leaf is born holding', () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      await leaf.setViewState({ type: 'markdown' });
-      expect(leaf.getViewType__()).toBe('markdown');
-    });
-
-    it('should prefer the open view\'s type', async () => {
-      const app = App.createConfigured__();
-      const leaf = WorkspaceLeaf.create2__(app);
-      await leaf.setViewState({ type: 'markdown' });
-      await leaf.open(strictProxy<View>({ getViewType: () => 'canvas' }));
-      expect(leaf.getViewType__()).toBe('canvas');
-    });
-  });
-
-  describe('isShowingEmptyView__()', () => {
-    it('should hold for a leaf nothing has been done to', () => {
-      const app = App.createConfigured__();
-      expect(WorkspaceLeaf.create2__(app).isShowingEmptyView__()).toBe(true);
-    });
-
-    it('should hold for a view state naming the empty view, which is the state Obsidian keeps its own for', async () => {
-      const app = App.createConfigured__();
-      const leaf = WorkspaceLeaf.create2__(app);
-      await leaf.setViewState({ type: 'empty' });
-      expect(leaf.isShowingEmptyView__()).toBe(true);
-    });
-
-    it('should not hold once the view state names another type', async () => {
-      const app = App.createConfigured__();
-      const leaf = WorkspaceLeaf.create2__(app);
-      await leaf.setViewState({ type: 'markdown' });
-      expect(leaf.isShowingEmptyView__()).toBe(false);
-    });
-
-    it('should not hold once a view is open', async () => {
-      const app = App.createConfigured__();
-      const leaf = WorkspaceLeaf.create2__(app);
-      await leaf.open(strictProxy<View>({ getViewType: () => 'canvas' }));
-      expect(leaf.isShowingEmptyView__()).toBe(false);
-    });
-
-    it('should not hold once a file is open, which the mock records without building a view', async () => {
-      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
-      const leaf = WorkspaceLeaf.create2__(app);
-      await leaf.openFile(ensureNonNullable(app.vault.getFileByPath('note.md')));
-      expect(leaf.isShowingEmptyView__()).toBe(false);
+      expect(leaf._empty).toBeInstanceOf(EmptyView);
+      expect(leaf.view).toBe(leaf._empty);
+      expect(leaf.containerEl.contains(leaf._empty.containerEl)).toBe(true);
     });
   });
 
@@ -425,29 +539,139 @@ describe('WorkspaceLeaf', () => {
     it('should set the view and return it', async () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
-      const view = strictProxy<View>({});
+      const view = new CanvasView(leaf).asOriginalType2__();
+
       const result = await leaf.open(view);
+
       expect(result).toBe(view);
       expect(leaf.view).toBe(view);
+      expect(leaf.containerEl.contains(view.containerEl)).toBe(true);
+    });
+
+    it('should close the outgoing view and detach its element', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const first = new CanvasView(leaf);
+      await leaf.open(first.asOriginalType2__());
+
+      await leaf.open(null);
+
+      expect(leaf.view).toBe(leaf._empty);
+      expect(leaf.containerEl.contains(first.containerEl)).toBe(false);
+      expect(first._loaded).toBe(false);
+    });
+
+    it('should do nothing when the view is already open', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const view = new CanvasView(leaf);
+      await leaf.open(view.asOriginalType2__());
+      const closeSpy = vi.spyOn(view, 'close');
+
+      await leaf.open(view.asOriginalType2__());
+
+      expect(closeSpy).not.toHaveBeenCalled();
+    });
+
+    it('should log a view that fails to close and open the next one anyway', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const failing = new CanvasView(leaf);
+      await leaf.open(failing.asOriginalType2__());
+      vi.spyOn(failing, 'close').mockRejectedValue(new Error('Close failed'));
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
+
+      await leaf.open(null);
+
+      expect(errorSpy).toHaveBeenCalledWith('Failed to close view', expect.any(Error));
+      expect(leaf.view).toBe(leaf._empty);
+      errorSpy.mockRestore();
+    });
+
+    it('should log a view that fails to open and still hold it', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const failing = new CanvasView(leaf);
+      vi.spyOn(failing, 'open').mockRejectedValue(new Error('Open failed'));
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
+
+      await leaf.open(failing.asOriginalType2__());
+
+      expect(errorSpy).toHaveBeenCalledWith('Failed to open view', expect.any(Error));
+      expect(leaf.view).toBe(failing);
+      errorSpy.mockRestore();
     });
   });
 
   describe('openFile()', () => {
-    it('should set the file', async () => {
+    it('should open a Markdown file in a Markdown view holding it', async () => {
       const app = App.createConfigured__({ files: { 'note.md': 'content' } });
       const leaf = WorkspaceLeaf.create2__(app);
-      const file = app.vault.getFileByPath('note.md');
-      if (file) {
-        await leaf.openFile(file);
-      }
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+
+      await leaf.openFile(file);
+
+      expect(leaf.view).toBeInstanceOf(MarkdownView);
       expect(leaf.file__).toBe(file);
+      expect(leaf.getDisplayText()).toBe('note');
+    });
+
+    it('should reuse the open view when it already accepts the extension', async () => {
+      const app = App.createConfigured__({ files: { 'first.md': '', 'second.md': '' } });
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.openFile(ensureNonNullable(app.vault.getFileByPath('first.md')));
+      const view = leaf.view;
+
+      await leaf.openFile(ensureNonNullable(app.vault.getFileByPath('second.md')));
+
+      expect(leaf.view).toBe(view);
+      expect(leaf.file__?.path).toBe('second.md');
+    });
+
+    it('should change nothing for an extension no view type is registered for', async () => {
+      const app = App.createConfigured__({ files: { 'image.png': '' } });
+      const leaf = WorkspaceLeaf.create2__(app);
+
+      await leaf.openFile(ensureNonNullable(app.vault.getFileByPath('image.png')));
+
+      expect(leaf.view).toBe(leaf._empty);
+    });
+
+    it('should activate the leaf when asked, and carry the ephemeral state', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const leaf = app.workspace.getLeaf(true);
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+
+      // eslint-disable-next-line unicorn/name-replacements -- `eState` is Obsidian's own spelling on `OpenViewState`.
+      await leaf.openFile(file, { active: true, eState: { line: 3 } });
+
+      expect(app.workspace.activeLeaf).toBe(leaf);
+      expect(leaf.getEphemeralState()).toEqual({ line: 3 });
+    });
+
+    it('should join the given leaf\'s link group', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const other = WorkspaceLeaf.create2__(app);
+      other.setGroup('shared');
+      const leaf = WorkspaceLeaf.create2__(app);
+
+      await leaf.openFile(ensureNonNullable(app.vault.getFileByPath('note.md')), { group: other.asOriginalType3__() });
+
+      expect(leaf.getGroup__()).toBe('shared');
     });
   });
 
   describe('file__', () => {
-    it('should return null by default', () => {
+    it('should return null for a leaf showing the empty view', () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
+      expect(leaf.file__).toBeNull();
+    });
+
+    it('should return null for a view that is not a file view', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.open(new CanvasView(leaf).asOriginalType2__());
       expect(leaf.file__).toBeNull();
     });
   });

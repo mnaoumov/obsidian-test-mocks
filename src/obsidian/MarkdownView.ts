@@ -14,13 +14,13 @@ import type {
   MarkdownViewModes
 } from '../internal/markdown-view-modes.ts';
 import type { Editor } from './Editor.ts';
+import type { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { MarkdownEditView } from './MarkdownEditView.ts';
 import { MarkdownPreviewView } from './MarkdownPreviewView.ts';
 import { TextFileView } from './TextFileView.ts';
-import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 /**
  * Mock of Obsidian's `MarkdownView`.
