@@ -3,7 +3,8 @@ import type { TagValue as TagValueOriginal } from 'obsidian';
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
 import { NumberValue } from './NumberValue.ts';
@@ -28,6 +29,23 @@ describe('TagValue', () => {
   it('should return the tag for toString', () => {
     const value = new TagValue('#example');
     expect(String(value)).toBe('#example');
+  });
+
+  it('should overwrite the stored text with its #-prefixed form, as Obsidian does', () => {
+    const value = new TagValue('bare');
+    expect(value.data).toBe('#bare');
+    expect(String(value)).toBe('#bare');
+  });
+
+  it('should hand the construction hook the text as passed, which the prefixing runs after', () => {
+    const constructorSpy = vi.spyOn(TagValue.prototype, 'constructor5__');
+    const value = new TagValue('bare');
+    expect(constructorSpy).toHaveBeenCalledWith('bare');
+    expect(value.data).toBe('#bare');
+  });
+
+  it('should equal the same tag written the other way round, because both store one form', () => {
+    expect(new TagValue('bare').equals(new TagValue('#bare'))).toBe(true);
   });
 
   it('should be truthy for non-empty tags', () => {

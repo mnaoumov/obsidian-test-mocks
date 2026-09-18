@@ -41,17 +41,17 @@ describe('createFrontMatterObjectValue', () => {
   });
 
   describe('the tags key', () => {
-    it('should read a list of strings as a list of tags', () => {
+    it('should read a list of strings as a list of tags, each #-prefixed by the tag constructor', () => {
       const tags = evaluate({ tags: ['alpha', '#beta'] }, 'tags');
       expect(tags).toBeInstanceOf(ListValue);
       expect((tags as ListValue).get(0)).toBeInstanceOf(TagValue);
-      expect((tags as ListValue).toString()).toBe('alpha, #beta');
+      expect((tags as ListValue).toString()).toBe('#alpha, #beta');
     });
 
     it('should read a single string as a one-element list of tags', () => {
       const tags = evaluate({ tags: 'alpha' }, 'tags');
       expect(tags).toBeInstanceOf(ListValue);
-      expect((tags as ListValue).toString()).toBe('alpha');
+      expect((tags as ListValue).toString()).toBe('#alpha');
     });
 
     it('should read it as the tag list, not a plain one, so a nested tag answers for its parent', () => {
