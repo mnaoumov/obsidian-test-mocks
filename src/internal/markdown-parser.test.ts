@@ -153,6 +153,48 @@ describe('parseMarkdownContent', () => {
       expect(cache.headings?.[0]?.heading).toBe('Heading');
     });
 
+    it('should not set frontmatter when the YAML is a sequence', () => {
+      const content = '---\n- a\n- b\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatter).toBeUndefined();
+    });
+
+    it('should not set frontmatterPosition when the YAML is a sequence', () => {
+      const content = '---\n- a\n- b\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterPosition).toBeUndefined();
+    });
+
+    it('should not set frontmatterLinks when the YAML is a sequence', () => {
+      const content = '---\n- a\n- b\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
+
+    it('should still add the yaml section when the YAML is a sequence', () => {
+      const content = '---\n- a\n- b\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.sections?.find((section) => section.type === 'yaml')).toBeDefined();
+    });
+
+    it('should still parse the body when the YAML is a sequence', () => {
+      const content = '---\n- a\n- b\n---\n# Heading';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.headings?.[0]?.heading).toBe('Heading');
+    });
+
+    it('should not extract links from a sequence block', () => {
+      const content = '---\n- "[[Other Note]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
+
     it('should not parse content before frontmatter as body', () => {
       const content = '---\nkey: value\n---\n';
       const cache = parseMarkdownContent(content);

@@ -337,10 +337,18 @@ function parseFrontmatter(
 
   // A block that does not parse to a plain object leaves NO `frontmatter` and NO `frontmatterPosition`
   // behind - not an empty record, which is what a consumer branching on `cache.frontmatter` would read as
-  // a note that HAS frontmatter. Obsidian writes both keys behind the same guard, so a scalar block,
-  // invalid YAML and an empty one all read exactly like a note with no frontmatter at all. The `yaml`
-  // SECTION below is pushed regardless, as Obsidian's own sections loop does.
-  if (parsed && typeof parsed === 'object') {
+  // a note that HAS frontmatter. Obsidian writes both keys behind the same guard, so a scalar block, a
+  // YAML SEQUENCE, invalid YAML and an empty one all read exactly like a note with no frontmatter at all.
+  // The `yaml` SECTION below is pushed regardless, as Obsidian's own sections loop does.
+  //
+  // `!Array.isArray(parsed)` is the sequence half, and it is not defensive: an array passes
+  // `typeof parsed === 'object'`, and Obsidian's own frontmatter parse excludes it by name -
+  // `if (n && "object" == typeof n && !Array.isArray(n))` - then falls off the end and answers
+  // `undefined`. So a note whose whole block is a bare YAML list reads as a note with no frontmatter, not
+  // as one whose frontmatter is an array. Nothing else would catch the deviation: `FrontMatterCache` is
+  // `{ [key: string]: any }`, which an array satisfies structurally, and an array has no `tags` key, so
+  // neither TypeScript nor a `frontmatter['tags']` read objects to it.
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
     cache.frontmatter = parsed;
     cache.frontmatterPosition = makePos(lineStarts, 0, info.contentStart);
 
@@ -353,8 +361,8 @@ function parseFrontmatter(
     // `referenceLinks`, `sections`, `listItems`, `blocks`) and conspicuously does not delete this one. A
     // consumer branching on the key's presence therefore sees a truthy empty array here, and one
     // iterating it unguarded does not throw. The boundary is the `if` above, not this line: a note with
-    // no frontmatter record at all - no block, a whitespace-only one, a non-object one, invalid YAML -
-    // still has no `frontmatterLinks` key whatsoever.
+    // no frontmatter record at all - no block, a whitespace-only one, a scalar one, a sequence one,
+    // invalid YAML - still has no `frontmatterLinks` key whatsoever.
     cache.frontmatterLinks = extractFrontmatterLinks(parsed);
   }
 

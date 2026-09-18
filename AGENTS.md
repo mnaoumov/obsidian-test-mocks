@@ -506,11 +506,19 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 
 - **A frontmatter block that is not a plain object leaves NEITHER `frontmatter` NOR `frontmatterPosition`
   behind** (2026-09-18, read in Obsidian 1.14.2's `app.js`). Obsidian's frontmatter parse answers falsy for
-  every such block — a scalar, `null`, an empty or whitespace-only block, and invalid YAML — and its cache
-  builder writes `frontmatter`, `frontmatterPosition` and `frontmatterLinks` behind that one guard. So all
-  of those shapes give a cache that reads exactly like a note with no frontmatter at all, while the `yaml`
-  SECTION is still pushed: the sections loop walks every child of the parsed document regardless of what
-  the frontmatter parse made of the first one.
+  every such block — a scalar, `null`, an empty or whitespace-only block, invalid YAML, and a YAML
+  SEQUENCE — and its cache builder writes `frontmatter`, `frontmatterPosition` and `frontmatterLinks`
+  behind that one guard. So all of those shapes give a cache that reads exactly like a note with no
+  frontmatter at all, while the `yaml` SECTION is still pushed: the sections loop walks every child of the
+  parsed document regardless of what the frontmatter parse made of the first one.
+
+  **A SEQUENCE is in that list by name, not by implication** (2026-09-18). An array passes a
+  `typeof x === 'object'` test, so it takes a deliberate `!Array.isArray()` to exclude — which is exactly
+  what Obsidian's parse spells out: `if (n && "object" == typeof n && !Array.isArray(n)) return n || void 0`.
+  A note whose whole block is `- a`/`- b` therefore has NO frontmatter in the cache, not a `frontmatter`
+  holding `['a', 'b']`. The mock stored the array until this was measured, and nothing would have reported
+  it: `FrontMatterCache` is `{ [key: string]: any }`, which an array satisfies structurally, and every
+  `frontmatter['key']` read on one answers `undefined` without complaint.
 
   This matters because a consumer branches on `cache.frontmatter` being PRESENT, and slices the block off
   with `frontmatterPosition`. The mock used to store an empty record and a position here, which reads as a
