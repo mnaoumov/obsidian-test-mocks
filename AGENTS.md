@@ -452,6 +452,25 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
   sliced source against `reference.original`.
 
+- **Frontmatter links are an EXACT port of Obsidian's own reader, not the approximation the rest of this
+  parser is** (2026-09-17, read in Obsidian 1.14.2's `app.js`). Four of its properties look like defects
+  and are not, so do not "fix" them back:
+  - **The WHOLE value is the link, or there is none.** A wikilink is recognized only when the value starts
+    with `[[` and ends with `]]`, so `related: see [[Target]] later` links to nothing. Obsidian never scans
+    inside a frontmatter value the way it scans a note's body.
+  - **`displayText` is ALWAYS set**, even with no `|`: it is the target, with each `#` shown as ` > `, so
+    `[[Note#Section]]` displays as `Note > Section`. This is why a frontmatter `[[Target]]` round-trips
+    through `FileValue.getLinks` as `[[Target|Target]]` rather than bare.
+  - **A markdown link counts too**, when its target is internal — explicitly relative, or free of a `:`.
+    An `<...>` target is unwrapped and the target is `decodeURI`-d, so `[Shown](<A%20B.md>)` links to
+    `A B.md`.
+  - **The walk reaches ANY depth**, arrays and objects alike, keying each find by its dotted path
+    (`meta.related.0`).
+
+  One deliberate divergence, commented at the site: Obsidian reads the target's capture group unguarded,
+  so a value of `[Shown]()` throws a `TypeError` out of its metadata parse; the mock reads it as no link
+  instead, rather than losing a whole note's metadata in a consumer's test.
+
 - **The workspace is a real layout tree** (2026-09-17, checked against Obsidian 1.14.2's bundle). Leaves sit in
   tab groups under `rootSplit`, `leftSplit`, `rightSplit`, or a popout `WorkspaceWindow` under `floatingSplit`, and
   `WorkspaceParent.children` / `insertChild` / `removeChild` / `replaceChild` maintain it as Obsidian does, emptied
