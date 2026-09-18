@@ -98,11 +98,11 @@ describe('FileValue', () => {
       const value = createNoteValue(createLinkedVault(), 'folder/test.md');
       const links = value.getLinks();
       expect(links).toBeInstanceOf(ListValue);
-      // A body wikilink carries display text in the cache even with no `|` — its own target — so a plain
-      // `[[Target]]` round-trips as `[[Target|Target]]`. A frontmatter link carries none unless it was
-      // written with a `|`, which is why the first entry below prints bare.
+      // Every wikilink carries display text in the cache even with no `|` — its own target, or the target
+      // with each `#` shown as a ` > ` — so a plain `[[Target]]` round-trips as `[[Target|Target]]`
+      // wherever it was written, frontmatter included.
       expect(links.data.map(String)).toEqual([
-        '[[Target]]',
+        '[[Target|Target]]',
         '[[Target|Shown]]',
         '[[Missing|Missing]]',
         '[[Target|Target]]'
@@ -128,6 +128,23 @@ describe('FileValue', () => {
     it('should answer the same list every time', () => {
       const value = createNoteValue(createLinkedVault(), 'folder/test.md');
       expect(value.getLinks()).toBe(value.getLinks());
+    });
+
+    it('should print a reference carrying no display text bare', () => {
+      // Nothing the parser produces lacks display text any more, so a reference without it reaches
+      // `getLinks` only through a hand-supplied cache — which is what `setCache__` is for.
+      const app = App.createConfigured__({
+        files: {
+          'Target.md': ''
+        }
+      });
+      app.vault.createFolderSync__('folder');
+      app.vault.createSync__('folder/test.md', '');
+      app.metadataCache.setCache__('folder/test.md', {
+        frontmatterLinks: [{ key: 'related', link: 'Target', original: '[[Target]]' }]
+      });
+
+      expect(createNoteValue(app, 'folder/test.md').getLinks().data.map(String)).toEqual(['[[Target]]']);
     });
   });
 

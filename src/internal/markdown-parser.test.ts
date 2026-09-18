@@ -132,6 +132,154 @@ describe('parseMarkdownContent', () => {
 
       expect(cache.frontmatterLinks).toBeUndefined();
     });
+
+    it('should give a wikilink with no alias the display text Obsidian derives from its target', () => {
+      const content = '---\nrelated: "[[Target]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toEqual([{
+        displayText: 'Target',
+        key: 'related',
+        link: 'Target',
+        original: '[[Target]]'
+      }]);
+    });
+
+    it('should title a subpath wikilink the way Obsidian shows it', () => {
+      const content = '---\nrelated: "[[Note#Section]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('Note#Section');
+      expect(cache.frontmatterLinks?.[0]?.displayText).toBe('Note > Section');
+    });
+
+    it('should not read a pipe at the start of the target as an empty alias', () => {
+      const content = '---\nrelated: "[[|Target]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('|Target');
+      expect(cache.frontmatterLinks?.[0]?.displayText).toBe('|Target');
+    });
+
+    it('should drop a trailing backslash from the target', () => {
+      const content = '---\nrelated: "[[Target\\\\]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('Target');
+    });
+
+    it('should fold a non-breaking space in the target and normalize it, as Obsidian does', () => {
+      const content = '---\nspaced: "[[A\u{A0}B]]"\ncomposed: "[[Cafe\u{301}]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('A B');
+      expect(cache.frontmatterLinks?.[1]?.link).toBe('Caf\u{E9}');
+    });
+
+    it('should not find a wikilink written inside a longer value', () => {
+      const content = '---\nrelated: "see [[Target]] later"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
+
+    it('should extract a markdown link whose target is internal', () => {
+      const content = '---\nrelated: "[Shown](Target.md)"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toEqual([{
+        displayText: 'Shown',
+        key: 'related',
+        link: 'Target.md',
+        original: '[Shown](Target.md)'
+      }]);
+    });
+
+    it('should keep the whole value as the original when a markdown link carries a title', () => {
+      const content = '---\nrelated: "[Shown](Target.md \\"Title\\")"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('Target.md');
+      expect(cache.frontmatterLinks?.[0]?.original).toBe('[Shown](Target.md "Title")');
+    });
+
+    it('should unwrap an angle-bracketed markdown target', () => {
+      const content = '---\nrelated: "[Shown](<Some Target.md>)"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('Some Target.md');
+    });
+
+    it('should decode a percent-encoded markdown target', () => {
+      const content = '---\nrelated: "[Shown](Target%20A.md)"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('Target A.md');
+    });
+
+    it('should keep a markdown target that cannot be decoded as it is', () => {
+      const content = '---\nrelated: "[Shown](Target%ZZ.md)"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('Target%ZZ.md');
+    });
+
+    it('should skip a markdown link that points out of the vault', () => {
+      const content = '---\nsite: "[Site](https://example.com)"\nmail: "[Mail](mailto:someone@example.com)"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
+
+    it('should keep an explicitly relative markdown target even when it carries a colon', () => {
+      const content = '---\nhere: "[A](./a:b.md)"\nup: "[B](../a:b.md)"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.map((link) => link.link)).toEqual(['./a:b.md', '../a:b.md']);
+    });
+
+    it('should read a markdown link with no target as no link, where Obsidian throws instead', () => {
+      const content = '---\nrelated: "[Shown]()"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
+
+    it('should ignore a value that merely opens and closes like a markdown link', () => {
+      const content = '---\nrelated: "[Shown)"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
+
+    it('should not read an embed as a frontmatter link', () => {
+      const content = '---\nrelated: "![Shown](Target.md)"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
+
+    it('should key a link nested in an object by its dotted path', () => {
+      const content = '---\nmeta:\n  related:\n    - "[[A]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.key).toBe('meta.related.0');
+    });
+
+    it('should reach a link at any nesting depth', () => {
+      const content = '---\na:\n  b:\n    c:\n      - d: "[[Deep]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.key).toBe('a.b.c.0.d');
+      expect(cache.frontmatterLinks?.[0]?.link).toBe('Deep');
+    });
+
+    it('should walk past a null frontmatter value rather than throwing on it', () => {
+      const content = '---\nempty:\nrelated: "[[Target]]"\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks?.[0]?.key).toBe('related');
+    });
   });
 
   describe('headings', () => {

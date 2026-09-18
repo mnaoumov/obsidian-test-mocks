@@ -23,6 +23,38 @@ import { parseYaml } from '../obsidian/functions/parseYaml.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
 /**
+ * A wikilink's inner text split as Obsidian splits it.
+ */
+interface WikilinkTarget {
+  /**
+   * The target to resolve, with a trailing escape and any non-breaking space already folded away.
+   */
+  href: string;
+
+  /**
+   * The text the link shows.
+   */
+  title: string;
+}
+
+/**
+ * Obsidian's own markdown-link regex, applied to a WHOLE frontmatter value. Its shape is what decides
+ * which part of `[text](Target.md "title")` is the target: the optional title is a group of its own, so
+ * the target never swallows it. Only `displayText` and `target` are read; the rest carry names because
+ * the structure is Obsidian's and this is the only place it is written down.
+ */
+const FRONTMATTER_MARKDOWN_LINK_REGEX = /^(?<open>!?\[)(?<displayText>.*?)(?<separator>]\(\s*)(?<targetAndTitle>(?<target><[^>]*?>|[^ "]+?)(?<spacedTitle>\s+(?<title>[^ ]+|"[^"]+"|'[^']+'|\([^']+\)))?)?(?<close>\s*\))$/;
+
+/**
+ * A non-breaking space, which Obsidian folds into an ordinary one before it resolves a link target.
+ */
+const NON_BREAKING_SPACE_REGEX = /\u{A0}/gu;
+
+const WIKILINK_CLOSE = ']]';
+
+const WIKILINK_OPEN = '[[';
+
+/**
  * Parses markdown content into a `CachedMetadata` object.
  *
  * This approximates Obsidian's parser rather than reproducing it: tags, links and embeds are found by regular
@@ -162,41 +194,84 @@ function buildLineStarts(content: string): number[] {
   return starts;
 }
 
-function collectFrontmatterLinks(key: string, value: string, links: FrontmatterLinkCache[]): void {
-  const wikiRegex = /\[\[(?<link>[^\]|]+?)(?:\|(?<display>[^\]]*?))?\]\]/g;
-  let match = wikiRegex.exec(value);
-  while (match) {
-    const link = ensureNonNullable(match.groups?.['link']);
-    const display = match.groups?.['display'];
-    links.push({
-      key,
-      link,
-      original: match[0],
-      ...(display !== undefined && { displayText: display })
-    });
-    match = wikiRegex.exec(value);
+/**
+ * Reads ONE frontmatter string as a link, as Obsidian does.
+ *
+ * A frontmatter link is the WHOLE value rather than something found inside it, which is the difference
+ * that makes `see [[Target]] later` no link at all. Two shapes qualify: a wikilink, wrapped in `[[` and
+ * `]]`, and a markdown link whose target is internal.
+ *
+ * @param key - The dotted path of the value within the frontmatter.
+ * @param value - The string value.
+ * @param links - The collection each find is pushed onto.
+ */
+function collectFrontmatterLink(key: string, value: string, links: FrontmatterLinkCache[]): void {
+  if (value.startsWith(WIKILINK_OPEN) && value.endsWith(WIKILINK_CLOSE)) {
+    const { href, title } = parseWikilinkTarget(value.slice(WIKILINK_OPEN.length, -WIKILINK_CLOSE.length));
+    links.push({ displayText: title, key, link: href, original: value });
+  }
+
+  if (!value.startsWith('[') || !value.endsWith(')')) {
+    return;
+  }
+
+  const match = FRONTMATTER_MARKDOWN_LINK_REGEX.exec(value);
+  if (!match) {
+    return;
+  }
+  const rawTarget = match.groups?.['target'];
+  // Obsidian reads that group unguarded, so a value of `[text]()` — which matches with the group
+  // unmatched — throws a `TypeError` out of its metadata parse. Reading it as no link is the one
+  // deliberate divergence here: reproducing the throw would lose the whole note's metadata.
+  if (rawTarget === undefined) {
+    return;
+  }
+  const target = rawTarget.startsWith('<') && rawTarget.endsWith('>') ? rawTarget.slice(1, -1).trim() : rawTarget;
+  if (!isInternalLinkTarget(target)) {
+    return;
+  }
+  links.push({
+    displayText: ensureNonNullable(match.groups?.['displayText']),
+    key,
+    link: decodeUriSafely(target),
+    original: value
+  });
+}
+
+/**
+ * Decodes a percent-encoded link target, keeping it as it is when it is not decodable.
+ *
+ * @param target - The link target.
+ * @returns The decoded target, or `target` itself when `decodeURI` throws on it.
+ */
+function decodeUriSafely(target: string): string {
+  try {
+    return decodeURI(target);
+  } catch {
+    return target;
   }
 }
 
 function extractFrontmatterLinks(frontmatter: object): FrontmatterLinkCache[] {
   const links: FrontmatterLinkCache[] = [];
-  for (const [key, rawValue] of Object.entries(frontmatter)) {
-    const value: unknown = rawValue;
-    if (typeof value === 'string') {
-      collectFrontmatterLinks(key, value, links);
-    } else if (Array.isArray(value)) {
-      for (const [index, item] of value.entries()) {
-        if (typeof item === 'string') {
-          collectFrontmatterLinks(`${key}.${String(index)}`, item, links);
-        }
-      }
-    }
-  }
+  visitFrontmatterValue('', frontmatter, links);
   return links;
 }
 
 function isInCodeZone(zones: [number, number][], offset: number): boolean {
   return zones.some(([start, end]) => offset >= start && offset < end);
+}
+
+/**
+ * Tells whether a markdown link's target points inside the vault rather than out of it, as Obsidian's own
+ * test does: an explicitly relative target always does, and any other one does unless it carries a `:`,
+ * which is what excludes `https://`, `mailto:` and the rest.
+ *
+ * @param target - The link target.
+ * @returns Whether it is internal.
+ */
+function isInternalLinkTarget(target: string): boolean {
+  return target.startsWith('./') || target.startsWith('../') || !target.includes(':');
 }
 
 function makePos(lineStarts: number[], startOffset: number, endOffset: number): Pos {
@@ -516,4 +591,68 @@ function parseTags(
     match = regex.exec(content);
   }
   return tags;
+}
+
+/**
+ * Splits a wikilink's inner text into the target it resolves against and the text it shows, as Obsidian
+ * does.
+ *
+ * The split is on the FIRST `|`, and only when one stands at a positive index — a leading `|` is part of
+ * the target rather than an empty alias. Without an alias the display text is derived from the target
+ * itself, each `#` in it becoming a ` > ` separator, which is why `[[Note#Section]]` shows as
+ * `Note > Section`.
+ *
+ * @param inner - The text between `[[` and `]]`.
+ * @returns The `href` to resolve and the `title` to show.
+ */
+function parseWikilinkTarget(inner: string): WikilinkTarget {
+  const pipeIndex = inner.indexOf('|');
+  const hasAlias = pipeIndex > 0;
+  let href = (hasAlias ? inner.slice(0, pipeIndex) : inner).trim();
+  const title = hasAlias ? inner.slice(pipeIndex + 1).trim() : href.split('#').filter(Boolean).join(' > ').trim();
+  if (href.endsWith('\\')) {
+    href = href.slice(0, -1);
+  }
+  return { href: href.replaceAll(NON_BREAKING_SPACE_REGEX, ' ').trim().normalize('NFC'), title };
+}
+
+/**
+ * Visits one key/value pair of a frontmatter object or array, reading a string as a link and recursing
+ * into anything else.
+ *
+ * @param keyPrefix - The dotted path of the container, empty at the top level.
+ * @param key - The property name, or the stringified index within an array.
+ * @param value - The raw value.
+ * @param links - The collection each find is pushed onto.
+ */
+function visitFrontmatterEntry(keyPrefix: string, key: string, value: unknown, links: FrontmatterLinkCache[]): void {
+  const fullKey = keyPrefix ? `${keyPrefix}.${key}` : key;
+  if (typeof value === 'string') {
+    collectFrontmatterLink(fullKey, value, links);
+    return;
+  }
+  visitFrontmatterValue(fullKey, value, links);
+}
+
+/**
+ * Walks a frontmatter container — an array by index, an object by own key — to ANY depth, which is what
+ * produces a key such as `meta.related.0`. Anything that is neither is left alone.
+ *
+ * @param keyPrefix - The dotted path of the container, empty at the top level.
+ * @param value - The container.
+ * @param links - The collection each find is pushed onto.
+ */
+function visitFrontmatterValue(keyPrefix: string, value: unknown, links: FrontmatterLinkCache[]): void {
+  if (Array.isArray(value)) {
+    const items: unknown[] = value;
+    for (const [index, item] of items.entries()) {
+      visitFrontmatterEntry(keyPrefix, String(index), item, links);
+    }
+    return;
+  }
+  if (typeof value === 'object' && value !== null) {
+    for (const [key, item] of Object.entries(value)) {
+      visitFrontmatterEntry(keyPrefix, key, item, links);
+    }
+  }
 }
