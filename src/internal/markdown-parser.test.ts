@@ -68,40 +68,53 @@ describe('parseMarkdownContent', () => {
       expect(yamlSection).toBeDefined();
     });
 
-    it('should handle frontmatter with only whitespace content', () => {
+    it('should not set frontmatter when the block holds only whitespace', () => {
       const content = '---\n \n---\n\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatter).toEqual({});
-      expect(cache.frontmatter?.['tags']).toBeUndefined();
+      expect(cache.frontmatter).toBeUndefined();
     });
 
-    it('should set empty frontmatter object when YAML parses to non-object', () => {
+    it('should not set frontmatterPosition when the block holds only whitespace', () => {
+      const content = '---\n \n---\n\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterPosition).toBeUndefined();
+    });
+
+    it('should not set frontmatter when the YAML parses to a non-object', () => {
       const content = '---\njust a string\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatter).toEqual({});
+      expect(cache.frontmatter).toBeUndefined();
     });
 
-    it('should read an absent key as undefined when the YAML parses to a non-object', () => {
+    it('should not set frontmatterPosition when the YAML parses to a non-object', () => {
       const content = '---\njust a string\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatter?.['tags']).toBeUndefined();
+      expect(cache.frontmatterPosition).toBeUndefined();
     });
 
-    it('should set empty frontmatter object when the YAML is invalid', () => {
+    it('should still add the yaml section when the YAML parses to a non-object', () => {
+      const content = '---\njust a string\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.sections?.find((section) => section.type === 'yaml')).toBeDefined();
+    });
+
+    it('should not set frontmatter when the YAML is invalid', () => {
       const content = '---\nkey: [unclosed\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatter).toEqual({});
+      expect(cache.frontmatter).toBeUndefined();
     });
 
-    it('should read an absent key as undefined when the YAML is invalid', () => {
+    it('should not set frontmatterPosition when the YAML is invalid', () => {
       const content = '---\nkey: [unclosed\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatter?.['tags']).toBeUndefined();
+      expect(cache.frontmatterPosition).toBeUndefined();
     });
 
     it('should still add the yaml section when the YAML is invalid', () => {
@@ -770,8 +783,8 @@ describe('parseMarkdownContent', () => {
       // Frontmatter regex requires at least one newline between delimiters
       const content = '---\n\n---\nBody';
       const cache = parseMarkdownContent(content);
-      expect(cache.frontmatter).toEqual({});
-      expect(cache.frontmatter?.['tags']).toBeUndefined();
+      expect(cache.frontmatter).toBeUndefined();
+      expect(cache.frontmatterPosition).toBeUndefined();
     });
   });
 

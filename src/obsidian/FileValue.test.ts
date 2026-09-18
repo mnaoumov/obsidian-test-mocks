@@ -280,6 +280,15 @@ describe('FileValue', () => {
       expect(createFileValue().getProps().isEmpty()).toBe(true);
     });
 
+    it('should give a file whose frontmatter is not an object an empty object', () => {
+      const app = App.createConfigured__({
+        files: {
+          'scalar.md': '---\njust a string\n---\nBody'
+        }
+      });
+      expect(createNoteValue(app, 'scalar.md').getProps().isEmpty()).toBe(true);
+    });
+
     it('should answer the same object every time', () => {
       const value = createNoteValue(createLinkedVault(), 'folder/test.md');
       expect(value.getProps()).toBe(value.getProps());

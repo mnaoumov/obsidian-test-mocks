@@ -494,7 +494,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   1.14.2's `app.js`). Obsidian's frontmatter parse wraps its `parseYaml` in a `try` and answers `null`,
   so invalid YAML lands in exactly the branch a non-object block takes and the note still gets a cache —
   body, headings, links and the `yaml` section included. `src/internal/markdown-parser.ts` mirrors that in
-  `parseFrontmatterYaml`, and the branch it falls into stores the same empty record a scalar block gets.
+  `parseFrontmatterYaml`, and the branch it falls into is the no-frontmatter one described below.
   Before the guard it called `parseYaml` unguarded, which broke both entry points at once:
   `MetadataCache.computeMetadataAsync` — public API that never rejects there — rejected with the
   `YAMLParseError`, and indexing such a note through the vault's `create` event left it with NO cache at
@@ -503,6 +503,27 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 
   `FileManager.processFrontMatter` is deliberately NOT guarded the same way: Obsidian's own
   implementation parses with no `try`, so a broken block throws out of it there exactly as it does here.
+
+- **A frontmatter block that is not a plain object leaves NEITHER `frontmatter` NOR `frontmatterPosition`
+  behind** (2026-09-18, read in Obsidian 1.14.2's `app.js`). Obsidian's frontmatter parse answers falsy for
+  every such block — a scalar, `null`, an empty or whitespace-only block, and invalid YAML — and its cache
+  builder writes `frontmatter`, `frontmatterPosition` and `frontmatterLinks` behind that one guard. So all
+  of those shapes give a cache that reads exactly like a note with no frontmatter at all, while the `yaml`
+  SECTION is still pushed: the sections loop walks every child of the parsed document regardless of what
+  the frontmatter parse made of the first one.
+
+  This matters because a consumer branches on `cache.frontmatter` being PRESENT, and slices the block off
+  with `frontmatterPosition`. The mock used to store an empty record and a position here, which reads as a
+  note that has frontmatter holding nothing — a different answer from Obsidian's, and the reason
+  `getFileCache(file).frontmatter` was truthy for a note whose block is `just a string`. Nothing on the
+  consuming side needed changing when it was dropped: `parseFrontMatterTags`, `parseFrontMatterEntry` (so
+  `parseFrontMatterStringArray` and `parseFrontMatterAliases` through it), `getAllTags`,
+  `FileValue.getTags` and `FileValue.getProps` were all written for the no-frontmatter case already, and
+  that is the same shape.
+
+  The empty record it replaced was NOT a mistake at the time — it was itself a fix for a `strictProxy`
+  stored there, whose `get` trap threw on every absent-key read. Both a plain `{}` and an absent record
+  cure that; the measurement against `app.js` is what chose between them.
 
 - **The workspace is a real layout tree** (2026-09-17, checked against Obsidian 1.14.2's bundle). Leaves sit in
   tab groups under `rootSplit`, `leftSplit`, `rightSplit`, or a popout `WorkspaceWindow` under `floatingSplit`, and

@@ -59,7 +59,8 @@ describe('MetadataCache', () => {
 
       const cache = app.metadataCache.getFileCache(file);
       expect(cache).not.toBeNull();
-      expect(cache?.frontmatter).toEqual({});
+      expect(cache?.frontmatter).toBeUndefined();
+      expect(cache?.frontmatterPosition).toBeUndefined();
       expect(cache?.headings?.[0]?.heading).toBe('Heading');
     });
 
@@ -544,7 +545,8 @@ homepage: "[[Fm]]"
 
       const cache = await app.metadataCache.computeMetadataAsync(arrayBuffer);
 
-      expect(cache.frontmatter).toEqual({});
+      expect(cache.frontmatter).toBeUndefined();
+      expect(cache.sections?.find((section) => section.type === 'yaml')).toBeDefined();
     });
 
     it('should parse metadata from an ArrayBuffer', async () => {
