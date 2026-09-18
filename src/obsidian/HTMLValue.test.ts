@@ -20,12 +20,12 @@ describe('HTMLValue', () => {
 
   it('should default to empty string', () => {
     const value = HTMLValue.create2__();
-    expect(value.value__).toBe('');
+    expect(value.data).toBe('');
   });
 
   it('should store the provided value', () => {
     const value = HTMLValue.create2__('<b>bold</b>');
-    expect(value.value__).toBe('<b>bold</b>');
+    expect(value.data).toBe('<b>bold</b>');
   });
 
   describe('asOriginalType5__', () => {

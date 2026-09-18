@@ -68,6 +68,7 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `castTo.ts` — `castTo<T>()` utility for unsafe type bridging
 - `delegated-event-registry.ts` — the delegated `on` / `off` shared by `Document.prototype` and `HTMLElement.prototype`: registrations live on the target's own `_EVENTS` record, under the name `obsidian-typings` declares, and events are filtered through `matchParent` as Obsidian does
 - `empty-view.ts` — Obsidian's empty view, the "New tab" page every `WorkspaceLeaf` is born holding as `_empty`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1)
+- `file-value-registry.ts` — the `WeakSet` that lets `LinkValue.looseEquals` recognize a `FileValue` without importing it. Obsidian decides that branch with an `instanceof`; the mock cannot, because `FileValue` already imports `LinkValue` to build one per backlink, so the reverse import would close a cycle through `front-matter-object-value.ts` and `link-value-from-reference.ts` as well. Same reasoning, same shape as `workspace-layout.ts`
 - `front-matter-object-value.ts` — the `ObjectValue` behind `FileValue.getProps`, with the evaluator that reads a frontmatter string as a wikilink, a URL or a date and reinstalls itself on every nested list and object. Obsidian spells it `ObjectValue.fromFrontMatter`, a static NEITHER `obsidian.d.ts` NOR `obsidian-typings` declares, so L1 keeps it off the exported class and L4 forbids the `__` suffix that would claim Obsidian lacks it — the same reasoning that puts `lazy-evaluator.ts` here
 - `html-sanitizer.ts` — the sanitizer behind `sanitizeHTMLToDom`: a port of the DOMPurify 3.0.1 passes Obsidian runs, with Obsidian's config and its two load-time hooks. `html-sanitizer-allowlists.ts` holds DOMPurify's default allowlists, copied from Obsidian's `app.js` (and excluded from cspell)
 - `icon-registry.ts` — shared `Map<string, string>` for icon storage (addIcon, removeIcon, getIcon, etc.). It starts empty: Obsidian's Lucide set and its own glyphs are deliberately not bundled, so their ids resolve to nothing
@@ -801,24 +802,31 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
       or a date before falling back to the ordinary conversion, and reinstalls itself on every nested list
       and object so those readings reach the whole tree.
 
-- **`Value.equals` and `Value.looseEquals` (the STATICS) are Obsidian's own; the instance pair is the
-  modelled departure** (2026-09-17, `XG` in Obsidian 1.14.2's `app.js`). The statics answer identity first,
-  then treat a missing value as equal only to another missing one - by truthiness, so an `undefined` the
-  declared signature does not admit is answered rather than dereferenced - and then compare the two CLASSES
-  before their contents. `looseEquals` tries strict equality first and then BOTH directions,
-  `a.looseEquals(b) || b.looseEquals(a)`, which is what lets a one-element `ListValue` unwrap against a
-  non-list whichever side it is passed on.
-  - **The class test is what keeps the departure honest, so the two belong together.** Obsidian's base
-    `equals` / `looseEquals` answer `false` and leave every comparison to the subclass - ten of them, each
-    over its own fields; the mock answers the whole hierarchy with one comparison of `toString()` output
-    instead. Without the class test that single comparison would equate a `StringValue('1')` with a
-    `NumberValue(1)`, because both print `1`. It is observable rather than theoretical: `ListValue.unique`
-    buckets by string form and separates within a bucket by `Value.equals`, so a list holding both `'1'` and
-    `1` used to collapse to one element where Obsidian keeps two.
-  - **What the string-form base still gets wrong is the per-class comparison, tracked separately.** A
-    `BooleanValue(true)` loosely equals a `NumberValue(1)` in Obsidian (`true == 1` on the wrapped data) and
-    not in the mock (`'true'` against `'1'`), and every class Obsidian compares by field - date by timestamp,
-    file by identity, link by target plus display - is compared here by how it prints.
+- **Value comparison is Obsidian's own throughout, statics AND instances** (2026-09-17, `XG` and its
+  subclasses in Obsidian 1.14.2's `app.js`). The statics answer identity first, then treat a missing value as
+  equal only to another missing one - by truthiness, so an `undefined` the declared signature does not admit
+  is answered rather than dereferenced - and then compare the two CLASSES before their contents.
+  `looseEquals` tries strict equality first and then BOTH directions, `a.looseEquals(b) || b.looseEquals(a)`.
+  - **The base instance pair answers `false`**, which is what makes the class test above load-bearing: each
+    subclass's `equals` reads the other side's own fields (`other.data`, `other.time`, `other.file`) and
+    never has to guard, because a value of another class cannot reach it through the static.
+  - **Nine classes override, and they are Obsidian's implementations rather than approximations of them.**
+    `PrimitiveValue` compares the wrapped data with `===` and loosely with `==`, so `BooleanValue(true)`
+    loosely equals `NumberValue(1)` and `StringValue('1')`. `NullValue` equals every other null.
+    `ObjectValue` compares key by key, `ListValue` element by element. `DateValue` compares the instant and
+    whether the time is shown, and loosely drops to the day when either side hides it. `DurationValue`
+    compares its seven components, and loosely compares LENGTH, so `1 month` loosely equals the 28 days it
+    lasts in February. `FileValue` compares the `TFile` by IDENTITY, not by path. `UrlValue` and `LinkValue`
+    weigh their display text, and a link its `sourcePath` too - so the same target written in two notes is
+    two unequal links, which `looseEquals` then joins by resolving both. `DateValue`, `DurationValue`,
+    `FileValue` and `LinkValue` each read a `StringValue` on the loose side, parsing it into their own type
+    first.
+  - **`RegExpValue` answers `false` to every comparison, its base's answer** - Obsidian gives it no override,
+    so two values wrapping one pattern are unequal there and here.
+  - **What this replaced was a string-form comparison on the base**, which stood in for all ten (2026-09-17,
+    same read). It was wrong in ways the mock could observe: a date compared by how it PRINTS, a file by path
+    rather than identity, a link with its `sourcePath` ignored, and `BooleanValue(true)` not loosely equal to
+    `NumberValue(1)` because `'true'` is not `'1'`.
 
 - **`ListValue` does its own aggregating, quirks included** (2026-09-17, `iK` in Obsidian 1.14.2's `app.js`).
   `compare`, `slice`, `reverse`, `flatten`, `sort`, `unique`, `getNumbers`, `getDates`, `earliest`, `latest`,
@@ -835,10 +843,10 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **`sort` compares two numbers numerically and anything else through Obsidian's collator** (no locale,
     base sensitivity, numeric), so case and accents do not separate two elements and `item 9` sorts before
     `item 10`.
-  - **`equals` and `looseEquals` are element-wise now**, built on `compare`, where they used to inherit
-    `Value`'s comparison of the two lists' string forms. So `['1, 2']` no longer equals `[1, 2]`, and
-    `looseEquals` unwraps a ONE-element list against a non-list value: `[1]` loosely equals `1`, `[1, 2]`
-    equals nothing but a list.
+  - **`equals` and `looseEquals` are element-wise**, built on `compare`, so `['1, 2']` does not equal
+    `[1, 2]`, and `looseEquals` unwraps a ONE-element list against a non-list value: `[1]` loosely equals
+    `1`, `[1, 2]` equals nothing but a list. It is also the only override whose two DIRECTIONS disagree,
+    which is what the static's `b.looseEquals(a)` second try exists for.
 
 - **A tag list is a `ListValue` SUBCLASS, and that is what makes `contains` answer for a parent tag**
   (2026-09-17, `rK` / `oK` / `aK` in Obsidian 1.14.2's `app.js`). `FileValue.getTags` and a frontmatter

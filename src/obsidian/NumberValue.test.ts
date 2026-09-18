@@ -22,12 +22,12 @@ describe('NumberValue', () => {
 
   it('should default to 0', () => {
     const value = new NumberValue();
-    expect(value.value__).toBe(0);
+    expect(value.data).toBe(0);
   });
 
   it('should accept a value', () => {
     const value = new NumberValue(TEST_NUMBER);
-    expect(value.value__).toBe(TEST_NUMBER);
+    expect(value.data).toBe(TEST_NUMBER);
   });
 
   it('should return false for isTruthy when 0', () => {

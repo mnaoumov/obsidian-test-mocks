@@ -9,12 +9,17 @@ import type { UrlValue as UrlValueOriginal } from 'obsidian';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
+import { Value } from './Value.ts';
 
 /**
- * Mock of Obsidian's `UrlValue`: a string value holding a URL. The mock stores only the URL; the display text is
- * passed to the construction hook and otherwise ignored.
+ * Mock of Obsidian's `UrlValue`: a string value holding a URL, with optional display text.
  */
 export class UrlValue extends StringValue {
+  /**
+   * The display text, or `null` to show the URL itself.
+   */
+  public display: null | StringValue;
+
   /**
    * The lucide icon name standing for this value's type.
    */
@@ -24,10 +29,12 @@ export class UrlValue extends StringValue {
    * Creates a URL value.
    *
    * @param value - The URL.
-   * @param display - Text to show instead of the URL; ignored by the mock.
+   * @param display - Text to show instead of the URL, or `null`/omitted to show the URL. Obsidian passes a
+   * `Value`; the mock takes the `StringValue` its typings declare, and also accepts a plain string and wraps it.
    */
-  public constructor(value: string, display?: null | string) {
+  public constructor(value: string, display?: null | string | StringValue) {
     super(value);
+    this.display = typeof display === 'string' ? StringValue.create__(display) : display ?? null;
     const self = strictProxy(this);
     self.constructor5__(value, display);
     return self;
@@ -38,10 +45,10 @@ export class UrlValue extends StringValue {
    * of {@link StringValue.create__}, numbered because its signature is incompatible with the base factory.
    *
    * @param value - The URL.
-   * @param display - Text to show instead of the URL; ignored by the mock.
+   * @param display - The display text, if any.
    * @returns The new URL value.
    */
-  public static create2__(value: string, display?: null | string): UrlValue {
+  public static create2__(value: string, display?: null | string | StringValue): UrlValue {
     return new UrlValue(value, display);
   }
 
@@ -71,7 +78,20 @@ export class UrlValue extends StringValue {
    * @param _value - The URL the value was created with.
    * @param _display - The display text the value was created with.
    */
-  public constructor5__(_value: string, _display?: null | string): void {
+  public constructor5__(_value: string, _display?: null | string | StringValue): void {
     noop();
+  }
+
+  /**
+   * Compares this URL with another, as Obsidian does: the two URLs, then the two display texts.
+   *
+   * The displays are compared with the static `Value.equals`, so a missing display equals only another
+   * missing one - `[url](https://example.com)` and a bare `https://example.com` are NOT equal.
+   *
+   * @param other - The URL value to compare with.
+   * @returns Whether both the URL and the display text match.
+   */
+  public override equals(other: this): boolean {
+    return this.data === other.data && Value.equals(this.display, other.display);
   }
 }

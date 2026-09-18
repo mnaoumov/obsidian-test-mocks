@@ -6,6 +6,7 @@ import {
   it
 } from 'vitest';
 
+import { StringValue } from './StringValue.ts';
 import { UrlValue } from './UrlValue.ts';
 
 describe('UrlValue', () => {
@@ -20,7 +21,7 @@ describe('UrlValue', () => {
 
   it('should store the value', () => {
     const value = UrlValue.create2__('https://example.com');
-    expect(value.value__).toBe('https://example.com');
+    expect(value.data).toBe('https://example.com');
   });
 
   it('should accept display parameter', () => {
@@ -31,6 +32,34 @@ describe('UrlValue', () => {
   it('should be truthy for non-empty urls', () => {
     const value = UrlValue.create2__('https://example.com');
     expect(value.isTruthy()).toBe(true);
+  });
+
+  describe('display', () => {
+    it('should default to null', () => {
+      expect(UrlValue.create2__('https://example.com').display).toBeNull();
+      expect(UrlValue.create2__('https://example.com', null).display).toBeNull();
+    });
+
+    it('should wrap a plain string, and keep a string value as given', () => {
+      expect(UrlValue.create2__('https://example.com', 'Example').display?.data).toBe('Example');
+      const shown = StringValue.create__('Example');
+      expect(UrlValue.create2__('https://example.com', shown).display).toBe(shown);
+    });
+  });
+
+  describe('equals', () => {
+    it('should compare the url and the display text', () => {
+      const value = UrlValue.create2__('https://example.com', 'Example');
+      expect(value.equals(UrlValue.create2__('https://example.com', 'Example'))).toBe(true);
+      expect(value.equals(UrlValue.create2__('https://example.com', 'Other'))).toBe(false);
+      expect(value.equals(UrlValue.create2__('https://other.com', 'Example'))).toBe(false);
+    });
+
+    it('should treat a missing display text as equal only to another missing one', () => {
+      const bare = UrlValue.create2__('https://example.com');
+      expect(bare.equals(UrlValue.create2__('https://example.com'))).toBe(true);
+      expect(bare.equals(UrlValue.create2__('https://example.com', 'Example'))).toBe(false);
+    });
   });
 
   describe('asOriginalType5__', () => {

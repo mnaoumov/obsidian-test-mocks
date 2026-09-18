@@ -7,10 +7,14 @@
 import type { LinkValue as LinkValueOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
+import type { TFile } from './TFile.ts';
 
+import { isFileValue } from '../internal/file-value-registry.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { getLinkpath } from './functions/getLinkpath.ts';
 import { StringValue } from './StringValue.ts';
+import { Value } from './Value.ts';
 
 const WIKILINK_OPEN = '[[';
 const WIKILINK_CLOSE = ']]';
@@ -131,6 +135,23 @@ export class LinkValue extends StringValue {
   }
 
   /**
+   * Compares this link with another, as Obsidian does: by target TEXT, source path and display text - never
+   * by what the two resolve to. {@link LinkValue.looseEquals} is the comparison that resolves.
+   *
+   * `sourcePath` is part of it, so the same target written in two different notes gives two unequal links;
+   * the displays are compared with the static `Value.equals`, so a missing display equals only another
+   * missing one.
+   *
+   * @param other - The link to compare with.
+   * @returns Whether the target, the source path and the display text all match.
+   */
+  public override equals(other: this): boolean {
+    return this.data === other.data
+      && this.sourcePath === other.sourcePath
+      && Value.equals(this.display, other.display);
+  }
+
+  /**
    * Tells whether the value counts as true in a Bases formula.
    *
    * @returns Always `true`, even for an empty target.
@@ -140,12 +161,51 @@ export class LinkValue extends StringValue {
   }
 
   /**
+   * Loosely compares this link with a value of any type, as Obsidian does, in three branches:
+   *
+   * - Another link: whether both RESOLVE to the same file. When either side resolves to nothing, the two
+   *   target texts are compared instead - so the source paths and the display texts are both ignored here,
+   *   where {@link LinkValue.equals} weighs them.
+   * - A `StringValue`: it is parsed as wikilink syntax against an EMPTY source path, and this comparison is
+   *   retried against the result. A string that is not wrapped in `[[` and `]]` matches nothing.
+   * - A `FileValue`: whether this link resolves to that file. Obsidian decides that with an `instanceof`;
+   *   the mock asks `file-value-registry.ts`, whose file says why.
+   *
+   * @param other - The value to compare with.
+   * @returns Whether the two name the same target under one of those readings.
+   */
+  public override looseEquals(other: Value): boolean {
+    if (other instanceof LinkValue) {
+      const resolved = this.resolve();
+      const otherResolved = other.resolve();
+      return resolved && otherResolved ? resolved === otherResolved : this.data === other.data;
+    }
+    if (other instanceof StringValue) {
+      const parsed = LinkValue.parseFromString(this.app, other.data, '');
+      if (parsed) {
+        return this.looseEquals(parsed);
+      }
+    }
+    return isFileValue(other) && this.resolve() === other.file;
+  }
+
+  /**
+   * Resolves the link to the file it points at, as Obsidian does: the target's link path - its text up to
+   * any `#` subpath - looked up from {@link LinkValue.sourcePath}.
+   *
+   * @returns The target file, or `null` when nothing in the vault answers to the target.
+   */
+  public resolve(): null | TFile {
+    return this.app.metadataCache.getFirstLinkpathDest(getLinkpath(this.data), this.sourcePath);
+  }
+
+  /**
    * Renders the link as wikilink syntax.
    *
    * @returns `[[target]]`, or `[[target|display]]` when the link has display text.
    */
   public override toString(): string {
     const displaySuffix = this.display ? `|${this.display.toString()}` : '';
-    return `${WIKILINK_OPEN}${this.value__}${displaySuffix}${WIKILINK_CLOSE}`;
+    return `${WIKILINK_OPEN}${this.data}${displaySuffix}${WIKILINK_CLOSE}`;
   }
 }

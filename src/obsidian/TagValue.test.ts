@@ -22,7 +22,7 @@ describe('TagValue', () => {
 
   it('should store the tag value', () => {
     const value = new TagValue('#test');
-    expect(value.value__).toBe('#test');
+    expect(value.data).toBe('#test');
   });
 
   it('should return the tag for toString', () => {

@@ -78,6 +78,25 @@ export class ObjectValue extends NotNullValue {
   }
 
   /**
+   * Compares this object with another, as Obsidian does: key by key, rather than by the two objects'
+   * string forms.
+   *
+   * @param other - The object to compare with.
+   * @returns `true` when the two wrap the SAME object; `false` when their key counts differ or a key of
+   * this one is missing from the other; otherwise whether every key's value is `Value.equals` to the
+   * other's, each side read through {@link ObjectValue.get} so a raw property is converted first.
+   * Obsidian walks the keys twice, checking presence and then equality; one walk answers the same.
+   */
+  public override equals(other: this): boolean {
+    if (this.data === other.data) {
+      return true;
+    }
+    const keys = Object.keys(this.data);
+    return keys.length === Object.keys(other.data).length
+      && keys.every((key) => Object.hasOwn(other.data, key) && Value.equals(this.get(key), other.get(key)));
+  }
+
+  /**
    * Looks up the value stored under a key.
    *
    * @param key - The property name to look up.

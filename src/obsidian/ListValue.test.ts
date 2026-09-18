@@ -50,7 +50,7 @@ describe('ListValue', () => {
     it('should return a string value joined with the separator', () => {
       const result = new ListValue(['a', new NumberValue(2)]).join('|');
       expect(result).toBeInstanceOf(StringValue);
-      expect(result.value__).toBe('a|2');
+      expect(result.data).toBe('a|2');
     });
   });
 

@@ -20,7 +20,7 @@ describe('IconValue', () => {
 
   it('should default to empty string', () => {
     const value = IconValue.create2__();
-    expect(value.value__).toBe('');
+    expect(value.data).toBe('');
   });
 
   describe('asOriginalType5__', () => {

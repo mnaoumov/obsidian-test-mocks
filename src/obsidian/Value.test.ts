@@ -93,8 +93,7 @@ describe('Value', () => {
       const $string = new StringValue(String(testNumber));
       const $number = new NumberValue(testNumber);
       const equalsSpy = vi.spyOn($string, 'equals');
-      expect($string.equals(castTo<StringValue>($number))).toBe(true);
-      equalsSpy.mockClear();
+      expect($string.toString()).toBe($number.toString());
       expect(Value.equals($string, $number)).toBe(false);
       expect(equalsSpy).not.toHaveBeenCalled();
     });
@@ -144,16 +143,14 @@ describe('Value', () => {
       expect(Value.looseEquals(a, b)).toBe(true);
     });
 
-    // The direction that answers here is the mock's string-form comparison rather than Obsidian's, which
-    // would answer `false` both ways - but the branch under test is the static's, and only a pair whose two
-    // directions DISAGREE can reach it. `ListValue` is the one class that overrides `looseEquals`, so it is
-    // also the only source of such a pair.
+    // Only a pair whose two directions DISAGREE can reach this branch: a number never loosely equals a
+    // list, while a ONE-element list unwraps against the value it holds.
     it('should try the second value as well when the first direction says no', () => {
-      const list = new ListValue([1, 2]);
-      const $string = new StringValue('1, 2');
-      expect(list.looseEquals($string)).toBe(false);
-      expect($string.looseEquals(list)).toBe(true);
-      expect(Value.looseEquals(list, $string)).toBe(true);
+      const $number = new NumberValue(1);
+      const list = new ListValue([1]);
+      expect($number.looseEquals(list)).toBe(false);
+      expect(list.looseEquals($number)).toBe(true);
+      expect(Value.looseEquals($number, list)).toBe(true);
     });
 
     it('should return false when neither direction answers', () => {
@@ -162,31 +159,19 @@ describe('Value', () => {
   });
 
   describe('equals', () => {
-    it('should compare by toString output', () => {
-      const a = new StringValue('test');
-      const b = new StringValue('test');
-      expect(a.equals(b)).toBe(true);
-    });
-
-    it('should return false for different toString outputs', () => {
-      const a = new StringValue('test');
-      const b = new StringValue('other');
+    it('should answer false on the base value, however the two print', () => {
+      const a = new BareValue();
+      const b = new BareValue();
+      expect(a.toString()).toBe(b.toString());
       expect(a.equals(b)).toBe(false);
     });
   });
 
   describe('looseEquals', () => {
-    it('should return true when toString outputs match across types', () => {
-      const testNumber = 5;
-      const $string = new StringValue(String(testNumber));
-      const $number = new NumberValue(testNumber);
-      expect($string.looseEquals($number)).toBe(true);
-    });
-
-    it('should return true for same toString output', () => {
-      const a = new StringValue('x');
-      const b = new StringValue('x');
-      expect(a.looseEquals(b)).toBe(true);
+    it('should answer false on the base value, however the two print', () => {
+      const a = new BareValue();
+      expect(a.looseEquals(new BareValue())).toBe(false);
+      expect(a.looseEquals(new StringValue('bare'))).toBe(false);
     });
   });
 

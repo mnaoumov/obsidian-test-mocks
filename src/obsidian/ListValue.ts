@@ -222,7 +222,7 @@ export class ListValue extends NotNullValue {
       if (typeof element === 'string') {
         dateValue = DateValue.parseFromString(element);
       } else if (element instanceof StringValue) {
-        dateValue = DateValue.parseFromString(element.value__);
+        dateValue = DateValue.parseFromString(element.data);
       } else if (element instanceof DateValue) {
         dateValue = element;
       }
@@ -248,7 +248,7 @@ export class ListValue extends NotNullValue {
       if (isNumber(element)) {
         numbers.push(element);
       } else if (element instanceof NumberValue) {
-        numbers.push(element.value__);
+        numbers.push(element.data);
       }
     }
     return numbers;
@@ -499,7 +499,7 @@ export class ListValue extends NotNullValue {
    * @returns The elements joined with `, `, as {@link ListValue.join} writes them.
    */
   public toString(): string {
-    return this.join(', ').value__;
+    return this.join(', ').data;
   }
 
   /**
@@ -547,7 +547,7 @@ function sumOf(numbers: readonly number[]): number {
 function toSortKey(element: unknown): unknown {
   if (element instanceof PrimitiveValue) {
     const primitive: PrimitiveValue<unknown> = element;
-    return primitive.value__;
+    return primitive.data;
   }
   return element instanceof Value ? element.toString() : element;
 }

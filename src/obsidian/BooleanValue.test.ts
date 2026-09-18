@@ -13,12 +13,12 @@ describe('BooleanValue', () => {
 
   it('should default to false', () => {
     const value = new BooleanValue();
-    expect(value.value__).toBe(false);
+    expect(value.data).toBe(false);
   });
 
   it('should accept a value', () => {
     const value = new BooleanValue(true);
-    expect(value.value__).toBe(true);
+    expect(value.data).toBe(true);
   });
 
   it('should return false for isTruthy when false', () => {
@@ -45,12 +45,12 @@ describe('BooleanValue', () => {
     it('should create an instance via factory method', () => {
       const value = BooleanValue.create__();
       expect(value).toBeInstanceOf(BooleanValue);
-      expect(value.value__).toBe(false);
+      expect(value.data).toBe(false);
     });
 
     it('should create an instance with value via factory method', () => {
       const value = BooleanValue.create__(true);
-      expect(value.value__).toBe(true);
+      expect(value.data).toBe(true);
     });
   });
 

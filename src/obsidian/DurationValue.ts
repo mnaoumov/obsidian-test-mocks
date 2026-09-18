@@ -17,6 +17,7 @@ import { ensureNonNullable } from '../internal/type-guards.ts';
 import { DateValue } from './DateValue.ts';
 import { NotNullValue } from './NotNullValue.ts';
 import { NumberValue } from './NumberValue.ts';
+import { StringValue } from './StringValue.ts';
 import { moment } from './vars/moment.ts';
 
 const DAYS_IN_WEEK = 7;
@@ -243,6 +244,27 @@ export class DurationValue extends NotNullValue {
   }
 
   /**
+   * Compares this duration with another, as Obsidian does: field by field, rather than by how the two
+   * print.
+   *
+   * It is deliberately NOT a comparison of length: `7 days` and `1 week` are stored as different fields —
+   * a week parses to seven days, but a month never becomes days — so two durations of the same length in
+   * different units are unequal here and loosely equal through {@link DurationValue.looseEquals}.
+   *
+   * @param other - The duration to compare with.
+   * @returns Whether all seven components match.
+   */
+  public override equals(other: this): boolean {
+    return this.years === other.years
+      && this.months === other.months
+      && this.days === other.days
+      && this.hours === other.hours
+      && this.minutes === other.minutes
+      && this.seconds === other.seconds
+      && this.milliseconds === other.milliseconds;
+  }
+
+  /**
    * Converts this duration to milliseconds, as Obsidian does: by adding it to the current date and measuring the
    * difference. Months and years therefore have their calendar length from now, and the result depends on the
    * current date (and the local time zone's daylight-saving shifts).
@@ -286,6 +308,26 @@ export class DurationValue extends NotNullValue {
       'seconds',
       'milliseconds'
     ];
+  }
+
+  /**
+   * Loosely compares this duration with a value of any type, as Obsidian does: by LENGTH rather than by
+   * components, so `1 week` loosely equals `7 days` where {@link DurationValue.equals} separates them.
+   *
+   * A `StringValue` is parsed through {@link DurationValue.parseFromString} first, so a duration loosely
+   * equals the text it would be read back from. The length is {@link DurationValue.getMilliseconds},
+   * which Obsidian measures FROM NOW, so a comparison involving months or years depends on the current
+   * date.
+   *
+   * @param other - The value to compare with.
+   * @returns Whether `other` is - or parses to - a duration of the same length.
+   */
+  public override looseEquals(other: Value): boolean {
+    let compared = other;
+    if (compared instanceof StringValue) {
+      compared = DurationValue.parseFromString(compared.data) ?? compared;
+    }
+    return compared instanceof DurationValue && this.getMilliseconds() === compared.getMilliseconds();
   }
 
   /**
