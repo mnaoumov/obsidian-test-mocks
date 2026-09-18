@@ -294,6 +294,69 @@ describe('Setting', () => {
     });
   });
 
+  describe('setIcon', () => {
+    it('should have no icon element until the first call', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.iconEl).toBeNull();
+    });
+
+    it('should prepend the icon element to settingEl and record the id', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setIcon('dice');
+
+      const iconEl = ensureNonNullable(setting.iconEl);
+      expect(iconEl.className).toBe('setting-item-icon');
+      expect(iconEl.dataset['icon']).toBe('dice');
+      expect([...setting.settingEl.children]).toEqual([iconEl, setting.infoEl, setting.controlEl]);
+    });
+
+    it('should create the icon element once and reuse it', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setIcon('dice');
+      const iconEl = setting.iconEl;
+      setting.setIcon('lucide-star');
+
+      expect(setting.iconEl).toBe(iconEl);
+      expect(setting.iconEl?.dataset['icon']).toBe('lucide-star');
+      expect(setting.settingEl.querySelectorAll('.setting-item-icon').length).toBe(1);
+    });
+
+    it('should empty the icon element rather than removing it when passed null', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setIcon('dice');
+      const iconEl = ensureNonNullable(setting.iconEl);
+      iconEl.createSpan();
+      setting.setIcon(null);
+
+      expect(setting.iconEl).toBe(iconEl);
+      expect(iconEl.dataset['icon']).toBeUndefined();
+      expect(iconEl.childElementCount).toBe(0);
+      expect([...setting.settingEl.children]).toEqual([iconEl, setting.infoEl, setting.controlEl]);
+    });
+
+    it('should treat an empty id as null', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setIcon('dice');
+      setting.setIcon('');
+
+      expect(setting.iconEl).not.toBeNull();
+      expect(setting.iconEl?.dataset['icon']).toBeUndefined();
+    });
+
+    it('should create the icon element even when the first call passes null', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setIcon(null);
+
+      expect(setting.iconEl).not.toBeNull();
+      expect(setting.iconEl?.dataset['icon']).toBeUndefined();
+    });
+
+    it('should return this for chaining', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.setIcon('dice')).toBe(setting);
+    });
+  });
+
   describe('setTooltip', () => {
     it('should set the aria-label attribute on nameEl, as Obsidian does', () => {
       const setting = Setting.create__(createDiv());
@@ -385,6 +448,67 @@ describe('Setting', () => {
     it('should return this for chaining', () => {
       const setting = Setting.create__(createDiv());
       expect(setting.setNavigable(noop)).toBe(setting);
+    });
+  });
+
+  describe('setRowClick', () => {
+    it('should have no handler until the first call', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.rowClick).toBeNull();
+    });
+
+    it('should record the handler and run it on click', () => {
+      const setting = Setting.create__(createDiv());
+      const callback = vi.fn();
+      setting.setRowClick(callback);
+
+      expect(setting.rowClick).toBe(callback);
+      setting.settingEl.click();
+      expect(callback).toHaveBeenCalledOnce();
+    });
+
+    it('should replace the handler rather than adding a second listener', () => {
+      const setting = Setting.create__(createDiv());
+      const first = vi.fn();
+      const second = vi.fn();
+      setting.setRowClick(first);
+      setting.setRowClick(second);
+      setting.settingEl.click();
+
+      expect(first).not.toHaveBeenCalled();
+      expect(second).toHaveBeenCalledOnce();
+    });
+
+    it('should ignore a click on a disabled row', () => {
+      const setting = Setting.create__(createDiv());
+      const callback = vi.fn();
+      setting.setRowClick(callback);
+      setting.setDisabled(true);
+      setting.settingEl.click();
+
+      expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('should ignore a click whose default was already prevented', () => {
+      const setting = Setting.create__(createDiv());
+      const callback = vi.fn();
+      setting.setRowClick(callback);
+      setting.controlEl.addEventListener('click', (event) => {
+        event.preventDefault();
+      });
+      setting.controlEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+      expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('should style nothing, unlike the two members built on it', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setRowClick(noop);
+
+      expect(setting.settingEl.classList.contains('mod-action')).toBe(false);
+      expect(setting.settingEl.classList.contains('mod-navigable')).toBe(false);
+      expect(setting.settingEl.classList.contains('tappable')).toBe(false);
+      expect(setting.controlEl.querySelector('.setting-item-chevron')).toBeNull();
     });
   });
 
