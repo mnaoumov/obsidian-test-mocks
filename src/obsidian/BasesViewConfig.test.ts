@@ -96,10 +96,10 @@ describe('BasesViewConfig', () => {
   });
 
   describe('getEvaluatedFormula', () => {
-    it('should return a NullValue', () => {
+    it('should return the NullValue singleton, as Obsidian does on every non-evaluating path', () => {
       const config = BasesViewConfig.create__('', '', 'test');
       const result = config.getEvaluatedFormula(strictProxy<BasesView>({}), 'formula');
-      expect(result).toBeInstanceOf(NullValue);
+      expect(result).toBe(NullValue.value.asOriginalType2__());
     });
   });
 

@@ -35,9 +35,9 @@ describe('ListValue', () => {
   });
 
   describe('toString', () => {
-    it('should join values and raw elements with comma-space', () => {
+    it('should join values and raw elements with comma-space, a null among them printing as null', () => {
       const value = new ListValue([new StringValue('a'), 'b', 1, true, null, [2, 3]]);
-      expect(String(value)).toBe('a, b, 1, true, , 2, 3');
+      expect(String(value)).toBe('a, b, 1, true, null, 2, 3');
     });
 
     it('should return empty string when empty', () => {
@@ -51,6 +51,13 @@ describe('ListValue', () => {
       const result = new ListValue(['a', new NumberValue(2)]).join('|');
       expect(result).toBeInstanceOf(StringValue);
       expect(result.data).toBe('a|2');
+    });
+
+    // `join` reads every non-string, non-boolean, non-number element through `get`, so `null` and `undefined`
+    // both arrive as `NullValue.value` and are written with its `toString`. That is where `NullValue`'s
+    // display string leaks out of the class, and why it is worth pinning here as well as there.
+    it('should write a null element as null, both from a raw null and from an undefined', () => {
+      expect(new ListValue([null, 'a', undefined]).join('|').data).toBe('null|a|null');
     });
   });
 
@@ -429,6 +436,15 @@ describe('ListValue', () => {
 
     it('should read the buckets back in key order, so integer-like forms come first', () => {
       expect(String(new ListValue(['b', 2, 'a', 1]).unique())).toBe('1, 2, b, a');
+    });
+
+    // The other half of the leak `join` shows above: `unique` buckets by `toString`, so every null shares the
+    // `null` bucket - and, being literally one object, collapses to a single element.
+    it('should collapse every null into one, bucketed under null', () => {
+      expect(new ListValue([null, 'a', undefined, null]).unique().data).toEqual([
+        NullValue.value,
+        new StringValue('a')
+      ]);
     });
 
     // `Value.equals` compares the two classes before their contents, so a string `1` and a number `1` share

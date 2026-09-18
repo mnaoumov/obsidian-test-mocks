@@ -177,8 +177,7 @@ describe('Value', () => {
 
   describe('isTruthy', () => {
     it('should delegate to subclass implementation', () => {
-      const value = new NullValue();
-      expect(value.isTruthy()).toBe(false);
+      expect(NullValue.value.isTruthy()).toBe(false);
     });
   });
 

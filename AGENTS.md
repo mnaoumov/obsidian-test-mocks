@@ -860,6 +860,32 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     rather than identity, a link with its `sourcePath` ignored, and `BooleanValue(true)` not loosely equal to
     `NumberValue(1)` because `'true'` is not `'1'`.
 
+- **`NullValue` is a REAL singleton, and it prints `null`** (2026-09-18, `$G` in Obsidian 1.14.2's `app.js`).
+  `NullValue.value` is the only way in: the constructor calls `super()` and then throws
+  `Use NullValue.value instead of creating a new NullValue.` whenever `NullValue.value` is already set, which
+  is Obsidian's message and Obsidian's ordering — a refused construction still fires `constructor__` and still
+  assigns `icon` before it throws. The one call that gets through is the L5 `create__()` behind the
+  `NullValue.value` initializer, which runs while the field is still unassigned, exactly as Obsidian's
+  `NullValue.value = new NullValue()` does. The `@typescript-eslint/no-unnecessary-condition` waiver on that
+  guard is the price: the field is declared non-nullable because it always is by the time a consumer can read
+  it, and widening it would push an `undefined` onto every consumer that can never see one.
+  - **Two things follow, and both are Obsidian's shape rather than gaps here.** `Value.equals` and
+    `Value.looseEquals` answer from their identity check and never reach `NullValue.equals`, because both
+    sides are necessarily the one object — `NullValue.test.ts` calls the override directly and says so, so the
+    coverage is not quietly lost. And a mock that wants a null uses `NullValue.value`; `new NullValue()` in a
+    consumer's test now throws.
+  - **`toString()` answers `'null'`, not the empty string it used to.** The old doc asserted the empty string
+    as intended behavior, so the claim was wrong as well as the answer. It is read further than it looks:
+    `ListValue.join` — and through it `ListValue.toString` — writes it into the joined text, and
+    `ListValue.unique` buckets by it, so `[null, 'a', undefined]` joins as `null|a|null` and uniques to one
+    null rather than to an empty-string bucket.
+  - **`BasesViewConfig.getEvaluatedFormula` was a third site of the same defect**: it built a fresh
+    `NullValue` where Obsidian returns `$G.value` on each of its four non-evaluating paths (a missing key, a
+    non-string value, a formula that parses to an error, a formula that throws). It now returns the singleton,
+    which the guard would have forced anyway.
+  - `renderTo` needs no override even though Obsidian gives `NullValue` one: Obsidian's base renders
+    `setText(this.toString())` and the null overrides it to nothing, while the mock's base is already a no-op.
+
 - **`ListValue` does its own aggregating, quirks included** (2026-09-17, `iK` in Obsidian 1.14.2's `app.js`).
   `compare`, `slice`, `reverse`, `flatten`, `sort`, `unique`, `getNumbers`, `getDates`, `earliest`, `latest`,
   `sum`, `mean`, `median`, `min`, `max` and `stddev` are all Obsidian's own, and four of their habits surprise:
