@@ -12,10 +12,13 @@ import { parseFrontMatterEntry } from './parseFrontMatterEntry.ts';
  * @param frontmatter - The parsed frontmatter object, or a falsy value when the note has none.
  * @param key - The exact key, or a pattern matched against every key.
  * @returns The strings, each trimmed (a single string becomes a one-element array, non-string list items are
- * dropped), or `null` when the entry is missing or neither a string nor a list.
+ * dropped), or `null` when the entry is missing, falsy - an empty string included - or neither a string nor a list.
  */
 export function parseFrontMatterStringArray(frontmatter: unknown, key: RegExp | string): null | string[] {
   const entry = parseFrontMatterEntry(frontmatter, key);
+  if (!entry) {
+    return null;
+  }
   if (typeof entry === 'string') {
     return [entry.trim()];
   }
