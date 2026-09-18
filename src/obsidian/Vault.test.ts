@@ -1325,6 +1325,16 @@ describe('Vault', () => {
       expect(app.vault.getConfig('attachmentFolderPath')).toBe('/');
     });
 
+    it('should default focusNewTab to true', () => {
+      const app = App.createConfigured__();
+      expect(app.vault.getConfig('focusNewTab')).toBe(true);
+    });
+
+    it('should default trashOption to the system trash', () => {
+      const app = App.createConfigured__();
+      expect(app.vault.getConfig('trashOption')).toBe('system');
+    });
+
     it('should return undefined for a key that was never set', () => {
       const app = App.createConfigured__();
       expect(app.vault.getConfig('newLinkFormat')).toBeUndefined();

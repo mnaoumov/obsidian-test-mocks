@@ -23,10 +23,17 @@ import { ensureNonNullable } from '../internal/type-guards.ts';
 import { parseYaml } from './functions/parseYaml.ts';
 import { stringifyYaml } from './functions/stringifyYaml.ts';
 
+// Obsidian's `trashOption` vault setting, which decides where `trashFile` sends a file.
+const TRASH_OPTION_CONFIG_KEY = 'trashOption';
+const TRASH_OPTION_SYSTEM = 'system';
+const TRASH_OPTION_LOCAL = 'local';
+const TRASH_OPTION_NONE = 'none';
+
 /**
  * Mock of Obsidian's `FileManager`.
  *
- * Every operation goes straight to the mock `app.vault`: no user preference is consulted and no prompt is shown.
+ * Every operation goes straight to the mock `app.vault`, and no prompt is shown. The one user preference it reads
+ * is `trashOption`, which {@link FileManager.trashFile} routes on exactly as Obsidian does.
  */
 export class FileManager {
   /**
@@ -173,6 +180,10 @@ export class FileManager {
    * The mock shows no prompt: it behaves as if the user confirmed, deleting the file through
    * {@link FileManager.trashFile} right away, as Obsidian does when its confirmation prompt is turned off.
    *
+   * Obsidian's own `promptDelete` and `deleteUnlinkedAttachments` settings are deliberately not modeled — the mock
+   * has no dialogue to show, so the only faithful answer it can give is the one it already gives. Set `trashOption`
+   * to choose where the file goes.
+   *
    * @param file - The file or folder to delete.
    * @returns Whether the deletion was confirmed; always `true` in the mock.
    */
@@ -197,11 +208,31 @@ export class FileManager {
    * Removes a file or folder according to the user's trash preference (the vault's `.trash` folder or the system
    * trash).
    *
-   * The mock always uses the system trash, via `vault.trash`.
+   * Routes on the vault's `trashOption` setting exactly as Obsidian does: `system` (the default) trashes through
+   * `vault.trash(file, true)`, `local` through `vault.trash(file, false)`, and `none` deletes permanently through
+   * `vault.delete(file, true)`. Any other value does **nothing at all** — Obsidian's three branches have no `else`,
+   * so a key set to an unrecognized value leaves the file where it is.
    *
    * @param file - The file or folder to remove.
    */
   public async trashFile(file: TAbstractFile): Promise<void> {
-    await this.app.vault.trash(file, true);
+    const trashOption = this.app.vault.getConfig(TRASH_OPTION_CONFIG_KEY);
+    switch (trashOption) {
+      case TRASH_OPTION_LOCAL: {
+        await this.app.vault.trash(file, false);
+        break;
+      }
+      case TRASH_OPTION_NONE: {
+        await this.app.vault.delete(file, true);
+        break;
+      }
+      case TRASH_OPTION_SYSTEM: {
+        await this.app.vault.trash(file, true);
+        break;
+      }
+      default: {
+        break;
+      }
+    }
   }
 }

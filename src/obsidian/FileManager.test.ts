@@ -206,5 +206,58 @@ describe('FileManager', () => {
       await app.fileManager.trashFile(file);
       expect(app.vault.getFileByPath('trash-me.md')).toBeNull();
     });
+
+    it('should use the system trash by default', async () => {
+      const app = createApp({ 'trash-me.md': 'content' });
+      const file = ensureNonNullable(app.vault.getFileByPath('trash-me.md'));
+      const trashSpy = vi.spyOn(app.vault, 'trash');
+      await app.fileManager.trashFile(file);
+      expect(trashSpy).toHaveBeenCalledExactlyOnceWith(file, true);
+      await expect(app.vault.adapter.exists('.trash/trash-me.md')).resolves.toBe(false);
+    });
+
+    it('should use the vault trash when trashOption is local', async () => {
+      const app = createApp({ 'trash-me.md': 'content' });
+      const file = ensureNonNullable(app.vault.getFileByPath('trash-me.md'));
+      app.vault.setConfig('trashOption', 'local');
+      const trashSpy = vi.spyOn(app.vault, 'trash');
+      await app.fileManager.trashFile(file);
+      expect(trashSpy).toHaveBeenCalledExactlyOnceWith(file, false);
+      expect(app.vault.getFileByPath('trash-me.md')).toBeNull();
+      await expect(app.vault.adapter.read('.trash/trash-me.md')).resolves.toBe('content');
+    });
+
+    it('should delete permanently when trashOption is none', async () => {
+      const app = createApp({ 'trash-me.md': 'content' });
+      const file = ensureNonNullable(app.vault.getFileByPath('trash-me.md'));
+      app.vault.setConfig('trashOption', 'none');
+      const trashSpy = vi.spyOn(app.vault, 'trash');
+      const deleteSpy = vi.spyOn(app.vault, 'delete');
+      await app.fileManager.trashFile(file);
+      expect(trashSpy).not.toHaveBeenCalled();
+      expect(deleteSpy).toHaveBeenCalledExactlyOnceWith(file, true);
+      expect(app.vault.getFileByPath('trash-me.md')).toBeNull();
+      await expect(app.vault.adapter.exists('.trash/trash-me.md')).resolves.toBe(false);
+    });
+
+    it('should do nothing when trashOption is set to an unrecognized value', async () => {
+      const app = createApp({ 'trash-me.md': 'content' });
+      const file = ensureNonNullable(app.vault.getFileByPath('trash-me.md'));
+      app.vault.setConfig('trashOption', 'recycle-bin');
+      const trashSpy = vi.spyOn(app.vault, 'trash');
+      const deleteSpy = vi.spyOn(app.vault, 'delete');
+      await app.fileManager.trashFile(file);
+      expect(trashSpy).not.toHaveBeenCalled();
+      expect(deleteSpy).not.toHaveBeenCalled();
+      expect(app.vault.getFileByPath('trash-me.md')).toBe(file);
+    });
+
+    it('should do nothing when trashOption is unset', async () => {
+      const app = createApp({ 'trash-me.md': 'content' });
+      const file = ensureNonNullable(app.vault.getFileByPath('trash-me.md'));
+      app.vault.setConfig('trashOption', undefined);
+      await app.fileManager.trashFile(file);
+      expect(app.vault.getFileByPath('trash-me.md')).toBe(file);
+    });
   });
 });
