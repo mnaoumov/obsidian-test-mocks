@@ -406,17 +406,42 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     such listener, so do not go looking for it there. The listener is attached when the input is created, before the
     `addText` callback runs, which is why a listener a consumer adds to the input itself cannot get in ahead of it.
 
-- **`Platform.hasPhysicalKeyboard` exists, and is `true`** (2026-09-18, read in Obsidian 1.14.2's `app.js`). It is a
-  real Obsidian internal `obsidian-typings` declares and `obsidian.d.ts` omits, so per L4 it takes its real name with
-  no `__` suffix. `true` is the honest default beside `isDesktopApp: true`: the desktop bootstrap sets it, the
-  emulate-mobile path resets it to `false`, and mobile detects it asynchronously — the `false` the app's own literal
-  starts from is a pre-bootstrap placeholder no running app is observed in. **Set it to `false` to drive the
-  affordances Obsidian gates on a soft keyboard**, of which `Setting.addText`'s `Enter`-blur is the one modeled so
-  far; restore it afterwards, as `Keymap`'s suite does for `isMacOS`. The other nine `PlatformEx` members, and
-  `mobileSoftKeyboardVisible` beside it in the same literal, are still absent — each is its own decision, not an
-  oversight, and none of them is read by any mock yet. Neither conformance test covers this: `Platform` is a `const`,
-  so `conformance.test.ts` checks only that the export exists, and `obsidian-typings-conformance.test.ts` walks
-  classes, which is why nothing was ever going to surface the gap.
+- **`Platform` carries eleven members beyond the thirteen `obsidian.d.ts` declares** (2026-09-18, read in Obsidian
+  1.14.2's `app.js` — the literal at `:48126-48170`, the desktop bootstrap that fills it at `:229307-229316`). All
+  eleven are real Obsidian internals `obsidian-typings` declares as `PlatformEx`, so per L4 each takes its real name
+  with no `__` suffix.
+  - **`hasPhysicalKeyboard` is `true`**, the honest default beside `isDesktopApp: true`: the desktop bootstrap sets
+    it, the emulate-mobile path resets it to `false`, and mobile detects it asynchronously — the `false` the app's
+    own literal starts from is a pre-bootstrap placeholder no running app is observed in. **Set it to `false` to
+    drive the affordances Obsidian gates on a soft keyboard**, of which `Setting.addText`'s `Enter`-blur is the one
+    modeled so far; restore it afterwards, as `Keymap`'s suite does for `isMacOS`.
+  - **`canPinSidebar` is a getter**, `isMobile && !isPhone` re-evaluated on every read, which is how Obsidian
+    derives it — so flipping `isMobile` or `isPhone` in a test moves it, instead of freezing an answer at import
+    time. **`supportsIndexedDb` is a getter** for the matching reason: it reports whatever `window.indexedDB` the
+    test environment actually has. That one IS a departure — Obsidian evaluates it once at startup — taken so that a
+    suite which stubs or removes `indexedDB` is believed.
+  - **`version` is a getter returning `apiVersion`**, not a copy of it, so the two cannot drift and there is exactly
+    one place to bump.
+  - **`build` is `''`, deliberately, and it is the one member that asserts something a running app would not.**
+    Obsidian fills it with the INSTALLER version, which moves independently of `version`; the mock has no honest
+    answer for that, so it keeps the empty string the app's own literal starts from. Read it expecting `''`.
+  - **`deviceName`, `osName` and `osVersion` are the host machine's**, from `node:os`'s `hostname()`, `version()`
+    and `release()` — the same three calls, in the same order, the desktop bootstrap makes. `osName` is the
+    DESCRIPTIVE version string (`Windows 11 Pro`) and `osVersion` the kernel release (`10.0.26200`), so the pairing
+    looks transposed and is not. They are machine-dependent by construction: assert them against `node:os`, never
+    against a literal. This is **the only `node:os` import in the published library** and carries a written waiver
+    for `import-x/no-nodejs-modules` — that ban exists so `dist` stays runnable anywhere, and a browser-based test
+    runner would now need `node:os` shimmed.
+  - **`mobileSoftKeyboardVisible` is `false`, `manufacturer` and `model` are `''`** — the values the desktop bundle
+    leaves them at, since nothing outside the mobile app ever assigns them.
+  - **Seven `PlatformEx` members are still absent, each its own decision rather than an oversight**: the five
+    sibling `can*` getters `canDisplayRibbon`, `canExportPdf`, `canPopoutWindow`, `canSplit` and `canStackTabs`,
+    plus `mobileDeviceHeight` and `mobileKeyboardHeight`. The app's literal also carries `canOpenExternalFiles`
+    (`isDesktopApp && isDesktop`), which NEITHER `obsidian.d.ts` nor `obsidian-typings` declares — the
+    `Setting.setIcon` case, which L1 / L4 keeps off the surface.
+  - Neither conformance test covers any of this: `Platform` is a `const`, so `conformance.test.ts` checks only that
+    the export exists, and `obsidian-typings-conformance.test.ts` walks classes, which is why nothing was ever going
+    to surface the gap.
 
 - **Attachment-path resolution is modeled end to end** (added 2026-07-28) — anything calling
   `obsidian-dev-utils`' `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`
