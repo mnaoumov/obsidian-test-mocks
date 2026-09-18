@@ -31,6 +31,7 @@ describe('parseMarkdownContent', () => {
     it('should return empty cache for empty string', () => {
       const cache = parseMarkdownContent('');
       expect(cache.frontmatter).toBeUndefined();
+      expect(cache.frontmatterLinks).toBeUndefined();
       expect(cache.headings).toBeUndefined();
       expect(cache.tags).toBeUndefined();
       expect(cache.links).toBeUndefined();
@@ -82,6 +83,13 @@ describe('parseMarkdownContent', () => {
       expect(cache.frontmatterPosition).toBeUndefined();
     });
 
+    it('should not set frontmatterLinks when the block holds only whitespace', () => {
+      const content = '---\n \n---\n\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
+    });
+
     it('should not set frontmatter when the YAML parses to a non-object', () => {
       const content = '---\njust a string\n---\nBody';
       const cache = parseMarkdownContent(content);
@@ -94,6 +102,13 @@ describe('parseMarkdownContent', () => {
       const cache = parseMarkdownContent(content);
 
       expect(cache.frontmatterPosition).toBeUndefined();
+    });
+
+    it('should not set frontmatterLinks when the YAML parses to a non-object', () => {
+      const content = '---\njust a string\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
     });
 
     it('should still add the yaml section when the YAML parses to a non-object', () => {
@@ -115,6 +130,13 @@ describe('parseMarkdownContent', () => {
       const cache = parseMarkdownContent(content);
 
       expect(cache.frontmatterPosition).toBeUndefined();
+    });
+
+    it('should not set frontmatterLinks when the YAML is invalid', () => {
+      const content = '---\nkey: [unclosed\n---\nBody';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.frontmatterLinks).toBeUndefined();
     });
 
     it('should still add the yaml section when the YAML is invalid', () => {
@@ -160,18 +182,18 @@ describe('parseMarkdownContent', () => {
       expect(cache.frontmatterLinks?.[1]?.link).toBe('B');
     });
 
-    it('should not set frontmatterLinks when there are no links', () => {
+    it('should set frontmatterLinks to an empty array when there are no links', () => {
       const content = '---\ntitle: Plain\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatterLinks).toBeUndefined();
+      expect(cache.frontmatterLinks).toEqual([]);
     });
 
     it('should ignore non-string frontmatter values and non-string array items', () => {
       const content = '---\ncount: 5\nnums:\n  - 1\n  - 2\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatterLinks).toBeUndefined();
+      expect(cache.frontmatterLinks).toEqual([]);
     });
 
     it('should give a wikilink with no alias the display text Obsidian derives from its target', () => {
@@ -221,7 +243,7 @@ describe('parseMarkdownContent', () => {
       const content = '---\nrelated: "see [[Target]] later"\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatterLinks).toBeUndefined();
+      expect(cache.frontmatterLinks).toEqual([]);
     });
 
     it('should extract a markdown link whose target is internal', () => {
@@ -269,7 +291,7 @@ describe('parseMarkdownContent', () => {
       const content = '---\nsite: "[Site](https://example.com)"\nmail: "[Mail](mailto:someone@example.com)"\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatterLinks).toBeUndefined();
+      expect(cache.frontmatterLinks).toEqual([]);
     });
 
     it('should keep an explicitly relative markdown target even when it carries a colon', () => {
@@ -283,21 +305,21 @@ describe('parseMarkdownContent', () => {
       const content = '---\nrelated: "[Shown]()"\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatterLinks).toBeUndefined();
+      expect(cache.frontmatterLinks).toEqual([]);
     });
 
     it('should ignore a value that merely opens and closes like a markdown link', () => {
       const content = '---\nrelated: "[Shown)"\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatterLinks).toBeUndefined();
+      expect(cache.frontmatterLinks).toEqual([]);
     });
 
     it('should not read an embed as a frontmatter link', () => {
       const content = '---\nrelated: "![Shown](Target.md)"\n---\nBody';
       const cache = parseMarkdownContent(content);
 
-      expect(cache.frontmatterLinks).toBeUndefined();
+      expect(cache.frontmatterLinks).toEqual([]);
     });
 
     it('should key a link nested in an object by its dotted path', () => {
@@ -785,6 +807,7 @@ describe('parseMarkdownContent', () => {
       const cache = parseMarkdownContent(content);
       expect(cache.frontmatter).toBeUndefined();
       expect(cache.frontmatterPosition).toBeUndefined();
+      expect(cache.frontmatterLinks).toBeUndefined();
     });
   });
 
