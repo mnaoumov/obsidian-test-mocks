@@ -340,6 +340,74 @@ describe('MetadataCache', () => {
     });
   });
 
+  describe('iterateRefsForFile', () => {
+    const NOTE_WITH_EVERY_REFERENCE_KIND = `---
+homepage: "[[Fm]]"
+---
+
+[[Body]]
+
+![[Embed]]
+`;
+
+    function createIndexedApp(): App {
+      const app = App.createConfigured__();
+      app.vault.createSync__('note.md', NOTE_WITH_EVERY_REFERENCE_KIND);
+      return app;
+    }
+
+    function collectLinks(app: App, stopAt?: string): string[] {
+      const links: string[] = [];
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      app.metadataCache.iterateRefsForFile(file, (reference) => {
+        links.push(reference.link);
+        return reference.link === stopAt;
+      });
+      return links;
+    }
+
+    it('should walk the frontmatter links, then the body links, then the embeds', () => {
+      expect(collectLinks(createIndexedApp())).toEqual(['Fm', 'Body', 'Embed']);
+    });
+
+    it('should stop inside the frontmatter links when the callback answers true', () => {
+      expect(collectLinks(createIndexedApp(), 'Fm')).toEqual(['Fm']);
+    });
+
+    it('should stop inside the body links when the callback answers true', () => {
+      expect(collectLinks(createIndexedApp(), 'Body')).toEqual(['Fm', 'Body']);
+    });
+
+    it('should keep walking when the callback answers nothing', () => {
+      const app = createIndexedApp();
+      const links: string[] = [];
+      const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
+      app.metadataCache.iterateRefsForFile(file, (reference) => {
+        links.push(reference.link);
+      });
+      expect(links).toEqual(['Fm', 'Body', 'Embed']);
+    });
+
+    it('should walk a cache carrying only one of the three groups', () => {
+      const app = App.createConfigured__();
+      app.vault.createSync__('note.md', '');
+      app.metadataCache.setCache__('note.md', {
+        links: [{ displayText: 'Only', link: 'Only', original: '[[Only]]', position: ZERO_POSITION }]
+      });
+      expect(collectLinks(app)).toEqual(['Only']);
+    });
+
+    it('should yield nothing for an unindexed file', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('data.txt', 'hello');
+      const links: string[] = [];
+      app.metadataCache.iterateRefsForFile(file, (reference) => {
+        links.push(reference.link);
+      });
+      expect(links).toEqual([]);
+    });
+  });
+
   describe('asOriginalType2__', () => {
     it('should return the same instance typed as the original', () => {
       const app = App.createConfigured__();

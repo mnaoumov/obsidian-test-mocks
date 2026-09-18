@@ -149,9 +149,9 @@ export class FileValue extends NotNullValue {
   /**
    * Gets the links going OUT of the file.
    *
-   * Obsidian reads them through `MetadataCache.iterateRefsForFile`, which stays unmocked; the order
-   * below is that method's own — frontmatter links, then body links, then embeds — so an embed counts
-   * as an outgoing link and appears in both this list and {@link FileValue.getEmbeds}. Unlike
+   * A one-line walk over {@link MetadataCache.iterateRefsForFile}, exactly as Obsidian writes it, so the
+   * order is that method's own — frontmatter links, then body links, then embeds. An embed therefore
+   * counts as an outgoing link and appears in both this list and {@link FileValue.getEmbeds}. Unlike
    * {@link FileValue.getBacklinks} this reads the file's own cache rather than the link graph, so a link
    * that resolves to nothing is still listed.
    *
@@ -162,9 +162,11 @@ export class FileValue extends NotNullValue {
     if (this.cachedLinks) {
       return this.cachedLinks;
     }
-    const cache = this.app.metadataCache.getFileCache(this.file);
-    const references = [...cache?.frontmatterLinks ?? [], ...cache?.links ?? [], ...cache?.embeds ?? []];
-    this.cachedLinks = ListValue.create__(references.map((reference) => linkValueFromReference(this.app, this.file.path, reference)));
+    const links: LinkValue[] = [];
+    this.app.metadataCache.iterateRefsForFile(this.file, (reference) => {
+      links.push(linkValueFromReference(this.app, this.file.path, reference));
+    });
+    this.cachedLinks = ListValue.create__(links);
     return this.cachedLinks;
   }
 

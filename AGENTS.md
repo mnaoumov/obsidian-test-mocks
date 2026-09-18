@@ -871,3 +871,21 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     tells "no cache" from "no tags"; its parameter is widened to `CachedMetadata | null` for that reason,
     since `obsidian.d.ts` declares it non-nullable while `MetadataCache.getFileCache` really does answer
     `null`. It never deduplicates: a tag in both the frontmatter and the body appears twice.
+
+- **`MetadataCache.iterateRefsForFile` is implemented, and `obsidian-typings` declares it wrongly on all three
+  counts** (2026-09-17, `app.js:101047` and its helper at `47201` in Obsidian 1.14.2, prettified). The
+  augmentation says `iterateRefsForFile(path: string, callback: (reference: ReferenceCache) => void): void`.
+  Obsidian takes a **`TFile`** — it reads `file.extension` to look up `this.linkUpdaters[...]` and passes
+  `file.path` on — the callback is a **predicate** whose `true` stops the walk, and it receives the file's
+  **frontmatter links first**, which are `FrontmatterLinkCache extends Reference` and carry no `position`, so
+  they are not `ReferenceCache` at all. The mock implements what Obsidian has (L4), so the settled shape is
+  `iterateRefsForFile(file: TFile, callback: (reference: Reference) => MaybeReturn<boolean>): void`, and the
+  declaration is a sibling-repo fix tracked separately. The conformance test compares member NAMES, so the
+  differing signature costs nothing there.
+  - **The `linkUpdaters` branch is unreachable here, permanently.** Obsidian hands the whole walk to the
+    updater registered for the file's extension and reads the metadata cache only as a fallback; this package
+    has no such registry and nothing registers one, so every file — `.canvas` included — is walked through its
+    cached metadata. That is the only behavior available, not a gap waiting to be filled.
+  - **`FileValue.getLinks` is now the one-line walk Obsidian writes** over that member, rather than its own
+    read of `getFileCache`. Same list, same order, same memo — what changes is that the order lives in one
+    place instead of being restated by each caller.
