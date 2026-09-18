@@ -356,20 +356,20 @@ function parseFrontmatter(
   }
 
   const parsed = parseFrontmatterYaml(info.frontmatter);
+
+  // A block that does not parse to a plain object leaves NO `frontmatter` and NO `frontmatterPosition`
+  // behind - not an empty record, which is what a consumer branching on `cache.frontmatter` would read as
+  // a note that HAS frontmatter. Obsidian writes both keys behind the same guard, so a scalar block,
+  // invalid YAML and an empty one all read exactly like a note with no frontmatter at all. The `yaml`
+  // SECTION below is pushed regardless, as Obsidian's own sections loop does.
   if (parsed && typeof parsed === 'object') {
     cache.frontmatter = parsed;
+    cache.frontmatterPosition = makePos(lineStarts, 0, info.contentStart);
     const frontmatterLinks = extractFrontmatterLinks(parsed);
     if (frontmatterLinks.length > 0) {
       cache.frontmatterLinks = frontmatterLinks;
     }
-  } else {
-    // Stored UNWRAPPED, like the parsed branch above. A frontmatter record is data rather than a mock
-    // object, so it has nothing to catch an unmocked read of: a strict proxy here throws on every absent-key
-    // read, and reading an absent key is exactly what `getAllTags` and `parseFrontMatter*` do.
-    cache.frontmatter = {};
   }
-
-  cache.frontmatterPosition = makePos(lineStarts, 0, info.contentStart);
 
   sections.push({
     id: undefined,
