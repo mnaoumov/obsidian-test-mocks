@@ -697,7 +697,6 @@
   "TFile.updateCacheLimit",
   "TFolder.getFileCount",
   "TFolder.getFolderCount",
-  "TagValue.tagMatches",
   "TextComponent.autoSelect",
   "TextFileView.dirty",
   "TextFileView.isPlaintext",

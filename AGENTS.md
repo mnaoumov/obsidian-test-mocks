@@ -78,6 +78,7 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `plugins.ts` — the community-plugin registry behind `App.plugins`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1, L7)
 - `setting-definition-renderer.ts` — renders declarative setting definitions the way Obsidian 1.13 does; drives `SettingTab.renderTab__()` / `refreshDomState()`
 - `strict-proxy.ts` — `strictProxy()` mock wrapper that throws on unmocked property access (see L9)
+- `tags-list-value.ts` — the `ListValue` subclass behind `FileValue.getTags` and a frontmatter `tags` property: the `lucide-tags` icon and an `includes` built on `TagValue.tagMatches`, so a list holding `#parent/child` contains `#parent`. Anonymous in the shipped bundle and declared in NEITHER `obsidian.d.ts` NOR `obsidian-typings`, which both type those accessors as a plain `ListValue` — the same pair of reasons that puts `front-matter-object-value.ts` here
 - `types.ts` — inlined type shapes (from obsidian-typings) to avoid augmentation side effects
 - `type-guards.ts` — `assert()`, `ensureNonNullable()`, and similar guards
 - `unknown-view.ts` — Obsidian's unknown view, what a leaf shows for a view type nothing registered a creator for; it extends `EmptyView`, as in Obsidian, and lives here for the same reason
@@ -770,7 +771,8 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   `lucide-image` on `IconValue` and `ImageValue`, `lucide-link` on `UrlValue` and `LinkValue`, and
   `lucide-list` on `ListValue` AND on `ObjectValue` — the app really does give an object the list icon.
   `DateValue` picks by its own `time`: `lucide-clock` with it, `lucide-calendar` without, which
-  `RelativeDateValue` inherits.
+  `RelativeDateValue` inherits. The one icon no EXPORTED class carries is `lucide-tags`, which belongs to
+  the internal tag-list subclass below.
   - **`keys()` lists what a formula's `.` access can reach and `objectAccess(key)` reads it**, matched without
     regard to case. `StringValue` and `ListValue` add `length`; `DateValue` adds `year` / `month` (from `1`) /
     `day` / `hour` / `minute` / `second` / `millisecond` / `timestamp`, all local; `DurationValue` adds the
@@ -789,14 +791,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
       links, then body links, then embeds (`iterateRefsForFile`'s order — an embed is an outgoing link too),
       including links that resolve to nothing; `backlinks` walks `resolvedLinks` and therefore lists only
       resolved ones, once per source note, each shown by that note's short name.
-    - **`tags` and `properties.tags` disagree, and Obsidian is what they disagree about.** `tags` goes
-      through `parseFrontMatterTags`, which `#`-prefixes; `properties` wraps the RAW frontmatter, so
-      `tags: [alpha]` reads back as the tag `alpha` there and as `#alpha` in `file.tags`.
+    - **`tags` and `properties.tags` PRINT differently here, and that one is a known mock gap rather than
+      Obsidian's own.** `tags` goes through `parseFrontMatterTags`, which `#`-prefixes; `properties` wraps
+      the RAW frontmatter, so `tags: [alpha]` reads back as `alpha` there and as `#alpha` in `file.tags`.
+      In Obsidian both print `#alpha`, because its `TagValue` constructor overwrites the wrapped text with
+      the `#`-prefixed form and the frontmatter branch wraps each element in one too. The mock stores the
+      text as given; tracked separately, and it does NOT affect matching, which normalizes on its own.
     - **`properties` carries the frontmatter evaluator**, which reads a string property as a wikilink, a URL
       or a date before falling back to the ordinary conversion, and reinstalls itself on every nested list
-      and object so those readings reach the whole tree. Obsidian answers `tags` with a `ListValue` SUBCLASS
-      carrying the `lucide-tags` icon and a nested-tag-aware `includes`; neither `obsidian.d.ts` nor
-      `obsidian-typings` declares it, both type these as a plain `ListValue`, so that is what the mock gives.
+      and object so those readings reach the whole tree.
 
 - **`Value.equals` and `Value.looseEquals` (the STATICS) are Obsidian's own; the instance pair is the
   modelled departure** (2026-09-17, `XG` in Obsidian 1.14.2's `app.js`). The statics answer identity first,
@@ -836,6 +839,24 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     `Value`'s comparison of the two lists' string forms. So `['1, 2']` no longer equals `[1, 2]`, and
     `looseEquals` unwraps a ONE-element list against a non-list value: `[1]` loosely equals `1`, `[1, 2]`
     equals nothing but a list.
+
+- **A tag list is a `ListValue` SUBCLASS, and that is what makes `contains` answer for a parent tag**
+  (2026-09-17, `rK` / `oK` / `aK` in Obsidian 1.14.2's `app.js`). `FileValue.getTags` and a frontmatter
+  `tags` property both answer `src/internal/tags-list-value.ts`'s `TagsListValue`, not a plain list: it
+  carries the `lucide-tags` icon where a list carries `lucide-list`, it wraps its elements EAGERLY where the
+  base list converts one only when something reads it, and its `includes` tests each element with
+  `TagValue.tagMatches` instead of `Value.looseEquals`. So a note tagged `#parent/child` satisfies
+  `tags.contains("#parent")`. The declared return type stays `ListValue`, which is what `obsidian.d.ts` says
+  and all `obsidian-typings` says too — neither declares the subclass, which is why it lives in
+  `src/internal/` (L1).
+  - **`tagMatches` runs on `#`-prefixed, lower-cased forms of BOTH sides**, so `#Parent` matches `parent`,
+    and the character after the shorter tag must be the `/` that opens a nesting level — `#parenthesis`
+    does not match `#parent`. The direction matters: the RECEIVER is the nested tag and the argument the
+    parent. A plain `StringValue` is read as a tag too; anything else never matches.
+  - **A frontmatter `tags: [null]` THROWS a `TypeError`, in Obsidian and here.** The tags branch filters
+    `null` out before asking whether every element is a string, then hands the ORIGINAL array to the list,
+    whose tag constructor dereferences each element. Reading that one property fails; the rest of the
+    frontmatter is unaffected.
 
 - **The three tag readers are Obsidian's own, and two of their habits catch a consumer out** (2026-09-17,
   `mg` / `yg` / `Ug` in Obsidian 1.14.2's `app.js`).

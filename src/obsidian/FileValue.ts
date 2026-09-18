@@ -15,6 +15,7 @@ import { createFrontMatterObjectValue } from '../internal/front-matter-object-va
 import { linkValueFromReference } from '../internal/link-value-from-reference.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { TagsListValue } from '../internal/tags-list-value.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { DateValue } from './DateValue.ts';
 import { parseFrontMatterTags } from './functions/parseFrontMatterTags.ts';
@@ -23,7 +24,6 @@ import { ListValue } from './ListValue.ts';
 import { NotNullValue } from './NotNullValue.ts';
 import { NumberValue } from './NumberValue.ts';
 import { StringValue } from './StringValue.ts';
-import { TagValue } from './TagValue.ts';
 
 const MD_EXTENSION = 'md';
 
@@ -188,12 +188,9 @@ export class FileValue extends NotNullValue {
   /**
    * Gets the file's tags.
    *
-   * Obsidian answers a `ListValue` SUBCLASS here, with the `lucide-tags` icon and an `includes` that
-   * matches a nested tag against its parent; the subclass is declared in neither `obsidian.d.ts` nor
-   * `obsidian-typings`, which both type this as a plain `ListValue`, so that is what the mock returns.
-   *
-   * @returns A list of `TagValue`s holding the file's body tags followed by its frontmatter tags, each
-   * `#`-prefixed and duplicates dropped. An unindexed file gives an empty list. Memoized, as
+   * @returns A {@link TagsListValue} — declared `ListValue` because that is what `obsidian.d.ts` declares,
+   * and Obsidian answers the same subclass here — holding the file's body tags followed by its frontmatter
+   * tags, each `#`-prefixed and duplicates dropped. An unindexed file gives an empty list. Memoized, as
    * {@link FileValue.getBacklinks} is.
    */
   public getTags(): ListValue {
@@ -204,7 +201,7 @@ export class FileValue extends NotNullValue {
     const bodyTags = (cache?.tags ?? []).map((tag) => tag.tag);
     const frontMatterTags = parseFrontMatterTags(cache?.frontmatter ?? null) ?? [];
     const tags = [...new Set([...bodyTags, ...frontMatterTags])];
-    this.cachedTags = ListValue.create__(tags.map((tag) => TagValue.create2__(tag)));
+    this.cachedTags = TagsListValue.create2__(tags);
     return this.cachedTags;
   }
 

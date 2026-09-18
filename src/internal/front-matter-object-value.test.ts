@@ -16,6 +16,7 @@ import { StringValue } from '../obsidian/StringValue.ts';
 import { TagValue } from '../obsidian/TagValue.ts';
 import { UrlValue } from '../obsidian/UrlValue.ts';
 import { createFrontMatterObjectValue } from './front-matter-object-value.ts';
+import { TagsListValue } from './tags-list-value.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
 describe('createFrontMatterObjectValue', () => {
@@ -53,13 +54,18 @@ describe('createFrontMatterObjectValue', () => {
       expect((tags as ListValue).toString()).toBe('alpha');
     });
 
+    it('should read it as the tag list, not a plain one, so a nested tag answers for its parent', () => {
+      const tags = evaluate({ tags: ['parent/child'] }, 'tags');
+      expect(tags).toBeInstanceOf(TagsListValue);
+      expect((tags as TagsListValue).includes(new TagValue('#parent'))).toBe(true);
+    });
+
     it('should ignore the key\'s case', () => {
       expect(evaluate({ Tags: ['alpha'] }, 'Tags')).toBeInstanceOf(ListValue);
     });
 
-    it('should wrap a null element too, which the emptiness test skipped', () => {
-      const tags = evaluate({ tags: [null, 'alpha'] }, 'tags');
-      expect((tags as ListValue).get(0)).toBeInstanceOf(TagValue);
+    it('should throw on a null element, which the emptiness test skipped but the wrapping does not', () => {
+      expect(() => evaluate({ tags: [null, 'alpha'] }, 'tags')).toThrow(TypeError);
     });
 
     it('should fall back to the ordinary reading when the value is neither a string nor a string list', () => {

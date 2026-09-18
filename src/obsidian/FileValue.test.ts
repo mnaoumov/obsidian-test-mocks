@@ -4,6 +4,7 @@ import {
   it
 } from 'vitest';
 
+import { TagsListValue } from '../internal/tags-list-value.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { DateValue } from './DateValue.ts';
@@ -236,6 +237,17 @@ describe('FileValue', () => {
         }
       });
       expect(createNoteValue(app, 'scalar.md').getTags().data).toEqual([]);
+    });
+
+    it('should answer the tag list, not a plain one, so a nested tag answers for its parent', () => {
+      const app = App.createConfigured__({
+        files: {
+          'nested.md': '---\ntags: [parent/child]\n---\nBody'
+        }
+      });
+      const tags = createNoteValue(app, 'nested.md').getTags();
+      expect(tags).toBeInstanceOf(TagsListValue);
+      expect(tags.includes(new TagValue('#parent'))).toBe(true);
     });
 
     it('should answer the same list every time', () => {

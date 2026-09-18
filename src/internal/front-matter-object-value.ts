@@ -9,9 +9,10 @@
  * `link-value-from-reference.ts` makes.
  *
  * What makes it more than a constructor call is its evaluator: frontmatter is the one place where a
- * plain string may stand for a wikilink, a URL or a date, and where a `tags` property is a list of tags
- * rather than a list of strings. The evaluator REINSTALLS itself on every nested list and object it
- * produces, so those readings reach arbitrarily deep into the frontmatter rather than only its top level.
+ * plain string may stand for a wikilink, a URL or a date, and where a `tags` property is a
+ * {@link TagsListValue} rather than a list of strings. The evaluator REINSTALLS itself on every nested list
+ * and object it produces, so those readings reach arbitrarily deep into the frontmatter rather than only
+ * its top level.
  */
 
 import type { App } from '../obsidian/App.ts';
@@ -22,10 +23,10 @@ import { DateValue } from '../obsidian/DateValue.ts';
 import { LinkValue } from '../obsidian/LinkValue.ts';
 import { ListValue } from '../obsidian/ListValue.ts';
 import { ObjectValue } from '../obsidian/ObjectValue.ts';
-import { TagValue } from '../obsidian/TagValue.ts';
 import { UrlValue } from '../obsidian/UrlValue.ts';
 import { castTo } from './castTo.ts';
 import { lazyEvaluate } from './lazy-evaluator.ts';
+import { TagsListValue } from './tags-list-value.ts';
 
 const TAGS_KEY = 'tags';
 
@@ -44,12 +45,14 @@ export function createFrontMatterObjectValue(app: App, file: TFile, frontMatter:
   function evaluate(keyOrIndex: number | string, raw: unknown): Value {
     if (typeof keyOrIndex === 'string' && keyOrIndex.toLowerCase() === TAGS_KEY) {
       if (isStringArray(raw)) {
-        // Every element is wrapped, including a `null` the emptiness test above skipped, which is
-        // Obsidian's own arithmetic rather than a gap here.
-        return ListValue.create__(raw.map((tag) => TagValue.create2__(castTo<string>(tag))));
+        // The ORIGINAL array is wrapped, including a `null` the test above filtered out before asking
+        // whether every element is a string. Wrapping one THROWS, and that is Obsidian's own arithmetic
+        // rather than a gap here: it wraps the same array and its tag constructor dereferences each
+        // element. So a frontmatter `tags: [null]` fails the whole property read, in Obsidian too.
+        return TagsListValue.create2__(castTo<string[]>(raw));
       }
       if (typeof raw === 'string') {
-        return ListValue.create__([TagValue.create2__(raw)]);
+        return TagsListValue.create2__([raw]);
       }
     }
 
@@ -81,7 +84,8 @@ export function createFrontMatterObjectValue(app: App, file: TFile, frontMatter:
 /**
  * Tells whether a raw property is the array of tag names the `tags` key may hold, as Obsidian's own test
  * does: an array whose elements are all strings once `null` and `undefined` are set aside. An EMPTY array
- * passes, and so does one that holds nothing but `null`.
+ * passes, and so does one that holds nothing but `null` - which is what makes the wrapping at the call site
+ * throw, since the array it is handed is the unfiltered one.
  *
  * @param raw - The raw property.
  * @returns Whether it is such an array.
