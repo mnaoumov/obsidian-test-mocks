@@ -35,4 +35,12 @@ describe('parseFrontMatterStringArray', () => {
   it('should trim a single string entry', () => {
     expect(parseFrontMatterStringArray({ key: '  value  ' }, 'key')).toEqual(['value']);
   });
+
+  it('should return null for an empty string entry', () => {
+    expect(parseFrontMatterStringArray({ key: '' }, 'key')).toBeNull();
+  });
+
+  it('should return an empty array for an entry-less list', () => {
+    expect(parseFrontMatterStringArray({ items: [] }, 'items')).toEqual([]);
+  });
 });

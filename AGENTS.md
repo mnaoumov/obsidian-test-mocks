@@ -903,13 +903,30 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     Obsidian never looks for one, so `tag: foo` yields nothing while `Tags: foo` yields `#foo`. It goes
     through `parseFrontMatterStringArray`, which TRIMS every entry, and then drops every entry that is empty
     and every entry holding a space, because a tag cannot contain one. So a `tags` list whose every entry is
-    dropped answers an EMPTY ARRAY; `null` means there was no `tags` entry at all.
+    dropped answers an EMPTY ARRAY, while `null` means there was no `tags` entry at all, or a falsy one.
   - **`getAllTags` lists the FRONTMATTER tags first and the body tags second** — the opposite order to
     `FileValue.getTags`, which reads the body first, and both match their Obsidian counterparts. It returns
     `null` only for a falsy cache and an empty array for a cache carrying no tags, which is how a caller
     tells "no cache" from "no tags"; its parameter is widened to `CachedMetadata | null` for that reason,
     since `obsidian.d.ts` declares it non-nullable while `MetadataCache.getFileCache` really does answer
     `null`. It never deduplicates: a tag in both the frontmatter and the body appears twice.
+
+- **The rest of the `parseFrontMatter*` family reads exactly what Obsidian's own does, and three of its
+  habits catch a consumer out** (2026-09-18, `vg` / `mg` / `gg` in Obsidian 1.14.2's `app.js`).
+  - **`parseFrontMatterAliases` reads ONLY an `aliases` key, case-insensitively**, and there is no `alias`
+    fallback — the same defect the tag reader had, and Obsidian looks for one no more here than there, so
+    `alias: foo` yields nothing while `Aliases: foo` yields `foo`. It goes through
+    `parseFrontMatterStringArray` too, so every alias is TRIMMED, and then drops every entry that is empty
+    once trimmed. A list whose every entry is dropped answers an EMPTY ARRAY; `null` means there was no
+    `aliases` entry at all, or one that is neither a string nor a list. Unlike the tag reader it keeps an
+    alias holding a space, which is a perfectly good alias.
+  - **`parseFrontMatterStringArray` answers `null` for any FALSY entry**, before it ever looks at the
+    entry's type — so `aliases: ''` and `tags: ''` are `null`, not `['']` and not `[]`. An entry-less list
+    is not falsy and still answers `[]`.
+  - **`parseFrontMatterEntry` only reads an OWN key, and returns what is stored verbatim.** It guards with
+    `Object.hasOwn`, so `parseFrontMatterEntry(fm, 'toString')` answers `null` rather than the prototype's
+    method, and a key explicitly present holding `undefined` reads as `undefined` rather than `null` — the
+    one way a caller can tell a key that is there from a key that is not.
 
 - **`MetadataCache.iterateRefsForFile` is implemented, and `obsidian-typings` declares it wrongly on all three
   counts** (2026-09-17, `app.js:101047` and its helper at `47201` in Obsidian 1.14.2, prettified). The

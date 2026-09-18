@@ -30,4 +30,16 @@ describe('parseFrontMatterEntry', () => {
   it('should return null for undefined frontmatter', () => {
     expect(parseFrontMatterEntry(undefined, 'key')).toBeNull();
   });
+
+  it('should return an entry explicitly holding undefined', () => {
+    expect(parseFrontMatterEntry({ title: undefined }, 'title')).toBeUndefined();
+  });
+
+  it('should not read an inherited key', () => {
+    expect(parseFrontMatterEntry({}, 'toString')).toBeNull();
+  });
+
+  it('should not match an inherited key with a RegExp', () => {
+    expect(parseFrontMatterEntry({}, /^toString$/)).toBeNull();
+  });
 });
