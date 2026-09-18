@@ -15,6 +15,10 @@ describe('Platform', () => {
     expect(Platform.isMobile).toBe(false);
   });
 
+  it('should have hasPhysicalKeyboard set to true, as the desktop app does', () => {
+    expect(Platform.hasPhysicalKeyboard).toBe(true);
+  });
+
   it('should have resourcePathPrefix as a string', () => {
     expect(typeof Platform.resourcePathPrefix).toBe('string');
   });

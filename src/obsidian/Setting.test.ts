@@ -1,6 +1,7 @@
 import type { Setting as SettingOriginal } from 'obsidian';
 
 import {
+  afterEach,
   describe,
   expect,
   it,
@@ -8,8 +9,10 @@ import {
 } from 'vitest';
 
 import { noop } from '../internal/noop.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { BaseComponent } from './BaseComponent.ts';
 import { Setting } from './Setting.ts';
+import { Platform } from './vars/Platform.ts';
 
 class TestComponent extends BaseComponent {
   public override disabled = false;
@@ -222,6 +225,64 @@ describe('Setting', () => {
       const result = setting.addDisplayValue(callback);
       expect(callback).toHaveBeenCalledOnce();
       expect(result).toBe(setting);
+    });
+  });
+
+  describe('addText', () => {
+    afterEach(() => {
+      Platform.hasPhysicalKeyboard = true;
+    });
+
+    function addTextInput(setting: Setting): HTMLInputElement {
+      setting.addText(() => {
+        noop();
+      });
+      return ensureNonNullable(setting.controlEl.querySelector('input'));
+    }
+
+    it('should blur the input on Enter when the platform has no physical keyboard', () => {
+      Platform.hasPhysicalKeyboard = false;
+      const inputEl = addTextInput(Setting.create__(createDiv()));
+      const blurSpy = vi.spyOn(inputEl, 'blur');
+      inputEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      expect(blurSpy).toHaveBeenCalledOnce();
+    });
+
+    it('should leave the input alone on any other key', () => {
+      Platform.hasPhysicalKeyboard = false;
+      const inputEl = addTextInput(Setting.create__(createDiv()));
+      const blurSpy = vi.spyOn(inputEl, 'blur');
+      inputEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }));
+      expect(blurSpy).not.toHaveBeenCalled();
+    });
+
+    it('should leave a composing Enter alone, so an IME candidate is not dismissed', () => {
+      Platform.hasPhysicalKeyboard = false;
+      const inputEl = addTextInput(Setting.create__(createDiv()));
+      const blurSpy = vi.spyOn(inputEl, 'blur');
+      inputEl.dispatchEvent(new KeyboardEvent('keydown', { isComposing: true, key: 'Enter' }));
+      expect(blurSpy).not.toHaveBeenCalled();
+    });
+
+    it('should leave an Enter a capturing ancestor already default-prevented alone', () => {
+      Platform.hasPhysicalKeyboard = false;
+      const setting = Setting.create__(createDiv());
+      const inputEl = addTextInput(setting);
+      const blurSpy = vi.spyOn(inputEl, 'blur');
+      // A capturing ancestor listener is the realistic way the flag is already set: the guard is attached when the
+      // input is created, so a listener added afterwards on the input itself runs after it.
+      setting.controlEl.addEventListener('keydown', (event) => {
+        event.preventDefault();
+      }, { capture: true });
+      inputEl.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Enter' }));
+      expect(blurSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not listen at all when the platform has a physical keyboard', () => {
+      const inputEl = addTextInput(Setting.create__(createDiv()));
+      const blurSpy = vi.spyOn(inputEl, 'blur');
+      inputEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      expect(blurSpy).not.toHaveBeenCalled();
     });
   });
 

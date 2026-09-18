@@ -37,6 +37,7 @@ import { SliderComponent } from './SliderComponent.ts';
 import { TextAreaComponent } from './TextAreaComponent.ts';
 import { TextComponent } from './TextComponent.ts';
 import { ToggleComponent } from './ToggleComponent.ts';
+import { Platform } from './vars/Platform.ts';
 
 /**
  * Mock of Obsidian's `Setting`, a settings row with an info area (name and description) and a control area.
@@ -260,11 +261,24 @@ export class Setting {
   /**
    * Adds a single-line text input to the row.
    *
+   * As in Obsidian, when `Platform.hasPhysicalKeyboard` is `false` the input is blurred on `Enter`, dismissing the
+   * soft keyboard rather than letting the key reach a single-line field. An event that is composing or already
+   * default-prevented is left alone. This is the only `add*` method Obsidian guards this way.
+   *
    * @param callback - Called with the new text input, to configure it.
    * @returns This setting, for chaining.
    */
   public addText(callback: (component: TextComponentOriginal) => unknown): this {
     const comp = TextComponent.create__(this.controlEl);
+    if (!Platform.hasPhysicalKeyboard) {
+      const { inputEl } = comp;
+      inputEl.addEventListener('keydown', (event) => {
+        if (event.isComposing || event.defaultPrevented || event.key !== 'Enter') {
+          return;
+        }
+        inputEl.blur();
+      });
+    }
     this.components.push(comp);
     callback(comp.asOriginalType4__());
     return this;
