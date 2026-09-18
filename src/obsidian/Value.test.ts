@@ -3,10 +3,13 @@ import type { Value as ValueOriginal } from 'obsidian';
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
+import { castTo } from '../internal/castTo.ts';
 import { App } from './App.ts';
+import { ListValue } from './ListValue.ts';
 import { NullValue } from './NullValue.ts';
 import { NumberValue } from './NumberValue.ts';
 import { RenderContext } from './RenderContext.ts';
@@ -59,6 +62,20 @@ describe('Value', () => {
       expect(Value.equals(new StringValue('a'), null)).toBe(false);
     });
 
+    it('should return true for the same instance without consulting instance equals', () => {
+      const value = new StringValue('hello');
+      const equalsSpy = vi.spyOn(value, 'equals');
+      expect(Value.equals(value, value)).toBe(true);
+      expect(equalsSpy).not.toHaveBeenCalled();
+    });
+
+    it('should return false for an undefined a JavaScript consumer can still pass', () => {
+      const a = castTo<null>(undefined);
+      expect(Value.equals(a, new StringValue('a'))).toBe(false);
+      expect(Value.equals(new StringValue('a'), a)).toBe(false);
+      expect(Value.equals(a, a)).toBe(true);
+    });
+
     it('should delegate to instance equals when both are non-null', () => {
       const a = new StringValue('hello');
       const b = new StringValue('hello');
@@ -69,6 +86,17 @@ describe('Value', () => {
       const a = new StringValue('hello');
       const b = new StringValue('world');
       expect(Value.equals(a, b)).toBe(false);
+    });
+
+    it('should return false for two classes that print the same, without consulting instance equals', () => {
+      const testNumber = 1;
+      const $string = new StringValue(String(testNumber));
+      const $number = new NumberValue(testNumber);
+      const equalsSpy = vi.spyOn($string, 'equals');
+      expect($string.equals(castTo<StringValue>($number))).toBe(true);
+      equalsSpy.mockClear();
+      expect(Value.equals($string, $number)).toBe(false);
+      expect(equalsSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -85,10 +113,51 @@ describe('Value', () => {
       expect(Value.looseEquals(new StringValue('a'), null)).toBe(false);
     });
 
-    it('should delegate to instance looseEquals when both are non-null', () => {
+    it('should return true for the same instance without consulting either comparison', () => {
+      const value = new StringValue('hello');
+      const equalsSpy = vi.spyOn(value, 'equals');
+      const looseEqualsSpy = vi.spyOn(value, 'looseEquals');
+      expect(Value.looseEquals(value, value)).toBe(true);
+      expect(equalsSpy).not.toHaveBeenCalled();
+      expect(looseEqualsSpy).not.toHaveBeenCalled();
+    });
+
+    it('should return false for an undefined a JavaScript consumer can still pass', () => {
+      const a = castTo<null>(undefined);
+      expect(Value.looseEquals(a, new StringValue('a'))).toBe(false);
+      expect(Value.looseEquals(new StringValue('a'), a)).toBe(false);
+      expect(Value.looseEquals(a, a)).toBe(true);
+    });
+
+    it('should answer from strict equality when both are of the same class', () => {
       const a = new StringValue('hello');
       const b = new StringValue('hello');
+      const looseEqualsSpy = vi.spyOn(a, 'looseEquals');
       expect(Value.looseEquals(a, b)).toBe(true);
+      expect(looseEqualsSpy).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to the loose comparison when two of the same class are not strictly equal', () => {
+      const a = new ListValue([1]);
+      const b = new ListValue(['1']);
+      expect(Value.equals(a, b)).toBe(false);
+      expect(Value.looseEquals(a, b)).toBe(true);
+    });
+
+    // The direction that answers here is the mock's string-form comparison rather than Obsidian's, which
+    // would answer `false` both ways - but the branch under test is the static's, and only a pair whose two
+    // directions DISAGREE can reach it. `ListValue` is the one class that overrides `looseEquals`, so it is
+    // also the only source of such a pair.
+    it('should try the second value as well when the first direction says no', () => {
+      const list = new ListValue([1, 2]);
+      const $string = new StringValue('1, 2');
+      expect(list.looseEquals($string)).toBe(false);
+      expect($string.looseEquals(list)).toBe(true);
+      expect(Value.looseEquals(list, $string)).toBe(true);
+    });
+
+    it('should return false when neither direction answers', () => {
+      expect(Value.looseEquals(new StringValue('a'), new ListValue([1, 2]))).toBe(false);
     });
   });
 

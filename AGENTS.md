@@ -716,6 +716,25 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
       carrying the `lucide-tags` icon and a nested-tag-aware `includes`; neither `obsidian.d.ts` nor
       `obsidian-typings` declares it, both type these as a plain `ListValue`, so that is what the mock gives.
 
+- **`Value.equals` and `Value.looseEquals` (the STATICS) are Obsidian's own; the instance pair is the
+  modelled departure** (2026-09-17, `XG` in Obsidian 1.14.2's `app.js`). The statics answer identity first,
+  then treat a missing value as equal only to another missing one - by truthiness, so an `undefined` the
+  declared signature does not admit is answered rather than dereferenced - and then compare the two CLASSES
+  before their contents. `looseEquals` tries strict equality first and then BOTH directions,
+  `a.looseEquals(b) || b.looseEquals(a)`, which is what lets a one-element `ListValue` unwrap against a
+  non-list whichever side it is passed on.
+  - **The class test is what keeps the departure honest, so the two belong together.** Obsidian's base
+    `equals` / `looseEquals` answer `false` and leave every comparison to the subclass - ten of them, each
+    over its own fields; the mock answers the whole hierarchy with one comparison of `toString()` output
+    instead. Without the class test that single comparison would equate a `StringValue('1')` with a
+    `NumberValue(1)`, because both print `1`. It is observable rather than theoretical: `ListValue.unique`
+    buckets by string form and separates within a bucket by `Value.equals`, so a list holding both `'1'` and
+    `1` used to collapse to one element where Obsidian keeps two.
+  - **What the string-form base still gets wrong is the per-class comparison, tracked separately.** A
+    `BooleanValue(true)` loosely equals a `NumberValue(1)` in Obsidian (`true == 1` on the wrapped data) and
+    not in the mock (`'true'` against `'1'`), and every class Obsidian compares by field - date by timestamp,
+    file by identity, link by target plus display - is compared here by how it prints.
+
 - **`ListValue` does its own aggregating, quirks included** (2026-09-17, `iK` in Obsidian 1.14.2's `app.js`).
   `compare`, `slice`, `reverse`, `flatten`, `sort`, `unique`, `getNumbers`, `getDates`, `earliest`, `latest`,
   `sum`, `mean`, `median`, `min`, `max` and `stddev` are all Obsidian's own, and four of their habits surprise:
