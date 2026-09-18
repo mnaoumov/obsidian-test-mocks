@@ -69,7 +69,7 @@ describe('FileView', () => {
   });
 
   describe('navigation', () => {
-    it('should default to true', () => {
+    it('should default to true, opting back into the history the base view opts out of', () => {
       const view = createFileView();
       expect(view.navigation).toBe(true);
     });

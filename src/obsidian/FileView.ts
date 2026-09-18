@@ -36,7 +36,8 @@ export abstract class FileView extends ItemView {
   public file: null | TFile = null;
 
   /**
-   * Whether the view takes part in navigation history; file views can be navigated by default.
+   * Whether the view takes part in navigation history. As in Obsidian, a file view opts back into the history the
+   * base view opts out of.
    */
   public override navigation = true;
 
