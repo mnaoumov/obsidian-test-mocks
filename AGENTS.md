@@ -469,8 +469,9 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
        reason: a member answered from a frozen constant is one where the environment has no answer (`build`,
        `manufacturer`, `model`) or where the mock is deliberately asserting a platform (`isWin`, `isDesktopApp`).
   - The app's literal also carries `canOpenExternalFiles` (`isDesktopApp && isDesktop`), which NEITHER
-    `obsidian.d.ts` nor `obsidian-typings` declares — the `Setting.setIcon` case, which L1 / L4 keeps off the
-    surface. It wants an `obsidian-typings` declaration first, not a mock member.
+    `obsidian.d.ts` nor `obsidian-typings` declares, so L1 / L4 keeps it off the surface. It wants an
+    `obsidian-typings` declaration first, not a mock member — the route `Setting.setIcon` took, declared
+    upstream and only then implemented here.
   - Neither conformance test covers any of this: `Platform` is a `const`, so `conformance.test.ts` checks only that
     the export exists, and `obsidian-typings-conformance.test.ts` walks classes, which is why nothing was ever going
     to surface the gap.
