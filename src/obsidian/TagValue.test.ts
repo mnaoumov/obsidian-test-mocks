@@ -6,6 +6,8 @@ import {
   it
 } from 'vitest';
 
+import { NumberValue } from './NumberValue.ts';
+import { StringValue } from './StringValue.ts';
 import { TagValue } from './TagValue.ts';
 
 describe('TagValue', () => {
@@ -31,6 +33,45 @@ describe('TagValue', () => {
   it('should be truthy for non-empty tags', () => {
     const value = new TagValue('#tag');
     expect(value.isTruthy()).toBe(true);
+  });
+
+  describe('tagMatches', () => {
+    it('should match the same tag', () => {
+      expect(new TagValue('#alpha').tagMatches(new TagValue('#alpha'))).toBe(true);
+    });
+
+    it('should match a parent tag, which is what makes a nested tag answer for it', () => {
+      expect(new TagValue('#parent/child').tagMatches(new TagValue('#parent'))).toBe(true);
+      expect(new TagValue('#parent/child/grandchild').tagMatches(new TagValue('#parent'))).toBe(true);
+    });
+
+    it('should not match in the other direction', () => {
+      expect(new TagValue('#parent').tagMatches(new TagValue('#parent/child'))).toBe(false);
+    });
+
+    it('should require the next character to open a nesting level, not merely share a prefix', () => {
+      expect(new TagValue('#parenthesis').tagMatches(new TagValue('#parent'))).toBe(false);
+    });
+
+    it('should ignore case on both sides', () => {
+      expect(new TagValue('#Parent/Child').tagMatches(new TagValue('#PARENT'))).toBe(true);
+    });
+
+    it('should read a bare tag as a #-prefixed one on both sides', () => {
+      expect(new TagValue('parent/child').tagMatches(new TagValue('parent'))).toBe(true);
+      expect(new TagValue('#parent/child').tagMatches(new TagValue('parent'))).toBe(true);
+      expect(new TagValue('parent/child').tagMatches(new TagValue('#parent'))).toBe(true);
+    });
+
+    it('should read a plain string value as a tag too', () => {
+      expect(new TagValue('#parent/child').tagMatches(new StringValue('#parent'))).toBe(true);
+      expect(new TagValue('#parent/child').tagMatches(new StringValue('parent'))).toBe(true);
+      expect(new TagValue('#parent/child').tagMatches(new StringValue('other'))).toBe(false);
+    });
+
+    it('should never match a value that is not a string', () => {
+      expect(new TagValue('#alpha').tagMatches(new NumberValue(1))).toBe(false);
+    });
   });
 
   describe('asOriginalType5__', () => {

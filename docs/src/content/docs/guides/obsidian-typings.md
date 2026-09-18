@@ -78,6 +78,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `SliderComponent` | `changeCallback` |
 | `SuggestModal` | `instructionsEl` |
 | `TAbstractFile` | `deleted` |
+| `TagValue` | `tagMatches` |
 | `TFile` | `getShortName`, `name` |
 | `TFolder` | `getParentPrefix` |
 | `ToggleComponent` | `changeCallback`, `on` |
