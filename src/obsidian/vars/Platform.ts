@@ -25,7 +25,7 @@ import { apiVersion } from './apiVersion.ts';
  * Flags describing the platform. The mock reports the desktop app on Windows, with a fixed desktop
  * `resourcePathPrefix`; tests can overwrite the flags to simulate another platform.
  *
- * Beyond the thirteen members `obsidian.d.ts` declares, the mock carries eleven more that Obsidian's own
+ * Beyond the thirteen members `obsidian.d.ts` declares, the mock carries sixteen more that Obsidian's own
  * `Platform` literal has and `obsidian-typings` declares as `PlatformEx`. Each takes its real name with no
  * `__` suffix (L4), and each is answered the way the desktop app answers it:
  *
@@ -33,9 +33,11 @@ import { apiVersion } from './apiVersion.ts';
  *   startup, the emulate-mobile path resets it to `false`, and mobile detects it asynchronously. Set it to
  *   `false` to drive the affordances Obsidian gates on a soft keyboard, such as `Setting.addText` blurring
  *   its input on `Enter`.
- * - `canPinSidebar` is a **getter**, `isMobile && !isPhone` evaluated on every read, exactly as Obsidian
- *   derives it — so a test that flips `isMobile` or `isPhone` gets a consistent answer rather than one
- *   frozen when this module was first imported.
+ * - All six `can*` members are **getters**, each re-evaluating Obsidian's own derivation on every read, so a
+ *   test that flips `isMobile`, `isPhone`, `isDesktop` or `isDesktopApp` gets a consistent answer rather
+ *   than one frozen when this module was first imported: `canPinSidebar` is `isMobile && !isPhone`,
+ *   `canExportPdf` is `isDesktopApp`, `canPopoutWindow` is `isDesktopApp && isDesktop`, and
+ *   `canDisplayRibbon`, `canSplit` and `canStackTabs` are each `!isPhone`.
  * - `supportsIndexedDb` is a **getter** over `window.indexedDB`, so it reports whatever the test environment
  *   actually has. Obsidian evaluates it once at startup; reading it lazily is the one departure, and it is
  *   what lets a suite stub or remove `indexedDB` and be believed.
@@ -52,8 +54,23 @@ import { apiVersion } from './apiVersion.ts';
  */
 export const Platform = {
   build: '',
+  get canDisplayRibbon(): boolean {
+    return !Platform.isPhone;
+  },
+  get canExportPdf(): boolean {
+    return Platform.isDesktopApp;
+  },
   get canPinSidebar(): boolean {
     return Platform.isMobile && !Platform.isPhone;
+  },
+  get canPopoutWindow(): boolean {
+    return Platform.isDesktopApp && Platform.isDesktop;
+  },
+  get canSplit(): boolean {
+    return !Platform.isPhone;
+  },
+  get canStackTabs(): boolean {
+    return !Platform.isPhone;
   },
   deviceName: hostname(),
   hasPhysicalKeyboard: true,

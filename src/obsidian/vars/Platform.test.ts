@@ -15,6 +15,8 @@ import { Platform } from './Platform.ts';
 
 describe('Platform', () => {
   afterEach(() => {
+    Platform.isDesktop = true;
+    Platform.isDesktopApp = true;
     Platform.isMobile = false;
     Platform.isPhone = false;
   });
@@ -73,6 +75,44 @@ describe('Platform', () => {
       Platform.isMobile = true;
       Platform.isPhone = true;
       expect(Platform.canPinSidebar).toBe(false);
+    });
+  });
+
+  describe('canExportPdf', () => {
+    it('should be true in the desktop app', () => {
+      expect(Platform.canExportPdf).toBe(true);
+    });
+
+    it('should follow isDesktopApp', () => {
+      Platform.isDesktopApp = false;
+      expect(Platform.canExportPdf).toBe(false);
+    });
+  });
+
+  describe('canPopoutWindow', () => {
+    it('should be true in the desktop app with a desktop UI', () => {
+      expect(Platform.canPopoutWindow).toBe(true);
+    });
+
+    it('should be false in the desktop app emulating mobile', () => {
+      Platform.isDesktop = false;
+      expect(Platform.canPopoutWindow).toBe(false);
+    });
+
+    it('should be false in the mobile app', () => {
+      Platform.isDesktopApp = false;
+      expect(Platform.canPopoutWindow).toBe(false);
+    });
+  });
+
+  describe.each(['canDisplayRibbon', 'canSplit', 'canStackTabs'] as const)('%s', (member) => {
+    it('should be true off a phone', () => {
+      expect(Platform[member]).toBe(true);
+    });
+
+    it('should be false on a phone', () => {
+      Platform.isPhone = true;
+      expect(Platform[member]).toBe(false);
     });
   });
 });
