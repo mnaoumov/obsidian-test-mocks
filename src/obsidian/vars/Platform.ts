@@ -25,7 +25,7 @@ import { apiVersion } from './apiVersion.ts';
  * Flags describing the platform. The mock reports the desktop app on Windows, with a fixed desktop
  * `resourcePathPrefix`; tests can overwrite the flags to simulate another platform.
  *
- * Beyond the thirteen members `obsidian.d.ts` declares, the mock carries sixteen more that Obsidian's own
+ * Beyond the thirteen members `obsidian.d.ts` declares, the mock carries eighteen more that Obsidian's own
  * `Platform` literal has and `obsidian-typings` declares as `PlatformEx`. Each takes its real name with no
  * `__` suffix (L4), and each is answered the way the desktop app answers it:
  *
@@ -48,6 +48,12 @@ import { apiVersion } from './apiVersion.ts';
  *   (`10.0.26200`); the pairing looks transposed and is not.
  * - `mobileSoftKeyboardVisible` is `false`, `manufacturer` and `model` are `''` — the values the desktop
  *   bundle leaves them at, since nothing outside the mobile app ever assigns them.
+ * - `mobileDeviceHeight` is a **getter** over `window.innerHeight` — the only screen measurement a test
+ *   environment actually has, `window.screen.height` being `0` in jsdom — so a suite that resizes the window
+ *   is believed rather than answered from a frozen constant. It is a browser VIEWPORT rather than a device
+ *   screen, which on a real phone differ by the status and navigation bars. `mobileKeyboardHeight` is `0` as
+ *   a derivation from `mobileSoftKeyboardVisible: false` — a keyboard that is not visible has no height —
+ *   rather than as a placeholder; assign a real height to either to simulate mobile.
  * - `build` is `''`. Obsidian fills it with the INSTALLER version, which moves independently of `version`;
  *   the mock has no honest answer for it, so it asserts the empty string the literal starts from rather
  *   than inventing one.
@@ -87,6 +93,10 @@ export const Platform = {
   isTablet: false,
   isWin: true,
   manufacturer: '',
+  get mobileDeviceHeight(): number {
+    return window.innerHeight;
+  },
+  mobileKeyboardHeight: 0,
   mobileSoftKeyboardVisible: false,
   model: '',
   osName: version(),

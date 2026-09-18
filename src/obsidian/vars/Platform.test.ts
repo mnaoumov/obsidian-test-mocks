@@ -61,6 +61,28 @@ describe('Platform', () => {
     expect(Platform.supportsIndexedDb).toBe(!!window.indexedDB);
   });
 
+  describe('mobileDeviceHeight', () => {
+    it('should report the viewport height the test environment actually has', () => {
+      expect(Platform.mobileDeviceHeight).toBe(window.innerHeight);
+    });
+
+    it('should move with the window, rather than freeze at import time', () => {
+      const originalInnerHeight = window.innerHeight;
+
+      try {
+        window.innerHeight = originalInnerHeight + 100;
+        expect(Platform.mobileDeviceHeight).toBe(originalInnerHeight + 100);
+      } finally {
+        window.innerHeight = originalInnerHeight;
+      }
+    });
+  });
+
+  it('should have mobileKeyboardHeight at 0, coherently with mobileSoftKeyboardVisible being false', () => {
+    expect(Platform.mobileSoftKeyboardVisible).toBe(false);
+    expect(Platform.mobileKeyboardHeight).toBe(0);
+  });
+
   describe('canPinSidebar', () => {
     it('should be false on the desktop defaults', () => {
       expect(Platform.canPinSidebar).toBe(false);
