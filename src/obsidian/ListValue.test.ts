@@ -12,7 +12,6 @@ import { NullValue } from './NullValue.ts';
 import { NumberValue } from './NumberValue.ts';
 import { ObjectValue } from './ObjectValue.ts';
 import { StringValue } from './StringValue.ts';
-import { Value } from './Value.ts';
 
 describe('ListValue', () => {
   it('should carry the list icon', () => {
@@ -432,16 +431,14 @@ describe('ListValue', () => {
       expect(String(new ListValue(['b', 2, 'a', 1]).unique())).toBe('1, 2, b, a');
     });
 
-    // The mock's `Value.equals` compares string forms, so no two real values can share a bucket key and
-    // still be unequal; Obsidian's compares constructors first, where a string `1` and a number `1` do.
+    // `Value.equals` compares the two classes before their contents, so a string `1` and a number `1` share
+    // the bucket key `1` and are still kept apart.
     it('should keep two elements that share a string form but are not equal', () => {
-      const equalsSpy = vi.spyOn(Value, 'equals').mockReturnValue(false);
-      try {
-        const value = new ListValue([new StringValue('1'), new NumberValue(1)]);
-        expect(value.unique().data).toHaveLength(2);
-      } finally {
-        equalsSpy.mockRestore();
-      }
+      const value = new ListValue([new StringValue('1'), new NumberValue(1)]);
+      expect(value.unique().data).toEqual([
+        new StringValue('1'),
+        new NumberValue(1)
+      ]);
     });
 
     it('should not be confused by a key that names an Object.prototype member', () => {
