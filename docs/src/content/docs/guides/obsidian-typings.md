@@ -75,7 +75,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `ProgressBarComponent` | `progressBar` |
 | `RegExpValue` | `regexp` |
 | `RenderContext` | `app`, `renderExternalLink`, `renderFileLink`, `renderTag` |
-| `Setting` | `setAction`, `setNavigable`, `setNoInfo`, `setVisibility` |
+| `Setting` | `disabled`, `iconEl`, `rowClick`, `setAction`, `setIcon`, `setNavigable`, `setNoInfo`, `setRowClick`, `setVisibility` |
 | `SettingGroup` | `components`, `controlEl`, `groupEl`, `headerEl`, `headerInnerEl` |
 | `SettingTab` | `renderTab` |
 | `SliderComponent` | `changeCallback` |
