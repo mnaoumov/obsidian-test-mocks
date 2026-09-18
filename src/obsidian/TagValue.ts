@@ -18,16 +18,16 @@ const NESTED_TAG_SEPARATOR = '/';
 /**
  * Mock of Obsidian's `TagValue`: a string value holding a tag.
  *
- * ONE known departure, tracked separately: Obsidian's constructor overwrites the wrapped text with its
- * `#`-prefixed form, so `new TagValue('alpha').toString()` is `#alpha` there and `alpha` here. It is not
- * what {@link TagValue.tagMatches} compares on — {@link TagValue.lowerTag} normalizes on its own — so the
- * matching below is faithful either way.
+ * The constructor OVERWRITES the wrapped text with its `#`-prefixed form, as Obsidian's does, so
+ * `new TagValue('alpha').toString()` is `#alpha` and `new TagValue('alpha').equals(new TagValue('#alpha'))`
+ * is true. Only the construction hooks still see the text as it was passed in, because Obsidian hands the
+ * raw text to `super` and normalizes afterwards.
  */
 export class TagValue extends StringValue {
   /**
-   * The tag `#`-prefixed and lower-cased, the form {@link TagValue.tagMatches} compares on. Obsidian keeps
-   * the same field, computed once in the constructor, and the mock computes it the same way — from the text
-   * the value was CREATED with, so a later write to `data` does not move it.
+   * The tag lower-cased, the form {@link TagValue.tagMatches} compares on. Obsidian keeps the same field,
+   * computed once in the constructor from the same `#`-prefixed text it writes into `data`, and the mock
+   * computes it the same way — so a later write to `data` does not move it.
    *
    * Private because Obsidian's own name is the only honest one for it (L4) and neither `obsidian.d.ts` nor
    * `obsidian-typings` declares it, which would make a public `lowerTag` a member `conformance.test.ts`'s
@@ -38,11 +38,13 @@ export class TagValue extends StringValue {
   /**
    * Creates a tag value.
    *
-   * @param value - The tag text.
+   * @param value - The tag text, `#`-prefixed or not; {@link TagValue.data} holds it `#`-prefixed either way.
    */
   public constructor(value: string) {
     super(value);
-    this.lowerTag = normalizeTag(value).toLowerCase();
+    const normalizedTag = normalizeTag(value);
+    this.data = normalizedTag;
+    this.lowerTag = normalizedTag.toLowerCase();
     const self = strictProxy(this);
     self.constructor5__(value);
     return self;
@@ -82,7 +84,7 @@ export class TagValue extends StringValue {
    * Mock-only construction hook, called at the end of the constructor; a no-op meant for
    * `vi.spyOn(TagValue.prototype, 'constructor5__')`.
    *
-   * @param _value - The tag text the value was created with.
+   * @param _value - The tag text the value was created with, BEFORE the constructor `#`-prefixed it.
    */
   public constructor5__(_value: string): void {
     noop();

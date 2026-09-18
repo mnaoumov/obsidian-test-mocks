@@ -265,7 +265,7 @@ describe('FileValue', () => {
       expect(props.get('homepage')).toBeInstanceOf(LinkValue);
       expect(props.get('site')).toBeInstanceOf(UrlValue);
       expect(props.get('due')).toBeInstanceOf(DateValue);
-      expect(props.get('tags').toString()).toBe('alpha, #beta');
+      expect(props.get('tags').toString()).toBe('#alpha, #beta');
     });
 
     it('should copy the frontmatter, so evaluating a property never writes into the metadata cache', () => {

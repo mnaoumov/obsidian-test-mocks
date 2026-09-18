@@ -823,12 +823,13 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
       links, then body links, then embeds (`iterateRefsForFile`'s order — an embed is an outgoing link too),
       including links that resolve to nothing; `backlinks` walks `resolvedLinks` and therefore lists only
       resolved ones, once per source note, each shown by that note's short name.
-    - **`tags` and `properties.tags` PRINT differently here, and that one is a known mock gap rather than
-      Obsidian's own.** `tags` goes through `parseFrontMatterTags`, which `#`-prefixes; `properties` wraps
-      the RAW frontmatter, so `tags: [alpha]` reads back as `alpha` there and as `#alpha` in `file.tags`.
-      In Obsidian both print `#alpha`, because its `TagValue` constructor overwrites the wrapped text with
-      the `#`-prefixed form and the frontmatter branch wraps each element in one too. The mock stores the
-      text as given; tracked separately, and it does NOT affect matching, which normalizes on its own.
+    - **`tags` and `properties.tags` both print `#alpha` for a frontmatter `tags: [alpha]`**, by two
+      different routes, as they do in Obsidian. `tags` goes through `parseFrontMatterTags`, which
+      `#`-prefixes the text before a value is built; `properties` wraps the RAW frontmatter, and the
+      `#`-prefix arrives later, from the `TagValue` constructor — it overwrites the wrapped text with its
+      `#`-prefixed form, so `new TagValue('alpha').data` is `#alpha` and only the construction hooks still
+      see the text as passed. The two routes therefore agree on display AND on `equals`, and matching was
+      never in question: `tagMatches` normalizes on its own.
     - **`properties` carries the frontmatter evaluator**, which reads a string property as a wikilink, a URL
       or a date before falling back to the ordinary conversion, and reinstalls itself on every nested list
       and object so those readings reach the whole tree.
