@@ -67,10 +67,12 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 
 - `castTo.ts` — `castTo<T>()` utility for unsafe type bridging
 - `delegated-event-registry.ts` — the delegated `on` / `off` shared by `Document.prototype` and `HTMLElement.prototype`: registrations live on the target's own `_EVENTS` record, under the name `obsidian-typings` declares, and events are filtered through `matchParent` as Obsidian does
+- `front-matter-object-value.ts` — the `ObjectValue` behind `FileValue.getProps`, with the evaluator that reads a frontmatter string as a wikilink, a URL or a date and reinstalls itself on every nested list and object. Obsidian spells it `ObjectValue.fromFrontMatter`, a static NEITHER `obsidian.d.ts` NOR `obsidian-typings` declares, so L1 keeps it off the exported class and L4 forbids the `__` suffix that would claim Obsidian lacks it — the same reasoning that puts `lazy-evaluator.ts` here
 - `html-sanitizer.ts` — the sanitizer behind `sanitizeHTMLToDom`: a port of the DOMPurify 3.0.1 passes Obsidian runs, with Obsidian's config and its two load-time hooks. `html-sanitizer-allowlists.ts` holds DOMPurify's default allowlists, copied from Obsidian's `app.js` (and excluded from cspell)
 - `icon-registry.ts` — shared `Map<string, string>` for icon storage (addIcon, removeIcon, getIcon, etc.). It starts empty: Obsidian's Lucide set and its own glyphs are deliberately not bundled, so their ids resolve to nothing
 - `in-memory-adapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
 - `lazy-evaluator.ts` — the conversion behind `ListValue.lazyEvaluator` and `ObjectValue.lazyEvaluator`: a raw element or property wrapped into a `Value`. Obsidian has ONE such function and installs it on both classes, so it lives here rather than in either of them; it has to construct the classes that call it, which is the one import cycle it carries a waiver for
+- `link-value-from-reference.ts` — a cached link, embed or frontmatter-link reference wrapped as a `LinkValue`, behind `FileValue.getLinks` and `getEmbeds`. Obsidian spells it `LinkValue.fromReference`, undeclared in the same way `front-matter-object-value.ts` describes
 - `noop.ts` — `noop()` / `noopAsync()` helpers for otherwise-empty method bodies (see L2)
 - `plugins.ts` — the community-plugin registry behind `App.plugins`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1, L7)
 - `setting-definition-renderer.ts` — renders declarative setting definitions the way Obsidian 1.13 does; drives `SettingTab.renderTab__()` / `refreshDomState()`
@@ -694,11 +696,25 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     calendar unit depends on the current date; `ObjectValue` REPLACES the list with its own keys and routes
     access to `getInsensitive`, so an unknown key gives `NullValue.value` rather than `null`. Everything else
     inherits the base, which lists nothing and answers `null`.
-  - **`FileValue.objectAccess` is partial, deliberately.** It answers `file`, `name`, `basename`, `fullname`,
-    `path`, `folder`, `ext`, `ctime`, `mtime` and `size`, and `keys()` advertises all fifteen keys Obsidian
-    does — but `links`, `embeds`, `backlinks`, `tags` and `properties` read as `null`, because each needs one
-    of `FileValue.getLinks` / `getEmbeds` / `getBacklinks` / `getTags` / `getProps`, which stay unmocked (L2).
-    `folder` throws when the file has no parent folder, where Obsidian reads it unguarded.
+  - **`FileValue.objectAccess` answers all fifteen keys Obsidian's does.** Ten come off the `TFile` itself;
+    `folder` throws when the file has no parent folder, where Obsidian reads it unguarded. The other five —
+    `links`, `embeds`, `backlinks`, `tags` and `properties` — go through `FileValue.getLinks` / `getEmbeds` /
+    `getBacklinks` / `getTags` / `getProps`, and four of their habits are worth knowing:
+    - **Each accessor MEMOIZES on first call and is never invalidated**, exactly as Obsidian's `_cachedLinks`
+      and its four siblings do. A value built before the vault changed goes on answering what it answered
+      then; build a fresh `FileValue` to see the new state.
+    - **`links` reads the file's OWN cache, `backlinks` reads the link GRAPH.** So `links` lists frontmatter
+      links, then body links, then embeds (`iterateRefsForFile`'s order — an embed is an outgoing link too),
+      including links that resolve to nothing; `backlinks` walks `resolvedLinks` and therefore lists only
+      resolved ones, once per source note, each shown by that note's short name.
+    - **`tags` and `properties.tags` disagree, and Obsidian is what they disagree about.** `tags` goes
+      through `parseFrontMatterTags`, which `#`-prefixes; `properties` wraps the RAW frontmatter, so
+      `tags: [alpha]` reads back as the tag `alpha` there and as `#alpha` in `file.tags`.
+    - **`properties` carries the frontmatter evaluator**, which reads a string property as a wikilink, a URL
+      or a date before falling back to the ordinary conversion, and reinstalls itself on every nested list
+      and object so those readings reach the whole tree. Obsidian answers `tags` with a `ListValue` SUBCLASS
+      carrying the `lucide-tags` icon and a nested-tag-aware `includes`; neither `obsidian.d.ts` nor
+      `obsidian-typings` declares it, both type these as a plain `ListValue`, so that is what the mock gives.
 
 - **`ListValue` does its own aggregating, quirks included** (2026-09-17, `iK` in Obsidian 1.14.2's `app.js`).
   `compare`, `slice`, `reverse`, `flatten`, `sort`, `unique`, `getNumbers`, `getDates`, `earliest`, `latest`,

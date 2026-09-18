@@ -7,16 +7,25 @@
 import type { FileValue as FileValueOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
+import type { ObjectValue } from './ObjectValue.ts';
 import type { TFile } from './TFile.ts';
 import type { Value } from './Value.ts';
 
+import { createFrontMatterObjectValue } from '../internal/front-matter-object-value.ts';
+import { linkValueFromReference } from '../internal/link-value-from-reference.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { DateValue } from './DateValue.ts';
+import { parseFrontMatterTags } from './functions/parseFrontMatterTags.ts';
+import { LinkValue } from './LinkValue.ts';
+import { ListValue } from './ListValue.ts';
 import { NotNullValue } from './NotNullValue.ts';
 import { NumberValue } from './NumberValue.ts';
 import { StringValue } from './StringValue.ts';
+import { TagValue } from './TagValue.ts';
+
+const MD_EXTENSION = 'md';
 
 /**
  * Mock of Obsidian's `FileValue`: a non-null value wrapping a file.
@@ -26,6 +35,22 @@ export class FileValue extends NotNullValue {
    * The lucide icon name standing for this value's type.
    */
   public override icon = 'lucide-file';
+
+  /**
+   * The five accessors' memos, each filled by its accessor's first call and never invalidated, exactly as
+   * Obsidian's `_cachedLinks` and its four siblings are. They keep their unprefixed names because they are
+   * private implementation detail rather than mocked members (L8), and the staleness is the point: a value
+   * read before the vault changed goes on answering what it answered then, in the mock as in the app.
+   */
+  private cachedBacklinks: ListValue | null = null;
+
+  private cachedEmbeds: ListValue | null = null;
+
+  private cachedLinks: ListValue | null = null;
+
+  private cachedProps: null | ObjectValue = null;
+
+  private cachedTags: ListValue | null = null;
 
   /**
    * Creates a file value.
@@ -82,6 +107,108 @@ export class FileValue extends NotNullValue {
   }
 
   /**
+   * Gets the links pointing AT the wrapped file.
+   *
+   * Obsidian walks the metadata cache's whole `resolvedLinks` graph on every call that is not answered
+   * from the memo, so a backlink appears as soon as the source note is indexed — no separate backlink
+   * index is consulted. Only RESOLVED links count: a link that matches no file is not a backlink to
+   * anything.
+   *
+   * @returns A list of `LinkValue`s, one per source note that links here, in the graph's own insertion
+   * order. Each targets the SOURCE note's path, carries an empty source path — so resolving it is
+   * resolving an absolute path — and shows the source note's short name. A note linking here twice
+   * appears once. Memoized: the first call's list is returned forever after, as Obsidian's is.
+   */
+  public getBacklinks(): ListValue {
+    if (this.cachedBacklinks) {
+      return this.cachedBacklinks;
+    }
+    const backlinks = Object.entries(this.app.metadataCache.resolvedLinks)
+      .filter(([, destinations]) => Object.hasOwn(destinations, this.file.path))
+      .map(([sourcePath]) => LinkValue.create2__(this.app, sourcePath, '', StringValue.create__(getShortName(sourcePath))));
+    this.cachedBacklinks = ListValue.create__(backlinks);
+    return this.cachedBacklinks;
+  }
+
+  /**
+   * Gets the file's embeds.
+   *
+   * @returns A list of `LinkValue`s, one per embed in the file's cached metadata, in the order the
+   * parser found them. An unindexed file gives an empty list. Memoized, as {@link FileValue.getBacklinks}
+   * is.
+   */
+  public getEmbeds(): ListValue {
+    if (this.cachedEmbeds) {
+      return this.cachedEmbeds;
+    }
+    const embeds = this.app.metadataCache.getFileCache(this.file)?.embeds ?? [];
+    this.cachedEmbeds = ListValue.create__(embeds.map((embed) => linkValueFromReference(this.app, this.file.path, embed)));
+    return this.cachedEmbeds;
+  }
+
+  /**
+   * Gets the links going OUT of the file.
+   *
+   * Obsidian reads them through `MetadataCache.iterateRefsForFile`, which stays unmocked; the order
+   * below is that method's own — frontmatter links, then body links, then embeds — so an embed counts
+   * as an outgoing link and appears in both this list and {@link FileValue.getEmbeds}. Unlike
+   * {@link FileValue.getBacklinks} this reads the file's own cache rather than the link graph, so a link
+   * that resolves to nothing is still listed.
+   *
+   * @returns A list of `LinkValue`s. An unindexed file gives an empty list. Memoized, as
+   * {@link FileValue.getBacklinks} is.
+   */
+  public getLinks(): ListValue {
+    if (this.cachedLinks) {
+      return this.cachedLinks;
+    }
+    const cache = this.app.metadataCache.getFileCache(this.file);
+    const references = [...cache?.frontmatterLinks ?? [], ...cache?.links ?? [], ...cache?.embeds ?? []];
+    this.cachedLinks = ListValue.create__(references.map((reference) => linkValueFromReference(this.app, this.file.path, reference)));
+    return this.cachedLinks;
+  }
+
+  /**
+   * Gets the file's frontmatter properties.
+   *
+   * @returns An `ObjectValue` over a shallow copy of the frontmatter, carrying the frontmatter evaluator
+   * that reads a string property as a wikilink, a URL or a date and a `tags` property as a list of tags.
+   * An unindexed file, or one with no frontmatter, gives an empty object value. Memoized, as
+   * {@link FileValue.getBacklinks} is.
+   */
+  public getProps(): ObjectValue {
+    if (this.cachedProps) {
+      return this.cachedProps;
+    }
+    const frontMatter = this.app.metadataCache.getFileCache(this.file)?.frontmatter ?? {};
+    this.cachedProps = createFrontMatterObjectValue(this.app, this.file, frontMatter);
+    return this.cachedProps;
+  }
+
+  /**
+   * Gets the file's tags.
+   *
+   * Obsidian answers a `ListValue` SUBCLASS here, with the `lucide-tags` icon and an `includes` that
+   * matches a nested tag against its parent; the subclass is declared in neither `obsidian.d.ts` nor
+   * `obsidian-typings`, which both type this as a plain `ListValue`, so that is what the mock returns.
+   *
+   * @returns A list of `TagValue`s holding the file's body tags followed by its frontmatter tags, each
+   * `#`-prefixed and duplicates dropped. An unindexed file gives an empty list. Memoized, as
+   * {@link FileValue.getBacklinks} is.
+   */
+  public getTags(): ListValue {
+    if (this.cachedTags) {
+      return this.cachedTags;
+    }
+    const cache = this.app.metadataCache.getFileCache(this.file);
+    const bodyTags = (cache?.tags ?? []).map((tag) => tag.tag);
+    const frontMatterTags = parseFrontMatterTags(cache?.frontmatter ?? null) ?? [];
+    const tags = [...new Set([...bodyTags, ...frontMatterTags])];
+    this.cachedTags = ListValue.create__(tags.map((tag) => TagValue.create2__(tag)));
+    return this.cachedTags;
+  }
+
+  /**
    * Tells whether the value counts as true in a Bases formula.
    *
    * @returns Always `true`: a file value is never empty.
@@ -93,8 +220,8 @@ export class FileValue extends NotNullValue {
   /**
    * Lists the property keys {@link FileValue.objectAccess} answers for.
    *
-   * @returns The inherited keys followed by Obsidian's fifteen file keys, the five this mock does not back
-   * included — the list is what the app advertises, not what the mock can answer.
+   * @returns The inherited keys followed by Obsidian's fifteen file keys, every one of which
+   * {@link FileValue.objectAccess} answers.
    */
   public override keys(): string[] {
     return [
@@ -120,23 +247,28 @@ export class FileValue extends NotNullValue {
   /**
    * Reads a named property of the wrapped file.
    *
-   * `links`, `embeds`, `backlinks`, `tags` and `properties` are NOT answered: each needs one of
-   * `FileValue.getLinks`, `getEmbeds`, `getBacklinks`, `getTags` and `getProps`, which stay unmocked (L2),
-   * so they fall through to the base and read as `null` rather than as a list.
-   *
    * @param key - The property key, matched without regard to case.
    * @returns This value itself for `file`; the file's display name, basename, full name, path, folder path
    * or extension as a `StringValue`; its creation or modification time as a `DateValue`; its size as a
-   * `NumberValue`; and otherwise whatever the base answers.
+   * `NumberValue`; the lists {@link FileValue.getLinks}, {@link FileValue.getEmbeds},
+   * {@link FileValue.getBacklinks} and {@link FileValue.getTags} build for `links`, `embeds`, `backlinks`
+   * and `tags`; the object {@link FileValue.getProps} builds for `properties`; and otherwise whatever the
+   * base answers.
    * @throws {Error} For `folder` when the file has no parent folder, where Obsidian reads it unguarded.
    */
   public override objectAccess(key: string): null | Value {
     switch (key.toLowerCase()) {
+      case 'backlinks': {
+        return this.getBacklinks();
+      }
       case 'basename': {
         return StringValue.create__(this.file.basename);
       }
       case 'ctime': {
         return DateValue.create__(new Date(this.file.stat.ctime));
+      }
+      case 'embeds': {
+        return this.getEmbeds();
       }
       case 'ext': {
         return StringValue.create__(this.file.extension);
@@ -150,6 +282,9 @@ export class FileValue extends NotNullValue {
       case 'fullname': {
         return StringValue.create__(this.file.name);
       }
+      case 'links': {
+        return this.getLinks();
+      }
       case 'mtime': {
         return DateValue.create__(new Date(this.file.stat.mtime));
       }
@@ -159,8 +294,14 @@ export class FileValue extends NotNullValue {
       case 'path': {
         return StringValue.create__(this.file.path);
       }
+      case 'properties': {
+        return this.getProps();
+      }
       case 'size': {
         return NumberValue.create__(this.file.stat.size);
+      }
+      case 'tags': {
+        return this.getTags();
       }
       default: {
         return super.objectAccess(key);
@@ -176,4 +317,19 @@ export class FileValue extends NotNullValue {
   public toString(): string {
     return this.file.path;
   }
+}
+
+/**
+ * The display name Obsidian gives a backlink, computed from a PATH rather than from a `TFile` because the
+ * link graph holds nothing else. It is `TFile.getShortName` spelled over a string: the name after the last
+ * `/`, with a `.md` extension dropped and any other extension kept.
+ *
+ * @param path - The vault path of the note the backlink comes from.
+ * @returns Its short name.
+ */
+function getShortName(path: string): string {
+  const name = path.slice(path.lastIndexOf('/') + 1);
+  const dotIndex = name.lastIndexOf('.');
+  const hasExtension = dotIndex > 0 && dotIndex < name.length - 1;
+  return hasExtension && name.slice(dotIndex + 1).toLowerCase() === MD_EXTENSION ? name.slice(0, dotIndex) : name;
 }
