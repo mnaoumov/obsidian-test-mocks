@@ -53,6 +53,31 @@ describe('ObjectValue', () => {
     expect(new ObjectValue(data).data).toBe(data);
   });
 
+  describe('equals', () => {
+    it('should answer true for two values wrapping the SAME object, without walking its keys', () => {
+      const data = { a: 1 };
+      expect(new ObjectValue(data).equals(new ObjectValue(data))).toBe(true);
+    });
+
+    it('should compare key by key, converting raw properties', () => {
+      expect(new ObjectValue({ a: 1, b: 'x' }).equals(new ObjectValue({ a: 1, b: 'x' }))).toBe(true);
+      expect(new ObjectValue({ a: 1 }).equals(new ObjectValue({ a: NumberValue.create__(1) }))).toBe(true);
+      expect(new ObjectValue({ a: 1 }).equals(new ObjectValue({ a: 2 }))).toBe(false);
+    });
+
+    it('should answer false when the key counts differ', () => {
+      expect(new ObjectValue({ a: 1 }).equals(new ObjectValue({ a: 1, b: 2 }))).toBe(false);
+    });
+
+    it('should answer false when the counts match but the key names do not', () => {
+      expect(new ObjectValue({ a: 1 }).equals(new ObjectValue({ b: 1 }))).toBe(false);
+    });
+
+    it('should separate a number from the string that prints the same', () => {
+      expect(new ObjectValue({ a: 1 }).equals(new ObjectValue({ a: '1' }))).toBe(false);
+    });
+  });
+
   describe('isTruthy', () => {
     it('should return false for an empty object', () => {
       expect(new ObjectValue({}).isTruthy()).toBe(false);

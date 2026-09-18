@@ -12,16 +12,16 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
 /**
- * Mock of Obsidian's `Value` base class. It renders nothing, and it compares values by their string form.
+ * Mock of Obsidian's `Value` base class. It renders nothing, and it compares nothing.
  *
- * The string-form comparison is the one MODELLED departure here, and it lives on the two INSTANCE methods
- * alone. Obsidian's base `equals` and `looseEquals` both answer `false` and leave every real comparison to
- * the subclass - ten of them, each over its own fields. The mock answers the whole hierarchy with one
- * comparison of `toString()` output instead.
+ * Both instance comparisons answer `false`, exactly as Obsidian's base does: the base knows of no field to
+ * compare, so every real comparison belongs to the subclass that owns one. `PrimitiveValue`, `NullValue`,
+ * `ListValue`, `ObjectValue`, `DateValue`, `DurationValue`, `FileValue`, `UrlValue` and `LinkValue` each
+ * override accordingly; everything else in the hierarchy inherits one of those or, like `RegExpValue`,
+ * inherits this `false`.
  *
- * The two STATICS are Obsidian's own, verbatim, and carry the class test that keeps that departure from
- * leaking across types: without it a `StringValue('1')` would equal a `NumberValue(1)`, because both print
- * `1`. So the pair is coherent rather than at odds - the departure is what makes the class test load-bearing.
+ * The two STATICS are Obsidian's own, verbatim, and they are what a caller should reach for: they answer
+ * identity and missing values first, and compare the two classes before handing over to the instance pair.
  */
 export abstract class Value {
   /**
@@ -53,8 +53,9 @@ export abstract class Value {
    * `null` one, so an `undefined` the declared signature does not admit, but a JavaScript consumer can still
    * pass, is answered rather than dereferenced.
    *
-   * The class test is not decoration - it is what keeps the instance `equals`'s string-form departure honest.
-   * Without it a `StringValue('1')` would equal a `NumberValue(1)`, because both print `1`.
+   * The class test is what lets each subclass's `equals` assume the other side is its own shape:
+   * `PrimitiveValue.equals` reads `other.data`, `DateValue.equals` reads `other.time`, and neither has to
+   * guard, because a value of another class never reaches them through this static.
    *
    * @param this - Unused; declared `void` so the function can be passed on as a comparator, which
    * {@link ListValue.compare} does.
@@ -82,9 +83,9 @@ export abstract class Value {
    * `equals` above describes - and otherwise strict equality is tried first, then `a.looseEquals(b)`, then
    * `b.looseEquals(a)`.
    *
-   * BOTH directions are tried, which is what lets a one-element `ListValue` unwrap against a non-list
-   * whichever side it is passed on - `ListValue` is the only class here that overrides `looseEquals`, so it
-   * is also the only one whose two directions can disagree.
+   * BOTH directions are tried, and that matters wherever the two sides' overrides disagree: it is what lets
+   * a one-element `ListValue` unwrap against a non-list whichever side it is passed on, and what lets a
+   * `DateValue` and a `StringValue` holding its text compare equal in either order.
    *
    * @param this - Unused; declared `void` so the function can be passed on as a comparator, which
    * {@link ListValue.compare} does.
@@ -115,14 +116,13 @@ export abstract class Value {
   }
 
   /**
-   * Compares this value with another of the same type. The mock compares their string forms, where Obsidian's
-   * base answers `false` and each subclass compares its own fields; see the class doc for why.
+   * Compares this value with another of the same type.
    *
-   * @param other - The value to compare with.
-   * @returns Whether the values are equal.
+   * @param _other - The value to compare with.
+   * @returns `false`: the base value has no field to compare, so a subclass that has one overrides this.
    */
-  public equals(other: this): boolean {
-    return this.toString() === other.toString();
+  public equals(_other: this): boolean {
+    return false;
   }
 
   /**
@@ -143,14 +143,14 @@ export abstract class Value {
   }
 
   /**
-   * Compares this value with a value of any type. The mock compares their string forms, where Obsidian's base
-   * answers `false` and each subclass loosens its own comparison; see the class doc for why.
+   * Compares this value with a value of any type.
    *
-   * @param other - The value to compare with.
-   * @returns Whether the values are loosely equal.
+   * @param _other - The value to compare with.
+   * @returns `false`: the base value has no field to compare, so a subclass that loosens its own comparison
+   * overrides this.
    */
-  public looseEquals(other: Value): boolean {
-    return this.toString() === other.toString();
+  public looseEquals(_other: Value): boolean {
+    return false;
   }
 
   /**

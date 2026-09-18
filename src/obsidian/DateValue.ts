@@ -12,6 +12,7 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { NotNullValue } from './NotNullValue.ts';
 import { NumberValue } from './NumberValue.ts';
+import { StringValue } from './StringValue.ts';
 import { moment } from './vars/moment.ts';
 
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -108,6 +109,17 @@ export class DateValue extends NotNullValue {
   }
 
   /**
+   * Compares this date with another, as Obsidian does: by instant, not by how the two print.
+   *
+   * @param other - The date to compare with.
+   * @returns Whether both show their time or both do not, AND both stand for the same instant. So two
+   * values a second apart are unequal even without their time, where their printed forms agree.
+   */
+  public override equals(other: this): boolean {
+    return this.time === other.time && this.date.getTime() === other.date.getTime();
+  }
+
+  /**
    * Checks whether the value counts as true in a Bases formula.
    *
    * @returns Always `true`: a date is truthy.
@@ -133,6 +145,31 @@ export class DateValue extends NotNullValue {
       'millisecond',
       'timestamp'
     ];
+  }
+
+  /**
+   * Loosely compares this date with a value of any type, as Obsidian does.
+   *
+   * A `StringValue` is parsed through {@link DateValue.parseFromString} first, so `DateValue` loosely
+   * equals the text it would be read back from. Unlike {@link DateValue.equals}, the two sides need not
+   * agree about showing their time: when either hides it, both are compared at their {@link
+   * DateValue.dateOnly}, so a timestamped value loosely equals the plain day it falls on.
+   *
+   * @param other - The value to compare with.
+   * @returns Whether `other` is - or parses to - a date standing for the same instant, at whichever
+   * precision the two share.
+   */
+  public override looseEquals(other: Value): boolean {
+    let compared = other;
+    if (compared instanceof StringValue) {
+      compared = DateValue.parseFromString(compared.data) ?? compared;
+    }
+    if (!(compared instanceof DateValue)) {
+      return false;
+    }
+    return this.time && compared.time
+      ? this.date.getTime() === compared.date.getTime()
+      : this.dateOnly().date.getTime() === compared.dateOnly().date.getTime();
   }
 
   /**

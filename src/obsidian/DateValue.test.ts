@@ -5,6 +5,8 @@ import {
 } from 'vitest';
 
 import { DateValue } from './DateValue.ts';
+import { NumberValue } from './NumberValue.ts';
+import { StringValue } from './StringValue.ts';
 import { moment } from './vars/moment.ts';
 
 describe('DateValue', () => {
@@ -133,6 +135,52 @@ describe('DateValue', () => {
     it('should return the same value when it has no time', () => {
       const value = DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS), false);
       expect(value.dateOnly()).toBe(value);
+    });
+  });
+
+  describe('equals', () => {
+    it('should compare the instant and whether the time is shown', () => {
+      const value = DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS), true);
+      expect(value.equals(DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS), true))).toBe(true);
+      expect(value.equals(DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS + 1), true))).toBe(false);
+      expect(value.equals(DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS), false))).toBe(false);
+    });
+
+    it('should separate two instants that print identically', () => {
+      const MILLISECOND = 1;
+      const a = DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS, 0), true);
+      const b = DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS, MILLISECOND), true);
+      expect(String(a)).toBe(String(b));
+      expect(a.equals(b)).toBe(false);
+    });
+  });
+
+  describe('looseEquals', () => {
+    it('should compare the instant when both sides show their time', () => {
+      const value = DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS), true);
+      expect(value.looseEquals(DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS), true))).toBe(true);
+      expect(value.looseEquals(DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS + 1), true))).toBe(false);
+    });
+
+    it('should compare the day alone when either side hides its time', () => {
+      const withTime = DateValue.create__(new Date(YEAR, JANUARY, DAY, HOURS, MINUTES, SECONDS), true);
+      const withoutTime = DateValue.create__(new Date(YEAR, JANUARY, DAY), false);
+      expect(withTime.equals(withoutTime)).toBe(false);
+      expect(withTime.looseEquals(withoutTime)).toBe(true);
+      expect(withoutTime.looseEquals(withTime)).toBe(true);
+      expect(withoutTime.looseEquals(DateValue.create__(new Date(YEAR, JANUARY, DAY + 1), false))).toBe(false);
+    });
+
+    it('should parse a string value into a date first', () => {
+      const value = DateValue.create__(new Date(YEAR, JANUARY, DAY), false);
+      expect(value.looseEquals(new StringValue('2024-01-05'))).toBe(true);
+      expect(value.looseEquals(new StringValue('2024-01-06'))).toBe(false);
+    });
+
+    it('should answer false for a string that is no date, and for a value of another type', () => {
+      const value = DateValue.create__(new Date(YEAR, JANUARY, DAY), false);
+      expect(value.looseEquals(new StringValue('not a date'))).toBe(false);
+      expect(value.looseEquals(new NumberValue(0))).toBe(false);
     });
   });
 

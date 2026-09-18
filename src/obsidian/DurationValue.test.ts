@@ -10,6 +10,8 @@ import {
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { DateValue } from './DateValue.ts';
 import { DurationValue } from './DurationValue.ts';
+import { NumberValue } from './NumberValue.ts';
+import { StringValue } from './StringValue.ts';
 import { moment } from './vars/moment.ts';
 
 type Components = [number, number, number, number, number, number, number];
@@ -136,6 +138,32 @@ describe('DurationValue', () => {
     });
   });
 
+  describe('equals', () => {
+    it('should compare all seven components', () => {
+      const value = DurationValue.create__(1, 2, 3, 4, 5, 6, 7);
+      expect(value.equals(DurationValue.create__(1, 2, 3, 4, 5, 6, 7))).toBe(true);
+      const differing: Components[] = [
+        [9, 2, 3, 4, 5, 6, 7],
+        [1, 9, 3, 4, 5, 6, 7],
+        [1, 2, 9, 4, 5, 6, 7],
+        [1, 2, 3, 9, 5, 6, 7],
+        [1, 2, 3, 4, 9, 6, 7],
+        [1, 2, 3, 4, 5, 9, 7],
+        [1, 2, 3, 4, 5, 6, 9]
+      ];
+      for (const components of differing) {
+        expect(value.equals(DurationValue.create__(...components))).toBe(false);
+      }
+    });
+
+    it('should separate two durations moment humanizes the same way', () => {
+      const a = DurationValue.create__(0, 0, 0, 0, 0, 1, 0);
+      const b = DurationValue.create__(0, 0, 0, 0, 0, 2, 0);
+      expect(String(a)).toBe(String(b));
+      expect(a.equals(b)).toBe(false);
+    });
+  });
+
   describe('with a fixed clock', () => {
     beforeEach(() => {
       vi.useFakeTimers();
@@ -155,6 +183,28 @@ describe('DurationValue', () => {
         const DAYS_IN_FEBRUARY_2023 = 28;
         const MILLISECONDS_IN_DAY = 86_400_000;
         expect(DurationValue.create__(0, 1, 0, 0, 0, 0, 0).getMilliseconds()).toBe(DAYS_IN_FEBRUARY_2023 * MILLISECONDS_IN_DAY);
+      });
+    });
+
+    describe('looseEquals', () => {
+      it('should compare by length, joining units that equals separates', () => {
+        const DAYS_IN_FEBRUARY_2023 = 28;
+        const month = DurationValue.create__(0, 1, 0, 0, 0, 0, 0);
+        const days = DurationValue.create__(0, 0, DAYS_IN_FEBRUARY_2023, 0, 0, 0, 0);
+        expect(month.equals(days)).toBe(false);
+        expect(month.looseEquals(days)).toBe(true);
+      });
+
+      it('should parse a string value into a duration first', () => {
+        const value = DurationValue.create__(0, 0, 3, 0, 0, 0, 0);
+        expect(value.looseEquals(new StringValue('3 days'))).toBe(true);
+        expect(value.looseEquals(new StringValue('4 days'))).toBe(false);
+      });
+
+      it('should answer false for a string that is no duration, and for a value of another type', () => {
+        const value = DurationValue.create__(0, 0, 3, 0, 0, 0, 0);
+        expect(value.looseEquals(new StringValue('not a duration'))).toBe(false);
+        expect(value.looseEquals(new NumberValue(0))).toBe(false);
       });
     });
 

@@ -89,6 +89,6 @@ export class StringValue extends PrimitiveValue<string> {
    * @returns The string's length as a `NumberValue` for `length`, and otherwise whatever the base answers.
    */
   public override objectAccess(key: string): null | Value {
-    return key.toLowerCase() === 'length' ? NumberValue.create__(this.value__.length) : super.objectAccess(key);
+    return key.toLowerCase() === 'length' ? NumberValue.create__(this.data.length) : super.objectAccess(key);
   }
 }

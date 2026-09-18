@@ -68,6 +68,17 @@ export class NullValue extends Value {
   }
 
   /**
+   * Compares this value with another null value, as Obsidian does.
+   *
+   * @param _other - The value to compare with; only another `NullValue` ever reaches here, because
+   * {@link Value.equals}'s class test runs first.
+   * @returns Always `true`: one null is every other null.
+   */
+  public override equals(_other: this): boolean {
+    return true;
+  }
+
+  /**
    * Reports whether the value counts as true in a condition; null never does.
    *
    * @returns Always `false`.

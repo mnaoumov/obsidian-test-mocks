@@ -27,7 +27,7 @@ export class TagValue extends StringValue {
   /**
    * The tag `#`-prefixed and lower-cased, the form {@link TagValue.tagMatches} compares on. Obsidian keeps
    * the same field, computed once in the constructor, and the mock computes it the same way — from the text
-   * the value was CREATED with, so a later write to `value__` does not move it.
+   * the value was CREATED with, so a later write to `data` does not move it.
    *
    * Private because Obsidian's own name is the only honest one for it (L4) and neither `obsidian.d.ts` nor
    * `obsidian-typings` declares it, which would make a public `lowerTag` a member `conformance.test.ts`'s
@@ -106,7 +106,7 @@ export class TagValue extends StringValue {
     if (!(value instanceof StringValue)) {
       return false;
     }
-    const otherLowerTag = value instanceof TagValue ? value.lowerTag : normalizeTag(value.value__).toLowerCase();
+    const otherLowerTag = value instanceof TagValue ? value.lowerTag : normalizeTag(value.data).toLowerCase();
     return this.lowerTag.startsWith(otherLowerTag)
       && (this.lowerTag.length === otherLowerTag.length || this.lowerTag.charAt(otherLowerTag.length) === NESTED_TAG_SEPARATOR);
   }

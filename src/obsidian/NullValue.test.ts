@@ -7,6 +7,8 @@ import {
 } from 'vitest';
 
 import { NullValue } from './NullValue.ts';
+import { StringValue } from './StringValue.ts';
+import { Value } from './Value.ts';
 
 describe('NullValue', () => {
   it('should create an instance via create__', () => {
@@ -22,6 +24,20 @@ describe('NullValue', () => {
   it('should return empty string for toString', () => {
     const value = new NullValue();
     expect(String(value)).toBe('');
+  });
+
+  describe('equals', () => {
+    it('should treat one null as every other null', () => {
+      expect(NullValue.value.equals(NullValue.create__())).toBe(true);
+      expect(Value.equals(NullValue.value, NullValue.create__())).toBe(true);
+    });
+  });
+
+  describe('looseEquals', () => {
+    it('should answer nothing but another null, which is the base answer', () => {
+      expect(NullValue.value.looseEquals(new StringValue(''))).toBe(false);
+      expect(Value.looseEquals(NullValue.value, NullValue.create__())).toBe(true);
+    });
   });
 
   describe('value', () => {

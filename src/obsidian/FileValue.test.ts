@@ -13,6 +13,7 @@ import { LinkValue } from './LinkValue.ts';
 import { ListValue } from './ListValue.ts';
 import { NumberValue } from './NumberValue.ts';
 import { ObjectValue } from './ObjectValue.ts';
+import { StringValue } from './StringValue.ts';
 import { TagValue } from './TagValue.ts';
 import { UrlValue } from './UrlValue.ts';
 
@@ -181,7 +182,7 @@ describe('FileValue', () => {
     it('should target the source note\'s path with an empty source path', () => {
       const value = createNoteValue(createLinkedVault(), 'Target.md');
       const backlink = value.getBacklinks().get(0) as LinkValue;
-      expect(backlink.value__).toBe('folder/test.md');
+      expect(backlink.data).toBe('folder/test.md');
       expect(backlink.sourcePath).toBe('');
     });
 
@@ -282,6 +283,32 @@ describe('FileValue', () => {
     it('should answer the same object every time', () => {
       const value = createNoteValue(createLinkedVault(), 'folder/test.md');
       expect(value.getProps()).toBe(value.getProps());
+    });
+  });
+
+  describe('equals', () => {
+    it('should compare the wrapped file by identity', () => {
+      const app = App.createConfigured__({
+        files: {
+          'a.md': '',
+          'b.md': ''
+        }
+      });
+      const value = createNoteValue(app, 'a.md');
+      expect(value.equals(createNoteValue(app, 'a.md'))).toBe(true);
+      expect(value.equals(createNoteValue(app, 'b.md'))).toBe(false);
+    });
+  });
+
+  describe('looseEquals', () => {
+    it('should answer a string value holding the full path of the file', () => {
+      const value = createFileValue();
+      expect(value.looseEquals(new StringValue('folder/test.md'))).toBe(true);
+      expect(value.looseEquals(new StringValue('test.md'))).toBe(false);
+    });
+
+    it('should answer nothing else from this side', () => {
+      expect(createFileValue().looseEquals(NumberValue.create__(0))).toBe(false);
     });
   });
 

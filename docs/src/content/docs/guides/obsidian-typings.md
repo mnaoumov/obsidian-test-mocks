@@ -59,7 +59,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `FileManager` | `app` |
 | `FileValue` | `app`, `file`, `getBacklinks`, `getEmbeds`, `getLinks`, `getProps`, `getTags` |
 | `FileView` | `loadFile` |
-| `LinkValue` | `app`, `display`, `sourcePath` |
+| `LinkValue` | `app`, `display`, `resolve`, `sourcePath` |
 | `ListValue` | `compare`, `data`, `earliest`, `flatten`, `getDates`, `getNumbers`, `join`, `latest`, `lazyEvaluator`, `max`, `mean`, `median`, `min`, `reverse`, `slice`, `sort`, `stddev`, `sum`, `unique` |
 | `MarkdownEditView` | `type`, `view` |
 | `MarkdownPreviewView` | `onload`, `type` |
@@ -71,6 +71,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `Modal` | `bgEl`, `headerEl` |
 | `ObjectValue` | `data`, `getInsensitive`, `lazyEvaluator`, `valuesRaw` |
 | `PopoverSuggest` | `isOpen` |
+| `PrimitiveValue` | `data` |
 | `ProgressBarComponent` | `progressBar` |
 | `Setting` | `setAction`, `setNavigable`, `setNoInfo`, `setVisibility` |
 | `SettingGroup` | `components`, `controlEl`, `groupEl`, `headerEl`, `headerInnerEl` |
@@ -82,6 +83,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `TFile` | `getShortName`, `name` |
 | `TFolder` | `getParentPrefix` |
 | `ToggleComponent` | `changeCallback`, `on` |
+| `UrlValue` | `display` |
 | `Value` | `icon`, `keys`, `objectAccess` |
 | `Vault` | `config`, `exists`, `fileMap`, `getAbstractFileByPathInsensitive`, `getAvailablePath`, `getAvailablePathForAttachments`, `getConfig`, `setConfig` |
 | `View` | `close`, `open` |

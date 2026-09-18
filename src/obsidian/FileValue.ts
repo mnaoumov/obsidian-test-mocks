@@ -11,6 +11,7 @@ import type { ObjectValue } from './ObjectValue.ts';
 import type { TFile } from './TFile.ts';
 import type { Value } from './Value.ts';
 
+import { markFileValue } from '../internal/file-value-registry.ts';
 import { createFrontMatterObjectValue } from '../internal/front-matter-object-value.ts';
 import { linkValueFromReference } from '../internal/link-value-from-reference.ts';
 import { noop } from '../internal/noop.ts';
@@ -60,6 +61,7 @@ export class FileValue extends NotNullValue {
    */
   public constructor(public app: App, public file: TFile) {
     super();
+    markFileValue(this);
     const self = strictProxy(this);
     self.constructor3__(app, file);
     return self;
@@ -104,6 +106,20 @@ export class FileValue extends NotNullValue {
    */
   public constructor3__(_app: App, _file: TFile): void {
     noop();
+  }
+
+  /**
+   * Compares this file with another, as Obsidian does: by `TFile` IDENTITY, not by path.
+   *
+   * Two `FileValue`s built from the same path therefore compare unequal unless the vault handed both the
+   * same `TFile` — which it does, since a vault keeps one `TFile` per path, but a hand-built `TFile` in a
+   * test does not.
+   *
+   * @param other - The file value to compare with.
+   * @returns Whether both wrap the same `TFile` object.
+   */
+  public override equals(other: this): boolean {
+    return this.file === other.file;
   }
 
   /**
@@ -241,6 +257,21 @@ export class FileValue extends NotNullValue {
       'tags',
       'properties'
     ];
+  }
+
+  /**
+   * Loosely compares this file with a value of any type, as Obsidian does: against a `StringValue` holding
+   * this file's path.
+   *
+   * Nothing else loosely equals a file from THIS side - not another `FileValue`, which is why two values
+   * wrapping different `TFile`s of one path stay unequal. A `LinkValue` resolving here does match, but
+   * through its own override, which {@link Value.looseEquals} reaches by trying both directions.
+   *
+   * @param other - The value to compare with.
+   * @returns Whether `other` is a `StringValue` holding this file's full path.
+   */
+  public override looseEquals(other: Value): boolean {
+    return other instanceof StringValue && this.file.path === other.data;
   }
 
   /**

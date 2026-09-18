@@ -40,12 +40,12 @@ describe('StringValue', () => {
 
   it('should default to empty string', () => {
     const value = new StringValue();
-    expect(value.value__).toBe('');
+    expect(value.data).toBe('');
   });
 
   it('should accept a value', () => {
     const value = new StringValue('hello');
-    expect(value.value__).toBe('hello');
+    expect(value.data).toBe('hello');
   });
 
   it('should return false for isTruthy when empty', () => {
