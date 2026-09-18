@@ -7,7 +7,9 @@ import {
   vi
 } from 'vitest';
 
+import { App } from './App.ts';
 import { NumberValue } from './NumberValue.ts';
+import { RenderContext } from './RenderContext.ts';
 import { StringValue } from './StringValue.ts';
 import { TagValue } from './TagValue.ts';
 
@@ -105,6 +107,21 @@ describe('TagValue', () => {
       const value = TagValue.create2__('#tag');
       const mock = TagValue.fromOriginalType5__(value.asOriginalType5__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should render the tag through the context, as an anchor without the leading hash', () => {
+      const context = RenderContext.create__(App.createConfigured__());
+      const renderTagSpy = vi.spyOn(context, 'renderTag');
+
+      const el = createDiv();
+      new TagValue('parent/child').renderTo(el, context);
+
+      expect(renderTagSpy).toHaveBeenCalledWith('#parent/child', el);
+      const anchorEl = el.find('a');
+      expect(anchorEl.className).toBe('tag');
+      expect(anchorEl.textContent).toBe('parent/child');
     });
   });
 });

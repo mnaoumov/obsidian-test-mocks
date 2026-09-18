@@ -8,6 +8,7 @@ import type { FileValue as FileValueOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
 import type { ObjectValue } from './ObjectValue.ts';
+import type { RenderContext } from './RenderContext.ts';
 import type { TFile } from './TFile.ts';
 import type { Value } from './Value.ts';
 
@@ -342,6 +343,21 @@ export class FileValue extends NotNullValue {
         return super.objectAccess(key);
       }
     }
+  }
+
+  /**
+   * Renders the file into an element, as Obsidian does: through {@link RenderContext.renderFileLink}, which
+   * builds the internal link the app shows.
+   *
+   * The `TFile` itself is handed over rather than its path, so the link resolves by identity and never has to
+   * be looked up - which is also why it can never render as unresolved. No display value is passed, so the
+   * link shows the file's short name.
+   *
+   * @param el - The element to render into.
+   * @param context - The rendering context, which owns the link markup.
+   */
+  public override renderTo(el: HTMLElement, context: RenderContext): void {
+    context.renderFileLink(this.file, null, el);
   }
 
   /**

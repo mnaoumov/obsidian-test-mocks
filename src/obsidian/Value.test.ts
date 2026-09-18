@@ -265,12 +265,28 @@ describe('Value', () => {
   });
 
   describe('renderTo', () => {
-    it('should not throw', () => {
-      const app = App.createConfigured__();
-      const value = new StringValue('test');
-      expect(() => {
-        value.renderTo(createDiv(), RenderContext.create__(app));
-      }).not.toThrow();
+    it('should write the value string form into the element, as Obsidian base does', () => {
+      const el = createDiv();
+      new BareValue().renderTo(el, RenderContext.create__(App.createConfigured__()));
+      expect(el.textContent).toBe('bare');
+    });
+
+    it('should be what the value types Obsidian gives no override of their own render with', () => {
+      const context = RenderContext.create__(App.createConfigured__());
+
+      const objectValue = new ObjectValue({ a: 1 });
+      const objectEl = createDiv();
+      objectValue.renderTo(objectEl, context);
+      expect(objectEl.textContent).toBe(objectValue.toString());
+
+      const regExpEl = createDiv();
+      new RegExpValue(/ab+c/giu).renderTo(regExpEl, context);
+      expect(regExpEl.textContent).toBe('/ab+c/giu');
+
+      const duration = new DurationValue(0, 0, 2, 0, 0, 0, 0);
+      const durationEl = createDiv();
+      duration.renderTo(durationEl, context);
+      expect(durationEl.textContent).toBe(duration.toString());
     });
   });
 

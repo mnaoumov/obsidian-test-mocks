@@ -1,7 +1,8 @@
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
 import { TagsListValue } from '../internal/tags-list-value.ts';
@@ -13,6 +14,7 @@ import { LinkValue } from './LinkValue.ts';
 import { ListValue } from './ListValue.ts';
 import { NumberValue } from './NumberValue.ts';
 import { ObjectValue } from './ObjectValue.ts';
+import { RenderContext } from './RenderContext.ts';
 import { StringValue } from './StringValue.ts';
 import { TagValue } from './TagValue.ts';
 import { UrlValue } from './UrlValue.ts';
@@ -405,6 +407,24 @@ describe('FileValue', () => {
       const value = createFileValue();
       const mock = FileValue.fromOriginalType3__(value.asOriginalType3__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should render the file through the context, handing over the TFile itself', () => {
+      const app = App.createConfigured__({ files: { 'Folder/Note.md': '' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('Folder/Note.md'));
+      const context = RenderContext.create__(app);
+      const renderFileLinkSpy = vi.spyOn(context, 'renderFileLink');
+
+      const el = createDiv();
+      FileValue.create__(app, file).renderTo(el, context);
+
+      expect(renderFileLinkSpy).toHaveBeenCalledWith(file, null, el);
+      const linkEl = el.find('.internal-link');
+      expect(linkEl.textContent).toBe('Note');
+      expect(linkEl.getAttr('data-href')).toBe('Folder/Note.md');
+      expect(linkEl.hasClass('is-unresolved')).toBe(false);
     });
   });
 });

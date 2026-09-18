@@ -46,7 +46,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | --- | --- |
 | `AbstractInputSuggest` | `selectCb`, `textInputEl` |
 | `AbstractTextComponent` | `changeCallback` |
-| `App` | `appId`, `changeTheme`, `getTheme`, `isMobile`, `plugins`, `setTheme`, `viewRegistry` |
+| `App` | `appId`, `changeTheme`, `fixFileLinks`, `getTheme`, `isMobile`, `plugins`, `setTheme`, `viewRegistry` |
 | `BasesViewConfig` | `setOrder` |
 | `ButtonComponent` | `setLoading` |
 | `ColorComponent` | `changeCallback`, `colorPickerEl` |
@@ -74,6 +74,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `PrimitiveValue` | `data` |
 | `ProgressBarComponent` | `progressBar` |
 | `RegExpValue` | `regexp` |
+| `RenderContext` | `app`, `renderExternalLink`, `renderFileLink`, `renderTag` |
 | `Setting` | `setAction`, `setNavigable`, `setNoInfo`, `setVisibility` |
 | `SettingGroup` | `components`, `controlEl`, `groupEl`, `headerEl`, `headerInnerEl` |
 | `SettingTab` | `renderTab` |

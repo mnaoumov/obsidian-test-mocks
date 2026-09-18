@@ -4,8 +4,10 @@ import {
   it
 } from 'vitest';
 
+import { App } from './App.ts';
 import { DateValue } from './DateValue.ts';
 import { NumberValue } from './NumberValue.ts';
+import { RenderContext } from './RenderContext.ts';
 import { StringValue } from './StringValue.ts';
 import { moment } from './vars/moment.ts';
 
@@ -227,6 +229,32 @@ describe('DateValue', () => {
       const value = DateValue.create__(new Date());
       const mock = DateValue.fromOriginalType3__(value.asOriginalType3__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should render a disabled datetime-local input when the time is shown', () => {
+      const value = new DateValue(new Date(2024, 0, 2, 3, 4, 5));
+      const el = createDiv();
+      value.renderTo(el, RenderContext.create__(App.createConfigured__()));
+
+      const inputEl = el.find('input') as HTMLInputElement;
+      expect(inputEl.getAttr('type')).toBe('datetime-local');
+      expect(inputEl.value).toBe(value.toString());
+      expect(inputEl.getAttr('step')).toBe('any');
+      expect(inputEl.hasAttribute('disabled')).toBe(true);
+      expect(inputEl.className).toBe('metadata-input metadata-input-text mod-datetime');
+    });
+
+    it('should render a disabled date input when the time is hidden', () => {
+      const value = new DateValue(new Date(2024, 0, 2), false);
+      const el = createDiv();
+      value.renderTo(el, RenderContext.create__(App.createConfigured__()));
+
+      const inputEl = el.find('input') as HTMLInputElement;
+      expect(inputEl.getAttr('type')).toBe('date');
+      expect(inputEl.value).toBe('2024-01-02');
+      expect(inputEl.className).toBe('metadata-input metadata-input-text mod-date');
     });
   });
 });

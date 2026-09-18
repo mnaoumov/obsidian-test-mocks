@@ -6,6 +6,8 @@
 
 import type { ListValue as ListValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
+
 import { isNumber } from '../globals/Number.ts';
 // eslint-disable-next-line import-x/no-cycle -- The shared conversion constructs this class, exactly as Obsidian's own does.
 import { lazyEvaluate } from '../internal/lazy-evaluator.ts';
@@ -428,6 +430,29 @@ export class ListValue extends NotNullValue {
    */
   public override objectAccess(key: string): null | Value {
     return key.toLowerCase() === 'length' ? NumberValue.create__(this.data.length) : super.objectAccess(key);
+  }
+
+  /**
+   * Renders the list into an element, as Obsidian does: a `.value-list-container` div holding one
+   * `.value-list-element` span per item, with a `.value-list-gap` span carrying a newline between each pair.
+   *
+   * Each element is rendered by the item's OWN `renderTo`, with the same context, so a list of links renders
+   * links and a nested list nests another container. Items are read through {@link ListValue.get}, which is
+   * what evaluates a raw element into a `Value` first - so a list built from raw data renders the same way
+   * one built from values does.
+   *
+   * @param el - The element to render into.
+   * @param context - The rendering context, passed on to each element.
+   */
+  public override renderTo(el: HTMLElement, context: RenderContext): void {
+    const containerEl = el.createDiv('value-list-container');
+    const length = this.data.length;
+    for (let index = 0; index < length; index++) {
+      this.get(index).renderTo(containerEl.createSpan('value-list-element'), context);
+      if (index < length - 1) {
+        containerEl.createSpan('value-list-gap').setText('\n');
+      }
+    }
   }
 
   /**

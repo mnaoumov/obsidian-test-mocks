@@ -4,7 +4,9 @@ import {
   it
 } from 'vitest';
 
+import { App } from './App.ts';
 import { BooleanValue } from './BooleanValue.ts';
+import { RenderContext } from './RenderContext.ts';
 
 describe('BooleanValue', () => {
   it('should carry the boolean icon', () => {
@@ -67,6 +69,24 @@ describe('BooleanValue', () => {
       const value = BooleanValue.create__();
       const mock = BooleanValue.fromOriginalType4__(value.asOriginalType4__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it.each([true, false])('should render a disabled checkbox checked %s', (data) => {
+      const el = createDiv();
+      new BooleanValue(data).renderTo(el, RenderContext.create__(App.createConfigured__()));
+      const inputEl = el.find('input');
+      expect(inputEl).toBeInstanceOf(HTMLInputElement);
+      expect(inputEl.getAttr('type')).toBe('checkbox');
+      expect(inputEl.hasAttribute('disabled')).toBe(true);
+      expect((inputEl as HTMLInputElement).checked).toBe(data);
+    });
+
+    it('should set checked as a property, leaving the attribute absent as Obsidian does', () => {
+      const el = createDiv();
+      new BooleanValue(true).renderTo(el, RenderContext.create__(App.createConfigured__()));
+      expect(el.find('input').hasAttribute('checked')).toBe(false);
     });
   });
 });

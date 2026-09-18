@@ -194,13 +194,19 @@ export abstract class Value {
   }
 
   /**
-   * Renders the value into an element. A no-op in the mock.
+   * Renders the value into an element, as Obsidian's base does: it writes the value's string form into the
+   * element and nothing else.
    *
-   * @param _el - The element to render into.
-   * @param _context - The rendering context.
+   * Every subclass that renders something richer overrides this, and the five that render their string form -
+   * `NotNullValue`, `PrimitiveValue`, `ObjectValue`, `DurationValue` and `RegExpValue` - get NO override here,
+   * exactly as they get none in Obsidian. `NullValue` is the one subclass that overrides it back to nothing.
+   *
+   * @param el - The element to render into.
+   * @param _context - The rendering context. Unused by the base; the subclasses that render a link or a
+   * nested value read it.
    */
-  public renderTo(_el: HTMLElement, _context: RenderContext): void {
-    noop();
+  public renderTo(el: HTMLElement, _context: RenderContext): void {
+    el.setText(this.toString());
   }
 
   /**

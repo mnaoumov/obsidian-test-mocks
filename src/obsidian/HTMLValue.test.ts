@@ -3,10 +3,13 @@ import type { HTMLValue as HTMLValueOriginal } from 'obsidian';
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
+import { App } from './App.ts';
 import { HTMLValue } from './HTMLValue.ts';
+import { RenderContext } from './RenderContext.ts';
 
 describe('HTMLValue', () => {
   it('should carry the code icon', () => {
@@ -41,6 +44,35 @@ describe('HTMLValue', () => {
       const value = HTMLValue.create2__();
       const mock = HTMLValue.fromOriginalType5__(value.asOriginalType5__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should append the sanitized HTML', () => {
+      const app = App.createConfigured__();
+      const el = createDiv();
+      new HTMLValue('<p>hello <b>there</b></p>').renderTo(el, RenderContext.create__(app));
+      expect(el.innerHTML).toBe('<p>hello <b>there</b></p>');
+    });
+
+    it('should strip what the sanitizer strips, so a script never reaches the element', () => {
+      const app = App.createConfigured__();
+      const el = createDiv();
+      new HTMLValue('<p>safe</p><script>alert(1)</script>').renderTo(el, RenderContext.create__(app));
+      expect(el.findAll('script')).toHaveLength(0);
+      expect(el.textContent).toBe('safe');
+    });
+
+    it('should rewrite an in-vault img source through fixFileLinks, with an empty source path', () => {
+      const app = App.createConfigured__({ files: { 'pic.png': '' } });
+      vi.spyOn(app.vault, 'getResourcePath').mockReturnValue('app://resource/pic.png');
+      const fixFileLinksSpy = vi.spyOn(app, 'fixFileLinks');
+
+      const el = createDiv();
+      new HTMLValue('<img src="pic.png">').renderTo(el, RenderContext.create__(app));
+
+      expect(fixFileLinksSpy).toHaveBeenCalledWith(el, '');
+      expect(el.find('img').getAttr('src')).toBe('app://resource/pic.png');
     });
   });
 });

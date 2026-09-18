@@ -6,12 +6,19 @@
 
 import type { ImageValue as ImageValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
+
+import { isInternalLinkTarget } from '../internal/link-target.ts';
 import { noop } from '../internal/noop.ts';
+import {
+  IMAGE_EXTENSIONS,
+  toDesktopResourcePath
+} from '../internal/resource-path.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
 
 /**
- * Mock of Obsidian's `ImageValue`: a string value holding an image path. The mock never loads the image.
+ * Mock of Obsidian's `ImageValue`: a string value holding an image path.
  */
 export class ImageValue extends StringValue {
   /**
@@ -74,5 +81,34 @@ export class ImageValue extends StringValue {
    */
   public constructor5__(_value: string): void {
     noop();
+  }
+
+  /**
+   * Renders the image into an element, as Obsidian does: an `img` whose `src` is the vault resource path for
+   * an in-vault image, and the value itself for anything else.
+   *
+   * The two branches are not symmetric, and the asymmetry is Obsidian's. An INTERNAL path is resolved through
+   * `MetadataCache.getFirstLinkpathDest` and rendered only when it resolves to a file whose extension is an
+   * image one - so a path that resolves to nothing, or to a note, renders NO element at all. An external
+   * source always gets its `img`, with a desktop `file:///` source re-prefixed with
+   * `Platform.resourcePathPrefix` first.
+   *
+   * The mock's `Vault.getResourcePath` answers an empty string, so an in-vault image renders an `img` with an
+   * empty `src`. Its presence and its class are the observable part; spy on `getResourcePath` for a test that
+   * needs a real path.
+   *
+   * @param el - The element to render into.
+   * @param context - The rendering context, whose app resolves an in-vault path.
+   */
+  public override renderTo(el: HTMLElement, context: RenderContext): void {
+    if (!isInternalLinkTarget(this.data)) {
+      el.createEl('img').src = toDesktopResourcePath(this.data);
+      return;
+    }
+
+    const destination = context.app.metadataCache.getFirstLinkpathDest(this.data, '');
+    if (destination && IMAGE_EXTENSIONS.includes(destination.extension)) {
+      el.createEl('img').src = context.app.vault.getResourcePath(destination);
+    }
   }
 }

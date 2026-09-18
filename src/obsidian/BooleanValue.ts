@@ -6,6 +6,8 @@
 
 import type { BooleanValue as BooleanValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
@@ -75,5 +77,23 @@ export class BooleanValue extends PrimitiveValue<boolean> {
    */
   public constructor4__(_value = false): void {
     noop();
+  }
+
+  /**
+   * Renders the value into an element, as Obsidian does: a DISABLED checkbox whose `checked` is the wrapped
+   * boolean, rather than the text `true` or `false` its base would write.
+   *
+   * Obsidian sets `checked` as a PROPERTY after creating the input, not as an attribute, so the rendered
+   * element's `checked` attribute is absent either way and only `inputEl.checked` answers - which is what a
+   * consumer asserting on it has to read.
+   *
+   * @param el - The element to render into.
+   * @param _context - The rendering context; unused.
+   */
+  public override renderTo(el: HTMLElement, _context: RenderContext): void {
+    el.createEl('input', {
+      attr: { disabled: true },
+      type: 'checkbox'
+    }).checked = this.data;
   }
 }

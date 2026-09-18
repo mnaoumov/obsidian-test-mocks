@@ -1,7 +1,8 @@
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
 import { strictProxy } from '../internal/strict-proxy.ts';
@@ -10,6 +11,7 @@ import { App } from './App.ts';
 import { FileValue } from './FileValue.ts';
 import { LinkValue } from './LinkValue.ts';
 import { NumberValue } from './NumberValue.ts';
+import { RenderContext } from './RenderContext.ts';
 import { StringValue } from './StringValue.ts';
 
 describe('LinkValue', () => {
@@ -167,6 +169,34 @@ describe('LinkValue', () => {
       const value = LinkValue.create2__(mockApp, 'note', '');
       const mock = LinkValue.fromOriginalType5__(value.asOriginalType5__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should render the link through the context, handing over its target text and display', () => {
+      const app = App.createConfigured__({ files: { 'Note.md': '', 'Source.md': '' } });
+      const context = RenderContext.create__(app);
+      const renderFileLinkSpy = vi.spyOn(context, 'renderFileLink');
+
+      const value = new LinkValue(app, 'Note', 'Source.md', 'Shown');
+      const el = createDiv();
+      value.renderTo(el, context);
+
+      expect(renderFileLinkSpy).toHaveBeenCalledWith('Note', value.display, el);
+      const linkEl = el.find('.internal-link');
+      expect(linkEl.textContent).toBe('Shown');
+      expect(linkEl.getAttr('data-href')).toBe('Note');
+      expect(linkEl.hasClass('is-unresolved')).toBe(false);
+    });
+
+    it('should mark a link whose target resolves to nothing as unresolved', () => {
+      const app = App.createConfigured__();
+      const el = createDiv();
+      new LinkValue(app, 'Missing', 'Source.md').renderTo(el, RenderContext.create__(app));
+
+      const linkEl = el.find('.internal-link');
+      expect(linkEl.hasClass('is-unresolved')).toBe(true);
+      expect(linkEl.textContent).toBe('Missing');
     });
   });
 });

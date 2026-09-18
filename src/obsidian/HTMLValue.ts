@@ -6,12 +6,15 @@
 
 import type { HTMLValue as HTMLValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { sanitizeHTMLToDom } from './functions/sanitizeHTMLToDom.ts';
 import { StringValue } from './StringValue.ts';
 
 /**
- * Mock of Obsidian's `HTMLValue`: a string value whose string is raw HTML. The mock never renders it.
+ * Mock of Obsidian's `HTMLValue`: a string value whose string is raw HTML.
  */
 export class HTMLValue extends StringValue {
   /**
@@ -74,5 +77,22 @@ export class HTMLValue extends StringValue {
    */
   public constructor5__(_value: string): void {
     noop();
+  }
+
+  /**
+   * Renders the raw HTML into an element, as Obsidian does: the string is SANITIZED first and the result
+   * appended, then every media source under the element is rewritten to load from the vault.
+   *
+   * Both halves are Obsidian's. The sanitizer is the same one behind `sanitizeHTMLToDom`, so a `<script>` or
+   * an `onclick` never reaches the element; the rewrite is `App.fixFileLinks`, called with an EMPTY source
+   * path exactly as Obsidian calls it here, so a relative `src` resolves against the vault root rather than
+   * against a note.
+   *
+   * @param el - The element to render into.
+   * @param context - The rendering context, whose app owns the link rewrite.
+   */
+  public override renderTo(el: HTMLElement, context: RenderContext): void {
+    el.append(sanitizeHTMLToDom(this.data));
+    context.app.fixFileLinks(el, '');
   }
 }

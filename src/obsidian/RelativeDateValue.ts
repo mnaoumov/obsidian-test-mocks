@@ -6,6 +6,8 @@
 
 import type { RelativeDateValue as RelativeDateValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { DateValue } from './DateValue.ts';
@@ -67,6 +69,20 @@ export class RelativeDateValue extends DateValue {
    */
   public constructor4__(_date: unknown, _showTime?: boolean): void {
     noop();
+  }
+
+  /**
+   * Renders the value into an element, as Obsidian does: a span holding the relative text, in place of the
+   * disabled date input {@link DateValue.renderTo} builds.
+   *
+   * The span still carries the `mod-datetime` / `mod-date` class its base's input would, chosen by the same
+   * `time` flag, so a stylesheet keyed off that class reaches both forms.
+   *
+   * @param el - The element to render into.
+   * @param _context - The rendering context; unused.
+   */
+  public override renderTo(el: HTMLElement, _context: RenderContext): void {
+    el.createSpan(this.time ? 'mod-datetime' : 'mod-date').setText(this.relative());
   }
 
   /**
