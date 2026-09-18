@@ -406,9 +406,9 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     such listener, so do not go looking for it there. The listener is attached when the input is created, before the
     `addText` callback runs, which is why a listener a consumer adds to the input itself cannot get in ahead of it.
 
-- **`Platform` carries sixteen members beyond the thirteen `obsidian.d.ts` declares** (2026-09-18, read in Obsidian
+- **`Platform` carries eighteen members beyond the thirteen `obsidian.d.ts` declares** (2026-09-18, read in Obsidian
   1.14.2's `app.js` — the literal at `:48126-48170`, the desktop bootstrap that fills it at `:229307-229316`). All
-  sixteen are real Obsidian internals `obsidian-typings` declares as `PlatformEx`, so per L4 each takes its real name
+  eighteen are real Obsidian internals `obsidian-typings` declares as `PlatformEx`, so per L4 each takes its real name
   with no `__` suffix.
   - **`hasPhysicalKeyboard` is `true`**, the honest default beside `isDesktopApp: true`: the desktop bootstrap sets
     it, the emulate-mobile path resets it to `false`, and mobile detects it asynchronously — the `false` the app's
@@ -445,12 +445,24 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     runner would now need `node:os` shimmed.
   - **`mobileSoftKeyboardVisible` is `false`, `manufacturer` and `model` are `''`** — the values the desktop bundle
     leaves them at, since nothing outside the mobile app ever assigns them.
-  - **Two `PlatformEx` members are still absent, and it is an open decision rather than an oversight**:
-    `mobileDeviceHeight` and `mobileKeyboardHeight`. Both are mobile-only and — unlike `manufacturer`, `model` and
-    `build` — appear **nowhere** in the desktop bundle, neither in the literal nor in the bootstrap, so a running
-    desktop Obsidian answers `undefined` for both where `PlatformEx` types them `number`. Every candidate value is
-    therefore an invention of some kind, which is why the mock is not guessing one. **Read either expecting
-    `undefined` until that is decided**, and do not add one without reading the decision.
+  - **`mobileDeviceHeight` is a getter over `window.innerHeight`, and `mobileKeyboardHeight` is `0`** (decided
+    2026-09-18). Both are mobile-only and — unlike `manufacturer`, `model` and `build` — appear **nowhere** in the
+    desktop bundle, neither in the literal nor in the bootstrap, so a running desktop Obsidian answers `undefined`
+    for both where `PlatformEx` types them `number`. They are carried anyway, each over the only source that is not
+    an invention: `mobileDeviceHeight` reads real environment state, so a suite that resizes the window is believed
+    rather than answered from a frozen constant, and `mobileKeyboardHeight` is DERIVED from
+    `mobileSoftKeyboardVisible: false` — a keyboard that is not visible has height `0` — rather than asserted.
+    Assign a real height to either to simulate mobile, and restore it afterwards, as `Keymap`'s suite does for
+    `isMacOS`. **Two costs were accepted here rather than missed:**
+    1. `window.innerHeight` is a browser VIEWPORT, not a device screen; on a real phone the two differ by the status
+       and navigation bars. `window.screen.height` is the closer analogue to a *device* height and is `0` in jsdom,
+       which is why it is not the source. Assert `mobileDeviceHeight` against `window.innerHeight`, never against
+       jsdom's `768`.
+    2. This is the SECOND getter-over-the-environment of the `supportsIndexedDb` kind, and two is where it stops
+       being one exception. **Treat it as the rule from here: a member whose honest value is a live environment fact
+       is a getter over that fact**, so a suite that changes the environment is believed. The reverse now needs the
+       reason: a member answered from a frozen constant is one where the environment has no answer (`build`,
+       `manufacturer`, `model`) or where the mock is deliberately asserting a platform (`isWin`, `isDesktopApp`).
   - The app's literal also carries `canOpenExternalFiles` (`isDesktopApp && isDesktop`), which NEITHER
     `obsidian.d.ts` nor `obsidian-typings` declares — the `Setting.setIcon` case, which L1 / L4 keeps off the
     surface. It wants an `obsidian-typings` declaration first, not a mock member.
