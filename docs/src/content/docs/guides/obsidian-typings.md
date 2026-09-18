@@ -73,6 +73,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `PopoverSuggest` | `isOpen` |
 | `PrimitiveValue` | `data` |
 | `ProgressBarComponent` | `progressBar` |
+| `RegExpValue` | `regexp` |
 | `Setting` | `setAction`, `setNavigable`, `setNoInfo`, `setVisibility` |
 | `SettingGroup` | `components`, `controlEl`, `groupEl`, `headerEl`, `headerInnerEl` |
 | `SettingTab` | `renderTab` |

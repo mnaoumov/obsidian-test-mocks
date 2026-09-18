@@ -634,7 +634,6 @@
   "QueryController.viewHeaderEl",
   "QueryController.viewMenu",
   "QueryController.viewName",
-  "RegExpValue.regexp",
   "RenderContext.app",
   "RenderContext.renderExternalLink",
   "RenderContext.renderFileLink",

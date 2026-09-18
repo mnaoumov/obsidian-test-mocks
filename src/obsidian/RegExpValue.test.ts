@@ -23,9 +23,21 @@ describe('RegExpValue', () => {
     expect(value.isTruthy()).toBe(true);
   });
 
-  it('should return empty string for toString', () => {
-    const value = new RegExpValue(/test/);
-    expect(String(value)).toBe('');
+  describe('regexp', () => {
+    it('should keep the very pattern it was handed', () => {
+      const regexp = /abc/gi;
+      expect(new RegExpValue(regexp).regexp).toBe(regexp);
+    });
+  });
+
+  describe('toString', () => {
+    it('should print the wrapped pattern, flags included', () => {
+      expect(String(new RegExpValue(/abc/gi))).toBe('/abc/gi');
+    });
+
+    it('should tell two patterns apart', () => {
+      expect(String(new RegExpValue(/abc/))).not.toBe(String(new RegExpValue(/def/)));
+    });
   });
 
   describe('asOriginalType3__', () => {
