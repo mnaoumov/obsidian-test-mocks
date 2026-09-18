@@ -10,6 +10,7 @@ import type {
   DisplayValueComponent as DisplayValueComponentOriginal,
   DropdownComponent as DropdownComponentOriginal,
   ExtraButtonComponent as ExtraButtonComponentOriginal,
+  IconName as IconNameOriginal,
   MomentFormatComponent as MomentFormatComponentOriginal,
   ProgressBarComponent as ProgressBarComponentOriginal,
   SearchComponent as SearchComponentOriginal,
@@ -77,6 +78,11 @@ export class Setting {
   public errorEl: HTMLElement | null = null;
 
   /**
+   * The element holding the row's icon, created by {@link Setting.setIcon} on its first call and `null` until then.
+   */
+  public iconEl: HTMLDivElement | null = null;
+
+  /**
    * The element holding the row's name and description.
    */
   public infoEl: HTMLElement;
@@ -87,11 +93,15 @@ export class Setting {
   public nameEl: HTMLElement;
 
   /**
+   * The handler run when the row is clicked, as recorded by {@link Setting.setRowClick}, or `null` when the row has no
+   * handler.
+   */
+  public rowClick: (() => void) | null = null;
+
+  /**
    * The row's outer element.
    */
   public settingEl: HTMLElement;
-
-  private rowClick: (() => void) | null = null;
 
   /**
    * Creates the setting row inside `containerEl`.
@@ -429,6 +439,31 @@ export class Setting {
   }
 
   /**
+   * Sets the row's icon, shown before the info area. As in Obsidian, {@link Setting.iconEl} is created on the first
+   * call only, as a `setting-item-icon` div prepended to {@link Setting.settingEl}, and a `null` or empty id empties
+   * that element rather than removing it — so the element stays set once a first call has made it.
+   *
+   * Obsidian renders the icon into that element; the mock only records its id in the element's `data-icon` attribute,
+   * as it does for the chevron {@link Setting.setNavigable} adds. Emptying therefore drops the attribute as well as
+   * the element's children.
+   *
+   * @param icon - The icon id, or `null` to empty the icon element.
+   * @returns This setting, for chaining.
+   */
+  public setIcon(icon: IconNameOriginal | null): this {
+    this.iconEl ??= this.settingEl.createDiv({ cls: 'setting-item-icon', prepend: true });
+
+    if (icon) {
+      this.iconEl.dataset['icon'] = icon;
+    } else {
+      this.iconEl.empty();
+      delete this.iconEl.dataset['icon'];
+    }
+
+    return this;
+  }
+
+  /**
    * Sets the row's name, replacing the content of {@link Setting.nameEl} with the text or the fragment.
    *
    * @param name - The name, as text or as a fragment.
@@ -468,6 +503,30 @@ export class Setting {
   }
 
   /**
+   * Records the handler run when the row is clicked, in {@link Setting.rowClick}, attaching the listener the first
+   * time only, as Obsidian does — so a later call replaces the handler rather than adding a second listener. A
+   * disabled row and an event whose default was already prevented are both ignored.
+   *
+   * Unlike {@link Setting.setAction} and {@link Setting.setNavigable}, which are both built on it, this returns
+   * nothing and so does not chain.
+   *
+   * @param callback - Called when the row is clicked.
+   */
+  public setRowClick(callback: () => void): void {
+    if (!this.rowClick) {
+      this.settingEl.addEventListener('click', (event) => {
+        if (event.defaultPrevented || this.disabled) {
+          return;
+        }
+
+        this.rowClick?.();
+      });
+    }
+
+    this.rowClick = callback;
+  }
+
+  /**
    * Sets the row's tooltip. The mock stores it as the `aria-label` attribute of {@link Setting.nameEl} — the
    * element Obsidian tooltips — and ignores the options.
    *
@@ -500,30 +559,5 @@ export class Setting {
   public then(callback: (setting: this) => unknown): this {
     callback(this);
     return this;
-  }
-
-  /**
-   * Records the handler run when the row is clicked, attaching the listener the first time only, as Obsidian does —
-   * so a later call replaces the handler rather than adding a second listener. A disabled row and an event whose
-   * default was already prevented are both ignored.
-   *
-   * Neither this nor the handler it stores is declared by `obsidian.d.ts` or `obsidian-typings`, so both stay
-   * private: they are what {@link Setting.setAction} and {@link Setting.setNavigable} are built on, not members of
-   * the mocked surface.
-   *
-   * @param callback - Called when the row is clicked.
-   */
-  private setRowClick(callback: () => void): void {
-    if (!this.rowClick) {
-      this.settingEl.addEventListener('click', (event) => {
-        if (event.defaultPrevented || this.disabled) {
-          return;
-        }
-
-        this.rowClick?.();
-      });
-    }
-
-    this.rowClick = callback;
   }
 }
