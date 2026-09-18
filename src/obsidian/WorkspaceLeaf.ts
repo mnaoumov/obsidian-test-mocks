@@ -252,6 +252,24 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   /**
+   * Mock-only: whether the leaf is showing Obsidian's empty view — the "New tab" page — which is what
+   * `Workspace.createLeafInTabGroup` hands back instead of creating another tab.
+   *
+   * Obsidian asks `leaf.view instanceof EmptyView`, and can, because a leaf's view IS the empty view from
+   * construction and goes back to it when the open view closes. A mock leaf holds `null` there, so the question is
+   * put to the two things the mock does record: {@link WorkspaceLeaf.getViewType__} answers `'empty'` for a leaf
+   * with no view and no view-state type — and for a view state whose type is literally `'empty'`, which is the
+   * state Obsidian itself keeps the empty view for — while the file guard covers {@link WorkspaceLeaf.openFile},
+   * which records the file without building a view where Obsidian would have replaced the empty view with a real
+   * one.
+   *
+   * @returns Whether the leaf is showing the empty view.
+   */
+  public isShowingEmptyView__(): boolean {
+    return this.getViewType__() === EMPTY_VIEW_TYPE && this.file === null;
+  }
+
+  /**
    * Loads the leaf's real view if it is deferred, resolving once it has fully loaded. The mock's leaves are never
    * deferred, so it resolves immediately.
    */

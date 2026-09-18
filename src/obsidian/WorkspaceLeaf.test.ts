@@ -12,10 +12,21 @@ import {
 
 import { noopAsync } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 const EXPECTED_SAVE_COUNT = 2;
+
+/**
+ * Opens a tab and fills it, because `getLeaf('tab')` hands back a tab that is still showing the empty view instead of
+ * creating another one - so a test that wants a SECOND tab has to put something in the first.
+ */
+async function openFilledTab(app: App): Promise<WorkspaceLeaf> {
+  const leaf = app.workspace.getLeaf(true);
+  await leaf.setViewState({ type: 'markdown' });
+  return leaf;
+}
 
 describe('WorkspaceLeaf', () => {
   describe('create2__()', () => {
@@ -80,7 +91,7 @@ describe('WorkspaceLeaf', () => {
     it('should hand activeLeaf to another leaf once the layout updates', async () => {
       const app = App.createConfigured__();
       app.workspace.setLayoutReady__();
-      const kept = app.workspace.getLeaf(true);
+      const kept = await openFilledTab(app);
       const leaf = app.workspace.getLeaf('tab');
       expect(app.workspace.activeLeaf).toBe(leaf);
 
@@ -290,10 +301,10 @@ describe('WorkspaceLeaf', () => {
       expect(saveSpy).toHaveBeenCalledTimes(EXPECTED_SAVE_COUNT);
     });
 
-    it('should pin and unpin the other leaves in its group', () => {
+    it('should pin and unpin the other leaves in its group', async () => {
       const app = App.createConfigured__();
-      const leaf1 = app.workspace.getLeaf(true);
-      const leaf2 = app.workspace.getLeaf(true);
+      const leaf1 = await openFilledTab(app);
+      const leaf2 = await openFilledTab(app);
       const outsider = app.workspace.getLeaf(true);
       leaf1.setGroup('my-group');
       leaf2.setGroup('my-group');
@@ -372,6 +383,41 @@ describe('WorkspaceLeaf', () => {
       await leaf.setViewState({ type: 'markdown' });
       await leaf.open(strictProxy<View>({ getViewType: () => 'canvas' }));
       expect(leaf.getViewType__()).toBe('canvas');
+    });
+  });
+
+  describe('isShowingEmptyView__()', () => {
+    it('should hold for a leaf nothing has been done to', () => {
+      const app = App.createConfigured__();
+      expect(WorkspaceLeaf.create2__(app).isShowingEmptyView__()).toBe(true);
+    });
+
+    it('should hold for a view state naming the empty view, which is the state Obsidian keeps its own for', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.setViewState({ type: 'empty' });
+      expect(leaf.isShowingEmptyView__()).toBe(true);
+    });
+
+    it('should not hold once the view state names another type', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.setViewState({ type: 'markdown' });
+      expect(leaf.isShowingEmptyView__()).toBe(false);
+    });
+
+    it('should not hold once a view is open', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.open(strictProxy<View>({ getViewType: () => 'canvas' }));
+      expect(leaf.isShowingEmptyView__()).toBe(false);
+    });
+
+    it('should not hold once a file is open, which the mock records without building a view', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const leaf = WorkspaceLeaf.create2__(app);
+      await leaf.openFile(ensureNonNullable(app.vault.getFileByPath('note.md')));
+      expect(leaf.isShowingEmptyView__()).toBe(false);
     });
   });
 
