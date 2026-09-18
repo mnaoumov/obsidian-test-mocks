@@ -343,10 +343,19 @@ function parseFrontmatter(
   if (parsed && typeof parsed === 'object') {
     cache.frontmatter = parsed;
     cache.frontmatterPosition = makePos(lineStarts, 0, info.contentStart);
-    const frontmatterLinks = extractFrontmatterLinks(parsed);
-    if (frontmatterLinks.length > 0) {
-      cache.frontmatterLinks = frontmatterLinks;
-    }
+
+    // `frontmatterLinks` is the ONE collection that is present even when empty, so it is assigned
+    // unconditionally rather than behind the `length > 0` guard the ten collections beside it take.
+    // Obsidian's cache builder writes it in the same statement as the two keys above - all three sit
+    // behind the same `frontmatter &&` - and its extractor opens an empty array and returns that, so a
+    // frontmatter block holding no link at all yields `[]`. The builder's tail then deletes every OTHER
+    // empty collection by hand (`links`, `embeds`, `tags`, `headings`, `footnotes`, `footnoteRefs`,
+    // `referenceLinks`, `sections`, `listItems`, `blocks`) and conspicuously does not delete this one. A
+    // consumer branching on the key's presence therefore sees a truthy empty array here, and one
+    // iterating it unguarded does not throw. The boundary is the `if` above, not this line: a note with
+    // no frontmatter record at all - no block, a whitespace-only one, a non-object one, invalid YAML -
+    // still has no `frontmatterLinks` key whatsoever.
+    cache.frontmatterLinks = extractFrontmatterLinks(parsed);
   }
 
   sections.push({
