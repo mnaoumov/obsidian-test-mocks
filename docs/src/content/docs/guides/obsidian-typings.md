@@ -57,7 +57,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `Events` | `_` |
 | `ExtraButtonComponent` | `changeCallback` |
 | `FileManager` | `app` |
-| `FileValue` | `app`, `file` |
+| `FileValue` | `app`, `file`, `getBacklinks`, `getEmbeds`, `getLinks`, `getProps`, `getTags` |
 | `LinkValue` | `app`, `display`, `sourcePath` |
 | `ListValue` | `compare`, `data`, `earliest`, `flatten`, `getDates`, `getNumbers`, `join`, `latest`, `lazyEvaluator`, `max`, `mean`, `median`, `min`, `reverse`, `slice`, `sort`, `stddev`, `sum`, `unique` |
 | `MarkdownEditView` | `type`, `view` |

@@ -8,7 +8,28 @@ import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { DateValue } from './DateValue.ts';
 import { FileValue } from './FileValue.ts';
+import { LinkValue } from './LinkValue.ts';
+import { ListValue } from './ListValue.ts';
 import { NumberValue } from './NumberValue.ts';
+import { ObjectValue } from './ObjectValue.ts';
+import { TagValue } from './TagValue.ts';
+import { UrlValue } from './UrlValue.ts';
+
+const NOTE_WITH_EVERYTHING = `---
+tags:
+  - alpha
+  - "#beta"
+homepage: "[[Target]]"
+site: https://example.com
+due: "2024-01-15"
+---
+
+#alpha #gamma
+
+[[Target|Shown]] and [[Missing]]
+
+![[Target]]
+`;
 
 describe('FileValue', () => {
   function createFileValue(): FileValue {
@@ -19,6 +40,26 @@ describe('FileValue', () => {
     });
     const file = ensureNonNullable(app.vault.getFileByPath('folder/test.md'));
     return new FileValue(app, file);
+  }
+
+  // `Target.md` is seeded on its own, BEFORE the notes linking to it, because the mock resolves a link
+  // at index time: a link to a file that does not exist yet lands in `unresolvedLinks` for good, and a
+  // single seeded map would order the three by name rather than by that dependency.
+  function createLinkedVault(): App {
+    const app = App.createConfigured__({
+      files: {
+        'Target.md': ''
+      }
+    });
+    app.vault.createFolderSync__('folder');
+    app.vault.createSync__('folder/test.md', NOTE_WITH_EVERYTHING);
+    app.vault.createFolderSync__('notes');
+    app.vault.createSync__('notes/Other.md', '[[Target]]');
+    return app;
+  }
+
+  function createNoteValue(app: App, path: string): FileValue {
+    return FileValue.create__(app, ensureNonNullable(app.vault.getFileByPath(path)));
   }
 
   it('should carry the file icon', () => {
@@ -49,6 +90,160 @@ describe('FileValue', () => {
         'tags',
         'properties'
       ]);
+    });
+  });
+
+  describe('getLinks', () => {
+    it('should list the frontmatter links, then the body links, then the embeds', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      const links = value.getLinks();
+      expect(links).toBeInstanceOf(ListValue);
+      // A body wikilink carries display text in the cache even with no `|` — its own target — so a plain
+      // `[[Target]]` round-trips as `[[Target|Target]]`. A frontmatter link carries none unless it was
+      // written with a `|`, which is why the first entry below prints bare.
+      expect(links.data.map(String)).toEqual([
+        '[[Target]]',
+        '[[Target|Shown]]',
+        '[[Missing|Missing]]',
+        '[[Target|Target]]'
+      ]);
+    });
+
+    it('should carry each link\'s source path so a relative target resolves', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      const link = value.getLinks().get(0);
+      expect(link).toBeInstanceOf(LinkValue);
+      expect((link as LinkValue).sourcePath).toBe('folder/test.md');
+    });
+
+    it('should list a link that resolves to nothing, unlike getBacklinks', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      expect(value.getLinks().data.map(String)).toContain('[[Missing|Missing]]');
+    });
+
+    it('should give a file with no references an empty list', () => {
+      expect(createFileValue().getLinks().data).toEqual([]);
+    });
+
+    it('should answer the same list every time', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      expect(value.getLinks()).toBe(value.getLinks());
+    });
+  });
+
+  describe('getEmbeds', () => {
+    it('should list only the embeds', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      const embeds = value.getEmbeds();
+      expect(embeds).toBeInstanceOf(ListValue);
+      expect(embeds.data.map(String)).toEqual(['[[Target|Target]]']);
+    });
+
+    it('should give a file with no embeds an empty list', () => {
+      expect(createFileValue().getEmbeds().data).toEqual([]);
+    });
+
+    it('should answer the same list every time', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      expect(value.getEmbeds()).toBe(value.getEmbeds());
+    });
+  });
+
+  describe('getBacklinks', () => {
+    it('should list one link per note linking here, shown by its short name', () => {
+      const value = createNoteValue(createLinkedVault(), 'Target.md');
+      const backlinks = value.getBacklinks();
+      expect(backlinks).toBeInstanceOf(ListValue);
+      expect(backlinks.data.map(String)).toEqual([
+        '[[folder/test.md|test]]',
+        '[[notes/Other.md|Other]]'
+      ]);
+    });
+
+    it('should target the source note\'s path with an empty source path', () => {
+      const value = createNoteValue(createLinkedVault(), 'Target.md');
+      const backlink = value.getBacklinks().get(0) as LinkValue;
+      expect(backlink.value__).toBe('folder/test.md');
+      expect(backlink.sourcePath).toBe('');
+    });
+
+    it('should keep a non-markdown source\'s extension in the display text', () => {
+      const app = App.createConfigured__({
+        files: {
+          'Target.md': ''
+        }
+      });
+      app.metadataCache.resolvedLinks['drawing.canvas'] = { 'Target.md': 1 };
+      expect(createNoteValue(app, 'Target.md').getBacklinks().data.map(String)).toEqual([
+        '[[drawing.canvas|drawing.canvas]]'
+      ]);
+    });
+
+    it('should list a note linking here twice only once', () => {
+      const app = App.createConfigured__({
+        files: {
+          'Target.md': '',
+          'Twice.md': '[[Target]] and [[Target]] again'
+        }
+      });
+      expect(createNoteValue(app, 'Target.md').getBacklinks().data.map(String)).toEqual(['[[Twice.md|Twice]]']);
+    });
+
+    it('should give a file nothing links to an empty list', () => {
+      expect(createFileValue().getBacklinks().data).toEqual([]);
+    });
+
+    it('should answer the same list every time', () => {
+      const value = createNoteValue(createLinkedVault(), 'Target.md');
+      expect(value.getBacklinks()).toBe(value.getBacklinks());
+    });
+  });
+
+  describe('getTags', () => {
+    it('should list the body tags then the frontmatter tags, without duplicates', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      const tags = value.getTags();
+      expect(tags).toBeInstanceOf(ListValue);
+      expect(tags.data.map(String)).toEqual(['#alpha', '#gamma', '#beta']);
+      expect(tags.get(0)).toBeInstanceOf(TagValue);
+    });
+
+    it('should give a file with no tags an empty list', () => {
+      expect(createFileValue().getTags().data).toEqual([]);
+    });
+
+    it('should answer the same list every time', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      expect(value.getTags()).toBe(value.getTags());
+    });
+  });
+
+  describe('getProps', () => {
+    it('should wrap the frontmatter, reading its strings as links, URLs and dates', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      const props = value.getProps();
+      expect(props).toBeInstanceOf(ObjectValue);
+      expect(props.get('homepage')).toBeInstanceOf(LinkValue);
+      expect(props.get('site')).toBeInstanceOf(UrlValue);
+      expect(props.get('due')).toBeInstanceOf(DateValue);
+      expect(props.get('tags').toString()).toBe('alpha, #beta');
+    });
+
+    it('should copy the frontmatter, so evaluating a property never writes into the metadata cache', () => {
+      const app = createLinkedVault();
+      const value = createNoteValue(app, 'folder/test.md');
+      value.getProps().get('site');
+      const cached = ensureNonNullable(app.metadataCache.getFileCache(value.file));
+      expect(ensureNonNullable(cached.frontmatter)['site']).toBe('https://example.com');
+    });
+
+    it('should give a file with no frontmatter an empty object', () => {
+      expect(createFileValue().getProps().isEmpty()).toBe(true);
+    });
+
+    it('should answer the same object every time', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      expect(value.getProps()).toBe(value.getProps());
     });
   });
 
@@ -83,11 +278,13 @@ describe('FileValue', () => {
       expect(createFileValue().objectAccess('BASENAME')?.toString()).toBe('test');
     });
 
-    it('should answer null for the five keys whose accessors stay unmocked', () => {
-      const value = createFileValue();
-      for (const key of ['links', 'embeds', 'backlinks', 'tags', 'properties']) {
-        expect(value.objectAccess(key), key).toBeNull();
-      }
+    it('should route the five link, tag and property keys to their accessors', () => {
+      const value = createNoteValue(createLinkedVault(), 'folder/test.md');
+      expect(value.objectAccess('links')).toBe(value.getLinks());
+      expect(value.objectAccess('embeds')).toBe(value.getEmbeds());
+      expect(value.objectAccess('backlinks')).toBe(value.getBacklinks());
+      expect(value.objectAccess('tags')).toBe(value.getTags());
+      expect(value.objectAccess('properties')).toBe(value.getProps());
     });
 
     it('should answer null for any other key', () => {
