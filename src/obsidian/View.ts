@@ -39,9 +39,9 @@ export abstract class View extends Component {
   public containerEl: HTMLElement;
 
   /**
-   * The view's icon; empty until a subclass sets it.
+   * The view's icon, Obsidian's generic document glyph until a subclass sets its own.
    */
-  public icon: IconNameOriginal = '';
+  public icon: IconNameOriginal = 'lucide-file';
 
   /**
    * The workspace leaf hosting the view.
@@ -49,10 +49,11 @@ export abstract class View extends Component {
   public leaf: WorkspaceLeaf;
 
   /**
-   * Whether the view can be navigated away from, like a file view (`true`), rather than being a static panel like the
-   * file explorer (`false`).
+   * Whether the view takes part in navigation history, like a file view (`true`), rather than being a static panel
+   * like the file explorer (`false`). As in Obsidian the base view opts out, and a subclass such as `FileView`
+   * opts back in.
    */
-  public navigation = true;
+  public navigation = false;
 
   /**
    * An optional scope for hotkeys that apply while the view is focused.
@@ -126,10 +127,10 @@ export abstract class View extends Component {
   /**
    * Gets the view's icon.
    *
-   * @returns The value of {@link View.icon}.
+   * @returns The value of {@link View.icon}, or Obsidian's generic document glyph when that has been emptied.
    */
   public getIcon(): IconNameOriginal {
-    return this.icon;
+    return this.icon || 'lucide-file';
   }
 
   /**

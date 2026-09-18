@@ -96,10 +96,24 @@ describe('View', () => {
     });
   });
 
+  describe('icon', () => {
+    it('should default to the generic document glyph Obsidian uses', () => {
+      const view = createView();
+      expect(view.icon).toBe('lucide-file');
+    });
+  });
+
   describe('getIcon', () => {
     it('should return the icon', () => {
       const view = createView();
-      expect(view.getIcon()).toBe('');
+      view.icon = 'lucide-star';
+      expect(view.getIcon()).toBe('lucide-star');
+    });
+
+    it('should fall back to the generic document glyph when the icon is emptied', () => {
+      const view = createView();
+      view.icon = '';
+      expect(view.getIcon()).toBe('lucide-file');
     });
   });
 
@@ -147,9 +161,9 @@ describe('View', () => {
   });
 
   describe('navigation', () => {
-    it('should default to true', () => {
+    it('should default to false, as the base view does in Obsidian', () => {
       const view = createView();
-      expect(view.navigation).toBe(true);
+      expect(view.navigation).toBe(false);
     });
   });
 
