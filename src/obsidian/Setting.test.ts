@@ -120,6 +120,30 @@ describe('Setting', () => {
       setting.setClass('my-class');
       expect(setting.settingEl.classList.contains('my-class')).toBe(true);
     });
+
+    it('should split a multi-class string, as Obsidian does', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setClass('my-class my-other-class');
+      expect(setting.settingEl.classList.contains('my-class')).toBe(true);
+      expect(setting.settingEl.classList.contains('my-other-class')).toBe(true);
+    });
+
+    it('should drop empty parts rather than throwing on them', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setClass('  my-class   my-other-class  ');
+      expect([...setting.settingEl.classList]).toEqual(['setting-item', 'my-class', 'my-other-class']);
+    });
+
+    it('should change nothing for an empty string', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setClass('');
+      expect([...setting.settingEl.classList]).toEqual(['setting-item']);
+    });
+
+    it('should return this', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.setClass('my-class')).toBe(setting);
+    });
   });
 
   describe('setDisabled', () => {
@@ -427,6 +451,16 @@ describe('Setting', () => {
         noop();
       });
       expect(setting.components.length).toBe(1);
+    });
+
+    it('should mark the row mod-toggle, after the callback has run, as Obsidian does', () => {
+      const setting = Setting.create__(createDiv());
+      let wasMarkedDuringCallback = true;
+      setting.addToggle(() => {
+        wasMarkedDuringCallback = setting.settingEl.classList.contains('mod-toggle');
+      });
+      expect(wasMarkedDuringCallback).toBe(false);
+      expect(setting.settingEl.classList.contains('mod-toggle')).toBe(true);
     });
 
     it('should add a custom component via addComponent', () => {

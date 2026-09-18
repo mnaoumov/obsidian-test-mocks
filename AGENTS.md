@@ -383,6 +383,19 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     `obsidian.d.ts` nor `obsidian-typings`, so L1 / L4 keeps them off the surface. The row-click pair survives as a
     private implementation detail, because it is what the two members above are built on.
 
+- **Two more settings-row departures, from the same read of `Zx`** (2026-09-17, Obsidian 1.14.2's `app.js`).
+  `Setting.setClass` **splits on spaces first** — Obsidian is `settingEl.addClass(...cls.split(' ').filter(Boolean))`
+  — so `setClass('mod-a mod-b')` adds both classes, as it does in the app. The mock used to call
+  `classList.add(cls)` with the whole string, which throws `InvalidCharacterError` on the space, so a consumer
+  passing what Obsidian accepts got a crash. An empty or whitespace-only string splits to nothing and changes no
+  class, which is what the app's `apply` over an empty array does. `Setting.addToggle` now adds **`mod-toggle`** to
+  `settingEl`, as Obsidian does — and, as in the app, only **after** the callback has run, so a callback reading the
+  row's classes sees them unmarked. A test asserting the row's classes, or a stylesheet keyed off them, was seeing a
+  row Obsidian would have marked.
+  - Not modeled, recorded so it is not re-derived: Obsidian's `addText` attaches a keydown listener that blurs the
+    input on `Enter` when `Xy.hasPhysicalKeyboard` is false. That is a mobile-only affordance gated on a platform
+    flag this mock does not model at all, so it needs a decision rather than a one-line fix.
+
 - **Attachment-path resolution is modeled end to end** (added 2026-07-28) — anything calling
   `obsidian-dev-utils`' `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`
   against the mocks used to die on a strict-proxy read, forcing every consumer to hand-seed the surface.
