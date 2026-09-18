@@ -911,6 +911,21 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - `renderTo` needs no override even though Obsidian gives `NullValue` one: Obsidian's base renders
     `setText(this.toString())` and the null overrides it to nothing, while the mock's base is already a no-op.
 
+- **`RegExpValue` KEEPS its pattern, and prints it** (2026-09-18, `lK` in Obsidian 1.14.2's `app.js`).
+  Obsidian's constructor is `n.icon = "lucide-regex", n.regexp = t` and its `toString()` is
+  `this.regexp.toString()`. The mock used to hand the `RegExp` to `constructor3__` and drop it, answering
+  `''` — and said so in its class doc, so the omission read as intended rather than as the gap it was.
+  `regexp` is declared by `obsidian-typings` as `@unofficial`, which makes it a real Obsidian member: per L4
+  it takes its own name with no `__` suffix, and it left
+  `scripts/obsidian-typings-unimplemented.json` in the same edit.
+  - **The empty string was read further than the class.** `ListValue.unique` buckets by string form, so every
+    regular expression in a list shared the `''` bucket — with any `StringValue('')` beside them — and
+    `ListValue.join` / `toString` wrote nothing where a pattern belonged. Each pattern now keys its own
+    bucket and prints as `/abc/gi`, flags included.
+  - **Comparison is untouched, deliberately.** Obsidian gives `RegExpValue` no `equals` or `looseEquals`, so
+    the base's `false` stands and two values wrapping one pattern stay unequal. Storing the pattern is not a
+    reason to add an override Obsidian does not have.
+
 - **`ListValue` does its own aggregating, quirks included** (2026-09-17, `iK` in Obsidian 1.14.2's `app.js`).
   `compare`, `slice`, `reverse`, `flatten`, `sort`, `unique`, `getNumbers`, `getDates`, `earliest`, `latest`,
   `sum`, `mean`, `median`, `min`, `max` and `stddev` are all Obsidian's own, and four of their habits surprise:

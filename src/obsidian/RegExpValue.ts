@@ -12,8 +12,6 @@ import { NotNullValue } from './NotNullValue.ts';
 
 /**
  * Mock of Obsidian's `RegExpValue`, a Bases value wrapping a regular expression.
- *
- * The mock does not keep the pattern: it only passes it to the construction hook.
  */
 export class RegExpValue extends NotNullValue {
   /**
@@ -27,12 +25,18 @@ export class RegExpValue extends NotNullValue {
   public override icon = 'lucide-regex';
 
   /**
+   * The wrapped regular expression. Obsidian's own name for it, which is why it carries no `__` suffix (L4).
+   */
+  public regexp: RegExp;
+
+  /**
    * Creates a value wrapping `regexp`.
    *
    * @param regexp - The regular expression to wrap.
    */
   public constructor(regexp: RegExp) {
     super();
+    this.regexp = regexp;
     const self = strictProxy(this);
     self.constructor3__(regexp);
     return self;
@@ -87,11 +91,11 @@ export class RegExpValue extends NotNullValue {
   }
 
   /**
-   * Converts the value to its display string.
+   * Converts the value to its display string: the wrapped pattern's own `toString()`, as Obsidian does.
    *
-   * @returns Always an empty string in the mock.
+   * @returns The wrapped regular expression's string form, such as `/abc/gi`.
    */
   public toString(): string {
-    return '';
+    return this.regexp.toString();
   }
 }
