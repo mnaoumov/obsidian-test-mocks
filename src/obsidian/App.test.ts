@@ -3,7 +3,8 @@ import type { App as AppOriginal } from 'obsidian';
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
 import { Plugins } from '../internal/plugins.ts';
@@ -227,6 +228,96 @@ describe('App', () => {
       const app = App.createConfigured__();
       app.setTheme('obsidian');
       expect(app.getTheme()).toBe('obsidian');
+    });
+  });
+
+  describe('fixFileLinks', () => {
+    it('should resolve an in-vault img source to the vault resource path', () => {
+      const app = App.createConfigured__({ files: { 'Folder/pic.png': '' } });
+      const file = ensureNonNullable(app.vault.getFileByPath('Folder/pic.png'));
+      const getResourcePathSpy = vi.spyOn(app.vault, 'getResourcePath').mockReturnValue('app://resource/pic.png');
+
+      const el = createDiv();
+      el.createEl('img').setAttr('src', 'Folder/pic.png');
+      app.fixFileLinks(el, '');
+
+      expect(getResourcePathSpy).toHaveBeenCalledWith(file);
+      expect(el.find('img').getAttr('src')).toBe('app://resource/pic.png');
+    });
+
+    it('should decode a percent-encoded source before resolving it', () => {
+      const app = App.createConfigured__({ files: { 'my pic.png': '' } });
+      vi.spyOn(app.vault, 'getResourcePath').mockReturnValue('app://resource/my-pic.png');
+
+      const el = createDiv();
+      el.createEl('audio').setAttr('src', 'my%20pic.png');
+      app.fixFileLinks(el, '');
+
+      expect(el.find('audio').getAttr('src')).toBe('app://resource/my-pic.png');
+    });
+
+    it('should re-prefix a desktop file URL', () => {
+      const app = App.createConfigured__();
+      const el = createDiv();
+      el.createEl('video').setAttr('src', 'file:///C:/clips/clip.mp4');
+      app.fixFileLinks(el, '');
+
+      expect(el.find('video').getAttr('src')).toBe(`${Platform.resourcePathPrefix}C:/clips/clip.mp4`);
+    });
+
+    it('should leave a file URL alone on mobile', () => {
+      const app = App.createConfigured__();
+      Platform.isDesktopApp = false;
+      try {
+        const el = createDiv();
+        el.createEl('video').setAttr('src', 'file:///C:/clips/clip.mp4');
+        app.fixFileLinks(el, '');
+        expect(el.find('video').getAttr('src')).toBe('file:///C:/clips/clip.mp4');
+      } finally {
+        Platform.isDesktopApp = true;
+      }
+    });
+
+    it('should leave an external source, a source-less element and an unresolved path alone', () => {
+      const app = App.createConfigured__();
+      const el = createDiv();
+      el.createEl('img').setAttr('src', 'https://example.com/pic.png');
+      el.createEl('img');
+      el.createEl('img').setAttr('src', 'missing.png');
+      app.fixFileLinks(el, '');
+
+      const imgEls = el.findAll('img');
+      expect(imgEls[0]?.getAttr('src')).toBe('https://example.com/pic.png');
+      expect(imgEls[1]?.getAttr('src')).toBeNull();
+      expect(imgEls[2]?.getAttr('src')).toBe('missing.png');
+    });
+
+    it('should walk an iframe but never resolve one, as Obsidian does not', () => {
+      const app = App.createConfigured__({ files: { 'page.png': '' } });
+      const getResourcePathSpy = vi.spyOn(app.vault, 'getResourcePath').mockReturnValue('app://resource/page.png');
+
+      const el = createDiv();
+      el.createEl('iframe').setAttr('src', 'page.png');
+      app.fixFileLinks(el, '');
+
+      expect(getResourcePathSpy).not.toHaveBeenCalled();
+      expect(el.find('iframe').getAttr('src')).toBe('page.png');
+    });
+
+    it('should resolve a source against the source path it is given', () => {
+      const app = App.createConfigured__({
+        files: {
+          'Folder/Note.md': '',
+          'Folder/pic.png': ''
+        }
+      });
+      const getFirstLinkpathDestinationSpy = vi.spyOn(app.metadataCache, 'getFirstLinkpathDest');
+
+      const el = createDiv();
+      el.createEl('source').setAttr('src', 'pic.png');
+      app.fixFileLinks(el, 'Folder/Note.md');
+
+      expect(getFirstLinkpathDestinationSpy).toHaveBeenCalledWith('pic.png', 'Folder/Note.md');
     });
   });
 });

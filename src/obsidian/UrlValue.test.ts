@@ -3,9 +3,12 @@ import type { UrlValue as UrlValueOriginal } from 'obsidian';
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
+import { App } from './App.ts';
+import { RenderContext } from './RenderContext.ts';
 import { StringValue } from './StringValue.ts';
 import { UrlValue } from './UrlValue.ts';
 
@@ -75,6 +78,29 @@ describe('UrlValue', () => {
       const value = UrlValue.create2__('https://example.com');
       const mock = UrlValue.fromOriginalType5__(value.asOriginalType5__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should render the URL through the context, showing the URL when it has no display value', () => {
+      const context = RenderContext.create__(App.createConfigured__());
+      const renderExternalLinkSpy = vi.spyOn(context, 'renderExternalLink');
+
+      const el = createDiv();
+      new UrlValue('https://example.com').renderTo(el, context);
+
+      expect(renderExternalLinkSpy).toHaveBeenCalledWith('https://example.com', null, el);
+      expect(el.find('a').textContent).toBe('https://example.com');
+    });
+
+    it('should render the display value inside the anchor when it has one', () => {
+      const context = RenderContext.create__(App.createConfigured__());
+      const el = createDiv();
+      new UrlValue('https://example.com', 'Example').renderTo(el, context);
+
+      const anchorEl = el.find('a');
+      expect(anchorEl.className).toBe('external-link');
+      expect(anchorEl.textContent).toBe('Example');
     });
   });
 });

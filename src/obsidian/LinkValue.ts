@@ -7,6 +7,7 @@
 import type { LinkValue as LinkValueOriginal } from 'obsidian';
 
 import type { App } from './App.ts';
+import type { RenderContext } from './RenderContext.ts';
 import type { TFile } from './TFile.ts';
 
 import { isFileValue } from '../internal/file-value-registry.ts';
@@ -192,6 +193,22 @@ export class LinkValue extends StringValue {
       }
     }
     return isFileValue(other) && this.resolve() === other.file;
+  }
+
+  /**
+   * Renders the link into an element, as Obsidian does: through {@link RenderContext.renderFileLink}, which
+   * builds the internal link the app shows.
+   *
+   * The link's TARGET TEXT is handed over rather than the file it resolves to, so the context resolves it
+   * itself - and marks the link `is-unresolved` when nothing answers. Note that it resolves from the VAULT
+   * ROOT, not from {@link LinkValue.sourcePath}: Obsidian's `renderFileLink` passes an empty source path, so
+   * a rendered link and {@link LinkValue.resolve} can disagree about a relative target.
+   *
+   * @param el - The element to render into.
+   * @param context - The rendering context, which owns the link markup.
+   */
+  public override renderTo(el: HTMLElement, context: RenderContext): void {
+    context.renderFileLink(this.data, this.display, el);
   }
 
   /**

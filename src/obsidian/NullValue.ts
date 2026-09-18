@@ -6,6 +6,8 @@
 
 import type { NullValue as NullValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { Value } from './Value.ts';
@@ -117,6 +119,20 @@ export class NullValue extends Value {
    */
   public isTruthy(): boolean {
     return false;
+  }
+
+  /**
+   * Renders the value into an element: nothing at all, as Obsidian's override does.
+   *
+   * This is the one override in the hierarchy that renders LESS than its base. Obsidian's base writes the
+   * value's string form, and a null writes nothing rather than the word `null` its {@link NullValue.toString}
+   * answers - so the override is what keeps an empty cell empty, and dropping it would put `null` on screen.
+   *
+   * @param _el - The element to render into; left untouched.
+   * @param _context - The rendering context; unused.
+   */
+  public override renderTo(_el: HTMLElement, _context: RenderContext): void {
+    noop();
   }
 
   /**

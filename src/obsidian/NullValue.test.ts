@@ -6,7 +6,9 @@ import {
   it
 } from 'vitest';
 
+import { App } from './App.ts';
 import { NullValue } from './NullValue.ts';
+import { RenderContext } from './RenderContext.ts';
 import { StringValue } from './StringValue.ts';
 import { Value } from './Value.ts';
 
@@ -62,6 +64,15 @@ describe('NullValue', () => {
     it('should return the same instance typed as the mock type', () => {
       const mock = NullValue.fromOriginalType2__(NullValue.value.asOriginalType2__());
       expect(mock).toBe(NullValue.value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should render nothing at all, overriding the base back to empty', () => {
+      const el = createDiv();
+      NullValue.value.renderTo(el, RenderContext.create__(App.createConfigured__()));
+      expect(el.childNodes).toHaveLength(0);
+      expect(el.textContent).toBe('');
     });
   });
 });

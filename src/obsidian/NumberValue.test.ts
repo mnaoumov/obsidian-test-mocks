@@ -6,7 +6,9 @@ import {
   it
 } from 'vitest';
 
+import { App } from './App.ts';
 import { NumberValue } from './NumberValue.ts';
+import { RenderContext } from './RenderContext.ts';
 
 const TEST_NUMBER = 7;
 
@@ -58,6 +60,20 @@ describe('NumberValue', () => {
       const value = NumberValue.create__();
       const mock = NumberValue.fromOriginalType4__(value.asOriginalType4__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it.each([
+      { expected: '42', name: 'a finite number', value: 42 },
+      { expected: '-0.5', name: 'a negative fraction', value: -0.5 },
+      { expected: 'NaN', name: 'NaN, which Obsidian lets through as text', value: NaN },
+      { expected: '\u{221E}', name: 'positive infinity', value: Infinity },
+      { expected: '\u{221E}', name: 'negative infinity, written unsigned as Obsidian writes it', value: -Infinity }
+    ])('should render $name as $expected', ({ expected, value }) => {
+      const el = createDiv();
+      new NumberValue(value).renderTo(el, RenderContext.create__(App.createConfigured__()));
+      expect(el.textContent).toBe(expected);
     });
   });
 });

@@ -6,7 +6,9 @@ import {
   it
 } from 'vitest';
 
+import { App } from './App.ts';
 import { NumberValue } from './NumberValue.ts';
+import { RenderContext } from './RenderContext.ts';
 import { StringValue } from './StringValue.ts';
 
 describe('StringValue', () => {
@@ -76,6 +78,20 @@ describe('StringValue', () => {
       const value = StringValue.create__('test');
       const mock = StringValue.fromOriginalType4__(value.asOriginalType4__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should write the wrapped string as the element text', () => {
+      const el = createDiv();
+      new StringValue('hello').renderTo(el, RenderContext.create__(App.createConfigured__()));
+      expect(el.textContent).toBe('hello');
+    });
+
+    it('should write an empty string as no text', () => {
+      const el = createDiv();
+      new StringValue().renderTo(el, RenderContext.create__(App.createConfigured__()));
+      expect(el.textContent).toBe('');
     });
   });
 });

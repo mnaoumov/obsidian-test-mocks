@@ -929,8 +929,71 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     `NullValue` where Obsidian returns `$G.value` on each of its four non-evaluating paths (a missing key, a
     non-string value, a formula that parses to an error, a formula that throws). It now returns the singleton,
     which the guard would have forced anyway.
-  - `renderTo` needs no override even though Obsidian gives `NullValue` one: Obsidian's base renders
-    `setText(this.toString())` and the null overrides it to nothing, while the mock's base is already a no-op.
+  - `NullValue.renderTo` DOES override, and has to: the base renders `setText(this.toString())`, so without
+    the override every empty cell would show the word `null`. This bullet used to say the opposite, back when
+    the mock's base rendered nothing; see the `renderTo` note below.
+
+- **Every Bases value RENDERS now, and the render context builds the links** (2026-09-18, `XG` and the value
+  region of Obsidian 1.14.2's `app.js`). `Value.renderTo` used to be a no-op on the base and on all sixteen
+  subclasses, and the base's doc asserted that as intended. Obsidian has seventeen bodies: the base writes
+  `el.setText(this.toString())`, and sixteen subclasses override it. Fourteen of those sixteen have a mock
+  class, and all fourteen now carry Obsidian's own body.
+  - **The base is the load-bearing change.** Giving it a real body changes what every subclass WITHOUT an
+    override renders at once — `NotNullValue`, `PrimitiveValue`, `ObjectValue`, `DurationValue` and
+    `RegExpValue` now render their string form, which is exactly what they do in the app, and none of them
+    gets an override here because none gets one there. `NullValue` is the single subclass whose override
+    renders LESS than the base, and dropping it would put the word `null` in every empty cell.
+  - **Two of Obsidian's sixteen have no mock class, and that is L1 rather than a gap**: `ErrorValue` (a
+    `.bases-formula-error` div with a warning icon, a message, a tooltip and click-to-copy) and
+    `MarkdownValue`. `obsidian.d.ts` declares neither class, the same reason AGENTS.md already gives for
+    their two type NAMES being absent.
+  - **What each of the fourteen renders.** `StringValue` writes `data` rather than `toString()` — the same
+    text, Obsidian's own shape. `NumberValue` writes `∞` for an infinity and the ordinary string form for
+    everything else, `NaN` included. `BooleanValue` builds a DISABLED checkbox whose `checked` is set as a
+    PROPERTY, so the attribute stays absent and only `inputEl.checked` answers. `DateValue` builds a disabled
+    `date` / `datetime-local` input, classed `mod-date` / `mod-datetime` by its own `time` flag;
+    `RelativeDateValue` replaces it with a span carrying the same class and the relative text. `ListValue`
+    builds a `.value-list-container` with one `.value-list-element` span per item and a `.value-list-gap`
+    newline between each pair, rendering each item through its OWN `renderTo`, so a nested list nests a
+    container. `IconValue` appends the icon its id resolves to, falling back to `question-mark-glyph`.
+    `ImageValue` and `HTMLValue` are below. `TagValue`, `FileValue`, `UrlValue` and `LinkValue` do nothing but
+    call the render context.
+  - **`RenderContext` gained the `app` field and the three render helpers Obsidian's has** —
+    `renderFileLink`, `renderExternalLink`, `renderTag` — all four real internals `obsidian-typings` declares
+    and `obsidian.d.ts` omits, so per L4 they take their real names with no `__` suffix. `renderFileLink`
+    builds the `span.internal-link` inside a `markdown-rendered` container, sets `data-href`, marks
+    `is-unresolved`, suppresses a middle click's press default and opens the link through
+    `Workspace.openLinkText` on a left or middle click. Note it resolves from the VAULT ROOT: Obsidian passes
+    an empty source path, so a rendered `LinkValue` and `LinkValue.resolve` can disagree about a relative
+    target.
+  - **An embed size is not a label.** `renderFileLink` renders its display value into the link UNLESS the
+    link resolves to an IMAGE and the display text parses as `200` or `200x100` — Obsidian's own guard, which
+    is why `[[pic.png|200]]` shows the file name and `[[Note|200]]` shows `200`.
+  - **Four pieces of Obsidian's wiring are deliberately NOT modeled**, each commented at its site: the
+    context menus on a file link and an external link, `app.dragManager.handleDrag`, the `hover-link` trigger,
+    the `window.open` click on an external link, and the global-search click on a tag. They need
+    `App.dragManager`, `Workspace.handleExternalLinkContextMenu`, a translated menu label, a `window.open`
+    jsdom does not have, and `App.internalPlugins` — which is unmocked ON PURPOSE (see the plugins note
+    above). A rendered external link and a rendered tag are therefore inert; everything about their markup is
+    Obsidian's.
+  - **`App.fixFileLinks` is implemented**, because `HTMLValue.renderTo` calls it. It walks
+    `img, audio, video, source, iframe`, re-prefixes a desktop `file:///` src with
+    `Platform.resourcePathPrefix`, and resolves an INTERNAL src through `MetadataCache.getFirstLinkpathDest` +
+    `Vault.getResourcePath` — for the first four tags only, never for an `iframe`, which Obsidian walks and
+    leaves alone.
+  - **`ImageValue.renderTo`'s two branches are not symmetric, and the asymmetry is Obsidian's.** An internal
+    path renders an `img` only when it resolves to a file whose extension is an image one, so a path that
+    resolves to nothing — or to a note — renders NO element at all; an external source always gets its `img`.
+    The mock's `Vault.getResourcePath` answers `''`, so an in-vault image renders an `img` with an empty
+    `src`; spy on it for a test that needs a real path.
+  - **The icon registry decides what an `IconValue` renders**, not the method. `src/internal/icon-registry.ts`
+    starts EMPTY by design, so both the id and the `question-mark-glyph` fallback answer `null` and nothing is
+    appended unless a test called `addIcon` first. Register the fallback and every unknown icon renders it,
+    exactly as in the app.
+  - Three helpers moved out of `src/internal/markdown-parser.ts` into `src/internal/link-target.ts` on the way
+    (`isInternalLinkTarget`, `normalizeLinkTarget`, `decodeUriSafely`), because `App.fixFileLinks` and
+    `ImageValue.renderTo` became their second and third callers; `src/internal/resource-path.ts` holds the
+    image-extension list and the desktop `file:///` rewrite for the same reason.
 
 - **`RegExpValue` KEEPS its pattern, and prints it** (2026-09-18, `lK` in Obsidian 1.14.2's `app.js`).
   Obsidian's constructor is `n.icon = "lucide-regex", n.regexp = t` and its `toString()` is

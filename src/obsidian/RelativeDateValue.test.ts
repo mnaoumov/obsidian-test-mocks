@@ -6,8 +6,12 @@ import {
   it
 } from 'vitest';
 
+import { App } from './App.ts';
 import { DateValue } from './DateValue.ts';
 import { RelativeDateValue } from './RelativeDateValue.ts';
+import { RenderContext } from './RenderContext.ts';
+
+const MILLISECONDS_IN_HOUR = 60 * 60 * 1000;
 
 describe('RelativeDateValue', () => {
   it('should inherit the date icons, which follow the time rather than the class', () => {
@@ -62,6 +66,25 @@ describe('RelativeDateValue', () => {
       const value = RelativeDateValue.create2__(new Date());
       const mock = RelativeDateValue.fromOriginalType4__(value.asOriginalType4__());
       expect(mock).toBe(value);
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should render the relative text in a span rather than the base input', () => {
+      const value = new RelativeDateValue(new Date(Date.now() - MILLISECONDS_IN_HOUR));
+      const el = createDiv();
+      value.renderTo(el, RenderContext.create__(App.createConfigured__()));
+
+      expect(el.findAll('input')).toHaveLength(0);
+      const spanEl = el.find('span');
+      expect(spanEl.className).toBe('mod-datetime');
+      expect(spanEl.textContent).toBe(value.relative());
+    });
+
+    it('should carry the mod-date class when the time is hidden', () => {
+      const el = createDiv();
+      new RelativeDateValue(new Date(), false).renderTo(el, RenderContext.create__(App.createConfigured__()));
+      expect(el.find('span').className).toBe('mod-date');
     });
   });
 });

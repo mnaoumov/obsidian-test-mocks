@@ -20,6 +20,11 @@ import type {
 
 import { getFrontMatterInfo } from '../obsidian/functions/getFrontMatterInfo.ts';
 import { parseYaml } from '../obsidian/functions/parseYaml.ts';
+import {
+  decodeUriSafely,
+  isInternalLinkTarget,
+  normalizeLinkTarget
+} from './link-target.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
 /**
@@ -48,7 +53,6 @@ const FRONTMATTER_MARKDOWN_LINK_REGEX = /^(?<open>!?\[)(?<displayText>.*?)(?<sep
 /**
  * A non-breaking space, which Obsidian folds into an ordinary one before it resolves a link target.
  */
-const NON_BREAKING_SPACE_REGEX = /\u{A0}/gu;
 
 const WIKILINK_CLOSE = ']]';
 
@@ -238,20 +242,6 @@ function collectFrontmatterLink(key: string, value: string, links: FrontmatterLi
   });
 }
 
-/**
- * Decodes a percent-encoded link target, keeping it as it is when it is not decodable.
- *
- * @param target - The link target.
- * @returns The decoded target, or `target` itself when `decodeURI` throws on it.
- */
-function decodeUriSafely(target: string): string {
-  try {
-    return decodeURI(target);
-  } catch {
-    return target;
-  }
-}
-
 function extractFrontmatterLinks(frontmatter: object): FrontmatterLinkCache[] {
   const links: FrontmatterLinkCache[] = [];
   visitFrontmatterValue('', frontmatter, links);
@@ -260,18 +250,6 @@ function extractFrontmatterLinks(frontmatter: object): FrontmatterLinkCache[] {
 
 function isInCodeZone(zones: [number, number][], offset: number): boolean {
   return zones.some(([start, end]) => offset >= start && offset < end);
-}
-
-/**
- * Tells whether a markdown link's target points inside the vault rather than out of it, as Obsidian's own
- * test does: an explicitly relative target always does, and any other one does unless it carries a `:`,
- * which is what excludes `https://`, `mailto:` and the rest.
- *
- * @param target - The link target.
- * @returns Whether it is internal.
- */
-function isInternalLinkTarget(target: string): boolean {
-  return target.startsWith('./') || target.startsWith('../') || !target.includes(':');
 }
 
 function makePos(lineStarts: number[], startOffset: number, endOffset: number): Pos {
@@ -630,7 +608,7 @@ function parseWikilinkTarget(inner: string): WikilinkTarget {
   if (href.endsWith('\\')) {
     href = href.slice(0, -1);
   }
-  return { href: href.replaceAll(NON_BREAKING_SPACE_REGEX, ' ').trim().normalize('NFC'), title };
+  return { href: normalizeLinkTarget(href), title };
 }
 
 /**

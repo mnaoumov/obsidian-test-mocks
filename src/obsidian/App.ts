@@ -12,8 +12,14 @@ import type {
 
 import type { AppCreateConfiguredOptions } from '../internal/app-create-configured-options.ts';
 
+import {
+  decodeUriSafely,
+  isInternalLinkTarget,
+  normalizeLinkTarget
+} from '../internal/link-target.ts';
 import { noop } from '../internal/noop.ts';
 import { Plugins } from '../internal/plugins.ts';
+import { toDesktopResourcePath } from '../internal/resource-path.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ViewRegistry } from '../internal/view-registry.ts';
 import { FileManager } from './FileManager.ts';
@@ -36,6 +42,12 @@ const DARK_THEME = 'obsidian';
  * Obsidian's name for the light theme.
  */
 const LIGHT_THEME = 'moonstone';
+
+/**
+ * The tag names {@link App.fixFileLinks} resolves an internal `src` for. Obsidian walks an `iframe` too but
+ * never rewrites one this way, so it is deliberately absent here.
+ */
+const RESOLVABLE_MEDIA_TAG_NAMES = new Set(['AUDIO', 'IMG', 'SOURCE', 'VIDEO']);
 
 /**
  * Mock of Obsidian's `App`, wiring together mocks of the vault, file manager, keymap, metadata cache, plugin
@@ -238,6 +250,41 @@ export class App {
    */
   public constructor__(_adapter: DataAdapterOriginal, _appId: string): void {
     noop();
+  }
+
+  /**
+   * Rewrites the `src` of every media element under an element so it loads from the vault, exactly as
+   * Obsidian does after rendering HTML or markdown. Two rewrites, in Obsidian's own order:
+   *
+   * - On the desktop app, a `file:///` src is re-prefixed with `Platform.resourcePathPrefix`.
+   * - An `img`, `audio`, `video` or `source` whose src points inside the vault is resolved through
+   *   `MetadataCache.getFirstLinkpathDest` and replaced with `Vault.getResourcePath`. An `iframe` is walked
+   *   but never resolved this way, as in Obsidian, and a src that resolves to nothing is left as it is.
+   *
+   * @param element - The element whose media descendants are rewritten.
+   * @param sourcePath - The path of the note the HTML came from, which relative links resolve against.
+   */
+  public fixFileLinks(element: HTMLElement, sourcePath: string): void {
+    for (const mediaEl of element.findAll('img, audio, video, source, iframe')) {
+      const source = mediaEl.getAttr('src');
+      if (!source) {
+        continue;
+      }
+
+      const desktopPath = toDesktopResourcePath(source);
+      if (desktopPath !== source) {
+        mediaEl.setAttr('src', desktopPath);
+      }
+
+      if (!isInternalLinkTarget(source) || !RESOLVABLE_MEDIA_TAG_NAMES.has(mediaEl.tagName)) {
+        continue;
+      }
+
+      const destination = this.metadataCache.getFirstLinkpathDest(normalizeLinkTarget(decodeUriSafely(source)), sourcePath);
+      if (destination) {
+        mediaEl.setAttr('src', this.vault.getResourcePath(destination));
+      }
+    }
   }
 
   /**

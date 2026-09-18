@@ -6,6 +6,8 @@
 
 import type { UrlValue as UrlValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { StringValue } from './StringValue.ts';
@@ -98,5 +100,19 @@ export class UrlValue extends StringValue {
    */
   public override equals(other: this): boolean {
     return this.data === other.data && Value.equals(this.display, other.display);
+  }
+
+  /**
+   * Renders the URL into an element, as Obsidian does: through {@link RenderContext.renderExternalLink},
+   * which builds the external link the app shows.
+   *
+   * The display value is passed on as it is, so a URL with one renders that value INSIDE the anchor - through
+   * the display's own `renderTo` - and a URL without one renders its own text.
+   *
+   * @param el - The element to render into.
+   * @param context - The rendering context, which owns the link markup.
+   */
+  public override renderTo(el: HTMLElement, context: RenderContext): void {
+    context.renderExternalLink(this.data, this.display, el);
   }
 }

@@ -6,9 +6,16 @@
 
 import type { NumberValue as NumberValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
+
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { PrimitiveValue } from './PrimitiveValue.ts';
+
+/**
+ * The sign Obsidian renders an infinite number as, in place of its string form.
+ */
+const INFINITY_SIGN = '∞';
 
 /**
  * Mock of Obsidian's `NumberValue`, a Bases value wrapping a number.
@@ -73,5 +80,21 @@ export class NumberValue extends PrimitiveValue<number> {
    */
   public constructor4__(_value = 0): void {
     noop();
+  }
+
+  /**
+   * Renders the value into an element, as Obsidian does: the number's string form, or the infinity SIGN for
+   * an infinite one.
+   *
+   * Obsidian's guard is `isFinite(data) || isNaN(data)`, so a `NaN` renders as the text `NaN` and only
+   * `Infinity` and `-Infinity` reach the sign - which is written unsigned, so both infinities render as `∞`.
+   * The sign is the one place a number renders as something other than what {@link NumberValue.toString}
+   * answers.
+   *
+   * @param el - The element to render into.
+   * @param _context - The rendering context; unused.
+   */
+  public override renderTo(el: HTMLElement, _context: RenderContext): void {
+    el.setText(Number.isFinite(this.data) || Number.isNaN(this.data) ? this.toString() : INFINITY_SIGN);
   }
 }

@@ -5,12 +5,14 @@ import {
   vi
 } from 'vitest';
 
+import { App } from './App.ts';
 import { BooleanValue } from './BooleanValue.ts';
 import { DateValue } from './DateValue.ts';
 import { ListValue } from './ListValue.ts';
 import { NullValue } from './NullValue.ts';
 import { NumberValue } from './NumberValue.ts';
 import { ObjectValue } from './ObjectValue.ts';
+import { RenderContext } from './RenderContext.ts';
 import { StringValue } from './StringValue.ts';
 
 describe('ListValue', () => {
@@ -459,6 +461,48 @@ describe('ListValue', () => {
 
     it('should not be confused by a key that names an Object.prototype member', () => {
       expect(String(new ListValue(['toString', 'toString', 'a']).unique())).toBe('toString, a');
+    });
+  });
+
+  describe('renderTo', () => {
+    it('should build a value-list container with one element span per item', () => {
+      const el = createDiv();
+      new ListValue(['a', 'b', 'c']).renderTo(el, RenderContext.create__(App.createConfigured__()));
+
+      const containerEl = el.find('.value-list-container');
+      expect(containerEl.findAll('.value-list-element').map((elementEl) => elementEl.textContent)).toEqual([
+        'a',
+        'b',
+        'c'
+      ]);
+    });
+
+    it('should put a newline gap between each pair and none after the last', () => {
+      const el = createDiv();
+      new ListValue(['a', 'b', 'c']).renderTo(el, RenderContext.create__(App.createConfigured__()));
+
+      const gapEls = el.findAll('.value-list-gap');
+      expect(gapEls).toHaveLength(2);
+      expect(gapEls.every((gapEl) => gapEl.textContent === '\n')).toBe(true);
+      expect(el.find('.value-list-container').lastElementChild?.className).toBe('value-list-element');
+    });
+
+    it('should render an empty list as an empty container', () => {
+      const el = createDiv();
+      new ListValue([]).renderTo(el, RenderContext.create__(App.createConfigured__()));
+      expect(el.find('.value-list-container').childNodes).toHaveLength(0);
+    });
+
+    it('should render each element through its own renderTo, so a nested list nests a container', () => {
+      const el = createDiv();
+      new ListValue([[1, 2], true]).renderTo(el, RenderContext.create__(App.createConfigured__()));
+
+      const elementEls = el.find('.value-list-container').findAll(':scope > .value-list-element');
+      expect(elementEls[0]?.findAll('.value-list-element').map((nestedEl) => nestedEl.textContent)).toEqual([
+        '1',
+        '2'
+      ]);
+      expect(elementEls[1]?.find('input').getAttr('type')).toBe('checkbox');
     });
   });
 });

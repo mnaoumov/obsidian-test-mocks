@@ -6,6 +6,7 @@
 
 import type { StringValue as StringValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
 import type { Value } from './Value.ts';
 
 import { noop } from '../internal/noop.ts';
@@ -95,5 +96,20 @@ export class StringValue extends PrimitiveValue<string> {
    */
   public override objectAccess(key: string): null | Value {
     return key.toLowerCase() === 'length' ? NumberValue.create__(this.data.length) : super.objectAccess(key);
+  }
+
+  /**
+   * Renders the value into an element, as Obsidian does: the wrapped string as the element's text.
+   *
+   * It is the base's behavior written out against `data` rather than through `toString()`, which is
+   * Obsidian's own shape. The difference shows in the subclasses that both inherit this and override
+   * `toString`: {@link RelativeDateValue} prints a relative date but is not reached here, while an
+   * {@link ImageValue} and an {@link HTMLValue} override this method itself.
+   *
+   * @param el - The element to render into.
+   * @param _context - The rendering context; unused.
+   */
+  public override renderTo(el: HTMLElement, _context: RenderContext): void {
+    el.setText(this.data);
   }
 }

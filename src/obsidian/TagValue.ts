@@ -6,6 +6,7 @@
 
 import type { TagValue as TagValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
 import type { Value } from './Value.ts';
 
 import { noop } from '../internal/noop.ts';
@@ -88,6 +89,20 @@ export class TagValue extends StringValue {
    */
   public constructor5__(_value: string): void {
     noop();
+  }
+
+  /**
+   * Renders the tag into an element, as Obsidian does: through {@link RenderContext.renderTag}, which builds
+   * the `a.tag` the app shows.
+   *
+   * The whole body is that delegation, so what a rendered tag looks like - and which part of Obsidian's own
+   * wiring is not modeled - is decided there rather than here.
+   *
+   * @param el - The element to render into.
+   * @param context - The rendering context, which owns the tag markup.
+   */
+  public override renderTo(el: HTMLElement, context: RenderContext): void {
+    context.renderTag(this.data, el);
   }
 
   /**

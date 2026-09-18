@@ -6,6 +6,7 @@
 
 import type { DateValue as DateValueOriginal } from 'obsidian';
 
+import type { RenderContext } from './RenderContext.ts';
 import type { Value } from './Value.ts';
 
 import { noop } from '../internal/noop.ts';
@@ -242,6 +243,29 @@ export class DateValue extends NotNullValue {
    */
   public relative(): string {
     return moment(this.date).fromNow();
+  }
+
+  /**
+   * Renders the value into an element, as Obsidian does: a DISABLED date input carrying the value, styled as
+   * the app's metadata fields are.
+   *
+   * Whether the time is shown decides everything about it at once - the input's `type` is `datetime-local`
+   * with a time and `date` without, and its `mod-datetime` / `mod-date` class follows the same flag. The
+   * value it carries is {@link DateValue.toString}'s, which is exactly the format each input type expects.
+   *
+   * @param el - The element to render into.
+   * @param _context - The rendering context; unused.
+   */
+  public override renderTo(el: HTMLElement, _context: RenderContext): void {
+    el.createEl('input', {
+      attr: {
+        disabled: true,
+        step: 'any'
+      },
+      cls: `metadata-input metadata-input-text ${this.time ? 'mod-datetime' : 'mod-date'}`,
+      type: this.time ? 'datetime-local' : 'date',
+      value: this.toString()
+    });
   }
 
   /**
