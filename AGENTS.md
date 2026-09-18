@@ -384,9 +384,14 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **Drive such a row with a real `settingEl.click()`.** The listener is attached once, so a second `setAction` /
     `setNavigable` replaces the handler rather than adding another; a disabled row is ignored, and so is a click an
     inner control has already handled by calling `preventDefault` on it.
-  - `Setting.setIcon`, `Setting.iconEl`, `Setting.setRowClick` and `Setting.rowClick` are in neither
-    `obsidian.d.ts` nor `obsidian-typings`, so L1 / L4 keeps them off the surface. The row-click pair survives as a
-    private implementation detail, because it is what the two members above are built on.
+  - `Setting.setIcon(icon)` creates `iconEl` on its FIRST call only — a `setting-item-icon` div prepended to
+    `settingEl` — and then records the icon id in that element's `data-icon`, the convention the chevron above and
+    the component mocks already use. A `null` or empty id empties the element and drops the attribute rather than
+    removing the element, so `iconEl` stays set once a first call has made it.
+  - `Setting.setRowClick(callback)` is the row-click primitive `setAction` and `setNavigable` are both built on,
+    and it carries Obsidian's own name on the public surface rather than hiding as an implementation detail. It
+    returns nothing, so unlike those two it does not chain; `Setting.rowClick` holds the handler it stores, `null`
+    until the first call. The replace-not-append behavior the bullet above describes lives here, in one place.
 
 - **Two more settings-row departures, from the same read of `Zx`** (2026-09-17, Obsidian 1.14.2's `app.js`).
   `Setting.setClass` **splits on spaces first** — Obsidian is `settingEl.addClass(...cls.split(' ').filter(Boolean))`
