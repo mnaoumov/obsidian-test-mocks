@@ -40,6 +40,15 @@ const DEFAULT_ATTACHMENT_FOLDER_PATH = '/';
 const FOCUS_NEW_TAB_CONFIG_KEY = 'focusNewTab';
 const DEFAULT_FOCUS_NEW_TAB = true;
 
+/**
+ * The vault setting `FileManager.trashFile` routes on: `system` for the system trash, `local` for the vault's
+ * `.trash` folder, and `none` for a permanent delete. Obsidian's own default is `system`, from the same
+ * default-config object {@link DEFAULT_ATTACHMENT_FOLDER_PATH} comes from, so a file trashed through the file
+ * manager goes to the system trash unless a test changes it.
+ */
+const TRASH_OPTION_CONFIG_KEY = 'trashOption';
+const DEFAULT_TRASH_OPTION = 'system';
+
 const RELATIVE_PATH_PREFIX = './';
 const ROOT_PATH = '/';
 
@@ -57,12 +66,13 @@ export class Vault extends Events {
    */
   public adapter: DataAdapterOriginal;
   /**
-   * Backs `getConfig` / `setConfig`. Only `attachmentFolderPath` and `focusNewTab` carry modeled defaults —
-   * every other key reads as `undefined` until a test sets it.
+   * Backs `getConfig` / `setConfig`. Only `attachmentFolderPath`, `focusNewTab` and `trashOption` carry modeled
+   * defaults — every other key reads as `undefined` until a test sets it.
    */
   public config: Record<string, unknown> = {
     [ATTACHMENT_FOLDER_PATH_CONFIG_KEY]: DEFAULT_ATTACHMENT_FOLDER_PATH,
-    [FOCUS_NEW_TAB_CONFIG_KEY]: DEFAULT_FOCUS_NEW_TAB
+    [FOCUS_NEW_TAB_CONFIG_KEY]: DEFAULT_FOCUS_NEW_TAB,
+    [TRASH_OPTION_CONFIG_KEY]: DEFAULT_TRASH_OPTION
   };
 
   /**

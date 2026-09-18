@@ -352,8 +352,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   readable through the adapter, while `.trash` stays a dot path the vault never tracks. `trashSystem` removes the
   entry outright, recursively for a folder, and answers `true`; it answers `false`, changing nothing, for a path
   that does not exist or when the mock-only `InMemoryAdapter.isSystemTrashAvailable__` is turned off, which is how
-  a test reaches the fallback. `FileManager.trashFile` still always asks for the system trash, where Obsidian
-  routes on the vault's `trashOption` config.
+  a test reaches the fallback.
+  - **`FileManager.trashFile` routes on the vault's `trashOption` setting**, as Obsidian's does: `system` (the
+    modeled default) calls `vault.trash(file, true)`, `local` calls `vault.trash(file, false)`, and `none` calls
+    `vault.delete(file, true)`. **Any other value does nothing at all** — Obsidian's three branches have no `else`,
+    so a key set to a typo leaves the file where it is, and the mock reproduces that rather than falling back to the
+    system trash. It used to ask for the system trash unconditionally, which was invisible until the two trash
+    routes started to differ observably. `promptDelete` and `deleteUnlinkedAttachments`, the other two keys the real
+    `promptForDeletion` reads, are deliberately NOT modeled: the mock has no dialogue, so it can only ever behave as
+    `promptDelete: false`, which is exactly what it already does.
 
 - **Two settings-row departures are fixed, and four members are new** (2026-09-17, read in Obsidian 1.14.2's
   `app.js`). `Setting.setTooltip` writes its `aria-label` on `nameEl`, not on `settingEl` — Obsidian tooltips the
@@ -379,9 +386,11 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   against the mocks used to die on a strict-proxy read, forcing every consumer to hand-seed the surface.
   All four are obsidian-typings internals rather than `obsidian.d.ts` members, so per L4 they live on the
   mocks under their real, un-suffixed names:
-  - **`Vault.getConfig(key)` / `Vault.setConfig(key, value)`**, backed by the `config` bag. Only
-    `attachmentFolderPath` carries a modeled default (`/`, Obsidian's own); every other `ConfigItem`
-    reads as `undefined` until a test sets it — do NOT assume the bag mirrors Obsidian's full defaults.
+  - **`Vault.getConfig(key)` / `Vault.setConfig(key, value)`**, backed by the `config` bag. Exactly three keys
+    carry a modeled default, each Obsidian's own: `attachmentFolderPath` (`/`), `focusNewTab` (`true`) and
+    `trashOption` (`system`). Every other `ConfigItem` reads as `undefined` until a test sets it — do NOT assume
+    the bag mirrors Obsidian's full defaults. A key earns a default here when some mock READS it; the three above
+    are read by attachment-path resolution, `Workspace.createLeafInTabGroup` and `FileManager.trashFile`.
   - **`Vault.getAvailablePath(basePath, extension)`** — Obsidian's de-duplicator (plain name, then a
     `" 1"` / `" 2"` suffix, …). Note `obsidian-dev-utils`' own `getAvailablePath(app, path)` helper DELEGATES to this
     member, so a consumer cannot seed it by calling that helper — it would recurse until the stack blows.
