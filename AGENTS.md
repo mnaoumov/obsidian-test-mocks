@@ -817,3 +817,17 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     `Value`'s comparison of the two lists' string forms. So `['1, 2']` no longer equals `[1, 2]`, and
     `looseEquals` unwraps a ONE-element list against a non-list value: `[1]` loosely equals `1`, `[1, 2]`
     equals nothing but a list.
+
+- **The three tag readers are Obsidian's own, and two of their habits catch a consumer out** (2026-09-17,
+  `mg` / `yg` / `Ug` in Obsidian 1.14.2's `app.js`).
+  - **`parseFrontMatterTags` reads ONLY a `tags` key, case-insensitively**, and there is no `tag` fallback —
+    Obsidian never looks for one, so `tag: foo` yields nothing while `Tags: foo` yields `#foo`. It goes
+    through `parseFrontMatterStringArray`, which TRIMS every entry, and then drops every entry that is empty
+    and every entry holding a space, because a tag cannot contain one. So a `tags` list whose every entry is
+    dropped answers an EMPTY ARRAY; `null` means there was no `tags` entry at all.
+  - **`getAllTags` lists the FRONTMATTER tags first and the body tags second** — the opposite order to
+    `FileValue.getTags`, which reads the body first, and both match their Obsidian counterparts. It returns
+    `null` only for a falsy cache and an empty array for a cache carrying no tags, which is how a caller
+    tells "no cache" from "no tags"; its parameter is widened to `CachedMetadata | null` for that reason,
+    since `obsidian.d.ts` declares it non-nullable while `MetadataCache.getFileCache` really does answer
+    `null`. It never deduplicates: a tag in both the frontmatter and the body appears twice.

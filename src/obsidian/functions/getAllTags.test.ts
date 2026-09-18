@@ -28,7 +28,7 @@ describe('getAllTags', () => {
     expect(result).toEqual(['#baz']);
   });
 
-  it('should combine inline and frontmatter tags', () => {
+  it('should list the frontmatter tags before the inline ones', () => {
     const cache: CachedMetadata = {
       frontmatter: { position: { end: { col: 0, line: 0, offset: 0 }, start: { col: 0, line: 0, offset: 0 } }, tags: ['fm'] },
       tags: [
@@ -36,10 +36,24 @@ describe('getAllTags', () => {
       ]
     };
     const result = getAllTags(cache);
-    expect(result).toEqual(['#inline', '#fm']);
+    expect(result).toEqual(['#fm', '#inline']);
   });
 
-  it('should return null when no tags', () => {
-    expect(getAllTags({})).toBeNull();
+  it('should keep a duplicate rather than deduplicating', () => {
+    const cache: CachedMetadata = {
+      frontmatter: { position: { end: { col: 0, line: 0, offset: 0 }, start: { col: 0, line: 0, offset: 0 } }, tags: ['dup'] },
+      tags: [
+        { position: { end: { col: 0, line: 0, offset: 0 }, start: { col: 0, line: 0, offset: 0 } }, tag: '#dup' }
+      ]
+    };
+    expect(getAllTags(cache)).toEqual(['#dup', '#dup']);
+  });
+
+  it('should return an empty array when the cache has no tags', () => {
+    expect(getAllTags({})).toEqual([]);
+  });
+
+  it('should return null for a falsy cache', () => {
+    expect(getAllTags(null)).toBeNull();
   });
 });
