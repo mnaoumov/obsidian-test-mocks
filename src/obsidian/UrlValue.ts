@@ -16,6 +16,11 @@ import { Value } from './Value.ts';
  */
 export class UrlValue extends StringValue {
   /**
+   * The value type's identifier, `'URL'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'URL';
+
+  /**
    * The display text, or `null` to show the URL itself.
    */
   public display: null | StringValue;

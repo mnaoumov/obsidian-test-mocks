@@ -18,6 +18,11 @@ import { PrimitiveValue } from './PrimitiveValue.ts';
  */
 export class StringValue extends PrimitiveValue<string> {
   /**
+   * The value type's identifier, `'String'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'String';
+
+  /**
    * The lucide icon name standing for this value's type.
    */
   public override icon = 'lucide-text';

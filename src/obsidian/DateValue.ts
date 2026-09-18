@@ -26,6 +26,11 @@ const TWO_DIGITS_FORMAT_LENGTH = 2;
  */
 export class DateValue extends NotNullValue {
   /**
+   * The value type's identifier, `'Date'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'Date';
+
+  /**
    * Creates a value wrapping a date.
    *
    * @param date - The wrapped date.

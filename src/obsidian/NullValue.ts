@@ -24,6 +24,11 @@ import { Value } from './Value.ts';
  */
 export class NullValue extends Value {
   /**
+   * The value type's identifier, `'Null'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'Null';
+
+  /**
    * The one null value. Obsidian's `NullValue` is a singleton and this is it; the constructor refuses
    * anything else.
    */

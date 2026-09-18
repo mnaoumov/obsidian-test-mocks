@@ -17,6 +17,11 @@ import { NotNullValue } from './NotNullValue.ts';
  */
 export class RegExpValue extends NotNullValue {
   /**
+   * The value type's identifier, `'RegExp'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'RegExp';
+
+  /**
    * The lucide icon name standing for this value's type.
    */
   public override icon = 'lucide-regex';

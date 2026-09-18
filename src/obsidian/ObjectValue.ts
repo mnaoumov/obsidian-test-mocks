@@ -20,6 +20,11 @@ import { Value } from './Value.ts';
  */
 export class ObjectValue extends NotNullValue {
   /**
+   * The value type's identifier, `'Object'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'Object';
+
+  /**
    * The lucide icon name standing for this value's type.
    *
    * `lucide-list` rather than an object-shaped glyph, which is Obsidian's own choice, not a copy error.

@@ -8,6 +8,7 @@ import type { Value as ValueOriginal } from 'obsidian';
 
 import type { RenderContext } from './RenderContext.ts';
 
+import { castTo } from '../internal/castTo.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
@@ -25,9 +26,14 @@ import { strictProxy } from '../internal/strict-proxy.ts';
  */
 export abstract class Value {
   /**
-   * The value type's identifier; declared but not assigned in the mock.
+   * The value type's identifier: Obsidian's own name for this class of value, `'Any'` on the base.
+   *
+   * Each subclass that has a name of its own overwrites it. The five that do NOT - `NotNullValue`,
+   * `PrimitiveValue`, `RelativeDateValue`, `IconValue` and `TagValue` - answer with the nearest name above
+   * them, exactly as they do in Obsidian: `'Any'` for the first two, `'Date'` for a relative date and
+   * `'String'` for an icon and a tag.
    */
-  public static type: string;
+  public static type = 'Any';
 
   /**
    * The lucide icon name standing for this value's type.
@@ -36,6 +42,17 @@ export abstract class Value {
    * that wants its own icon overrides this field and every other subclass inherits the one above it.
    */
   public icon = 'lucide-file-question';
+
+  /**
+   * This value's CLASS, not its type name - Obsidian's own accessor, and its own oddity: the STATIC
+   * `Value.type` is a name such as `'String'`, while this instance accessor answers the constructor
+   * object. The mock models both as they are rather than reconciling the two.
+   *
+   * @returns This value's constructor.
+   */
+  public get type(): typeof Value {
+    return castTo<typeof Value>(this.constructor);
+  }
 
   /**
    * Creates a value.
@@ -96,6 +113,18 @@ export abstract class Value {
   public static looseEquals(this: void, a: null | Value, b: null | Value): boolean {
     return a === b
       || (!!a && !!b && ((a.constructor === b.constructor && a.equals(b)) || a.looseEquals(b) || b.looseEquals(a)));
+  }
+
+  /**
+   * Converts the CLASS - not an instance - to its string form: the static `Value.type` name, so
+   * `String(StringValue)` is `'String'`. Obsidian's own static, verbatim.
+   *
+   * Reached through `this`, so a subclass answers its own name without redeclaring anything.
+   *
+   * @returns The value type's identifier.
+   */
+  public static toString(): string {
+    return this.type;
   }
 
   /**

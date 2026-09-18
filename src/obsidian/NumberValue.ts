@@ -15,6 +15,11 @@ import { PrimitiveValue } from './PrimitiveValue.ts';
  */
 export class NumberValue extends PrimitiveValue<number> {
   /**
+   * The value type's identifier, `'Number'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'Number';
+
+  /**
    * The lucide icon name standing for this value's type.
    */
   public override icon = 'lucide-binary';

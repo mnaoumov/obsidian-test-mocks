@@ -57,6 +57,11 @@ type DurationComponents = [years: number, months: number, days: number, hours: n
  */
 export class DurationValue extends NotNullValue {
   /**
+   * The value type's identifier, `'Duration'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'Duration';
+
+  /**
    * The lucide icon name standing for this value's type.
    */
   public override icon = 'lucide-calendar-range';

@@ -33,6 +33,11 @@ const MD_EXTENSION = 'md';
  */
 export class FileValue extends NotNullValue {
   /**
+   * The value type's identifier, `'File'` - Obsidian's own name for this class of value.
+   */
+  public static override type = 'File';
+
+  /**
    * The lucide icon name standing for this value's type.
    */
   public override icon = 'lucide-file';
