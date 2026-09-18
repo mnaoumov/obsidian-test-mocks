@@ -283,13 +283,14 @@ export class Workspace extends Events {
 
   /**
    * Creates a leaf in a tab group, after the group's most recently active tab, as Obsidian does — and makes it active
-   * when the vault's `focusNewTab` setting is on, which it is by default.
+   * when the vault's `focusNewTab` setting is on, which it is by default. When that most recently active tab is
+   * already showing the empty view, Obsidian hands it back instead of creating anything, and without activating it;
+   * the mock does the same, asking {@link WorkspaceLeaf.isShowingEmptyView__}. So two `getLeaf('tab')` calls with
+   * nothing done to the leaf in between answer with the same leaf, exactly as the real app does.
    *
-   * Two departures. Obsidian hands back the group's most recently active tab, rather than creating anything, when that
-   * tab is already showing the empty view — the mock always creates, because a mock leaf holds no view and so cannot
-   * be told apart from one showing a file. And Obsidian throws `No tab group found.` when no group is given and no
-   * leaf was ever active; the mock falls back to the root tab group, creating it when the root split is empty, so
-   * `getLeaf('tab')` works on a workspace no test has populated.
+   * One departure. Obsidian throws `No tab group found.` when no group is given and no leaf was ever active; the
+   * mock falls back to the root tab group, creating it when the root split is empty, so `getLeaf('tab')` works on a
+   * workspace no test has populated.
    *
    * @param tabs - The group to create the leaf in; the most recently active leaf's group by default.
    * @returns The new leaf.
@@ -305,6 +306,10 @@ export class Workspace extends Events {
       }
       latest = child;
       index = childIndex;
+    }
+
+    if (latest instanceof WorkspaceLeaf && latest.isShowingEmptyView__()) {
+      return latest;
     }
 
     const leaf = WorkspaceLeaf.create2__(this.app);

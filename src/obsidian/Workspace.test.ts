@@ -93,6 +93,16 @@ function collectRootLeaves(app: App): WorkspaceLeaf[] {
   return leaves;
 }
 
+/**
+ * Opens a tab and fills it, because `getLeaf('tab')` hands back a tab that is still showing the empty view instead of
+ * creating another one - so a test that wants a SECOND tab has to put something in the first.
+ */
+async function openFilledTab(app: App): Promise<WorkspaceLeaf> {
+  const leaf = app.workspace.getLeaf(true);
+  await leaf.setViewState({ type: 'markdown' });
+  return leaf;
+}
+
 describe('Workspace', () => {
   describe('asOriginalType2__()', () => {
     it('should return the same instance typed as the original', () => {
@@ -251,9 +261,9 @@ describe('Workspace', () => {
       expect(app.workspace.activeLeaf).toBe(leaf);
     });
 
-    it('should leave the new leaf inactive when focusNewTab is off', () => {
+    it('should leave the new leaf inactive when focusNewTab is off', async () => {
       const app = App.createConfigured__();
-      const active = app.workspace.getLeaf(true);
+      const active = await openFilledTab(app);
       app.vault.setConfig('focusNewTab', false);
 
       const leaf = app.workspace.createLeafInTabGroup();
@@ -288,6 +298,47 @@ describe('Workspace', () => {
 
       expect(leaf.parent).toBe(group);
     });
+
+    it('should hand back the most recently active tab when it is still showing the empty view', () => {
+      const app = App.createConfigured__();
+      const first = app.workspace.createLeafInTabGroup();
+      expect(app.workspace.createLeafInTabGroup()).toBe(first);
+    });
+
+    it('should not activate the tab it hands back', async () => {
+      const app = App.createConfigured__();
+      const active = await openFilledTab(app);
+      const untouched = ensureNonNullable(addInactiveLeaves(app, 1).at(0));
+
+      const leaf = app.workspace.createLeafInTabGroup(castTo<WorkspaceTabs>(untouched.parent).asOriginalType3__());
+
+      expect(leaf).toBe(untouched);
+      expect(app.workspace.activeLeaf).toBe(active);
+    });
+
+    it('should create a tab when the most recently active one holds a file', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const first = app.workspace.createLeafInTabGroup();
+      await first.openFile(ensureNonNullable(app.vault.getFileByPath('note.md')));
+
+      expect(app.workspace.createLeafInTabGroup()).not.toBe(first);
+    });
+
+    it('should create a tab when the most recently active one has a view state', async () => {
+      const app = App.createConfigured__();
+      const first = app.workspace.createLeafInTabGroup();
+      await first.setViewState({ type: 'markdown' });
+
+      expect(app.workspace.createLeafInTabGroup()).not.toBe(first);
+    });
+
+    it('should create a tab when the most recently active one has a view open', async () => {
+      const app = App.createConfigured__();
+      const first = app.workspace.createLeafInTabGroup();
+      await first.open(new DummyView(first).asOriginalType2__());
+
+      expect(app.workspace.createLeafInTabGroup()).not.toBe(first);
+    });
   });
 
   describe('detachLeavesOfType()', () => {
@@ -313,7 +364,7 @@ describe('Workspace', () => {
   describe('duplicateLeaf()', () => {
     it('should create a new leaf for a pane type', async () => {
       const app = App.createConfigured__();
-      const leaf = app.workspace.getLeaf(true);
+      const leaf = await openFilledTab(app);
       const dup = await app.workspace.duplicateLeaf(leaf, 'tab');
       expect(dup).toBeInstanceOf(WorkspaceLeaf);
       expect(dup).not.toBe(leaf);
@@ -556,10 +607,10 @@ describe('Workspace', () => {
       expect(reused.parent).toBe(leaf.parent);
     });
 
-    it('should add a tab right after the most recently active leaf in its tab group', () => {
+    it('should add a tab right after the most recently active leaf in its tab group', async () => {
       const app = App.createConfigured__();
-      const first = app.workspace.getLeaf(true);
-      const second = app.workspace.getLeaf(true);
+      const first = await openFilledTab(app);
+      const second = await openFilledTab(app);
       app.workspace.setActiveLeaf(second);
       app.workspace.setActiveLeaf(first);
       const third = app.workspace.getLeaf('tab');
@@ -615,9 +666,9 @@ describe('Workspace', () => {
       expect(collectAllLeaves(app)).toEqual([leaf]);
     });
 
-    it('should keep looking past leaves that do not match', () => {
+    it('should keep looking past leaves that do not match', async () => {
       const app = App.createConfigured__();
-      const first = app.workspace.getLeaf(true);
+      const first = await openFilledTab(app);
       const second = app.workspace.getLeaf('tab');
       expect(first).not.toBe(second);
       expect(app.workspace.getLeafById(second.id__)).toBe(second);
@@ -783,9 +834,9 @@ describe('Workspace', () => {
       expect(unpinned).toBeInstanceOf(WorkspaceLeaf);
     });
 
-    it('should pick the most recently active leaf that is its group\'s current tab', () => {
+    it('should pick the most recently active leaf that is its group\'s current tab', async () => {
       const app = App.createConfigured__();
-      const first = app.workspace.getLeaf(true);
+      const first = await openFilledTab(app);
       const second = app.workspace.getLeaf('tab');
       const outsider = app.workspace.createLeafBySplit(second);
       outsider.setPinned(true);
@@ -804,9 +855,9 @@ describe('Workspace', () => {
       expect(app.workspace.activeLeaf).toBe(outsider);
     });
 
-    it('should consider every leaf of a stacked group, not only its current tab', () => {
+    it('should consider every leaf of a stacked group, not only its current tab', async () => {
       const app = App.createConfigured__();
-      const first = app.workspace.getLeaf(true);
+      const first = await openFilledTab(app);
       const second = app.workspace.getLeaf('tab');
       const outsider = app.workspace.createLeafBySplit(second);
       outsider.setPinned(true);
@@ -885,9 +936,9 @@ describe('Workspace', () => {
   });
 
   describe('iterateAllLeaves()', () => {
-    it('should iterate over all leaves', () => {
+    it('should iterate over all leaves', async () => {
       const app = App.createConfigured__();
-      app.workspace.getLeaf(true);
+      await openFilledTab(app);
       app.workspace.getLeaf(true);
       expect(collectAllLeaves(app).length).toBe(EXPECTED_LEAF_COUNT);
     });
@@ -1083,9 +1134,9 @@ describe('Workspace', () => {
       expect(app.workspace.activeLeaf).toBe(leaf);
     });
 
-    it('should let updateLayout pick another active leaf once the layout is ready', () => {
+    it('should let updateLayout pick another active leaf once the layout is ready', async () => {
       const app = App.createConfigured__();
-      const kept = app.workspace.getLeaf(true);
+      const kept = await openFilledTab(app);
       const removed = app.workspace.getLeaf('tab');
       app.workspace.setLayoutReady__();
 
@@ -1343,10 +1394,10 @@ describe('Workspace', () => {
       expect(app.workspace.activeLeaf).toBe(kept);
     });
 
-    it('should prefer the active tab group\'s current tab when re-picking', () => {
+    it('should prefer the active tab group\'s current tab when re-picking', async () => {
       const app = App.createConfigured__();
       app.workspace.setLayoutReady__();
-      const kept = app.workspace.getLeaf(true);
+      const kept = await openFilledTab(app);
       const detached = app.workspace.getLeaf('tab');
       const other = app.workspace.createLeafBySplit(detached);
       app.workspace.setActiveLeaf(detached);
@@ -1369,10 +1420,10 @@ describe('Workspace', () => {
       expect(app.workspace.activeTabGroup).toBe(leaf.parent);
     });
 
-    it('should clear a link group that is down to a single leaf', () => {
+    it('should clear a link group that is down to a single leaf', async () => {
       const app = App.createConfigured__();
       app.workspace.setLayoutReady__();
-      const first = app.workspace.getLeaf(true);
+      const first = await openFilledTab(app);
       const second = app.workspace.getLeaf('tab');
       first.setGroup('group-1');
       second.setGroup('group-1');
@@ -1383,10 +1434,10 @@ describe('Workspace', () => {
       expect(first.getGroup__()).toBeNull();
     });
 
-    it('should leave a link group with several leaves alone', () => {
+    it('should leave a link group with several leaves alone', async () => {
       const app = App.createConfigured__();
       app.workspace.setLayoutReady__();
-      const first = app.workspace.getLeaf(true);
+      const first = await openFilledTab(app);
       const second = app.workspace.getLeaf('tab');
       first.setGroup('group-1');
       second.setGroup('group-1');
@@ -1432,10 +1483,10 @@ describe('Workspace', () => {
       expect(app.workspace.activeTabGroup).toBeNull();
     });
 
-    it('should fall back when the active tab group holds no leaf at its current tab', () => {
+    it('should fall back when the active tab group holds no leaf at its current tab', async () => {
       const app = App.createConfigured__();
       app.workspace.setLayoutReady__();
-      const kept = app.workspace.getLeaf(true);
+      const kept = await openFilledTab(app);
       const detached = app.workspace.getLeaf('tab');
       const group = castTo<WorkspaceTabs>(detached.parent);
 
