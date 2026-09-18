@@ -185,6 +185,18 @@ export class ButtonComponent extends BaseComponent {
   }
 
   /**
+   * Shows or clears the button's loading state, by toggling the `mod-loading` class. It is the same class
+   * {@link ButtonComponent.simulateClick__} carries for the length of a click handler.
+   *
+   * @param loading - Whether the button is loading.
+   * @returns This button, for chaining.
+   */
+  public setLoading(loading: boolean): this {
+    this.buttonEl.toggleClass('mod-loading', loading);
+    return this;
+  }
+
+  /**
    * Sets the button's tooltip. The mock writes it to the `aria-label` attribute and ignores the options.
    *
    * @param tooltip - The tooltip text.
@@ -197,14 +209,14 @@ export class ButtonComponent extends BaseComponent {
   }
 
   /**
-   * Styles the button as a warning, by adding the `mod-warning` class. Obsidian deprecates it in favor of
-   * {@link ButtonComponent.setDestructive}.
+   * Styles the button as a warning. Obsidian deprecates it in favor of {@link ButtonComponent.setDestructive}, and
+   * implements it as {@link ButtonComponent.setDestructive} followed by {@link ButtonComponent.setCta} — so the
+   * button gets `mod-destructive` and `mod-cta`, and no class of its own.
    *
    * @returns This button, for chaining.
    */
   public setWarning(): this {
-    this.buttonEl.addClass('mod-warning');
-    return this;
+    return this.setDestructive().setCta();
   }
 
   /**

@@ -48,6 +48,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `AbstractTextComponent` | `changeCallback` |
 | `App` | `appId`, `changeTheme`, `getTheme`, `isMobile`, `plugins`, `setTheme` |
 | `BasesViewConfig` | `setOrder` |
+| `ButtonComponent` | `setLoading` |
 | `ColorComponent` | `changeCallback`, `colorPickerEl` |
 | `Component` | `_children`, `_events`, `_loaded` |
 | `DateValue` | `date`, `printDate`, `printTime`, `time` |
@@ -70,7 +71,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `ObjectValue` | `data`, `getInsensitive`, `lazyEvaluator`, `valuesRaw` |
 | `PopoverSuggest` | `isOpen` |
 | `ProgressBarComponent` | `progressBar` |
-| `Setting` | `setVisibility` |
+| `Setting` | `setAction`, `setNavigable`, `setNoInfo`, `setVisibility` |
 | `SettingGroup` | `components`, `controlEl`, `groupEl`, `headerEl`, `headerInnerEl` |
 | `SettingTab` | `renderTab` |
 | `SliderComponent` | `changeCallback` |

@@ -355,6 +355,25 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   a test reaches the fallback. `FileManager.trashFile` still always asks for the system trash, where Obsidian
   routes on the vault's `trashOption` config.
 
+- **Two settings-row departures are fixed, and four members are new** (2026-09-17, read in Obsidian 1.14.2's
+  `app.js`). `Setting.setTooltip` writes its `aria-label` on `nameEl`, not on `settingEl` — Obsidian tooltips the
+  name element (`JM(this.nameEl, …)`) — so a consumer reading the row's tooltip was looking at the wrong element.
+  `ButtonComponent.setWarning` no longer adds `mod-warning`, a class the app never adds anywhere: Obsidian
+  implements it as `setDestructive().setCta()`, so the button ends up with `mod-destructive` and `mod-cta`. Both
+  are public API, so a test that pinned the old answer was pinning something Obsidian does not do.
+  - Four members `obsidian-typings` declares now have real behavior instead of throwing.
+    `ButtonComponent.setLoading(loading)` toggles `mod-loading`, the same class a pending click handler carries.
+    `Setting.setNoInfo()` hides `infoEl`. `Setting.setAction(callback)` and `Setting.setNavigable(callback)` make
+    the whole row clickable — `mod-action` / `mod-navigable` plus `tappable`, with `setNavigable` also appending a
+    `setting-item-chevron` div whose `data-icon` records `lucide-chevron-right`, the icon convention the component
+    mocks already use.
+  - **Drive such a row with a real `settingEl.click()`.** The listener is attached once, so a second `setAction` /
+    `setNavigable` replaces the handler rather than adding another; a disabled row is ignored, and so is a click an
+    inner control has already handled by calling `preventDefault` on it.
+  - `Setting.setIcon`, `Setting.iconEl`, `Setting.setRowClick` and `Setting.rowClick` are in neither
+    `obsidian.d.ts` nor `obsidian-typings`, so L1 / L4 keeps them off the surface. The row-click pair survives as a
+    private implementation detail, because it is what the two members above are built on.
+
 - **Attachment-path resolution is modeled end to end** (added 2026-07-28) — anything calling
   `obsidian-dev-utils`' `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`
   against the mocks used to die on a strict-proxy read, forcing every consumer to hand-seed the surface.

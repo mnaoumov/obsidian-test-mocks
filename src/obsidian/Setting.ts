@@ -90,6 +90,8 @@ export class Setting {
    */
   public settingEl: HTMLElement;
 
+  private rowClick: (() => void) | null = null;
+
   /**
    * Creates the setting row inside `containerEl`.
    *
@@ -328,6 +330,19 @@ export class Setting {
   }
 
   /**
+   * Makes the whole row act as a button: adds the `mod-action` and `tappable` classes and runs `callback` when the
+   * row is clicked.
+   *
+   * @param callback - Called when the row is clicked.
+   * @returns This setting, for chaining.
+   */
+  public setAction(callback: () => void): this {
+    this.settingEl.addClass('mod-action', 'tappable');
+    this.setRowClick(callback);
+    return this;
+  }
+
+  /**
    * Adds a CSS class to the row's element.
    *
    * @param cls - The class name.
@@ -409,15 +424,43 @@ export class Setting {
   }
 
   /**
-   * Sets the row's tooltip. The mock stores it as the `aria-label` attribute of {@link Setting.settingEl} and
-   * ignores the options.
+   * Makes the row navigable: adds the `mod-navigable` and `tappable` classes, appends a chevron to
+   * {@link Setting.controlEl}, and runs `callback` when the row is clicked, as {@link Setting.setAction} does.
+   *
+   * Obsidian renders the chevron's icon; the mock only records its id in the element's `data-icon` attribute.
+   *
+   * @param callback - Called when the row is clicked.
+   * @returns This setting, for chaining.
+   */
+  public setNavigable(callback: () => void): this {
+    this.settingEl.addClass('mod-navigable', 'tappable');
+    this.controlEl.createDiv('setting-item-chevron', (chevronEl) => {
+      chevronEl.dataset['icon'] = 'lucide-chevron-right';
+    });
+    this.setRowClick(callback);
+    return this;
+  }
+
+  /**
+   * Hides the row's info area ({@link Setting.infoEl}), for a row that is all control.
+   *
+   * @returns This setting, for chaining.
+   */
+  public setNoInfo(): this {
+    this.infoEl.hide();
+    return this;
+  }
+
+  /**
+   * Sets the row's tooltip. The mock stores it as the `aria-label` attribute of {@link Setting.nameEl} — the
+   * element Obsidian tooltips — and ignores the options.
    *
    * @param tooltip - The tooltip text.
    * @param _options - How the tooltip is displayed.
    * @returns This setting, for chaining.
    */
   public setTooltip(tooltip: string, _options?: TooltipOptionsOriginal): this {
-    this.settingEl.setAttribute('aria-label', tooltip);
+    this.nameEl.setAttribute('aria-label', tooltip);
     return this;
   }
 
@@ -441,5 +484,30 @@ export class Setting {
   public then(callback: (setting: this) => unknown): this {
     callback(this);
     return this;
+  }
+
+  /**
+   * Records the handler run when the row is clicked, attaching the listener the first time only, as Obsidian does —
+   * so a later call replaces the handler rather than adding a second listener. A disabled row and an event whose
+   * default was already prevented are both ignored.
+   *
+   * Neither this nor the handler it stores is declared by `obsidian.d.ts` or `obsidian-typings`, so both stay
+   * private: they are what {@link Setting.setAction} and {@link Setting.setNavigable} are built on, not members of
+   * the mocked surface.
+   *
+   * @param callback - Called when the row is clicked.
+   */
+  private setRowClick(callback: () => void): void {
+    if (!this.rowClick) {
+      this.settingEl.addEventListener('click', (event) => {
+        if (event.defaultPrevented || this.disabled) {
+          return;
+        }
+
+        this.rowClick?.();
+      });
+    }
+
+    this.rowClick = callback;
   }
 }
