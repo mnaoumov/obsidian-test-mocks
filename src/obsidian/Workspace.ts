@@ -27,6 +27,7 @@ import type { TFile } from './TFile.ts';
 import type { WorkspaceItem } from './WorkspaceItem.ts';
 
 import { castTo } from '../internal/castTo.ts';
+import { EmptyView } from '../internal/empty-view.ts';
 import {
   noop,
   noopAsync
@@ -285,8 +286,8 @@ export class Workspace extends Events {
    * Creates a leaf in a tab group, after the group's most recently active tab, as Obsidian does — and makes it active
    * when the vault's `focusNewTab` setting is on, which it is by default. When that most recently active tab is
    * already showing the empty view, Obsidian hands it back instead of creating anything, and without activating it;
-   * the mock does the same, asking {@link WorkspaceLeaf.isShowingEmptyView__}. So two `getLeaf('tab')` calls with
-   * nothing done to the leaf in between answer with the same leaf, exactly as the real app does.
+   * the mock asks the same question its own way. So two `getLeaf('tab')` calls with nothing done to the leaf in
+   * between answer with the same leaf, exactly as the real app does.
    *
    * One departure. Obsidian throws `No tab group found.` when no group is given and no leaf was ever active; the
    * mock falls back to the root tab group, creating it when the root split is empty, so `getLeaf('tab')` works on a
@@ -308,7 +309,7 @@ export class Workspace extends Events {
       index = childIndex;
     }
 
-    if (latest instanceof WorkspaceLeaf && latest.isShowingEmptyView__()) {
+    if (latest instanceof WorkspaceLeaf && latest.view instanceof EmptyView) {
       return latest;
     }
 
@@ -380,7 +381,7 @@ export class Workspace extends Events {
       await leaf.loadIfDeferred();
     }
 
-    if (options.state || leaf.getViewType__() !== type) {
+    if (options.state || leaf.view.getViewType() !== type) {
       await leaf.setViewState(
         options.state ? { state: castTo<Record<string, unknown>>(options.state), type } : { type }
       );
@@ -506,7 +507,7 @@ export class Workspace extends Events {
   }
 
   /**
-   * Gets every leaf showing the given view type, as `WorkspaceLeaf.getViewType__()` reports it.
+   * Gets every leaf showing the given view type, as its view reports it.
    *
    * @param viewType - The view type.
    * @returns The matching leaves.
@@ -514,7 +515,7 @@ export class Workspace extends Events {
   public getLeavesOfType(viewType: string): WorkspaceLeaf[] {
     const leaves: WorkspaceLeaf[] = [];
     this.iterateAllLeaves((leaf) => {
-      if (leaf.getViewType__() === viewType) {
+      if (leaf.view.getViewType() === viewType) {
         leaves.push(leaf);
       }
     });

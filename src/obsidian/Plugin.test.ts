@@ -137,6 +137,18 @@ describe('Plugin', () => {
       expect(plugin.extensions__.get('csv')).toBe('table-view');
       expect(plugin.extensions__.get('tsv')).toBe('table-view');
     });
+
+    it('should register them in the app\'s view registry and unregister them on unload', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+
+      plugin.registerExtensions(['csv'], 'table-view');
+      expect(app.viewRegistry.getTypeByExtension('csv')).toBe('table-view');
+
+      plugin.load();
+      plugin.unload();
+      expect(app.viewRegistry.getTypeByExtension('csv')).toBeUndefined();
+    });
   });
 
   describe('registerHoverLinkSource', () => {
@@ -189,6 +201,19 @@ describe('Plugin', () => {
       const creator = vi.fn();
       plugin.registerView('my-view', creator);
       expect(plugin.views__.get('my-view')).toBe(creator);
+    });
+
+    it('should register it in the app\'s view registry and unregister it on unload', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      const creator = vi.fn();
+
+      plugin.registerView('my-view', creator);
+      expect(app.viewRegistry.getViewCreatorByType('my-view')).toBe(creator);
+
+      plugin.load();
+      plugin.unload();
+      expect(app.viewRegistry.getViewCreatorByType('my-view')).toBeUndefined();
     });
   });
 

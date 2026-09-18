@@ -46,7 +46,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | --- | --- |
 | `AbstractInputSuggest` | `selectCb`, `textInputEl` |
 | `AbstractTextComponent` | `changeCallback` |
-| `App` | `appId`, `changeTheme`, `getTheme`, `isMobile`, `plugins`, `setTheme` |
+| `App` | `appId`, `changeTheme`, `getTheme`, `isMobile`, `plugins`, `setTheme`, `viewRegistry` |
 | `BasesViewConfig` | `setOrder` |
 | `ButtonComponent` | `setLoading` |
 | `ColorComponent` | `changeCallback`, `colorPickerEl` |
@@ -58,6 +58,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `ExtraButtonComponent` | `changeCallback` |
 | `FileManager` | `app` |
 | `FileValue` | `app`, `file`, `getBacklinks`, `getEmbeds`, `getLinks`, `getProps`, `getTags` |
+| `FileView` | `loadFile` |
 | `LinkValue` | `app`, `display`, `sourcePath` |
 | `ListValue` | `compare`, `data`, `earliest`, `flatten`, `getDates`, `getNumbers`, `join`, `latest`, `lazyEvaluator`, `max`, `mean`, `median`, `min`, `reverse`, `slice`, `sort`, `stddev`, `sum`, `unique` |
 | `MarkdownEditView` | `type`, `view` |
@@ -82,9 +83,10 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `ToggleComponent` | `changeCallback`, `on` |
 | `Value` | `icon`, `keys`, `objectAccess` |
 | `Vault` | `config`, `exists`, `fileMap`, `getAbstractFileByPathInsensitive`, `getAvailablePath`, `getAvailablePathForAttachments`, `getConfig`, `setConfig` |
+| `View` | `close`, `open` |
 | `Workspace` | `activeLeafEvents`, `activeTabGroup`, `app`, `createLeafInTabGroup`, `floatingSplit`, `getFocusedContainer`, `isAttached`, `iterateLeaves`, `lastActiveFile`, `lastTabGroupStacked`, `onLayoutChange`, `requestActiveLeafEvents`, `requestLayoutChangeEvents`, `requestUpdateLayout`, `splitLeaf`, `updateLayout` |
-| `WorkspaceItem` | `detach`, `dimension`, `setDimension`, `setParent` |
-| `WorkspaceLeaf` | `activeTime`, `canNavigate`, `group`, `pinned`, `setDimension` |
+| `WorkspaceItem` | `containerEl`, `detach`, `dimension`, `setDimension`, `setParent` |
+| `WorkspaceLeaf` | `_empty`, `activeTime`, `canNavigate`, `group`, `pinned`, `setDimension`, `working` |
 | `WorkspaceParent` | `allowSingleChild`, `children`, `insertChild`, `removeChild`, `replaceChild` |
 | `WorkspaceSidedock` | `allowSingleChild`, `children`, `direction` |
 | `WorkspaceSplit` | `direction`, `setDirection` |

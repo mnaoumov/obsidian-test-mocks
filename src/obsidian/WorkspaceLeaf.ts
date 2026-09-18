@@ -15,18 +15,23 @@ import type {
   WorkspaceTabs as WorkspaceTabsOriginal
 } from 'obsidian';
 
+import type { ViewStateResultInternal } from '../internal/types.ts';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
+import { EmptyView } from '../internal/empty-view.ts';
 import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { UnknownView } from '../internal/unknown-view.ts';
 import {
   createParentPlaceholder,
   EMPTY_VIEW_TYPE
 } from '../internal/workspace-layout.ts';
+import { FileView } from './FileView.ts';
+import { View } from './View.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
 // Held on an object so the counter can advance from inside the constructor without assigning to a module-level binding (`unicorn/no-top-level-assignment-in-function`).
@@ -42,11 +47,21 @@ const HEX_RADIX = 16;
 /**
  * Mock of Obsidian's `WorkspaceLeaf`.
  *
- * Nothing is rendered: the leaf keeps its view, opened file, view state, ephemeral state, group and pinned flag in
- * memory so a test can read them back. It sits in the workspace's layout tree, and {@link WorkspaceLeaf.detach}
- * removes it from there.
+ * The leaf keeps its opened file, ephemeral state, group and pinned flag in memory so a test can read them back. It
+ * sits in the workspace's layout tree, and {@link WorkspaceLeaf.detach} removes it from there.
+ *
+ * As in Obsidian its {@link WorkspaceLeaf.view} is REAL and never `null`: the leaf is born holding
+ * {@link WorkspaceLeaf._empty}, the "New tab" page, and {@link WorkspaceLeaf.setViewState} builds the view its type
+ * names through `App.viewRegistry`. So the view state is not stored — {@link WorkspaceLeaf.getViewState} derives it
+ * from the view, exactly as the app does.
  */
 export class WorkspaceLeaf extends WorkspaceItem {
+  /**
+   * The "New tab" page the leaf is born holding, and goes back to whenever {@link WorkspaceLeaf.open} is passed
+   * `null`. Obsidian keeps it under this name too.
+   */
+  public _empty: EmptyView;
+
   /**
    * When the leaf was last made active, as a timestamp; `0` until then. `Workspace.setActiveLeaf` sets it, and
    * `Workspace.getMostRecentLeaf` picks the leaf with the highest value.
@@ -54,7 +69,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public activeTime = 0;
 
   /**
-   * Mock-only: the app the leaf was created for, used to reach the mock workspace.
+   * Mock-only: the app the leaf was created for, used to reach the mock workspace and the view registry.
    */
   public readonly app__: App;
 
@@ -70,7 +85,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
 
   /**
    * Whether the leaf is deferred because it is in the background, holding a placeholder instead of its real view.
-   * Always `false` in the mock.
+   *
+   * Always `false` in the mock. Obsidian defers a view only when the leaf has no history state, is not already
+   * deferred, carries an icon and a title in its view state, and its element is off screen; the mock has neither a
+   * history nor a rendered element, so that branch is unreachable and a registered type always goes through its
+   * creator.
    */
   public readonly isDeferred = false;
 
@@ -81,28 +100,29 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public override parent: WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal = createParentPlaceholder<WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal>();
 
   /**
-   * The view shown in the leaf, or `null` until one is opened (Obsidian declares it non-null).
+   * The view shown in the leaf. Never `null`: a leaf showing nothing holds {@link WorkspaceLeaf._empty}.
    */
-  public view: null | ViewOriginal = null;
+  public view: ViewOriginal;
 
   /**
-   * Mock-only: the file last opened with {@link WorkspaceLeaf.openFile}.
+   * Mock-only: the file the leaf's view has loaded.
    *
-   * @returns The opened file, or `null` when none was opened.
+   * @returns The file view's file, or `null` when the view is not a file view or has none.
    */
   public get file__(): null | TFile {
-    return this.file;
+    return this.view instanceof FileView ? this.view.file : null;
   }
 
   private ephemeralState: Record<string, unknown> = {};
-  private file: null | TFile = null;
   private group: null | string = null;
   private pinned = false;
 
-  private viewState: ViewStateOriginal = { type: '' };
+  // Obsidian's own guard: a `setViewState` reached from inside another one is dropped.
+  private working = false;
 
   /**
-   * Creates a leaf. Obsidian does not construct leaves publicly; use {@link WorkspaceLeaf.create2__}.
+   * Creates a leaf showing the empty view. Obsidian does not construct leaves publicly; use
+   * {@link WorkspaceLeaf.create2__}.
    *
    * @param app - The app the leaf belongs to.
    * @param id - The leaf id; a unique numeric id is generated when omitted.
@@ -111,6 +131,9 @@ export class WorkspaceLeaf extends WorkspaceItem {
     super(app.workspace, id);
     this.app__ = app;
     this.id__ = id ?? String(leafIdCounter.next++);
+    this._empty = EmptyView.create2__(this);
+    this.view = this._empty.asOriginalType2__();
+    this.containerEl.append(this._empty.containerEl);
     const self = strictProxy(this);
     self.constructor3__(app, id);
     return self;
@@ -152,15 +175,12 @@ export class WorkspaceLeaf extends WorkspaceItem {
   /**
    * Whether the leaf may be navigated away from, which is what `Workspace.getUnpinnedLeaf` — and so `getLeaf(false)` —
    * uses to decide whether the leaf can be reused. As in Obsidian, that is its view's `navigation` flag and the leaf
-   * not being pinned.
-   *
-   * A mock leaf holds no view where Obsidian holds its empty view, whose `navigation` is `true`, so a leaf with no
-   * view navigates.
+   * not being pinned; the empty view navigates, so a leaf showing nothing is reusable.
    *
    * @returns Whether the leaf can navigate.
    */
   public canNavigate(): boolean {
-    return (this.view ? this.view.navigation : true) && !this.pinned;
+    return this.view.navigation && !this.pinned;
   }
 
   /**
@@ -184,10 +204,10 @@ export class WorkspaceLeaf extends WorkspaceItem {
   /**
    * Gets the text shown for the leaf, such as in its tab header.
    *
-   * @returns The view's display text, or an empty string when no view is open.
+   * @returns The view's display text.
    */
   public getDisplayText(): string {
-    return this.view ? this.view.getDisplayText() : '';
+    return this.view.getDisplayText();
   }
 
   /**
@@ -213,33 +233,28 @@ export class WorkspaceLeaf extends WorkspaceItem {
   /**
    * Gets the icon shown for the leaf.
    *
-   * @returns The view's icon, or an empty string when no view is open.
+   * @returns The view's icon.
    */
   public getIcon(): IconNameOriginal {
-    return this.view ? this.view.getIcon() : '';
+    return this.view.getIcon();
   }
 
   /**
-   * Gets the leaf's serializable view state: the view type and its state.
+   * Gets the leaf's serializable view state, derived from the view as Obsidian derives it: its type and state, plus
+   * the pinned flag when the leaf is pinned.
    *
-   * @returns A shallow copy of the stored view state, `{ type: '' }` until one is set.
+   * Obsidian also writes the view's icon and display text into the result, for the placeholder it shows while a
+   * deferred view loads. Neither `obsidian.d.ts` nor `obsidian-typings` declares those two members of `ViewState`,
+   * and the mock never defers, so it leaves them out.
+   *
+   * @returns The view state.
    */
   public getViewState(): ViewStateOriginal {
-    return { ...this.viewState };
-  }
-
-  /**
-   * Mock-only: the view type the leaf answers with, which is what `Workspace.getLeavesOfType` and
-   * `Workspace.ensureSideLeaf` match on.
-   *
-   * Obsidian reads `leaf.view.getViewType()`, because `setViewState` builds the view. The mock's `setViewState`
-   * stores the state without building one, so the open view's type wins when there is a view and the stored view
-   * state's type stands in otherwise — falling back to `'empty'`, Obsidian's own answer for a leaf showing nothing.
-   *
-   * @returns The view type.
-   */
-  public getViewType__(): string {
-    return this.view ? this.view.getViewType() : this.viewState.type || EMPTY_VIEW_TYPE;
+    return {
+      ...this.pinned && { pinned: true },
+      state: this.view.getState(),
+      type: this.view.getViewType()
+    };
   }
 
   /**
@@ -252,24 +267,6 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   /**
-   * Mock-only: whether the leaf is showing Obsidian's empty view — the "New tab" page — which is what
-   * `Workspace.createLeafInTabGroup` hands back instead of creating another tab.
-   *
-   * Obsidian asks `leaf.view instanceof EmptyView`, and can, because a leaf's view IS the empty view from
-   * construction and goes back to it when the open view closes. A mock leaf holds `null` there, so the question is
-   * put to the two things the mock does record: {@link WorkspaceLeaf.getViewType__} answers `'empty'` for a leaf
-   * with no view and no view-state type — and for a view state whose type is literally `'empty'`, which is the
-   * state Obsidian itself keeps the empty view for — while the file guard covers {@link WorkspaceLeaf.openFile},
-   * which records the file without building a view where Obsidian would have replaced the empty view with a real
-   * one.
-   *
-   * @returns Whether the leaf is showing the empty view.
-   */
-  public isShowingEmptyView__(): boolean {
-    return this.getViewType__() === EMPTY_VIEW_TYPE && this.file === null;
-  }
-
-  /**
    * Loads the leaf's real view if it is deferred, resolving once it has fully loaded. The mock's leaves are never
    * deferred, so it resolves immediately.
    */
@@ -278,36 +275,81 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   /**
-   * Notifies the leaf that it was resized. The mock forwards the call to the view, if any.
+   * Notifies the leaf that it was resized. The mock forwards the call to the view.
    */
   public onResize(): void {
-    if (this.view) {
-      this.view.onResize();
-    }
+    this.view.onResize();
   }
 
   /**
-   * Opens a view in the leaf. The mock stores it as {@link WorkspaceLeaf.view} without loading it.
+   * Shows a view in the leaf, replacing whatever it was showing. As in Obsidian the outgoing view is closed first —
+   * its element detached and its component unloaded — and a failure to close is logged rather than thrown; `null`
+   * puts {@link WorkspaceLeaf._empty} back.
    *
-   * @param view - The view to open.
-   * @returns The opened view.
+   * The user-facing notice Obsidian shows when a view fails to close is not modeled.
+   *
+   * @param view - The view to show, or `null` for the empty view.
+   * @returns The view the leaf ended up showing.
    */
-  public async open(view: ViewOriginal): Promise<ViewOriginal> {
-    await noopAsync();
-    this.view = view;
-    return view;
+  public async open(view: null | ViewOriginal): Promise<ViewOriginal> {
+    const current = this.view;
+    if (view === current) {
+      return current;
+    }
+
+    try {
+      const closing = View.fromOriginalType2__(current).close();
+      // Obsidian does not await the empty view's close, because it is put back rather than discarded.
+      if (!(current instanceof EmptyView)) {
+        await closing;
+      }
+    } catch (error) {
+      console.error('Failed to close view', error);
+    }
+
+    const next = view ?? this._empty.asOriginalType2__();
+    this.view = next;
+    try {
+      await View.fromOriginalType2__(next).open(this.containerEl);
+    } catch (error) {
+      console.error('Failed to open view', error);
+    }
+    return next;
   }
 
   /**
-   * Opens a file in the leaf. The mock only records the file, readable through {@link WorkspaceLeaf.file__}; no view
-   * is created and the open state is ignored.
+   * Opens a file in the leaf, as Obsidian does: the view type registered for the file's extension, or the current
+   * view's own type when it already accepts that extension, and then {@link WorkspaceLeaf.setViewState} with the
+   * file's path in the state.
+   *
+   * A file whose extension no view type is registered for changes nothing, which is Obsidian's own branch for one —
+   * the notice and the open-with-default-app fallback it takes there are not modeled. Only the Markdown view is
+   * registered by default, so that is what a `.md` file opens in.
    *
    * @param file - The file to open.
-   * @param _openState - The view state to open the file with.
+   * @param openState - The state, ephemeral state, active flag and link group to open the file with.
    */
-  public async openFile(file: TFile, _openState?: OpenViewStateOriginal): Promise<void> {
-    await noopAsync();
-    this.file = file;
+  public async openFile(file: TFile, openState?: OpenViewStateOriginal): Promise<void> {
+    const options = openState ?? {};
+    const view = this.view;
+    const type = view instanceof FileView && view.canAcceptExtension(file.extension)
+      ? view.getViewType()
+      : this.app__.viewRegistry.getTypeByExtension(file.extension);
+    if (type === undefined) {
+      return;
+    }
+
+    const viewState: ViewStateOriginal = {
+      ...options.group && { group: options.group },
+      active: options.active ?? this === this.app__.workspace.activeLeaf,
+      state: {
+        ...options.state,
+        file: file.path
+      },
+      type
+    };
+
+    await this.setViewState(viewState, options.eState);
   }
 
   /**
@@ -382,20 +424,75 @@ export class WorkspaceLeaf extends WorkspaceItem {
   }
 
   /**
-   * Sets the leaf's view state. The mock stores a shallow copy of it, and of the ephemeral state when given, then
-   * triggers `view-state-change`; no view is created.
+   * Shows a view of the given type in the leaf, building it through `App.viewRegistry`, exactly as Obsidian does.
+   *
+   * - **The view is only rebuilt when the type CHANGES.** A state naming the type the leaf already shows keeps the
+   * view and only calls `setState` on it.
+   * - A registered type goes through its creator; a creator that throws is logged and falls back to the unknown-type
+   * view, which keeps the type it could not build.
+   * - An unregistered type gives the unknown-type view, except for `'empty'`, which gives
+   * {@link WorkspaceLeaf._empty} back — Obsidian's own answer for it.
+   * - A view that answers `close` on the result — a file view left with no file — sends the leaf back to the empty
+   * view; one that answers `layout` asks the workspace to update the layout.
+   * - `active` activates the leaf, `group` joins that leaf's link group, and the ephemeral state is applied last.
+   * - A call reached from inside another one is dropped, through Obsidian's own `working` guard.
+   *
+   * Obsidian also records navigation history around all of this; the mock has no history, so it does not.
    *
    * @param viewState - The new view state.
    * @param eState - The ephemeral state to apply along with it.
    */
   // eslint-disable-next-line unicorn/name-replacements -- `eState` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
   public async setViewState(viewState: ViewStateOriginal, eState?: Record<string, unknown>): Promise<void> {
-    await noopAsync();
-    this.viewState = { ...viewState };
-    if (eState) {
-      this.ephemeralState = { ...eState };
+    if (this.working) {
+      return;
     }
-    this.trigger('view-state-change');
+    this.working = true;
+
+    try {
+      let view = this.view;
+      const result: ViewStateResultInternal = {
+        close: false,
+        history: false,
+        layout: false
+      };
+
+      if (viewState.type !== view.getViewType()) {
+        view = await this.open(this.buildView(viewState.type));
+        result.history = true;
+        result.layout = true;
+      }
+
+      try {
+        await view.setState(viewState.state ?? {}, result);
+      } catch (error) {
+        console.error(error);
+      }
+
+      if (result.close) {
+        await this.open(null);
+      }
+
+      if (viewState.active) {
+        this.app__.workspace.setActiveLeaf(this, { focus: true });
+      }
+
+      if (viewState.group !== undefined) {
+        this.setGroupMember(WorkspaceLeaf.fromOriginalType3__(viewState.group));
+      }
+
+      if (eState) {
+        this.setEphemeralState(eState);
+      }
+
+      if (result.layout) {
+        this.app__.workspace.onLayoutChange();
+      }
+
+      result.done?.();
+    } finally {
+      this.working = false;
+    }
   }
 
   /**
@@ -403,5 +500,19 @@ export class WorkspaceLeaf extends WorkspaceItem {
    */
   public togglePinned(): void {
     this.setPinned(!this.pinned);
+  }
+
+  private buildView(type: string): ViewOriginal {
+    const viewCreator = this.app__.viewRegistry.getViewCreatorByType(type);
+    if (viewCreator) {
+      try {
+        return viewCreator(this.asOriginalType3__());
+      } catch (error) {
+        console.error(`Failed to create view of type "${type}"`, error);
+        return UnknownView.create3__(this, type).asOriginalType2__();
+      }
+    }
+
+    return type === EMPTY_VIEW_TYPE ? this._empty.asOriginalType2__() : UnknownView.create3__(this, type).asOriginalType2__();
   }
 }

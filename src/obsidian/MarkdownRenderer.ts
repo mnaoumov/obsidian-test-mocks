@@ -7,6 +7,7 @@
 
 import type { MarkdownRenderer as MarkdownRendererOriginal } from 'obsidian';
 
+import type { App } from './App.ts';
 import type { Component } from './Component.ts';
 import type { HoverPopover } from './HoverPopover.ts';
 import type { TFile } from './TFile.ts';
@@ -16,7 +17,6 @@ import {
   noopAsync
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { App } from './App.ts';
 import { MarkdownRenderChild } from './MarkdownRenderChild.ts';
 
 /**

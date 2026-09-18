@@ -200,4 +200,30 @@ describe('View', () => {
       await expect(onClose()).resolves.toBeUndefined();
     });
   });
+  describe('open() / close()', () => {
+    it('should append the view\'s element to the container and load it', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const view = new MinimalView(leaf);
+      const containerEl = createDiv();
+
+      await view.open(containerEl);
+
+      expect(containerEl.contains(view.containerEl)).toBe(true);
+      expect(view._loaded).toBe(true);
+    });
+
+    it('should detach the view\'s element and unload it on close', async () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+      const view = new MinimalView(leaf);
+      const containerEl = createDiv();
+      await view.open(containerEl);
+
+      await view.close();
+
+      expect(containerEl.contains(view.containerEl)).toBe(false);
+      expect(view._loaded).toBe(false);
+    });
+  });
 });

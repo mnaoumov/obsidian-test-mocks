@@ -133,6 +133,16 @@ describe('WorkspaceItem', () => {
     });
   });
 
+  describe('containerEl', () => {
+    it('should give each item a detached element of its own', () => {
+      const first = WorkspaceFloating.create2__();
+      const second = WorkspaceFloating.create2__();
+      expect(first.containerEl).toBeInstanceOf(HTMLElement);
+      expect(first.containerEl).not.toBe(second.containerEl);
+      expect(first.containerEl.parentElement).toBeNull();
+    });
+  });
+
   describe('dimension / setDimension()', () => {
     it('should start without a share of its parent', () => {
       const item = WorkspaceFloating.create2__();

@@ -41,6 +41,16 @@ const MAX_DIMENSION = 100;
  */
 export abstract class WorkspaceItem extends Events {
   /**
+   * The item's own element.
+   *
+   * The mock does NOT build the layout's DOM tree: each item gets a detached element of its own, so a child's
+   * element is not inside its parent's, and the layout is read through {@link WorkspaceItem.parent} and
+   * `WorkspaceParent.children` instead. The one containment it does maintain is a leaf's view — `WorkspaceLeaf.open`
+   * appends the view's element here and detaches it again when the view closes.
+   */
+  public containerEl: HTMLElement = createDiv();
+
+  /**
    * The item's share of its parent split, as a flex-grow value, or `null` when it takes its natural share. The
    * workspace sets it when it creates, splits or promotes an item; nothing is rendered from it.
    */

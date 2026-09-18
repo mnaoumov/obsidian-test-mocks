@@ -7,6 +7,7 @@
 import type { TextFileView as TextFileViewOriginal } from 'obsidian';
 
 import type { TFile } from './TFile.ts';
+import type { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 import {
   noop,
@@ -14,7 +15,6 @@ import {
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { EditableFileView } from './EditableFileView.ts';
-import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 /**
  * Mock of Obsidian's `TextFileView` base class.

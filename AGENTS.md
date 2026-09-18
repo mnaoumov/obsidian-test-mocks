@@ -67,6 +67,7 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 
 - `castTo.ts` — `castTo<T>()` utility for unsafe type bridging
 - `delegated-event-registry.ts` — the delegated `on` / `off` shared by `Document.prototype` and `HTMLElement.prototype`: registrations live on the target's own `_EVENTS` record, under the name `obsidian-typings` declares, and events are filtered through `matchParent` as Obsidian does
+- `empty-view.ts` — Obsidian's empty view, the "New tab" page every `WorkspaceLeaf` is born holding as `_empty`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1)
 - `front-matter-object-value.ts` — the `ObjectValue` behind `FileValue.getProps`, with the evaluator that reads a frontmatter string as a wikilink, a URL or a date and reinstalls itself on every nested list and object. Obsidian spells it `ObjectValue.fromFrontMatter`, a static NEITHER `obsidian.d.ts` NOR `obsidian-typings` declares, so L1 keeps it off the exported class and L4 forbids the `__` suffix that would claim Obsidian lacks it — the same reasoning that puts `lazy-evaluator.ts` here
 - `html-sanitizer.ts` — the sanitizer behind `sanitizeHTMLToDom`: a port of the DOMPurify 3.0.1 passes Obsidian runs, with Obsidian's config and its two load-time hooks. `html-sanitizer-allowlists.ts` holds DOMPurify's default allowlists, copied from Obsidian's `app.js` (and excluded from cspell)
 - `icon-registry.ts` — shared `Map<string, string>` for icon storage (addIcon, removeIcon, getIcon, etc.). It starts empty: Obsidian's Lucide set and its own glyphs are deliberately not bundled, so their ids resolve to nothing
@@ -79,6 +80,8 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `strict-proxy.ts` — `strictProxy()` mock wrapper that throws on unmocked property access (see L9)
 - `types.ts` — inlined type shapes (from obsidian-typings) to avoid augmentation side effects
 - `type-guards.ts` — `assert()`, `ensureNonNullable()`, and similar guards
+- `unknown-view.ts` — Obsidian's unknown view, what a leaf shows for a view type nothing registered a creator for; it extends `EmptyView`, as in Obsidian, and lives here for the same reason
+- `view-registry.ts` — the registry behind `App.viewRegistry`: which creator builds a view of a type, and which view type a file extension opens in. `WorkspaceLeaf.setViewState` and `openFile` read it, and it is an `obsidian-typings` interface with no `obsidian.d.ts` class (L1, L7)
 - `workspace-layout.ts` — the registry the workspace layout tree walks with: the parent placeholder an unattached `WorkspaceItem` holds, and which items are `WorkspaceContainer`s. It exists because both checks are needed in `WorkspaceItem`, below which both classes sit, so an `instanceof` there would be an import cycle
 
 ## TypeScript
@@ -484,17 +487,64 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 
   Three more members went from stand-in to Obsidian's own: `getUnpinnedLeaf` picks the most recently active
   navigable leaf that is its tab group's current tab (`WorkspaceTabs.currentTab` / `isStacked` are modelled now, and
-  `WorkspaceLeaf.canNavigate()` reads `view.navigation` — a leaf with no view stands for Obsidian's empty view,
-  which navigates); `getLeavesOfType` / `detachLeavesOfType` match on the view's type through the mock-only
-  `WorkspaceLeaf.getViewType__()` (the open view's `getViewType()`, else the stored view state's type, else
-  `'empty'`) rather than on `getViewState().type`, so a fresh leaf answers `getLeavesOfType('empty')`; and
+  `WorkspaceLeaf.canNavigate()` reads `view.navigation` — the empty view navigates, so a leaf showing nothing is
+  reusable); `getLeavesOfType` / `detachLeavesOfType` match on `leaf.view.getViewType()` rather than on
+  `getViewState().type`, so a fresh leaf answers `getLeavesOfType('empty')`; and
   `WorkspaceItem.dimension` / `setDimension` model the flex-grow share Obsidian divides on `createLeafInParent`,
   `splitLeaf` and the single-child promotion in `removeChild`, and clears in `moveLeafToPopout`.
 
-  **Two departures kept on purpose.** `createLeafInTabGroup` always creates, where Obsidian hands back a tab already
-  showing the empty view — a mock leaf holds no view, so it cannot be told from one showing a file. And it falls
-  back to the root tab group where Obsidian throws `No tab group found.`, so `getLeaf('tab')` works on a workspace
-  no test has populated.
+  **One departure kept on purpose.** `createLeafInTabGroup` falls back to the root tab group where Obsidian throws
+  `No tab group found.`, so `getLeaf('tab')` works on a workspace no test has populated. Otherwise it is Obsidian's
+  own: it hands back the group's most recently active tab, without activating it, when that tab is still showing the
+  empty view — so two `getLeaf('tab')` calls with nothing done in between answer with the same leaf.
+
+- **A leaf's view is REAL, built through `App.viewRegistry`** (2026-09-17, read in Obsidian 1.14.2's `app.js`). This
+  is the largest of the leaf-lifecycle changes and the one most likely to move an existing consumer test.
+  - **`WorkspaceLeaf.view` is never `null`.** Every leaf is born holding `_empty`, Obsidian's "New tab" page, and
+    goes back to it whenever `open(null)` is called. So `getDisplayText()` answers `New tab` and `getIcon()` answers
+    `lucide-file` for an untouched leaf, where both used to answer `''`; `getActiveViewOfType` and any consumer
+    branch written as `if (leaf.view)` now always takes the view arm.
+  - **`setViewState` BUILDS the view its type names**, exactly as the app does: a registered type through its
+    creator (a creator that throws is logged and falls back to the unknown-type view), `'empty'` back to `_empty`,
+    and anything else to the unknown-type view, which keeps the type it could not build and carries `lucide-ghost`.
+    The view is rebuilt **only when the type changes** — a state naming the type the leaf already shows keeps the
+    view and only calls `setState` on it — and a call reached from inside another one is dropped, through Obsidian's
+    own `working` guard. `active`, `group` and the ephemeral state are applied as in the app.
+  - **`setViewState({ type: 'markdown' })` with no `state.file` sends the leaf BACK to the empty view.** That is
+    Obsidian: a file view left with no file answers `close` on the state result, and the leaf reopens `_empty`. Pass
+    `state: { file: '<a path the vault really has>' }`, or use `leaf.openFile(file)`. A test that used a bare view
+    state as "fill this tab" has to give it a real file now.
+  - **`getViewState()` is DERIVED from the view**, not stored: `{ state: view.getState(), type:
+    view.getViewType() }`, plus `pinned` when the leaf is pinned. So it always carries a `state` object, and a type
+    the leaf could not build reads back as that type rather than as `'empty'`. Obsidian also writes the view's icon
+    and display text there for its deferred-view placeholder; neither `obsidian.d.ts` nor `obsidian-typings`
+    declares those two members of `ViewState`, and the mock never defers, so it leaves them out.
+  - **`WorkspaceLeaf.openFile` really opens a view.** It asks the registry for the extension's view type — or keeps
+    the current view's type when it already accepts that extension — and goes through `setViewState` with the file's
+    path in the state, which `FileView.setState` resolves and loads through a real `FileView.loadFile`. So
+    `leaf.view` is a `MarkdownView` holding the file, and `leaf.file__` reads it off that view rather than off a
+    field of its own. A file whose extension no view type is registered for changes nothing, which is Obsidian's own
+    branch for one.
+  - **`view-state-change` is GONE.** No such event exists in `obsidian.d.ts`, in `obsidian-typings` or anywhere in
+    Obsidian 1.14.2's bundle — the mock invented it, and `setViewState` was the only thing that fired it.
+  - **`WorkspaceLeaf.getViewType__()` and `isShowingEmptyView__()` are gone too**, along with the reason they
+    existed: ask `leaf.view.getViewType()` and `leaf.view instanceof EmptyView`. As in Obsidian, `UnknownView`
+    EXTENDS `EmptyView`, so a leaf showing a type it could not build counts as empty for tab reuse.
+  - **What the registry holds.** `App.viewRegistry` starts with Obsidian's Markdown view and the `md` extension, and
+    nothing else: the app's image, audio, video, PDF and release-notes views have no class here, and registering an
+    extension whose type has no creator would open such a file as the unknown-type view where Obsidian opens a real
+    one. `Plugin.registerView` / `Plugin.registerExtensions` add to it and remove their entries on unload, as they
+    do in the app. `EmptyView`, `UnknownView` and `ViewRegistry` are `obsidian-typings` interfaces with no
+    `obsidian.d.ts` counterpart, so per L1 they live in `src/internal/` beside `Plugins`.
+  - **Not modelled, deliberately:** the deferred view (its branch needs `getHistoryState()` and
+    `containerEl.isShown()`, neither of which the mock has, so `isDeferred` stays `false`); navigation history, so
+    `setViewState` records none; `FileView.syncState`, the linked-pane follow Obsidian schedules on the state
+    result's `done`; and the two user-facing notices Obsidian shows when a view fails to close or a file fails to
+    load — both paths are logged, as they also are there.
+  - `WorkspaceItem.containerEl` is real now, because `View.open` / `View.close` need somewhere to put the view's
+    element. The mock does NOT build the layout's DOM tree: each item gets a detached element of its own, so a
+    child's element is not inside its parent's. The one containment it maintains is the leaf's view, so
+    `leaf.containerEl.contains(leaf.view.containerEl)` holds, and closing a view detaches and unloads it.
 
 - **The `View` base does NOT navigate, and carries `lucide-file`** (2026-09-17, read in Obsidian 1.14.2's
   `app.js`). Obsidian's base constructor sets `icon = 'lucide-file'` and `navigation = false`; the mock had both

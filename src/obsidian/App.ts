@@ -15,6 +15,7 @@ import type { AppCreateConfiguredOptions } from '../internal/app-create-configur
 import { noop } from '../internal/noop.ts';
 import { Plugins } from '../internal/plugins.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { ViewRegistry } from '../internal/view-registry.ts';
 import { FileManager } from './FileManager.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { Keymap } from './Keymap.ts';
@@ -85,6 +86,11 @@ export class App {
    */
   public vault: Vault;
   /**
+   * The registry mapping view types to the creators that build them, and file extensions to view types. It holds
+   * Obsidian's Markdown view from the start; `Plugin.registerView` adds to it.
+   */
+  public viewRegistry: ViewRegistry;
+  /**
    * The workspace managing leaves, splits and views.
    */
   public workspace: Workspace;
@@ -118,6 +124,7 @@ export class App {
     this.metadataCache = MetadataCache.create2__(this, this.vault);
     this.plugins = Plugins.create2__(this);
     this.scope = Scope.create__();
+    this.viewRegistry = ViewRegistry.create2__();
     this.workspace = Workspace.create2__(this, createDiv());
     this.renderContext = RenderContext.create__(this);
     this.secretStorage = SecretStorage.create2__(this);

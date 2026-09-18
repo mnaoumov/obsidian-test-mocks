@@ -297,13 +297,18 @@ export abstract class Plugin extends Component {
   }
 
   /**
-   * Associates file extensions with a view type. The mock maps each extension to `viewType` in
-   * {@link Plugin.extensions__}.
+   * Associates file extensions with a view type, in `App.viewRegistry` as Obsidian does — so `WorkspaceLeaf.openFile`
+   * opens such a file in that view — and unregisters them when the plugin unloads. The mock also maps each extension
+   * to `viewType` in {@link Plugin.extensions__}.
    *
    * @param extensions - The file extensions, without the leading dot.
    * @param viewType - The view type that opens those files.
    */
   public registerExtensions(extensions: string[], viewType: string): void {
+    this.app.viewRegistry.registerExtensions(extensions, viewType);
+    this.register(() => {
+      this.app.viewRegistry.unregisterExtensions(extensions);
+    });
     for (const extension of extensions) {
       this.extensions__.set(extension, viewType);
     }
@@ -369,12 +374,21 @@ export abstract class Plugin extends Component {
   }
 
   /**
-   * Registers a view type and the function that creates its views. The mock records it in {@link Plugin.views__}.
+   * Registers a view type and the function that creates its views, in `App.viewRegistry` as Obsidian does — so a
+   * leaf whose view state names `type` really builds one — and unregisters it when the plugin unloads. The mock also
+   * records it in {@link Plugin.views__}.
+   *
+   * Obsidian additionally detaches that type's leaves on unload, but only when the user switched the plugin off; the
+   * mock has no such distinction and so never does.
    *
    * @param type - The view type.
    * @param viewCreator - The function that creates a view for a leaf.
    */
   public registerView(type: string, viewCreator: ViewCreatorOriginal): void {
+    this.app.viewRegistry.registerView(type, viewCreator);
+    this.register(() => {
+      this.app.viewRegistry.unregisterView(type);
+    });
     this.views__.set(type, viewCreator);
   }
 

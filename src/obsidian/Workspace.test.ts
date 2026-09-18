@@ -35,6 +35,9 @@ const HALF_DIMENSION = FULL_DIMENSION / 2;
 const THIRD_DIMENSION = FULL_DIMENSION / 3;
 const QUARTER_DIMENSION = HALF_DIMENSION / 2;
 
+// Held on an object so each filled tab gets a file of its own without assigning to a module-level binding.
+const filledTabCounter = { next: 1 };
+
 class BareWorkspaceItem extends WorkspaceItem {
   public constructor() {
     super();
@@ -94,12 +97,14 @@ function collectRootLeaves(app: App): WorkspaceLeaf[] {
 }
 
 /**
- * Opens a tab and fills it, because `getLeaf('tab')` hands back a tab that is still showing the empty view instead of
- * creating another one - so a test that wants a SECOND tab has to put something in the first.
+ * Opens a tab and fills it with a Markdown view over a file of its own, because `getLeaf('tab')` hands back a tab
+ * that is still showing the empty view instead of creating another one - so a test that wants a SECOND tab has to put
+ * something in the first. A file view with no file closes straight back to the empty view, which is why the file is
+ * real.
  */
 async function openFilledTab(app: App): Promise<WorkspaceLeaf> {
   const leaf = app.workspace.getLeaf(true);
-  await leaf.setViewState({ type: 'markdown' });
+  await leaf.openFile(app.vault.createSync__(`filled-tab-${String(filledTabCounter.next++)}.md`, ''));
   return leaf;
 }
 
@@ -324,12 +329,21 @@ describe('Workspace', () => {
       expect(app.workspace.createLeafInTabGroup()).not.toBe(first);
     });
 
-    it('should create a tab when the most recently active one has a view state', async () => {
+    it('should create a tab when the most recently active one has a view state naming a registered type', async () => {
       const app = App.createConfigured__();
+      app.viewRegistry.registerView('DummyView', (leaf) => new DummyView(WorkspaceLeaf.fromOriginalType3__(leaf)).asOriginalType2__());
       const first = app.workspace.createLeafInTabGroup();
-      await first.setViewState({ type: 'markdown' });
+      await first.setViewState({ type: 'DummyView' });
 
       expect(app.workspace.createLeafInTabGroup()).not.toBe(first);
+    });
+
+    it('should hand back a tab showing the unknown view, which Obsidian counts as empty', async () => {
+      const app = App.createConfigured__();
+      const first = app.workspace.createLeafInTabGroup();
+      await first.setViewState({ type: 'unregistered-type' });
+
+      expect(app.workspace.createLeafInTabGroup()).toBe(first);
     });
 
     it('should create a tab when the most recently active one has a view open', async () => {
@@ -343,17 +357,17 @@ describe('Workspace', () => {
 
   describe('detachLeavesOfType()', () => {
     it('should detach leaves matching the given view type', async () => {
-      const app = App.createConfigured__();
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
       const leaf = app.workspace.getLeaf(true);
-      await leaf.setViewState({ type: 'markdown' });
+      await leaf.setViewState({ state: { file: 'note.md' }, type: 'markdown' });
       app.workspace.detachLeavesOfType('markdown');
       expect(app.workspace.getLeavesOfType('markdown').length).toBe(0);
     });
 
     it('should not detach leaves of other types', async () => {
-      const app = App.createConfigured__();
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
       const leaf1 = app.workspace.getLeaf(true);
-      await leaf1.setViewState({ type: 'markdown' });
+      await leaf1.setViewState({ state: { file: 'note.md' }, type: 'markdown' });
       const leaf2 = app.workspace.getLeaf(true);
       await leaf2.setViewState({ type: 'canvas' });
       app.workspace.detachLeavesOfType('markdown');
@@ -380,7 +394,7 @@ describe('Workspace', () => {
     });
 
     it('should copy the view state and the ephemeral state', async () => {
-      const app = App.createConfigured__();
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
       const leaf = app.workspace.getLeaf(true);
       await leaf.setViewState({ state: { file: 'note.md' }, type: 'markdown' }, { line: EPHEMERAL_LINE });
       const dup = await app.workspace.duplicateLeaf(leaf, 'tab');
@@ -418,7 +432,7 @@ describe('Workspace', () => {
       const right = await app.workspace.ensureSideLeaf('right-view', 'right');
       expect(left.getRoot()).toBe(app.workspace.leftSplit);
       expect(right.getRoot()).toBe(app.workspace.rightSplit);
-      expect(left.getViewState()).toEqual({ type: 'left-view' });
+      expect(left.getViewState()).toEqual({ state: {}, type: 'left-view' });
     });
 
     it('should reuse an existing leaf of the type without resetting its view state', async () => {
@@ -682,9 +696,9 @@ describe('Workspace', () => {
 
   describe('getLeavesOfType()', () => {
     it('should return leaves matching the view type', async () => {
-      const app = App.createConfigured__();
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
       const leaf = app.workspace.getLeaf(true);
-      await leaf.setViewState({ type: 'markdown' });
+      await leaf.setViewState({ state: { file: 'note.md' }, type: 'markdown' });
       const result = app.workspace.getLeavesOfType('markdown');
       expect(result).toContain(leaf);
     });

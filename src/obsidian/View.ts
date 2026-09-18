@@ -12,14 +12,15 @@ import type {
   ViewStateResult as ViewStateResultOriginal
 } from 'obsidian';
 
+import type { App } from './App.ts';
+import type { WorkspaceLeaf } from './WorkspaceLeaf.ts';
+
 import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { App } from './App.ts';
 import { Component } from './Component.ts';
-import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 
 /**
  * Mock of Obsidian's `View` base class.
@@ -99,6 +100,16 @@ export abstract class View extends Component {
   }
 
   /**
+   * Closes the view, as `WorkspaceLeaf.open` does when another view replaces this one. Detaches the view's element,
+   * unloads the component and awaits {@link View.onClose}, exactly as Obsidian does.
+   */
+  public async close(): Promise<void> {
+    this.containerEl.detach();
+    this.unload();
+    await this.onClose();
+  }
+
+  /**
    * Mock-only construction hook, called at the end of the constructor; a no-op meant for
    * `vi.spyOn(View.prototype, 'constructor2__')`.
    *
@@ -164,6 +175,18 @@ export abstract class View extends Component {
    */
   public onResize(): void {
     noop();
+  }
+
+  /**
+   * Opens the view into an element, as `WorkspaceLeaf.open` does. Appends the view's element to it, loads the
+   * component and awaits {@link View.onOpen}, exactly as Obsidian does.
+   *
+   * @param containerEl - The element to append the view's own element to.
+   */
+  public async open(containerEl: HTMLElement): Promise<void> {
+    containerEl.append(this.containerEl);
+    this.load();
+    await this.onOpen();
   }
 
   /**
