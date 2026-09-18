@@ -406,19 +406,30 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     such listener, so do not go looking for it there. The listener is attached when the input is created, before the
     `addText` callback runs, which is why a listener a consumer adds to the input itself cannot get in ahead of it.
 
-- **`Platform` carries eleven members beyond the thirteen `obsidian.d.ts` declares** (2026-09-18, read in Obsidian
+- **`Platform` carries sixteen members beyond the thirteen `obsidian.d.ts` declares** (2026-09-18, read in Obsidian
   1.14.2's `app.js` — the literal at `:48126-48170`, the desktop bootstrap that fills it at `:229307-229316`). All
-  eleven are real Obsidian internals `obsidian-typings` declares as `PlatformEx`, so per L4 each takes its real name
+  sixteen are real Obsidian internals `obsidian-typings` declares as `PlatformEx`, so per L4 each takes its real name
   with no `__` suffix.
   - **`hasPhysicalKeyboard` is `true`**, the honest default beside `isDesktopApp: true`: the desktop bootstrap sets
     it, the emulate-mobile path resets it to `false`, and mobile detects it asynchronously — the `false` the app's
     own literal starts from is a pre-bootstrap placeholder no running app is observed in. **Set it to `false` to
     drive the affordances Obsidian gates on a soft keyboard**, of which `Setting.addText`'s `Enter`-blur is the one
     modeled so far; restore it afterwards, as `Keymap`'s suite does for `isMacOS`.
-  - **`canPinSidebar` is a getter**, `isMobile && !isPhone` re-evaluated on every read, which is how Obsidian
-    derives it — so flipping `isMobile` or `isPhone` in a test moves it, instead of freezing an answer at import
-    time. **`supportsIndexedDb` is a getter** for the matching reason: it reports whatever `window.indexedDB` the
-    test environment actually has. That one IS a departure — Obsidian evaluates it once at startup — taken so that a
+  - **All six `can*` members are getters**, each re-evaluating Obsidian's own derivation on every read, which is how
+    Obsidian writes them too — so flipping a flag in a test moves them, instead of freezing an answer at import time.
+    Restore the flag afterwards, as `Keymap`'s suite does for `isMacOS`:
+
+    | member | derivation | flip this to move it |
+    | --- | --- | --- |
+    | `canPinSidebar` | `isMobile && !isPhone` | `isMobile`, `isPhone` |
+    | `canExportPdf` | `isDesktopApp` | `isDesktopApp` |
+    | `canPopoutWindow` | `isDesktopApp && isDesktop` | `isDesktopApp`, `isDesktop` |
+    | `canDisplayRibbon` | `!isPhone` | `isPhone` |
+    | `canSplit` | `!isPhone` | `isPhone` |
+    | `canStackTabs` | `!isPhone` | `isPhone` |
+
+    **`supportsIndexedDb` is a getter** for a different reason: it reports whatever `window.indexedDB` the test
+    environment actually has. That one IS a departure — Obsidian evaluates it once at startup — taken so that a
     suite which stubs or removes `indexedDB` is believed.
   - **`version` is a getter returning `apiVersion`**, not a copy of it, so the two cannot drift and there is exactly
     one place to bump.
@@ -434,11 +445,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     runner would now need `node:os` shimmed.
   - **`mobileSoftKeyboardVisible` is `false`, `manufacturer` and `model` are `''`** — the values the desktop bundle
     leaves them at, since nothing outside the mobile app ever assigns them.
-  - **Seven `PlatformEx` members are still absent, each its own decision rather than an oversight**: the five
-    sibling `can*` getters `canDisplayRibbon`, `canExportPdf`, `canPopoutWindow`, `canSplit` and `canStackTabs`,
-    plus `mobileDeviceHeight` and `mobileKeyboardHeight`. The app's literal also carries `canOpenExternalFiles`
-    (`isDesktopApp && isDesktop`), which NEITHER `obsidian.d.ts` nor `obsidian-typings` declares — the
-    `Setting.setIcon` case, which L1 / L4 keeps off the surface.
+  - **Two `PlatformEx` members are still absent, and it is an open decision rather than an oversight**:
+    `mobileDeviceHeight` and `mobileKeyboardHeight`. Both are mobile-only and — unlike `manufacturer`, `model` and
+    `build` — appear **nowhere** in the desktop bundle, neither in the literal nor in the bootstrap, so a running
+    desktop Obsidian answers `undefined` for both where `PlatformEx` types them `number`. Every candidate value is
+    therefore an invention of some kind, which is why the mock is not guessing one. **Read either expecting
+    `undefined` until that is decided**, and do not add one without reading the decision.
+  - The app's literal also carries `canOpenExternalFiles` (`isDesktopApp && isDesktop`), which NEITHER
+    `obsidian.d.ts` nor `obsidian-typings` declares — the `Setting.setIcon` case, which L1 / L4 keeps off the
+    surface. It wants an `obsidian-typings` declaration first, not a mock member.
   - Neither conformance test covers any of this: `Platform` is a `const`, so `conformance.test.ts` checks only that
     the export exists, and `obsidian-typings-conformance.test.ts` walks classes, which is why nothing was ever going
     to surface the gap.
