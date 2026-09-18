@@ -490,6 +490,20 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   so a value of `[Shown]()` throws a `TypeError` out of its metadata parse; the mock reads it as no link
   instead, rather than losing a whole note's metadata in a consumer's test.
 
+- **A frontmatter block that is not well-formed YAML does NOT throw** (2026-09-18, read in Obsidian
+  1.14.2's `app.js`). Obsidian's frontmatter parse wraps its `parseYaml` in a `try` and answers `null`,
+  so invalid YAML lands in exactly the branch a non-object block takes and the note still gets a cache —
+  body, headings, links and the `yaml` section included. `src/internal/markdown-parser.ts` mirrors that in
+  `parseFrontmatterYaml`, and the branch it falls into stores the same empty record a scalar block gets.
+  Before the guard it called `parseYaml` unguarded, which broke both entry points at once:
+  `MetadataCache.computeMetadataAsync` — public API that never rejects there — rejected with the
+  `YAMLParseError`, and indexing such a note through the vault's `create` event left it with NO cache at
+  all, because `Events.tryTrigger` swallowed the throw and threw it again from a timer as an uncaught
+  exception.
+
+  `FileManager.processFrontMatter` is deliberately NOT guarded the same way: Obsidian's own
+  implementation parses with no `try`, so a broken block throws out of it there exactly as it does here.
+
 - **The workspace is a real layout tree** (2026-09-17, checked against Obsidian 1.14.2's bundle). Leaves sit in
   tab groups under `rootSplit`, `leftSplit`, `rightSplit`, or a popout `WorkspaceWindow` under `floatingSplit`, and
   `WorkspaceParent.children` / `insertChild` / `removeChild` / `replaceChild` maintain it as Obsidian does, emptied

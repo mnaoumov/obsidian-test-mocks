@@ -355,7 +355,7 @@ function parseFrontmatter(
     return 0;
   }
 
-  const parsed = info.frontmatter.trim() ? parseYaml(info.frontmatter) : null;
+  const parsed = parseFrontmatterYaml(info.frontmatter);
   if (parsed && typeof parsed === 'object') {
     cache.frontmatter = parsed;
     const frontmatterLinks = extractFrontmatterLinks(parsed);
@@ -378,6 +378,23 @@ function parseFrontmatter(
   });
 
   return info.contentStart;
+}
+
+function parseFrontmatterYaml(yaml: string): unknown {
+  if (!yaml.trim()) {
+    return null;
+  }
+
+  try {
+    return parseYaml(yaml);
+  } catch {
+    // Obsidian does the same: its own frontmatter parse wraps `parseYaml` in a `try` and answers `null`,
+    // so a block that is not well-formed YAML falls through to the same branch a non-object one takes
+    // instead of throwing out of the whole parse. Without this, indexing a note with a broken frontmatter
+    // block leaves it with no cache at all and rethrows from a timer, and `computeMetadataAsync` - public
+    // Obsidian API that never rejects there - rejects.
+    return null;
+  }
 }
 
 function parseHeadings(
