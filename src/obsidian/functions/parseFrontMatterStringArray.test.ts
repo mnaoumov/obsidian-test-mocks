@@ -27,4 +27,12 @@ describe('parseFrontMatterStringArray', () => {
   it('should filter non-string values from array', () => {
     expect(parseFrontMatterStringArray({ items: ['a', 1, 'b'] }, 'items')).toEqual(['a', 'b']);
   });
+
+  it('should trim every entry of an array', () => {
+    expect(parseFrontMatterStringArray({ items: ['  a  ', '\tb\n'] }, 'items')).toEqual(['a', 'b']);
+  });
+
+  it('should trim a single string entry', () => {
+    expect(parseFrontMatterStringArray({ key: '  value  ' }, 'key')).toEqual(['value']);
+  });
 });

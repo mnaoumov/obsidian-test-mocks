@@ -4,27 +4,26 @@
  * Mock of Obsidian's `parseFrontMatterTags`.
  */
 
-import { ensureGenericObject } from '../../internal/type-guards.ts';
+import { parseFrontMatterStringArray } from './parseFrontMatterStringArray.ts';
 
 /**
- * Reads a note's tags from its frontmatter. The mock reads the `tags` key, falling back to `tag`.
+ * Reads a note's tags from its frontmatter. Only a `tags` key is read, case-insensitively; Obsidian reads no
+ * `tag` fallback.
  *
  * @param frontmatter - The parsed frontmatter object, or a falsy value when the note has none.
- * @returns The tags, each prefixed with `#` (a single string becomes a one-element array, non-string list items are
- * dropped), or `null` when there are none.
+ * @returns The tags, each trimmed and prefixed with `#` (a single string becomes a one-element array,
+ * non-string list items are dropped, and so is every empty entry and every entry holding a space, which is
+ * not a tag). An entry-less list yields an empty array; `null` means there is no `tags` entry at all, or it
+ * is neither a string nor a list.
  */
 export function parseFrontMatterTags(frontmatter: unknown): null | string[] {
   if (!frontmatter) {
     return null;
   }
-  const fm = ensureGenericObject(frontmatter);
-  const raw = fm['tags'] ?? fm['tag'] ?? null;
-  if (typeof raw === 'string') {
-    return [raw.startsWith('#') ? raw : `#${raw}`];
-  }
-  return Array.isArray(raw)
-    ? raw
-      .filter((t): t is string => typeof t === 'string')
-      .map((t) => (t.startsWith('#') ? t : `#${t}`))
+  const tags = parseFrontMatterStringArray(frontmatter, /^tags$/i);
+  return tags
+    ? tags
+      .filter((tag) => !!tag && !tag.includes(' '))
+      .map((tag) => (tag.startsWith('#') ? tag : `#${tag}`))
     : null;
 }
