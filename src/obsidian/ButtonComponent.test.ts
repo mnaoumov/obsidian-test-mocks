@@ -123,15 +123,32 @@ describe('ButtonComponent', () => {
   });
 
   describe('setWarning', () => {
-    it('should add mod-warning class to buttonEl', () => {
+    it('should add mod-destructive and mod-cta to buttonEl, and no class of its own, as Obsidian does', () => {
       const button = createButton();
       button.setWarning();
-      expect(button.buttonEl.classList.contains('mod-warning')).toBe(true);
+      expect(button.buttonEl.classList.contains('mod-destructive')).toBe(true);
+      expect(button.buttonEl.classList.contains('mod-cta')).toBe(true);
+      expect(button.buttonEl.classList.contains('mod-warning')).toBe(false);
     });
 
     it('should return this for chaining', () => {
       const button = createButton();
       expect(button.setWarning()).toBe(button);
+    });
+  });
+
+  describe('setLoading', () => {
+    it('should toggle mod-loading on buttonEl', () => {
+      const button = createButton();
+      button.setLoading(true);
+      expect(button.buttonEl.classList.contains('mod-loading')).toBe(true);
+      button.setLoading(false);
+      expect(button.buttonEl.classList.contains('mod-loading')).toBe(false);
+    });
+
+    it('should return this for chaining', () => {
+      const button = createButton();
+      expect(button.setLoading(true)).toBe(button);
     });
   });
 

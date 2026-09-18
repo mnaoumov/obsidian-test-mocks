@@ -210,10 +210,96 @@ describe('Setting', () => {
   });
 
   describe('setTooltip', () => {
-    it('should set aria-label attribute', () => {
+    it('should set the aria-label attribute on nameEl, as Obsidian does', () => {
       const setting = Setting.create__(createDiv());
       setting.setTooltip('My tooltip');
-      expect(setting.settingEl.getAttribute('aria-label')).toBe('My tooltip');
+      expect(setting.nameEl.getAttribute('aria-label')).toBe('My tooltip');
+      expect(setting.settingEl.getAttribute('aria-label')).toBeNull();
+    });
+
+    it('should return this for chaining', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.setTooltip('tip')).toBe(setting);
+    });
+  });
+
+  describe('setNoInfo', () => {
+    it('should hide infoEl', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setNoInfo();
+      expect(setting.infoEl.isShown()).toBe(false);
+    });
+
+    it('should return this for chaining', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.setNoInfo()).toBe(setting);
+    });
+  });
+
+  describe('setAction', () => {
+    it('should mark the row as an action and run the callback on click', () => {
+      const setting = Setting.create__(createDiv());
+      const callback = vi.fn();
+      setting.setAction(callback);
+      expect(setting.settingEl.classList.contains('mod-action')).toBe(true);
+      expect(setting.settingEl.classList.contains('tappable')).toBe(true);
+      setting.settingEl.click();
+      expect(callback).toHaveBeenCalledOnce();
+    });
+
+    it('should replace the callback rather than adding a second listener', () => {
+      const setting = Setting.create__(createDiv());
+      const first = vi.fn();
+      const second = vi.fn();
+      setting.setAction(first);
+      setting.setAction(second);
+      setting.settingEl.click();
+      expect(first).not.toHaveBeenCalled();
+      expect(second).toHaveBeenCalledOnce();
+    });
+
+    it('should ignore a click on a disabled row', () => {
+      const setting = Setting.create__(createDiv());
+      const callback = vi.fn();
+      setting.setAction(callback);
+      setting.setDisabled(true);
+      setting.settingEl.click();
+      expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('should ignore a click a control inside the row already handled', () => {
+      const setting = Setting.create__(createDiv());
+      const callback = vi.fn();
+      setting.setAction(callback);
+      setting.controlEl.addEventListener('click', (event) => {
+        event.preventDefault();
+      });
+      setting.controlEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('should return this for chaining', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.setAction(noop)).toBe(setting);
+    });
+  });
+
+  describe('setNavigable', () => {
+    it('should mark the row as navigable, add the chevron and run the callback on click', () => {
+      const setting = Setting.create__(createDiv());
+      const callback = vi.fn();
+      setting.setNavigable(callback);
+      expect(setting.settingEl.classList.contains('mod-navigable')).toBe(true);
+      expect(setting.settingEl.classList.contains('tappable')).toBe(true);
+      const chevronEl = setting.controlEl.querySelector<HTMLElement>('.setting-item-chevron');
+      expect(chevronEl?.dataset['icon']).toBe('lucide-chevron-right');
+      setting.settingEl.click();
+      expect(callback).toHaveBeenCalledOnce();
+    });
+
+    it('should return this for chaining', () => {
+      const setting = Setting.create__(createDiv());
+      expect(setting.setNavigable(noop)).toBe(setting);
     });
   });
 
