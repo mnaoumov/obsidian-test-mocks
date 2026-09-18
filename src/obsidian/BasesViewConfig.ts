@@ -126,10 +126,12 @@ export class BasesViewConfig {
    *
    * @param _view - The view to evaluate the formula for.
    * @param _key - The option key holding the formula.
-   * @returns Always a new `NullValue`, which Obsidian returns for an invalid formula or a missing key.
+   * @returns Always `NullValue.value`, the singleton Obsidian answers with on each of its four
+   * non-evaluating paths: a missing key, a value that is not a string, a formula that parses to an error,
+   * and a formula that throws while evaluating.
    */
   public getEvaluatedFormula(_view: BasesView, _key: string): ValueOriginal {
-    return NullValue.create__();
+    return NullValue.value;
   }
 
   /**
