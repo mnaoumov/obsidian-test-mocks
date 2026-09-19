@@ -263,8 +263,7 @@ export function registerGenericTypeParams(types: Map<string, TypeInfo>): void {
 
 function isEntryFile(name: string): boolean {
   // The `.test.ts` clause covers *.test.ts, *.browser.test.ts, *.integration.test.ts
-  return name.endsWith('.ts') && !name.endsWith('.d.ts') && !['__merged.ts', 'index.ts', 'setup.ts'].includes(name) && !name.endsWith('-setup.ts')
-    && !name.endsWith('.test.ts');
+  return !(!name.endsWith('.ts') || name.endsWith('.d.ts') || ['__merged.ts', 'index.ts', 'setup.ts'].includes(name) || name.endsWith('-setup.ts') || name.endsWith('.test.ts'));
 }
 
 function qualifiedKey(namespace: string, name: string): string {
