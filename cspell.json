@@ -4,6 +4,7 @@
     ".husky",
     "coverage",
     "dist",
+    "docs-gen-copy-sync-baseline.json",
     "docs/src/components",
     "docs/src/content/docs/api",
     "docs/src/styles",
