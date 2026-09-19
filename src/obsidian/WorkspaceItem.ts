@@ -27,7 +27,7 @@ import { Events } from './Events.ts';
  * would be an import cycle.
  */
 interface LayoutParent {
-  removeChild(child: WorkspaceItem): void;
+  removeChild: (child: WorkspaceItem) => void;
 }
 
 // Obsidian stores a flex-grow outside the open range `(0, 100)` as `null`.

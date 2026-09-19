@@ -17,7 +17,6 @@ export interface AdapterListing {
   folders: string[];
 }
 
-/* eslint-disable @typescript-eslint/method-signature-style -- A method shorthand cannot carry `readonly`, which `obsidian-dev-utils/readonly-params-options-result-members` requires on every member of an options bag. The two rules are unsatisfiable together here, and the readonly guarantee is the more valuable one. */
 /**
  * The request options of Obsidian's global `ajax` and `ajaxPromise` helpers: URL, method, body, headers,
  * credentials mode, an optional existing request object, and the success and error callbacks.
@@ -33,7 +32,6 @@ export interface AjaxOptions {
   readonly url: string;
   readonly withCredentials?: boolean;
 }
-/* eslint-enable @typescript-eslint/method-signature-style -- Restores the rule for the rest of the file. */
 
 /**
  * A scroll position, as `Editor.getScrollInfo` returns it.
@@ -63,7 +61,7 @@ export interface EventListenerInfo {
 export interface EventsEntry {
   ctx: unknown;
   e: Events;
-  fn(...data: unknown[]): unknown;
+  fn: (...data: unknown[]) => unknown;
   name: string;
   /* eslint-enable unicorn/name-replacements -- Restores the rule after the `EventRef` shape. */
 }
@@ -125,7 +123,7 @@ export interface ViewStateResultInternal extends ViewStateResultOriginal {
   /**
    * A callback the leaf runs once the state change has settled.
    */
-  done?(): void;
+  done?: () => void;
   /**
    * Set by a view whose state change alters the layout, which makes the leaf ask the workspace to update it.
    */

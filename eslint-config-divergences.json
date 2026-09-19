@@ -1,0 +1,56 @@
+{
+  "comment": [
+    "Every place this package's ESLint config deliberately differs from obsidian-dev-utils' shared config, and why.",
+    "This package is that package's sibling and resolves no dependency on it, so `scripts/eslint-config.ts` is a HAND",
+    "COPY - and a hand copy drifts silently, which it did for eighteen months. update-npm-deps.ps1 compares the two",
+    "configs on every dependency sweep and fails on anything not recorded here.",
+    "The comparison is DIRECTIONAL: only 'obsidian-dev-utils refined something and this copy never took it' is a",
+    "finding. A rule this package enables that obsidian-dev-utils turns off is printed as information and never fails,",
+    "because this copy is then the stricter one and obsidian-dev-utils' reasons for its own relaxations are",
+    "measurements about its own tree.",
+    "A key is the finding's identity exactly as the check prints it: <role>|<rule>|<kind>[|<detail>]. The",
+    "correspondence runs BOTH ways - an entry describing a divergence that no longer exists fails the sweep too, which",
+    "is what stops this file going stale the way the comments at the call sites did. Add `task` when the entry is an",
+    "adoption intended for later rather than a settled decision; it is then re-reported on every run.",
+    "`roles` names the file compared at each end. Only the `script` role is compared by default, because it is the one",
+    "role that plays the same part in both packages."
+  ],
+  "roles": {
+    "script": {
+      "here": "scripts/commit.ts",
+      "odu": "scripts/commit.ts"
+    }
+  },
+  "divergences": {
+    "script|no-console|level": {
+      "why": "The build, lint, docs and version scripts are CLI entry points whose output IS their interface, so printing to stdout is what they are for. obsidian-dev-utils leaves the rule on everywhere because nothing in that package prints."
+    },
+    "script|no-restricted-syntax|option|options[TSAsExpression > TSAsExpression].message": {
+      "why": "Same selector, same severity - the message names this package's own escape hatch (`castTo<T>()` from src/internal/castTo.ts), which obsidian-dev-utils does not have and could not name."
+    },
+    "script|no-restricted-syntax|option|options[ImportSpecifier[local.name=/Mock/]:not([imported.name=/Mock/])].message": {
+      "why": "Same selector, same severity - the wording says `in this project`, because here the mock classes really are the canonical types rather than one package's convention."
+    },
+    "script|obsidian-dev-utils/no-over-cap-wait-in-eval-in-obsidian|level": {
+      "why": "This package vendors only the subset of obsidian-dev-utils' custom rules that applies to it; its plugin file's `rules` map IS that subset. This rule is about waits inside an Obsidian `eval`, which nothing here writes."
+    },
+    "script|obsidian-dev-utils/require-component-suffix|level": {
+      "why": "Not vendored - same subset reason. Obsidian `Component` subclasses are a plugin-authoring shape; this package mocks the API rather than building on it."
+    },
+    "script|obsidian-dev-utils/require-method-template|level": {
+      "why": "Not vendored - same subset reason."
+    },
+    "script|unicorn/class-reference-in-static-methods|level": {
+      "why": "Every static factory here names its own class on purpose, and each mock class redeclares its factories rather than overriding an inherited one. Swapping the class name for `this` would make an inherited factory build the subclass while its signature still says the base, and `strictProxy(value, App)` passes the class as a runtime value, where `this` is a different object entirely."
+    },
+    "script|unicorn/filename-case|option|options[0]": {
+      "why": "Source files are named after the API they mock, so the name is dictated by Obsidian and the DOM rather than by a casing convention - `Array.prototype.ts`, `App.ts`, `createEl.ts`. Allowing camel, kebab and pascal keeps the rule catching genuinely inconsistent names while preserving that 1:1 mapping."
+    },
+    "script|unicorn/no-thenable|level": {
+      "why": "`Setting.then()` and `BaseComponent.then()` are Obsidian's own public API - the chainable callback hook every settings tab is written against. These mocks cannot drop a member of the surface they exist to reproduce."
+    },
+    "script|unicorn/no-top-level-side-effects|level": {
+      "why": "Build, lint and version scripts are CLI entry points; the top-level call IS the program. Scoped to `scripts/**/*.ts`, beside the same block's `unicorn/no-process-exit` relaxation."
+    }
+  }
+}

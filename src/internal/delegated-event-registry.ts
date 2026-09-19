@@ -23,7 +23,7 @@ interface DelegatedEventTarget extends EventTarget {
 }
 
 interface MatchParentElement {
-  matchParent?(selector: string, lastParent?: Element): Element | null;
+  matchParent?: (selector: string, lastParent?: Element) => Element | null;
 }
 
 /**

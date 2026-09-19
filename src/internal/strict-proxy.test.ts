@@ -18,7 +18,7 @@ interface DeepNested {
 interface MockTarget {
   name: string;
   nested: Nested;
-  run(): string;
+  run: () => string;
 }
 
 interface Nested {
