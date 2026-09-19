@@ -24,9 +24,10 @@ import { obsidianDevUtilsPlugin } from './helpers/eslint-rules/obsidian-dev-util
 import { getRootFolder } from './helpers/root.ts';
 
 // The `docs/src/**/*.ts` modules are deliberately absent (and ignored outright below): they resolve
-// `astro:content` and `import.meta.env` through the types Astro generates into the gitignored
-// `docs/.astro/`, so type-aware linting reports every Astro import as an unresolved `any` on a tree
-// that has not been built yet. The Astro build, and `docs/tsconfig.json`, are what validate them.
+// `astro:content` and `import.meta.env` through the types Astro generates into the gitignored `.astro/` at
+// the repo root - the Astro project root, `srcDir: './docs/src'` notwithstanding - so type-aware linting
+// reports every Astro import as an unresolved `any` on a tree that has not been built yet. The Astro build,
+// and `docs/tsconfig.json` (which is why it includes `../.astro/types.d.ts`), are what validate them.
 const typeScriptFiles = [
   'src/**/*.ts',
   'scripts/**/*.ts',

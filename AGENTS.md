@@ -270,8 +270,9 @@ from a tag). It has two halves:
 
 ### The pipeline is a COPY of `obsidian-dev-utils`'
 
-Four areas were copied from `obsidian-dev-utils` and should be kept in copy-sync with it:
-`scripts/docs-gen/`, `docs/src/`, `astro.config.ts` and `.github/workflows/build-pages.yml`.
+Five areas were copied from `obsidian-dev-utils` and should be kept in copy-sync with it:
+`scripts/docs-gen/`, `docs/src/`, `astro.config.ts`, `docs/tsconfig.json` and
+`.github/workflows/build-pages.yml`.
 This package cannot simply depend on `obsidian-dev-utils`: that library lists `obsidian-test-mocks` in its own devDependencies, so the
 edge would be a cycle. Anything the copy needed from its `src/script-utils/*` was re-pointed at this
 repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`).
@@ -288,12 +289,12 @@ read-and-merge, and the list below is what it is merged against.
 each upstream file's hunk count and each hunk's added/removed line counts plus a digest of its changed
 lines, and fails when a file's shape moves — which it does whether upstream edited the file or this repo
 did. Line numbers are deliberately not part of a shape, so one real edit is not reported as a dozen.
-**44 files, 30 of them identical** after the recorded transforms, measured 2026-09-19.
+**45 files, 31 of them identical** after the recorded transforms, measured 2026-09-19.
 
 Six things to know before touching a copied file:
 
-- **`COPY_SYNC_PATHS` is the roster, and the four-area list above is its prose half** — keep the two in
-  step. A path there covers itself or anything under it, which is why two single files sit beside two trees
+- **`COPY_SYNC_PATHS` is the roster, and the five-area list above is its prose half** — keep the two in
+  step. A path there covers itself or anything under it, which is why three single files sit beside two trees
   with no separate notion of a file; both sides keep the same spelling.
 - **Divergence 1 is two transforms, not baseline entries.** The name is the whole of it, so the gate applies
   `obsidian-dev-utils` → `obsidian-test-mocks` and `Obsidian Dev Utils` → `Obsidian Test Mocks` to
@@ -320,7 +321,7 @@ Six things to know before touching a copied file:
   fails. The sniff is content, not an extension list, so a new binary cannot arrive unnoticed.
 
 It reads upstream from `raw.githubusercontent.com` and lists it with one `git/trees?recursive=1` call — one
-call for all four areas — for the same reasons `check:vendored-eslint-rules` does, and shares that call's
+call for all five areas — for the same reasons `check:vendored-eslint-rules` does, and shares that call's
 unauthenticated rate limit; `GITHUB_TOKEN` is used when there is one. This repo's side is listed with
 `git ls-files` rather than a directory walk, because `docs/src` holds gitignored build output
 (`generated-sidebar.json`, `content/docs/api/`) that a walk reports as paired with nothing upstream.
@@ -334,11 +335,15 @@ command list and nowhere else; key order carries no meaning and is only what per
 same limitation applies to `check:vendored-eslint-rules`. `CHECK_COPY_SYNC=0` turns it off where there is no
 network.
 
-**One copied file is deliberately outside the roster: `docs/tsconfig.json`.** It differs from upstream's by
-one hunk — `"../.astro/types.d.ts"` there against `".astro/types.d.ts"` here, where one of the two sides is
-simply wrong — and settling which is a question rather than roster work, so it stays hand-compared until
-that is answered. `docs/public/favicon.svg` is outside the roster too, as the second copy of a file that
-must never be synced.
+**`docs/tsconfig.json` joined the roster on 2026-09-19, once the hunk that kept it out was settled.** It
+included `".astro/types.d.ts"` where upstream includes `"../.astro/types.d.ts"`, and upstream is right:
+`astro sync` in this checkout writes `.astro/types.d.ts` at the REPO ROOT and creates no `docs/.astro` at
+all, because `astro.config.ts` sits at the root and `srcDir: './docs/src'` moves the sources, not the
+project root. So this copy included a file that has never existed — and a `tsconfig` `include` entry
+matching nothing is not an error, which is why nothing reported it for as long as it stood. Taking
+upstream's path makes the file byte-identical, so it sits in the gate's identical half and carries no
+divergence reason. `docs/public/favicon.svg` is the one copied file still outside the roster, as the second
+copy of a file that must never be synced.
 
 Keep new divergence to the ten places this package genuinely differs:
 
@@ -416,7 +421,8 @@ reports pre-existing `exactOptionalPropertyTypes` violations in the copied code.
 `tsconfig.astro.json` by an override that must come AFTER `getTseslintConfigs()`).
 
 `docs/src/**/*.ts` is ignored by ESLint: those modules resolve `astro:content` and `import.meta.env`
-through types Astro generates into the gitignored `docs/.astro/`, so linting them before a build reports
+through types Astro generates into the gitignored `.astro/` at the REPO ROOT (the Astro project root is
+the root, whatever `srcDir` says), so linting them before a build reports
 every Astro import as an unresolved `any`. `docs/tsconfig.json` and the Astro build validate them
 instead. `docs/**` is likewise out of markdownlint's scope (Starlight's frontmatter-driven conventions,
 plus the generated API markdown), and `scripts/docs-gen` is out of dprint's and cspell's — keeping the

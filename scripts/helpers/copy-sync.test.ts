@@ -263,6 +263,7 @@ describe('getLocalPath', () => {
 describe('isComparedPath', () => {
   it('covers a single-file area by its exact path', () => {
     expect(isComparedPath('astro.config.ts')).toBe(true);
+    expect(isComparedPath('docs/tsconfig.json')).toBe(true);
     expect(isComparedPath('.github/workflows/build-pages.yml')).toBe(true);
   });
 
@@ -276,7 +277,7 @@ describe('isComparedPath', () => {
 
   it('covers nothing outside an area, including a sibling whose name merely starts the same', () => {
     expect(isComparedPath('src/index.ts')).toBe(false);
-    expect(isComparedPath('docs/tsconfig.json')).toBe(false);
+    expect(isComparedPath('docs/public/favicon.svg')).toBe(false);
     expect(isComparedPath('.github/workflows/publish-npm.yml')).toBe(false);
     expect(isComparedPath('astro.config.mts')).toBe(false);
     expect(isComparedPath('scripts/docs-generate.ts')).toBe(false);

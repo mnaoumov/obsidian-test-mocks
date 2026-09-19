@@ -3,12 +3,12 @@
  *
  * Gate for everything this repo keeps in copy-sync with `obsidian-dev-utils`.
  *
- * `scripts/docs-gen/`, `docs/src/`, `astro.config.ts` and `.github/workflows/build-pages.yml` were copied
- * from that repo and are supposed to be kept in step with it by hand, because this package cannot depend on
- * it (`obsidian-dev-utils` lists `obsidian-test-mocks` in its own devDependencies, so the edge would be a
- * cycle). Nothing kept the copy honest, and the one time the question "did upstream change anything here
- * that this copy has not taken?" was actually asked, answering it meant hand-diffing the tree and
- * classifying every hunk.
+ * `scripts/docs-gen/`, `docs/src/`, `astro.config.ts`, `docs/tsconfig.json` and
+ * `.github/workflows/build-pages.yml` were copied from that repo and are supposed to be kept in step with
+ * it by hand, because this package cannot depend on it (`obsidian-dev-utils` lists `obsidian-test-mocks` in
+ * its own devDependencies, so the edge would be a cycle). Nothing kept the copy honest, and the one time the
+ * question "did upstream change anything here that this copy has not taken?" was actually asked, answering
+ * it meant hand-diffing the tree and classifying every hunk.
  *
  * What this asserts is the SHAPE of each file's diff against upstream, recorded in
  * `copy-sync-baseline.json` - see `scripts/helpers/copy-sync.ts` for why shape rather than identity, for
@@ -20,7 +20,7 @@
  *
  * - **The upstream list comes from upstream.** A file added there is not invisible to this check. The
  *   listing is one `git/trees?recursive=1` call rather than a directory walk of the contents API, because
- *   the API is not recursive and this roster spans four areas - and because the rate limit it shares with
+ *   the API is not recursive and this roster spans five areas - and because the rate limit it shares with
  *   `check:vendored-eslint-rules` is 60 requests an hour per address unauthenticated. One call covers every
  *   area. `GITHUB_TOKEN` is used when there is one.
  * - **The sources are read from `raw.githubusercontent.com`.** The published npm package ships `dist/`
