@@ -21,10 +21,11 @@
  *
  * Five things make it more than a number:
  *
- * 1. **The areas are paths, not one tree.** {@link COPY_SYNC_PATHS} holds two trees and two single files,
- *    because `astro.config.ts` and `build-pages.yml` are as much a copy as `scripts/docs-gen/` is. A path
- *    covers itself or anything under it, so a file needs no separate kind from a tree, and both sides keep
- *    the same spelling - a local/upstream prefix pair would suggest configuration where there is none.
+ * 1. **The areas are paths, not one tree.** {@link COPY_SYNC_PATHS} holds two trees and three single files,
+ *    because `astro.config.ts`, `docs/tsconfig.json` and `build-pages.yml` are as much a copy as
+ *    `scripts/docs-gen/` is. A path covers itself or anything under it, so a file needs no separate kind from
+ *    a tree, and both sides keep the same spelling - a local/upstream prefix pair would suggest configuration
+ *    where there is none.
  * 2. **Two transforms ARE mechanical, and are applied rather than recorded.** The whole of divergence 1 in
  *    `AGENTS.md` is the name - the package name and the display title built from it - so
  *    {@link TRANSFORM_ARMS} applies both and most files are then byte-identical. For those, this gate is
@@ -143,7 +144,7 @@ type TransformApply = (text: string) => string;
  * Everything this repo keeps in copy-sync with `obsidian-dev-utils`, as repo-relative paths that are the
  * same on both sides.
  *
- * A path covers itself or anything under it, so the two single files sit here beside the two trees. This
+ * A path covers itself or anything under it, so the three single files sit here beside the two trees. This
  * is the machine-readable half of the copy-sync list in `AGENTS.md` ("The pipeline is a COPY of
  * `obsidian-dev-utils`'"); the prose half is that list, and the two are meant to say the same thing.
  */
@@ -151,6 +152,7 @@ export const COPY_SYNC_PATHS: readonly string[] = [
   '.github/workflows/build-pages.yml',
   'astro.config.ts',
   'docs/src',
+  'docs/tsconfig.json',
   'scripts/docs-gen'
 ];
 

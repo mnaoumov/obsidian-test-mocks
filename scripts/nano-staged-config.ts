@@ -24,8 +24,8 @@ const NANO_STAGED_ENV_VARIABLE = 'NANO_STAGED';
 
 const tasks: Record<string, string[]> = {
   /*
-   * The two single files this repo keeps in copy-sync with `obsidian-dev-utils` — the rest of the roster is
-   * the two trees in the entry below, and `scripts/helpers/copy-sync.ts` holds all four as
+   * The three single files this repo keeps in copy-sync with `obsidian-dev-utils` — the rest of the roster
+   * is the two trees in the entry below, and `scripts/helpers/copy-sync.ts` holds all five as
    * `COPY_SYNC_PATHS`. Same subject as the vendored-rules entry further down, and the same limitation: this
    * wants to measure a shape AFTER `lint:fix` has rewritten whatever it is about to rewrite, and nano-staged
    * offers no way to ask for that (see that entry).
@@ -35,7 +35,7 @@ const tasks: Record<string, string[]> = {
    * check twice, which costs one extra tree call of the hourly 60 and is the price of nano-staged's
    * matcher — see the entry below.
    */
-  '{.github/workflows/build-pages.yml,astro.config.ts}': [
+  '{.github/workflows/build-pages.yml,astro.config.ts,docs/tsconfig.json}': [
     `${PACKAGE_MANAGER_RUN_COMMAND} check:copy-sync --`
   ],
   /*

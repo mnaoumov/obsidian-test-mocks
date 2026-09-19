@@ -100,6 +100,10 @@
       "hunks": [],
       "reasons": []
     },
+    "docs/tsconfig.json": {
+      "hunks": [],
+      "reasons": []
+    },
     "scripts/docs-gen/assets/fonts/inter-latin-400-normal.ttf": {
       "digests": {
         "local": "27396a89e100",
