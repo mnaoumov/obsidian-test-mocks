@@ -728,7 +728,11 @@ function getTseslintConfigs(): Linter.Config[] {
       rules: {
         '@typescript-eslint/explicit-function-return-type': 'error',
         '@typescript-eslint/explicit-member-accessibility': 'error',
-        '@typescript-eslint/method-signature-style': ['error', 'method'],
+        // The rule's own `property` default, spelled as a bare severity so it stays the rule's default rather than a copy of it.
+        // Do NOT pass `'method'` for tidiness: the method form keeps parameters bivariant, drops `readonly` (the rule's own fixer
+        // message says so), and makes `@typescript-eslint/unbound-method` fire on every forwarded bag member, which is what the
+        // `this: void` boilerplate used to pay for. Do NOT delete the line either - the rule is in no preset, so that turns it off.
+        '@typescript-eslint/method-signature-style': 'error',
         '@typescript-eslint/no-floating-promises': ['error', {
           checkThenables: true
         }],
