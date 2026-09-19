@@ -26,9 +26,8 @@ const tasks: Record<string, string[]> = {
   /*
    * The three single files this repo keeps in copy-sync with `obsidian-dev-utils` — the rest of the roster
    * is the two trees in the entry below, and `scripts/helpers/copy-sync.ts` holds all five as
-   * `COPY_SYNC_PATHS`. Same subject as the vendored-rules entry further down, and the same limitation: this
-   * wants to measure a shape AFTER `lint:fix` has rewritten whatever it is about to rewrite, and nano-staged
-   * offers no way to ask for that (see that entry).
+   * `COPY_SYNC_PATHS`. Same subject as the vendored-rules entry further down, and ordered the same way:
+   * neither gate reads the working tree, so neither has to run after `lint:fix` (see that entry).
    *
    * Neither entry takes filenames: the glob only decides whether the check runs, so an ordinary commit
    * touching no copied file fetches nothing. A commit that stages files matching both entries runs the
@@ -68,12 +67,16 @@ const tasks: Record<string, string[]> = {
   /*
    * The vendored ESLint rule sources, which are hand-copies of `obsidian-dev-utils`' and are supposed to be
    * the same bytes. `lint:fix` and `format` elsewhere in this object rewrite a staged copy in place, which
-   * is one of the three ways these files drift, so this check wants to read what is about to be committed
-   * rather than what was staged — and where its key sits cannot buy that. **nano-staged builds one task
-   * group per pattern and runs the groups with `Promise.all`** (measured against nano-staged 1.0.2,
-   * 2026-09-19), so this group RACES `lint:fix` rather than following it; sequencing exists within a single
-   * key's command list and nowhere else. Key order here is only what perfectionist sorts it to, and says
-   * nothing about when anything runs.
+   * is one of the three ways these files drift, so this check has to read what is about to be committed —
+   * and where its key sits cannot buy that. **nano-staged builds one task group per pattern and runs the
+   * groups with `Promise.all`** (measured against nano-staged 1.0.2, 2026-09-19), so this group RACES
+   * `lint:fix` rather than following it; sequencing exists within a single key's command list and nowhere
+   * else. Key order here is only what perfectionist sorts it to, and says nothing about when anything runs.
+   *
+   * So the ordering is not enforced, it is made IRRELEVANT: this gate and the copy-sync one both read their
+   * subject out of the git index rather than off disk (`scripts/helpers/git-content.ts`), which is the same
+   * bytes whenever `lint:fix` has run and the same bytes whenever it has not. Moving either key, or letting
+   * a future nano-staged order the groups differently, changes nothing.
    *
    * It takes no filenames: the glob is only what decides whether it runs at all, so an ordinary commit
    * touching no vendored file fetches nothing.
