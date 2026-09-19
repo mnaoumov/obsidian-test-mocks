@@ -272,12 +272,19 @@ from a tag). It has two halves:
 
 Everything under `scripts/docs-gen/`, plus `docs/src/{components,styles,assets}`, `content.config.ts`,
 `route-data.ts`, `astro.config.ts` and `build-pages.yml`, was copied from `obsidian-dev-utils` and
-should be kept in copy-sync with it — the same arrangement `scripts/helpers/eslint-rules/` already has.
+should be kept in copy-sync with it.
 This package cannot simply depend on `obsidian-dev-utils`: that library lists `obsidian-test-mocks` in its own devDependencies, so the
 edge would be a cycle. Anything the copy needed from its `src/script-utils/*` was re-pointed at this
 repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`).
 
-Keep new divergence to the five places this package genuinely differs:
+**This is NOT the arrangement `scripts/helpers/eslint-rules/` has, and an earlier version of this
+paragraph said it was.** That tree is byte-identical to upstream after two mechanical transforms, which
+is what lets `check:vendored-eslint-rules` assert it. This one cannot be: the divergences below are
+semantic, a transform cannot express them, and — measured 2026-09-19 — taking an upstream file whole can
+now land lint-RED here. So a docs-gen sync is a read-and-merge, and the list below is what it is merged
+against.
+
+Keep new divergence to the seven places this package genuinely differs:
 
 1. **`BASE_PATH` / site title / repo URLs** — mechanical renames.
 2. **`getImportStatement()` (`api-doc-text-utils.ts`)** — this package publishes BARREL entry points, so a
@@ -295,6 +302,22 @@ Keep new divergence to the five places this package genuinely differs:
    `docs/src/assets/` that must never be re-synced from `obsidian-dev-utils`. It feeds three places at once — Starlight's
    `favicon` option, the hero image in `docs/src/content/docs/index.mdx`, and every OG card (rasterized
    by `loadLogoDataUri()` from the `docs/public` copy) — so the two copies must stay identical.
+6. **The Markdown processor is Sätteri, not remark** (`astro.config.ts`,
+   `scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.ts`). Astro 7.3 made Sätteri the
+   default, and `markdown.remarkPlugins` now runs only on the separate `unified` processor from
+   `@astrojs/markdown-remark`. This package names the Sätteri processor and carries the absolute→relative
+   link rewrite as one of its mdast plugins; `obsidian-dev-utils` still installs
+   `@astrojs/markdown-remark` and keeps `remark-plugins/remark-relative-links.ts`. This is the one
+   divergence where THIS repo is ahead, so it travels upstream rather than being re-synced away.
+7. **Rules this repo enables that `obsidian-dev-utils` turns off force local rewrites.** The config
+   comparison behind `eslint-config-divergences.json` prints twelve such rules as information, because
+   this copy is the stricter one there and needs no entry to be stricter. For the *copy-sync* trees that
+   is not free: a file byte-identical to upstream is lint-red here. Two measured instances, 2026-09-19 —
+   `unicorn/no-declarations-before-early-exit` (error here, off upstream) is why `generate-og-images.ts`
+   declares `fontsDirectory` / `outputDirectory` / `manifestPath` / `faviconPath` at their use sites where
+   upstream hoists all four above the first early return; and `import-x/no-default-export` (likewise) is
+   why `astro.config.ts` carries an inline waiver upstream does not need. Expect more of these as the two
+   configs move: when a sync makes lint red, check this class before assuming drift.
 
 ### Type-checking and linting gaps (the same ones `obsidian-dev-utils` has)
 
