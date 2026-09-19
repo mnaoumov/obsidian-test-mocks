@@ -195,7 +195,7 @@ Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint
 
 **The `eslint-plugin-unicorn` ban is a condition, not a headcount.** It applies to a consumer that does not install the plugin — which is not all of them, and the set moves. Measured 2026-09-15: `obsidian-dev-utils`, this repo, `obsidian-integration-testing` and `obsidian-typings` install it; `obsidian-typings-crawler` and `typescript-template` do not. Check before assuming, and keep the directive out regardless, since the file has to remain copyable to the consumers that cannot resolve it.
 
-**The two deltas are now a gate rather than a recipe: `npm run check:vendored-eslint-rules`** (`scripts/check-vendored-eslint-rules.ts`, added 2026-09-19). Each delta is an entry in its `TRANSFORM_ARMS` carrying the reason it exists, and the check asserts the result is byte-identical. Record a new deliberate divergence by adding an arm, never by editing a copy and explaining it in a comment: the arm is what the next run enforces, and a comment is what let these files age apart in the first place. It reads upstream from `raw.githubusercontent.com` — the published package ships `dist/` only, so the sources are not in the tarball, and a sibling checkout would make the check pass only on a machine that has one — and `nano-staged` runs it, after `lint:fix` and `format`, on any commit that stages a vendored file. `CHECK_VENDORED_ESLINT_RULES=0` turns it off where there is no network.
+**The two deltas are now a gate rather than a recipe: `npm run check:vendored-eslint-rules`** (`scripts/check-vendored-eslint-rules.ts`, added 2026-09-19). Each delta is an entry in its `TRANSFORM_ARMS` carrying the reason it exists, and the check asserts the result is byte-identical. Record a new deliberate divergence by adding an arm, never by editing a copy and explaining it in a comment: the arm is what the next run enforces, and a comment is what let these files age apart in the first place. It reads upstream from `raw.githubusercontent.com` — the published package ships `dist/` only, so the sources are not in the tarball, and a sibling checkout would make the check pass only on a machine that has one — and `nano-staged` runs it on any commit that stages a vendored file. It does NOT run after `lint:fix` and `format`, which is what it wants: nano-staged runs one task group per pattern with `Promise.all`, so its key races them rather than following them (measured 2026-09-19; the same limitation applies to `check:copy-sync`). `CHECK_VENDORED_ESLINT_RULES=0` turns it off where there is no network.
 
 **It finds the copies by NAME, not by walking a known directory, and that is the part this table kept getting wrong.** Every roster written here has been short, twice over: it named three consumers when there were five, then five when there are ten. A walk of one directory per repo reports an unlisted tree as *absent* rather than as *drifted*, which is indistinguishable from not having one.
 
@@ -270,9 +270,8 @@ from a tag). It has two halves:
 
 ### The pipeline is a COPY of `obsidian-dev-utils`'
 
-Everything under `scripts/docs-gen/`, plus `docs/src/{components,styles,assets}`, `content.config.ts`,
-`route-data.ts`, `astro.config.ts` and `build-pages.yml`, was copied from `obsidian-dev-utils` and
-should be kept in copy-sync with it.
+Four areas were copied from `obsidian-dev-utils` and should be kept in copy-sync with it:
+`scripts/docs-gen/`, `docs/src/`, `astro.config.ts` and `.github/workflows/build-pages.yml`.
 This package cannot simply depend on `obsidian-dev-utils`: that library lists `obsidian-test-mocks` in its own devDependencies, so the
 edge would be a cycle. Anything the copy needed from its `src/script-utils/*` was re-pointed at this
 repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`).
@@ -283,42 +282,70 @@ of this one cannot be: the divergences below are semantic, a transform cannot ex
 2026-09-19 — taking an upstream file whole can now land lint-RED here. So a docs-gen sync is a
 read-and-merge, and the list below is what it is merged against.
 
-**But the merge is now gated, per file, by the SHAPE of its diff: `npm run check:docs-gen-copy-sync`**
-(`scripts/check-docs-gen-copy-sync.ts` with its pure half in `scripts/helpers/docs-gen-copy-sync.ts`,
-added 2026-09-19). It records, in `docs-gen-copy-sync-baseline.json`, each upstream file's hunk count and
-each hunk's added/removed line counts plus a digest of its changed lines, and fails when a file's shape
-moves — which it does whether upstream edited the file or this repo did. Line numbers are deliberately not
-part of a shape, so one real edit is not reported as a dozen.
+**But the merge is now gated, per file, by the SHAPE of its diff: `npm run check:copy-sync`**
+(`scripts/check-copy-sync.ts` with its pure half in `scripts/helpers/copy-sync.ts`, added 2026-09-19 over
+`scripts/docs-gen` and widened to the whole roster the same day). It records, in `copy-sync-baseline.json`,
+each upstream file's hunk count and each hunk's added/removed line counts plus a digest of its changed
+lines, and fails when a file's shape moves — which it does whether upstream edited the file or this repo
+did. Line numbers are deliberately not part of a shape, so one real edit is not reported as a dozen.
+**44 files, 30 of them identical** after the recorded transforms, measured 2026-09-19.
 
-Three things to know before touching that tree:
+Six things to know before touching a copied file:
 
-- **Divergence 1 is a transform, not a baseline entry.** The package name is the whole of it, so the gate
-  applies `obsidian-dev-utils` → `obsidian-test-mocks` to upstream's text first. That leaves **15 of the
-  26 files byte-identical**, and for those this gate is exactly as strong as the rule-source one: the
-  baseline says "no hunks", so any drift at all is reported. Resist adding a second arm to make a diff
-  smaller — an arm that rewrites meaning hides the drift it was meant to expose.
+- **`COPY_SYNC_PATHS` is the roster, and the four-area list above is its prose half** — keep the two in
+  step. A path there covers itself or anything under it, which is why two single files sit beside two trees
+  with no separate notion of a file; both sides keep the same spelling.
+- **Divergence 1 is two transforms, not baseline entries.** The name is the whole of it, so the gate applies
+  `obsidian-dev-utils` → `obsidian-test-mocks` and `Obsidian Dev Utils` → `Obsidian Test Mocks` to
+  upstream's text first. That is what leaves most of the roster byte-identical, and for those files this
+  gate is exactly as strong as the rule-source one: the baseline says "no hunks", so any drift at all is
+  reported. Resist adding a third arm to make a diff smaller — an arm that rewrites meaning hides the drift
+  it was meant to expose.
 - **Every differing file names its reason**, from the closed vocabulary in `DIVERGENCE_REASONS`, which is
-  this list. A file whose hunks are recorded with no reason FAILS the gate; so does a reason that no
-  longer applies. Re-record with `npm run check:docs-gen-copy-sync -- --update`, which keeps the reasons
+  this list. A file whose divergence is recorded with no reason FAILS the gate; so does a reason that no
+  longer applies. Re-record with `npm run check:copy-sync -- --update`, which keeps the reasons
   and rewrites only the shapes — it is not a way to make the gate green.
 - **`satteri-relative-links.{ts,test.ts}` is PAIRED with upstream's `remark-relative-links.{ts,test.ts}`**
   in `UPSTREAM_TO_LOCAL_RENAMES`, not treated as a file of ours. Unpaired, an upstream fix to that
   plugin's slug or self-link handling would be invisible here forever.
+- **Two paths inside an area are never compared**, and are filtered out of BOTH listings so neither is
+  reported as unpaired either (`NEVER_COMPARED_PATHS`): `docs/src/assets/favicon.svg`, divergence 5 below;
+  and `docs/src/content/`, which is not a copy of anything — the guides and `index.mdx` are this package's
+  own prose and `content/docs/api` is generated. The exclusion is drawn at the path boundary, so
+  `docs/src/content.config.ts` beside it IS compared.
+- **A binary file is compared by hash, with both sides recorded.** The two Inter TTFs under
+  `scripts/docs-gen/assets/fonts` have no hunks to shape, and `git diff` answers a binary pair with
+  "Binary files differ" and no `@@` at all — which a hunk parser reads as *identical*, the one wrong
+  answer. A file whose bytes hold a NUL is therefore recorded as a digest PAIR, and a change to either side
+  fails. The sniff is content, not an extension list, so a new binary cannot arrive unnoticed.
 
-It reads upstream from `raw.githubusercontent.com` and lists it with one `git/trees?recursive=1` call, for
-the same reasons `check:vendored-eslint-rules` does, and shares that call's unauthenticated rate limit —
-`GITHUB_TOKEN` is used when there is one. `nano-staged` runs it after `lint:fix` on any commit that stages
-a file under `scripts/docs-gen` (ESLint covers that tree, so `lint:fix` is the one step here that can
-rewrite a staged file in it). `CHECK_DOCS_GEN_COPY_SYNC=0` turns it off where there is no network.
+It reads upstream from `raw.githubusercontent.com` and lists it with one `git/trees?recursive=1` call — one
+call for all four areas — for the same reasons `check:vendored-eslint-rules` does, and shares that call's
+unauthenticated rate limit; `GITHUB_TOKEN` is used when there is one. This repo's side is listed with
+`git ls-files` rather than a directory walk, because `docs/src` holds gitignored build output
+(`generated-sidebar.json`, `content/docs/api/`) that a walk reports as paired with nothing upstream.
+`nano-staged` runs it on any commit that stages a file in an area — two keys, and the brace in
+`{docs/src,scripts/docs-gen}/**` has to sit before the `/**` or nano-staged's matcher quietly stops treating
+it as a globstar. It would ideally run AFTER `lint:fix` (ESLint covers `scripts/docs-gen`, so `lint:fix` is
+the one step here that can rewrite a staged file in it, and a shape measured before it ran is a shape nobody
+commits) — but **nano-staged runs one task group per pattern with `Promise.all`**, measured against 1.0.2 on
+2026-09-19, so a separate key races `lint:fix` instead of following it. Sequencing exists within one key's
+command list and nowhere else; key order carries no meaning and is only what perfectionist sorts it to. The
+same limitation applies to `check:vendored-eslint-rules`. `CHECK_COPY_SYNC=0` turns it off where there is no
+network.
 
-**The gate covers the `.ts` files under `scripts/docs-gen` only.** The rest of the copy-sync set — `astro.config.ts`,
-`docs/src/{components,styles,assets}`, `content.config.ts`, `route-data.ts`, `build-pages.yml` — is still
-hand-compared, and the favicon must never be synced at all.
+**One copied file is deliberately outside the roster: `docs/tsconfig.json`.** It differs from upstream's by
+one hunk — `"../.astro/types.d.ts"` there against `".astro/types.d.ts"` here, where one of the two sides is
+simply wrong — and settling which is a question rather than roster work, so it stays hand-compared until
+that is answered. `docs/public/favicon.svg` is outside the roster too, as the second copy of a file that
+must never be synced.
 
 Keep new divergence to the ten places this package genuinely differs:
 
-1. **`BASE_PATH` / site title / repo URLs** — mechanical renames, all of them the package name, and all of
-   them applied by the gate's one transform arm rather than recorded as divergence.
+1. **`BASE_PATH` / site title / repo URLs** — mechanical renames, all of them the name, and all of them
+   applied by the gate's two transform arms rather than recorded as divergence: the package name, and the
+   display title (`Obsidian Dev Utils` → `Obsidian Test Mocks`) that `astro.config.ts` names the site with.
+   The second arm appears in no file under `scripts/docs-gen`, so it moves no shape there.
 2. **`getImportStatement()` (`api-doc-text-utils.ts`)** — this package publishes BARREL entry points, so a
    namespace does not map to a subpath the way `obsidian-dev-utils`' does. `obsidian/**` becomes a named import from
    `obsidian-test-mocks/obsidian`; `globals/**` and `obsidian-typings/**` are side-effect imports of the
@@ -339,7 +366,10 @@ Keep new divergence to the ten places this package genuinely differs:
    `docs/src/assets/` that must never be re-synced from `obsidian-dev-utils`. It feeds three places at once — Starlight's
    `favicon` option, the hero image in `docs/src/content/docs/index.mdx`, and every OG card (rasterized
    by `loadLogoDataUri()` from the `docs/public` copy) — so the two copies must stay identical.
-   No baseline reason: it is not a `.ts` file, so it is outside the gate entirely.
+   No baseline entry: `docs/src/assets/favicon.svg` is in `NEVER_COMPARED_PATHS` and `docs/public/` is
+   outside the roster. Its CONSEQUENCE is recorded, though — `own-favicon-mark` on
+   `docs/src/components/SiteTitle.astro`, whose prose says the site's only mark is the favicon beside the
+   title where upstream's says it has no logo at all.
 6. **The Markdown processor is Sätteri, not remark** (`astro.config.ts`,
    `scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.ts`). Astro 7.3 made Sätteri the
    default, and `markdown.remarkPlugins` now runs only on the separate `unified` processor from
@@ -347,7 +377,8 @@ Keep new divergence to the ten places this package genuinely differs:
    link rewrite as one of its mdast plugins; `obsidian-dev-utils` still installs
    `@astrojs/markdown-remark` and keeps `remark-plugins/remark-relative-links.ts`. This is the one
    divergence where THIS repo is ahead, so it travels upstream rather than being re-synced away.
-   Baseline reason: `satteri-processor`, on the upstream file the port is paired with.
+   Baseline reason: `satteri-processor`, on the upstream file the port is paired with and on
+   `astro.config.ts`, which names the processor and imports the port.
 7. **Rules this repo enables that `obsidian-dev-utils` turns off force local rewrites.** The config
    comparison behind `eslint-config-divergences.json` prints twelve such rules as information, because
    this copy is the stricter one there and needs no entry to be stricter. For the *copy-sync* trees that
@@ -367,9 +398,11 @@ Keep new divergence to the ten places this package genuinely differs:
    construction: the CodeMirror and Turndown entries are ours, and upstream's hook/owner/suspect
    identifiers are not. Eleven of the gate's hunks are this one file.
    Baseline reason: `api-surface-tables`.
-10. **The vendored OG assets** — this repo ships the Inter TTFs under `scripts/docs-gen/assets/fonts` and
-    has a favicon to rasterize into every card, where upstream has neither, so the font-loading and
-    footer-branding prose in `og-image.ts` says something different from upstream's.
+10. **The vendored OG assets** — both repos now ship the same two Inter TTFs under
+    `scripts/docs-gen/assets/fonts` (byte-identical, measured 2026-09-19, and gated as a digest pair), but
+    upstream's own prose still says it vendors none, and it has no favicon to rasterize into a card where
+    this repo does. So the font-loading and footer-branding comments in `og-image.ts` say something
+    different from upstream's, in two hunks that are prose only.
     Baseline reason: `vendored-og-assets`.
 
 ### Type-checking and linting gaps (the same ones `obsidian-dev-utils` has)

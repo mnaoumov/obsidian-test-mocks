@@ -2,9 +2,9 @@
   "version": "0.2",
   "ignorePaths": [
     ".husky",
+    "copy-sync-baseline.json",
     "coverage",
     "dist",
-    "docs-gen-copy-sync-baseline.json",
     "docs/src/components",
     "docs/src/content/docs/api",
     "docs/src/styles",
