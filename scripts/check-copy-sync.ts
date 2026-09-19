@@ -27,8 +27,15 @@
  *   only, and reading a sibling checkout would make this pass only on a machine that happens to have one.
  * - **This repo's side is listed with `git ls-files`, not a directory walk.** `docs/src` holds generated,
  *   gitignored output - `generated-sidebar.json` and `content/docs/api/` - which a walk reports as files
- *   paired with nothing upstream. Reading the index also means a pre-commit run sees what is staged, which
- *   is what `nano-staged` is about to commit.
+ *   paired with nothing upstream.
+ *
+ * **This repo's side is also READ from the index, not from the working tree** ({@link readIndexContent}).
+ * The subject of this gate is what is about to be committed, and `lint:fix` and `format` rewrite a staged
+ * file in place - which is one of the ways these copies drift. nano-staged cannot be made to run this after
+ * them (it runs its per-pattern task groups with `Promise.all`; see `scripts/helpers/git-content.ts`), so
+ * reading the index makes that ordering irrelevant rather than trying to enforce it. It also means a
+ * developer running this by hand over a half-edited tree is answered about the commit they are preparing.
+ * On a clean checkout the two sources agree, so CI is unaffected.
  *
  * Offline, or anywhere the fetch is unwelcome, this is turned off the way every script here is:
  * `CHECK_COPY_SYNC=0`, via {@link exitIfScriptDisabled}. That is an explicit opt-out rather than a silent
@@ -40,6 +47,7 @@
  */
 
 import { Buffer } from 'node:buffer';
+import { existsSync } from 'node:fs';
 import {
   mkdir,
   readFile,
@@ -76,6 +84,7 @@ import {
   validateBaselineEntry
 } from './helpers/copy-sync.ts';
 import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
+import { readIndexContent } from './helpers/git-content.ts';
 import {
   execFromRoot,
   getRootFolder,
@@ -149,13 +158,17 @@ async function collectLocalPaths(): Promise<string[]> {
 /**
  * Names the command that shows a reader what the numbers above are counting.
  *
+ * Both sides are named as their scratch copies rather than as the repo's own file, because that is what was
+ * measured: the left side is upstream after the recorded transforms, and the right side is the STAGED copy
+ * of `localPath`, which is not the file on disk whenever there is an unstaged edit to it.
+ *
  * A binary pair has no diff to read, so it is pointed at the two files instead.
  */
 function describeHowToRead(upstreamPath: string, shape: FileShape, scratchDirectory: string): string {
   const localPath = getLocalPath(upstreamPath);
   return isBinaryShape(shape)
-    ? `It is binary, so there are no hunks to read: compare ${UPSTREAM_RAW_BASE_URL}/${upstreamPath} with ${localPath} byte for byte.`
-    : `Read it with \`git diff --no-index ${getScratchPath(upstreamPath, scratchDirectory)} ${localPath}\`; add \`--unified=0\` to see the hunks the numbers above count.`;
+    ? `It is binary, so there are no hunks to read: compare ${UPSTREAM_RAW_BASE_URL}/${upstreamPath} with the staged ${localPath} byte for byte.`
+    : `Read it with \`git diff --no-index ${getScratchPath(upstreamPath, scratchDirectory, 'upstream')} ${getScratchPath(upstreamPath, scratchDirectory, 'staged')}\` - the right-hand side is the staged ${localPath}; add \`--unified=0\` to see the hunks the numbers above count.`;
 }
 
 async function fetchUpstreamContent(path: string): Promise<Buffer | null> {
@@ -172,13 +185,17 @@ async function fetchUpstreamContent(path: string): Promise<Buffer | null> {
 }
 
 /**
- * Where upstream's transformed text is parked for one file.
+ * Where one side of a file's comparison is parked.
+ *
+ * Both sides are written out: upstream's, after the recorded transforms, and this repo's staged bytes -
+ * which are not readable as a path, so the diff has to be taken between two scratch files rather than
+ * between a scratch file and the working tree.
  *
  * The path is flattened rather than nested so the scratch directory needs no subdirectories - and so that
  * two areas holding the same relative path cannot collide.
  */
-function getScratchPath(upstreamPath: string, scratchDirectory: string): string {
-  return join(scratchDirectory, upstreamPath.replaceAll('/', '__'));
+function getScratchPath(upstreamPath: string, scratchDirectory: string, side: 'staged' | 'upstream'): string {
+  return join(scratchDirectory, `${side}__${upstreamPath.replaceAll('/', '__')}`);
 }
 
 async function getUpstreamPaths(): Promise<string[]> {
@@ -301,12 +318,17 @@ async function measureShape(upstreamPath: string, root: string, scratchDirectory
     return null;
   }
 
-  let localContent: Buffer;
-  try {
-    localContent = await readFile(join(root, localPath));
-  } catch {
+  /*
+   * The index rather than the working tree - see the file header. A `null` here is a path with no stage-0
+   * entry, which for a file that does exist means an unresolved merge; the local listing is `git ls-files`,
+   * so an untracked file never reaches this.
+   */
+  const localContent = await readIndexContent(root, localPath);
+  if (localContent === null) {
     failures.push(
-      `${upstreamPath} exists upstream and this repo has no ${localPath}. Take it, or - if this repo keeps it under another name - pair the two in \`UPSTREAM_TO_LOCAL_RENAMES\`.`
+      existsSync(join(root, localPath))
+        ? `${localPath} has no stage-0 entry in the git index, so there is nothing staged to compare - it is almost certainly an unresolved merge. Resolve it and \`git add\` the result.`
+        : `${upstreamPath} exists upstream and this repo has no ${localPath}. Take it, or - if this repo keeps it under another name - pair the two in \`UPSTREAM_TO_LOCAL_RENAMES\`.`
     );
     return null;
   }
@@ -321,16 +343,24 @@ async function measureShape(upstreamPath: string, root: string, scratchDirectory
 
   const localText = localContent.toString('utf-8');
   if (localText.includes('\r\n')) {
+    /*
+     * These are the STAGED bytes, and `.gitattributes` normalizes a text file on add - so this fires only
+     * on a file committed before that attribute covered it, which is the case `git add --renormalize` is
+     * for. It is not dead: attributes are not retroactive.
+     */
     failures.push(
-      `${localPath} has CRLF line endings, and \`.gitattributes\` declares this repo LF-only. Nothing else catches it in \`scripts/docs-gen\` - that tree is outside dprint's scope - and every line of it reads as changed against upstream.`
+      `${localPath} is staged with CRLF line endings, and \`.gitattributes\` declares this repo LF-only. Nothing else catches it in \`scripts/docs-gen\` - that tree is outside dprint's scope - and every line of it reads as changed against upstream. Re-stage it with \`git add --renormalize ${localPath}\`.`
     );
     return null;
   }
 
-  const expectedPath = getScratchPath(upstreamPath, scratchDirectory);
+  const expectedPath = getScratchPath(upstreamPath, scratchDirectory, 'upstream');
   await writeFile(expectedPath, applyTransformArms(upstreamContent.toString('utf-8'), upstreamPath));
 
-  return { hunks: parseDiffShape(await runGitDiff(expectedPath, localPath, root)) };
+  const actualPath = getScratchPath(upstreamPath, scratchDirectory, 'staged');
+  await writeFile(actualPath, localContent);
+
+  return { hunks: parseDiffShape(await runGitDiff(expectedPath, actualPath, localPath)) };
 }
 
 /**
@@ -446,7 +476,14 @@ function reportUnpairedLocalFiles(upstreamPaths: readonly string[], localPaths: 
   }
 }
 
-async function runGitDiff(expectedPath: string, localPath: string, root: string): Promise<string> {
+/**
+ * Diffs the two scratch files the comparison was written to.
+ *
+ * @param expectedPath - Upstream's text after the recorded transforms.
+ * @param actualPath - This repo's staged bytes.
+ * @param localPath - The repo-relative path the staged bytes came from, for the error message only.
+ */
+async function runGitDiff(expectedPath: string, actualPath: string, localPath: string): Promise<string> {
   /*
    * Every `-c` here pins a setting that would otherwise change where git puts the hunk boundaries, and so
    * change the recorded shape on a machine whose git config differs. `--no-ext-diff` keeps a configured
@@ -466,7 +503,7 @@ async function runGitDiff(expectedPath: string, localPath: string, root: string)
       '--unified=0',
       '--',
       expectedPath,
-      join(root, localPath)
+      actualPath
     ],
     { isQuiet: true, shouldIgnoreExitCode: true, shouldIncludeDetails: true }
   );

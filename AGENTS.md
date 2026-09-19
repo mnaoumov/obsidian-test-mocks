@@ -195,7 +195,7 @@ Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint
 
 **The `eslint-plugin-unicorn` ban is a condition, not a headcount.** It applies to a consumer that does not install the plugin — which is not all of them, and the set moves. Measured 2026-09-15: `obsidian-dev-utils`, this repo, `obsidian-integration-testing` and `obsidian-typings` install it; `obsidian-typings-crawler` and `typescript-template` do not. Check before assuming, and keep the directive out regardless, since the file has to remain copyable to the consumers that cannot resolve it.
 
-**The two deltas are now a gate rather than a recipe: `npm run check:vendored-eslint-rules`** (`scripts/check-vendored-eslint-rules.ts`, added 2026-09-19). Each delta is an entry in its `TRANSFORM_ARMS` carrying the reason it exists, and the check asserts the result is byte-identical. Record a new deliberate divergence by adding an arm, never by editing a copy and explaining it in a comment: the arm is what the next run enforces, and a comment is what let these files age apart in the first place. It reads upstream from `raw.githubusercontent.com` — the published package ships `dist/` only, so the sources are not in the tarball, and a sibling checkout would make the check pass only on a machine that has one — and `nano-staged` runs it on any commit that stages a vendored file. It does NOT run after `lint:fix` and `format`, which is what it wants: nano-staged runs one task group per pattern with `Promise.all`, so its key races them rather than following them (measured 2026-09-19; the same limitation applies to `check:copy-sync`). `CHECK_VENDORED_ESLINT_RULES=0` turns it off where there is no network.
+**The two deltas are now a gate rather than a recipe: `npm run check:vendored-eslint-rules`** (`scripts/check-vendored-eslint-rules.ts`, added 2026-09-19). Each delta is an entry in its `TRANSFORM_ARMS` carrying the reason it exists, and the check asserts the result is byte-identical. Record a new deliberate divergence by adding an arm, never by editing a copy and explaining it in a comment: the arm is what the next run enforces, and a comment is what let these files age apart in the first place. It reads upstream from `raw.githubusercontent.com` — the published package ships `dist/` only, so the sources are not in the tarball, and a sibling checkout would make the check pass only on a machine that has one — and `nano-staged` runs it on any commit that stages a vendored file. **It reads this repo's side out of the git INDEX, not off disk**, which is what makes it independent of when it runs: it cannot be made to follow `lint:fix` and `format` — nano-staged runs one task group per pattern with `Promise.all`, so its key races them rather than following them (measured against 1.0.2, 2026-09-19) — so reading the staged blob makes that ordering irrelevant instead of enforced. It is also the answer a developer running the gate by hand mid-edit actually wants. `check:copy-sync` does the same, for the same reason; the shared read is `scripts/helpers/git-content.ts`. A vendored copy that is untracked has no staged blob and is read from disk, and the failure message says which side it read. `CHECK_VENDORED_ESLINT_RULES=0` turns it off where there is no network.
 
 **It finds the copies by NAME, not by walking a known directory, and that is the part this table kept getting wrong.** Every roster written here has been short, twice over: it named three consumers when there were five, then five when there are ten. A walk of one directory per repo reports an unlisted tree as *absent* rather than as *drifted*, which is indistinguishable from not having one.
 
@@ -327,13 +327,19 @@ unauthenticated rate limit; `GITHUB_TOKEN` is used when there is one. This repo'
 (`generated-sidebar.json`, `content/docs/api/`) that a walk reports as paired with nothing upstream.
 `nano-staged` runs it on any commit that stages a file in an area — two keys, and the brace in
 `{docs/src,scripts/docs-gen}/**` has to sit before the `/**` or nano-staged's matcher quietly stops treating
-it as a globstar. It would ideally run AFTER `lint:fix` (ESLint covers `scripts/docs-gen`, so `lint:fix` is
-the one step here that can rewrite a staged file in it, and a shape measured before it ran is a shape nobody
-commits) — but **nano-staged runs one task group per pattern with `Promise.all`**, measured against 1.0.2 on
-2026-09-19, so a separate key races `lint:fix` instead of following it. Sequencing exists within one key's
-command list and nowhere else; key order carries no meaning and is only what perfectionist sorts it to. The
-same limitation applies to `check:vendored-eslint-rules`. `CHECK_COPY_SYNC=0` turns it off where there is no
-network.
+it as a globstar. `CHECK_COPY_SYNC=0` turns it off where there is no network.
+
+**This repo's side is READ from the index too, not just listed from it** (`scripts/helpers/git-content.ts`,
+2026-09-19). It would ideally run AFTER `lint:fix` — ESLint covers `scripts/docs-gen`, so `lint:fix` is the
+one step here that can rewrite a staged file in it, and a shape measured before it ran is a shape nobody
+commits — and it cannot be made to: **nano-staged runs one task group per pattern with `Promise.all`**,
+measured against 1.0.2 on 2026-09-19, so a separate key races `lint:fix` instead of following it. Sequencing
+exists within one key's command list and nowhere else; key order carries no meaning and is only what
+perfectionist sorts it to. So the ordering is made irrelevant rather than enforced: the gate measures the
+staged blob, which is the same bytes whether the fixer has run or not, and which is also what a developer
+running the gate by hand mid-edit is asking about. The diff is therefore taken between two scratch files
+rather than between a scratch file and the working tree, and the failure message names both. The same is
+true of `check:vendored-eslint-rules`, which shares the read.
 
 **`docs/tsconfig.json` joined the roster on 2026-09-19, once the hunk that kept it out was settled.** It
 included `".astro/types.d.ts"` where upstream includes `"../.astro/types.d.ts"`, and upstream is right:
