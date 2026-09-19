@@ -23,6 +23,30 @@ const PACKAGE_MANAGER_RUN_COMMAND = getPackageManagerRunCommand().join(' ');
 const NANO_STAGED_ENV_VARIABLE = 'NANO_STAGED';
 
 const tasks: Record<string, string[]> = {
+  /*
+   * The two single files this repo keeps in copy-sync with `obsidian-dev-utils` — the rest of the roster is
+   * the two trees in the entry below, and `scripts/helpers/copy-sync.ts` holds all four as
+   * `COPY_SYNC_PATHS`. Same subject as the vendored-rules entry further down, and the same limitation: this
+   * wants to measure a shape AFTER `lint:fix` has rewritten whatever it is about to rewrite, and nano-staged
+   * offers no way to ask for that (see that entry).
+   *
+   * Neither entry takes filenames: the glob only decides whether the check runs, so an ordinary commit
+   * touching no copied file fetches nothing. A commit that stages files matching both entries runs the
+   * check twice, which costs one extra tree call of the hourly 60 and is the price of nano-staged's
+   * matcher — see the entry below.
+   */
+  '{.github/workflows/build-pages.yml,astro.config.ts}': [
+    `${PACKAGE_MANAGER_RUN_COMMAND} check:copy-sync --`
+  ],
+  /*
+   * The two copy-sync trees, in one key. The brace has to sit BEFORE the `/**`: nano-staged treats `**` as
+   * a globstar only when it is bounded by a `/` or the end of the pattern, so inside a brace group — as in
+   * `{docs/src/**,scripts/docs-gen/**}` — it degrades to a single-segment wildcard and silently stops
+   * matching `scripts/docs-gen/helpers/*`, which is most of the tree.
+   */
+  '{docs/src,scripts/docs-gen}/**': [
+    `${PACKAGE_MANAGER_RUN_COMMAND} check:copy-sync --`
+  ],
   '*': [
     `${PACKAGE_MANAGER_RUN_COMMAND} spellcheck --`
   ],
@@ -43,29 +67,19 @@ const tasks: Record<string, string[]> = {
   ],
   /*
    * The vendored ESLint rule sources, which are hand-copies of `obsidian-dev-utils`' and are supposed to be
-   * the same bytes. Running last is what makes this useful rather than merely present: `lint:fix` and
-   * `format` above rewrite a staged copy in place, which is one of the three ways these files drift, so the
-   * check has to read what is about to be committed rather than what was staged. The key sorts to last here
-   * on its own — perfectionist puts a recursive glob after the single-segment ones — so that order is
-   * enforced rather than merely typed in.
+   * the same bytes. `lint:fix` and `format` elsewhere in this object rewrite a staged copy in place, which
+   * is one of the three ways these files drift, so this check wants to read what is about to be committed
+   * rather than what was staged — and where its key sits cannot buy that. **nano-staged builds one task
+   * group per pattern and runs the groups with `Promise.all`** (measured against nano-staged 1.0.2,
+   * 2026-09-19), so this group RACES `lint:fix` rather than following it; sequencing exists within a single
+   * key's command list and nowhere else. Key order here is only what perfectionist sorts it to, and says
+   * nothing about when anything runs.
    *
    * It takes no filenames: the glob is only what decides whether it runs at all, so an ordinary commit
    * touching no vendored file fetches nothing.
    */
   '**/eslint-rules/*.ts': [
     `${PACKAGE_MANAGER_RUN_COMMAND} check:vendored-eslint-rules --`
-  ],
-  /*
-   * The documentation pipeline, which is a hand-maintained copy of `obsidian-dev-utils`'. Same reasoning as
-   * the entry above, and the same ordering requirement for a sharper reason: `scripts/docs-gen` is outside
-   * dprint's scope but NOT outside ESLint's, so `lint:fix` above is the one thing here that rewrites a
-   * staged file in this tree, and a shape measured before it ran would be a shape nobody commits.
-   *
-   * It takes no filenames either: the glob only decides whether it runs, so an ordinary commit touching no
-   * file under `scripts/docs-gen` fetches nothing.
-   */
-  'scripts/docs-gen/**': [
-    `${PACKAGE_MANAGER_RUN_COMMAND} check:docs-gen-copy-sync --`
   ]
 };
 

@@ -1,10 +1,124 @@
 {
   "files": {
-    "generate-api-docs.ts": {
+    ".github/workflows/build-pages.yml": {
       "hunks": [],
       "reasons": []
     },
-    "generate-og-images.ts": {
+    "astro.config.ts": {
+      "hunks": [
+        {
+          "added": 1,
+          "digest": "6e575cc544e3",
+          "removed": 0
+        },
+        {
+          "added": 1,
+          "digest": "2d0cc7383c95",
+          "removed": 1
+        },
+        {
+          "added": 1,
+          "digest": "0e76745bd8d3",
+          "removed": 0
+        },
+        {
+          "added": 4,
+          "digest": "ce71c96c7fab",
+          "removed": 1
+        }
+      ],
+      "reasons": [
+        "local-strictness-rewrites",
+        "satteri-processor"
+      ]
+    },
+    "docs/src/components/api/ConstructorBlock.astro": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/components/api/ImportStatement.astro": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/components/api/index.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/components/api/MemberDetail.astro": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/components/api/MethodTable.astro": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/components/api/PropertyTable.astro": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/components/api/types.ts": {
+      "hunks": [
+        {
+          "added": 3,
+          "digest": "8fccf482192d",
+          "removed": 3
+        }
+      ],
+      "reasons": [
+        "mock-only-suffix"
+      ]
+    },
+    "docs/src/components/api/TypeSignature.astro": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/components/SiteTitle.astro": {
+      "hunks": [
+        {
+          "added": 2,
+          "digest": "6778dcab2d20",
+          "removed": 2
+        }
+      ],
+      "reasons": [
+        "own-favicon-mark"
+      ]
+    },
+    "docs/src/content.config.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/route-data.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/route-data.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "docs/src/styles/global.css": {
+      "hunks": [],
+      "reasons": []
+    },
+    "scripts/docs-gen/assets/fonts/inter-latin-400-normal.ttf": {
+      "digests": {
+        "local": "27396a89e100",
+        "upstream": "27396a89e100"
+      },
+      "reasons": []
+    },
+    "scripts/docs-gen/assets/fonts/inter-latin-700-normal.ttf": {
+      "digests": {
+        "local": "286fd42c6364",
+        "upstream": "286fd42c6364"
+      },
+      "reasons": []
+    },
+    "scripts/docs-gen/generate-api-docs.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "scripts/docs-gen/generate-og-images.ts": {
       "hunks": [
         {
           "added": 0,
@@ -31,7 +145,7 @@
         "local-strictness-rewrites"
       ]
     },
-    "helpers/api-doc-constants.ts": {
+    "scripts/docs-gen/helpers/api-doc-constants.ts": {
       "hunks": [
         {
           "added": 0,
@@ -93,27 +207,27 @@
         "api-surface-tables"
       ]
     },
-    "helpers/api-doc-jsdoc.test.ts": {
+    "scripts/docs-gen/helpers/api-doc-jsdoc.test.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/api-doc-jsdoc.ts": {
+    "scripts/docs-gen/helpers/api-doc-jsdoc.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/api-doc-link-rendering.test.ts": {
+    "scripts/docs-gen/helpers/api-doc-link-rendering.test.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/api-doc-link-rendering.ts": {
+    "scripts/docs-gen/helpers/api-doc-link-rendering.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/api-doc-page-generation.test.ts": {
+    "scripts/docs-gen/helpers/api-doc-page-generation.test.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/api-doc-page-generation.ts": {
+    "scripts/docs-gen/helpers/api-doc-page-generation.ts": {
       "hunks": [
         {
           "added": 2,
@@ -125,11 +239,11 @@
         "barrel-entry-points"
       ]
     },
-    "helpers/api-doc-source-processing.test.ts": {
+    "scripts/docs-gen/helpers/api-doc-source-processing.test.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/api-doc-source-processing.ts": {
+    "scripts/docs-gen/helpers/api-doc-source-processing.ts": {
       "hunks": [
         {
           "added": 7,
@@ -141,7 +255,7 @@
         "excluded-dir-segments"
       ]
     },
-    "helpers/api-doc-text-utils.test.ts": {
+    "scripts/docs-gen/helpers/api-doc-text-utils.test.ts": {
       "hunks": [
         {
           "added": 10,
@@ -159,7 +273,7 @@
         "mock-only-suffix"
       ]
     },
-    "helpers/api-doc-text-utils.ts": {
+    "scripts/docs-gen/helpers/api-doc-text-utils.ts": {
       "hunks": [
         {
           "added": 34,
@@ -212,11 +326,11 @@
         "mock-only-suffix"
       ]
     },
-    "helpers/api-doc-type-merging.test.ts": {
+    "scripts/docs-gen/helpers/api-doc-type-merging.test.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/api-doc-type-merging.ts": {
+    "scripts/docs-gen/helpers/api-doc-type-merging.ts": {
       "hunks": [
         {
           "added": 3,
@@ -228,15 +342,15 @@
         "mock-only-suffix"
       ]
     },
-    "helpers/api-doc-types.ts": {
+    "scripts/docs-gen/helpers/api-doc-types.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/link-check.test.ts": {
+    "scripts/docs-gen/helpers/link-check.test.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/link-check.ts": {
+    "scripts/docs-gen/helpers/link-check.ts": {
       "hunks": [
         {
           "added": 1,
@@ -248,19 +362,19 @@
         "helpers-re-pointed"
       ]
     },
-    "helpers/og-image-page.test.ts": {
+    "scripts/docs-gen/helpers/og-image-page.test.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/og-image-page.ts": {
+    "scripts/docs-gen/helpers/og-image-page.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/og-image.test.ts": {
+    "scripts/docs-gen/helpers/og-image.test.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/og-image.ts": {
+    "scripts/docs-gen/helpers/og-image.ts": {
       "hunks": [
         {
           "added": 4,
@@ -277,7 +391,7 @@
         "vendored-og-assets"
       ]
     },
-    "helpers/remark-plugins/remark-relative-links.test.ts": {
+    "scripts/docs-gen/helpers/remark-plugins/remark-relative-links.test.ts": {
       "hunks": [
         {
           "added": 2,
@@ -364,7 +478,7 @@
         "satteri-processor"
       ]
     },
-    "helpers/remark-plugins/remark-relative-links.ts": {
+    "scripts/docs-gen/helpers/remark-plugins/remark-relative-links.ts": {
       "hunks": [
         {
           "added": 1,
@@ -436,11 +550,15 @@
         "satteri-processor"
       ]
     },
-    "helpers/remark-plugins/util.test.ts": {
+    "scripts/docs-gen/helpers/remark-plugins/util.test.ts": {
       "hunks": [],
       "reasons": []
     },
-    "helpers/remark-plugins/util.ts": {
+    "scripts/docs-gen/helpers/remark-plugins/util.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "scripts/docs-gen/tsconfig.json": {
       "hunks": [],
       "reasons": []
     }
