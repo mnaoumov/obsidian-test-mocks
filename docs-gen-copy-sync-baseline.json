@@ -1,0 +1,449 @@
+{
+  "files": {
+    "generate-api-docs.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "generate-og-images.ts": {
+      "hunks": [
+        {
+          "added": 0,
+          "digest": "165d8d442c6e",
+          "removed": 4
+        },
+        {
+          "added": 1,
+          "digest": "64dd81729422",
+          "removed": 0
+        },
+        {
+          "added": 2,
+          "digest": "217fd0cbaaff",
+          "removed": 0
+        },
+        {
+          "added": 1,
+          "digest": "2a094b910300",
+          "removed": 0
+        }
+      ],
+      "reasons": [
+        "local-strictness-rewrites"
+      ]
+    },
+    "helpers/api-doc-constants.ts": {
+      "hunks": [
+        {
+          "added": 0,
+          "digest": "4d1223e78619",
+          "removed": 1
+        },
+        {
+          "added": 0,
+          "digest": "6f06d8a9d702",
+          "removed": 3
+        },
+        {
+          "added": 0,
+          "digest": "78723b4e4ff7",
+          "removed": 3
+        },
+        {
+          "added": 0,
+          "digest": "8b985d5afb94",
+          "removed": 1
+        },
+        {
+          "added": 0,
+          "digest": "0ebf05f2c17f",
+          "removed": 1
+        },
+        {
+          "added": 0,
+          "digest": "dd7f9b63f6b6",
+          "removed": 1
+        },
+        {
+          "added": 0,
+          "digest": "b8fd8ad6c883",
+          "removed": 1
+        },
+        {
+          "added": 1,
+          "digest": "82b51f83e184",
+          "removed": 3
+        },
+        {
+          "added": 2,
+          "digest": "a78845290731",
+          "removed": 0
+        },
+        {
+          "added": 1,
+          "digest": "a2e7cd09028a",
+          "removed": 0
+        },
+        {
+          "added": 2,
+          "digest": "12378c662e53",
+          "removed": 0
+        }
+      ],
+      "reasons": [
+        "api-surface-tables"
+      ]
+    },
+    "helpers/api-doc-jsdoc.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/api-doc-jsdoc.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/api-doc-link-rendering.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/api-doc-link-rendering.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/api-doc-page-generation.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/api-doc-page-generation.ts": {
+      "hunks": [
+        {
+          "added": 2,
+          "digest": "cb5d88c5c1eb",
+          "removed": 1
+        }
+      ],
+      "reasons": [
+        "barrel-entry-points"
+      ]
+    },
+    "helpers/api-doc-source-processing.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/api-doc-source-processing.ts": {
+      "hunks": [
+        {
+          "added": 7,
+          "digest": "0757cf74edb0",
+          "removed": 3
+        }
+      ],
+      "reasons": [
+        "excluded-dir-segments"
+      ]
+    },
+    "helpers/api-doc-text-utils.test.ts": {
+      "hunks": [
+        {
+          "added": 10,
+          "digest": "115231d2a04b",
+          "removed": 0
+        },
+        {
+          "added": 8,
+          "digest": "9486dcce3d9a",
+          "removed": 2
+        }
+      ],
+      "reasons": [
+        "barrel-entry-points",
+        "mock-only-suffix"
+      ]
+    },
+    "helpers/api-doc-text-utils.ts": {
+      "hunks": [
+        {
+          "added": 34,
+          "digest": "4dc2057fcecd",
+          "removed": 0
+        },
+        {
+          "added": 12,
+          "digest": "0dfb6a4ae889",
+          "removed": 3
+        },
+        {
+          "added": 5,
+          "digest": "9293ba5bea41",
+          "removed": 0
+        },
+        {
+          "added": 1,
+          "digest": "f32feb928cfd",
+          "removed": 1
+        },
+        {
+          "added": 14,
+          "digest": "9025eb0c4015",
+          "removed": 0
+        },
+        {
+          "added": 2,
+          "digest": "19b6081c8af3",
+          "removed": 1
+        },
+        {
+          "added": 7,
+          "digest": "6a71d6804634",
+          "removed": 3
+        },
+        {
+          "added": 2,
+          "digest": "a2a2357139ec",
+          "removed": 1
+        },
+        {
+          "added": 17,
+          "digest": "59dbe364feb1",
+          "removed": 0
+        }
+      ],
+      "reasons": [
+        "barrel-entry-points",
+        "mock-only-suffix"
+      ]
+    },
+    "helpers/api-doc-type-merging.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/api-doc-type-merging.ts": {
+      "hunks": [
+        {
+          "added": 3,
+          "digest": "43103ec4421e",
+          "removed": 2
+        }
+      ],
+      "reasons": [
+        "mock-only-suffix"
+      ]
+    },
+    "helpers/api-doc-types.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/link-check.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/link-check.ts": {
+      "hunks": [
+        {
+          "added": 1,
+          "digest": "eef8a9c21dfc",
+          "removed": 1
+        }
+      ],
+      "reasons": [
+        "helpers-re-pointed"
+      ]
+    },
+    "helpers/og-image-page.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/og-image-page.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/og-image.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/og-image.ts": {
+      "hunks": [
+        {
+          "added": 4,
+          "digest": "f762b6aaa8d6",
+          "removed": 3
+        },
+        {
+          "added": 1,
+          "digest": "6760c3b32371",
+          "removed": 1
+        }
+      ],
+      "reasons": [
+        "vendored-og-assets"
+      ]
+    },
+    "helpers/remark-plugins/remark-relative-links.test.ts": {
+      "hunks": [
+        {
+          "added": 2,
+          "digest": "ffa21dfa3eff",
+          "removed": 2
+        },
+        {
+          "added": 1,
+          "digest": "2b6fe2cf17a5",
+          "removed": 0
+        },
+        {
+          "added": 2,
+          "digest": "c2c449b047fa",
+          "removed": 1
+        },
+        {
+          "added": 4,
+          "digest": "fe702f1afa3d",
+          "removed": 11
+        },
+        {
+          "added": 1,
+          "digest": "7b63873c7e34",
+          "removed": 1
+        },
+        {
+          "added": 1,
+          "digest": "4a502fe163a3",
+          "removed": 1
+        },
+        {
+          "added": 3,
+          "digest": "d099101376a9",
+          "removed": 9
+        },
+        {
+          "added": 2,
+          "digest": "709da00a95e1",
+          "removed": 1
+        },
+        {
+          "added": 1,
+          "digest": "b32fea5918b2",
+          "removed": 1
+        },
+        {
+          "added": 2,
+          "digest": "a1337aff968d",
+          "removed": 6
+        },
+        {
+          "added": 1,
+          "digest": "d4609b44baf9",
+          "removed": 1
+        },
+        {
+          "added": 23,
+          "digest": "294287ba508d",
+          "removed": 1
+        },
+        {
+          "added": 11,
+          "digest": "5c3cd54a5077",
+          "removed": 7
+        },
+        {
+          "added": 7,
+          "digest": "9826453487f8",
+          "removed": 4
+        },
+        {
+          "added": 0,
+          "digest": "381d738754b3",
+          "removed": 1
+        },
+        {
+          "added": 9,
+          "digest": "2ea24a8c30ad",
+          "removed": 0
+        }
+      ],
+      "reasons": [
+        "satteri-processor"
+      ]
+    },
+    "helpers/remark-plugins/remark-relative-links.ts": {
+      "hunks": [
+        {
+          "added": 1,
+          "digest": "978459ea7540",
+          "removed": 1
+        },
+        {
+          "added": 4,
+          "digest": "bffdf372dd9e",
+          "removed": 2
+        },
+        {
+          "added": 1,
+          "digest": "d6b413e8a5df",
+          "removed": 1
+        },
+        {
+          "added": 1,
+          "digest": "978459ea7540",
+          "removed": 1
+        },
+        {
+          "added": 7,
+          "digest": "b4e8cdb0948c",
+          "removed": 0
+        },
+        {
+          "added": 1,
+          "digest": "995a60eee2f5",
+          "removed": 1
+        },
+        {
+          "added": 8,
+          "digest": "8884b8d186a4",
+          "removed": 4
+        },
+        {
+          "added": 1,
+          "digest": "e1591ef33969",
+          "removed": 1
+        },
+        {
+          "added": 3,
+          "digest": "9d49d07039ea",
+          "removed": 8
+        },
+        {
+          "added": 11,
+          "digest": "8daf145914ac",
+          "removed": 11
+        },
+        {
+          "added": 3,
+          "digest": "6689c353bb61",
+          "removed": 3
+        },
+        {
+          "added": 3,
+          "digest": "7712f17023a0",
+          "removed": 3
+        },
+        {
+          "added": 14,
+          "digest": "66b4dfdf6d7d",
+          "removed": 0
+        }
+      ],
+      "reasons": [
+        "satteri-processor"
+      ]
+    },
+    "helpers/remark-plugins/util.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "helpers/remark-plugins/util.ts": {
+      "hunks": [],
+      "reasons": []
+    }
+  },
+  "localOnlyFiles": {}
+}

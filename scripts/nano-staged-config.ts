@@ -54,6 +54,18 @@ const tasks: Record<string, string[]> = {
    */
   '**/eslint-rules/*.ts': [
     `${PACKAGE_MANAGER_RUN_COMMAND} check:vendored-eslint-rules --`
+  ],
+  /*
+   * The documentation pipeline, which is a hand-maintained copy of `obsidian-dev-utils`'. Same reasoning as
+   * the entry above, and the same ordering requirement for a sharper reason: `scripts/docs-gen` is outside
+   * dprint's scope but NOT outside ESLint's, so `lint:fix` above is the one thing here that rewrites a
+   * staged file in this tree, and a shape measured before it ran would be a shape nobody commits.
+   *
+   * It takes no filenames either: the glob only decides whether it runs, so an ordinary commit touching no
+   * file under `scripts/docs-gen` fetches nothing.
+   */
+  'scripts/docs-gen/**': [
+    `${PACKAGE_MANAGER_RUN_COMMAND} check:docs-gen-copy-sync --`
   ]
 };
 
