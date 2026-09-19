@@ -110,8 +110,11 @@ export interface SvgElementInfo {
  * The whole of the result object Obsidian passes to `View.setState`, which the view fills in to tell the leaf what
  * the state change implies.
  *
- * `obsidian.d.ts` and `obsidian-typings` both declare only `history`; Obsidian's own `setViewState` reads three more
- * off the same object, so they are inlined here per L3 rather than claimed as mock-only members.
+ * `obsidian.d.ts` declares only `history`; Obsidian's own `setViewState` reads three more off the same object, so
+ * they are inlined here per L3 rather than claimed as mock-only members.
+ *
+ * `obsidian-typings` declares all three as well, in the same shapes, but that does not retire this interface: L3
+ * keeps the package out of `src/`, which therefore type-checks against `obsidian.d.ts` alone.
  */
 export interface ViewStateResultInternal extends ViewStateResultOriginal {
   /**
