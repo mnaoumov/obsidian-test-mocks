@@ -117,7 +117,7 @@ const TRANSFORM_ARMS: readonly TransformArm[] = [
   {
     apply: (text) => text.split('\n').filter((line) => !UNICORN_DISABLE_LINE_PATTERN.test(line)).join('\n'),
     fileNames: ['no-async-callback-to-unsafe-return.ts'],
-    reason: 'Upstream carries an inline `unicorn/no-useless-recursion` disable. Two of the consumers do not install `eslint-plugin-unicorn` at all, and ESLint fails a whole run on an unresolvable rule reference, so the line is stripped in every consumer rather than in some of them - one transform for all of them. Here, where the plugin IS installed, that leaves the directive unused, which is why the suppression lives file-scoped in `scripts/eslint-config.ts` instead of on the line: left inline, `lint:fix` would delete it and rewrite this copy on the next commit that stages it.'
+    reason: 'Upstream carries an inline `unicorn/no-useless-recursion` disable, and it is stripped in every consumer rather than in some of them, so that one transform serves all of them. A consumer that does not install `eslint-plugin-unicorn` cannot carry the line at all - ESLint fails a WHOLE run on an unresolvable rule reference. A consumer that does install it, but leaves that rule off, reports the directive as unused and `lint:fix` deletes it, rewriting the copy; there the suppression lives file-scoped in `scripts/eslint-config.ts` instead of on the line. `obsidian-typings` is the one repo with no such arm, because it enables the rule and the directive suppresses a real finding there.'
   }
 ];
 
