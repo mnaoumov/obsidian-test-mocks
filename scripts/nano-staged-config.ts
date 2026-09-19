@@ -40,6 +40,20 @@ const tasks: Record<string, string[]> = {
   ],
   '*.md': [
     `${PACKAGE_MANAGER_RUN_COMMAND} lint:md:fix --`
+  ],
+  /*
+   * The vendored ESLint rule sources, which are hand-copies of `obsidian-dev-utils`' and are supposed to be
+   * the same bytes. Running last is what makes this useful rather than merely present: `lint:fix` and
+   * `format` above rewrite a staged copy in place, which is one of the three ways these files drift, so the
+   * check has to read what is about to be committed rather than what was staged. The key sorts to last here
+   * on its own — perfectionist puts a recursive glob after the single-segment ones — so that order is
+   * enforced rather than merely typed in.
+   *
+   * It takes no filenames: the glob is only what decides whether it runs at all, so an ordinary commit
+   * touching no vendored file fetches nothing.
+   */
+  '**/eslint-rules/*.ts': [
+    `${PACKAGE_MANAGER_RUN_COMMAND} check:vendored-eslint-rules --`
   ]
 };
 
