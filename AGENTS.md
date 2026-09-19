@@ -193,17 +193,29 @@ Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint
 
 **The `eslint-plugin-unicorn` ban is a condition, not a headcount.** It applies to a consumer that does not install the plugin — which is not all of them, and the set moves. Measured 2026-09-15: `obsidian-dev-utils`, this repo, `obsidian-integration-testing` and `obsidian-typings` install it; `obsidian-typings-crawler` and `typescript-template` do not. Check before assuming, and keep the directive out regardless, since the file has to remain copyable to the consumers that cannot resolve it.
 
-The consumers, and how far each stood from upstream on 2026-09-15:
+**The two deltas are now a gate rather than a recipe: `npm run check:vendored-eslint-rules`** (`scripts/check-vendored-eslint-rules.ts`, added 2026-09-19). Each delta is an entry in its `TRANSFORM_ARMS` carrying the reason it exists, and the check asserts the result is byte-identical. Record a new deliberate divergence by adding an arm, never by editing a copy and explaining it in a comment: the arm is what the next run enforces, and a comment is what let these files age apart in the first place. It reads upstream from `raw.githubusercontent.com` — the published package ships `dist/` only, so the sources are not in the tarball, and a sibling checkout would make the check pass only on a machine that has one — and `nano-staged` runs it, after `lint:fix` and `format`, on any commit that stages a vendored file. `CHECK_VENDORED_ESLINT_RULES=0` turns it off where there is no network.
 
-| consumer | directory | rules vendored | state |
-| --- | --- | --- | --- |
-| this repo | `scripts/helpers/eslint-rules/` | 6, incl. `prefer-noop-async` | byte-identical after the two deltas |
-| `obsidian-integration-testing` | `scripts/helpers/eslint-rules/` | 5 | behind by the rule-export doc comments |
-| `obsidian-typings-crawler` | `scripts/helpers/eslint-rules/` | 5 | behind by the rule-export doc comments |
-| `typescript-template` | `scripts/helpers/eslint-rules/` | 6, incl. `require-method-template` | two wrapped-comment continuation lines wrongly capitalized by a `capitalized-comments` autofix |
-| `obsidian-typings` | `scripts/helpers/eslint/` | 3 | a different arrangement, and behind on all three |
+**It finds the copies by NAME, not by walking a known directory, and that is the part this table kept getting wrong.** Every roster written here has been short, twice over: it named three consumers when there were five, then five when there are ten. A walk of one directory per repo reports an unlisted tree as *absent* rather than as *drifted*, which is indistinguishable from not having one.
 
-`obsidian-typings` is the outlier on purpose-or-not: its directory, its plugin file (`local-plugin.ts`) and one rule file (`no-used-underscore-params.ts`) are named differently, it vendors no rule tests, and its `no-used-underscore-params` is an ancestor of upstream's `no-used-underscore-variables` that still checks parameters only — upstream widened it to local variables and renamed it to match. Converging it is that repo's own work, not this one's.
+The consumers, re-enumerated 2026-09-19 by walking `F:\dev\projects` and `E:\Dev\Work` for any file named after an upstream rule source — **eleven trees across ten repos**:
+
+| consumer | tree | gated |
+| --- | --- | --- |
+| this repo | `scripts/helpers/eslint-rules/` (6 rules, incl. `prefer-noop-async`) | yes |
+| `obsidian-integration-testing` | `scripts/helpers/eslint-rules/` (5) | yes |
+| `obsidian-typings-crawler` | `scripts/helpers/eslint-rules/` (5) | yes |
+| `obsidian-typings` | `scripts/helpers/eslint-rules/` (5) | yes |
+| `obsidian-typings` | `workflow-scripts/helpers/eslint-rules/` (2) | yes — same check, one walk |
+| `generator-obsidian-plugin` | `scripts/helpers/eslint-rules/` (2) | yes |
+| `typescript-template` | `scripts/helpers/eslint-rules/` (6) | not yet |
+| `paperio2` | `ts/scripts/helpers/eslint-rules/` (6) | not yet |
+| `secret-hitler-companion` | `scripts/helpers/eslint-rules/` (6) | not yet |
+| `debuggable-eval` | `scripts/helpers/eslint-rules/` (2) | not yet |
+| `taocp-solutions` | `scripts/helpers/eslint-rules/` (2) | not yet |
+
+The five not yet gated are `typescript-template` and its descendants, which sit outside this workspace; the check reaches them through that template rather than one repo at a time.
+
+`obsidian-typings` was the outlier in every earlier version of this table — a different directory name, a `local-plugin.ts`, and a `no-used-underscore-params.ts` that was an ancestor of upstream's `no-used-underscore-variables`. It converged in 2026-09: both of its trees now use upstream's names, and both are gated.
 
 ## Releasing
 

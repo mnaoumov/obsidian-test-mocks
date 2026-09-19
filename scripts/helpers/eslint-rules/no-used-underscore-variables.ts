@@ -50,8 +50,7 @@ export const noUsedUnderscoreVariables: Rule.RuleModule = {
             }
             // Local variables or fallback: count all reads
             return isParameter && bodyRange && reference.identifier.range
-              ? reference.identifier.range[0] >= bodyRange[0]
-                && reference.identifier.range[1] <= bodyRange[1]
+              ? reference.identifier.range[0] >= bodyRange[0] && reference.identifier.range[1] <= bodyRange[1]
               : true;
           });
           if (hasBodyReferences) {

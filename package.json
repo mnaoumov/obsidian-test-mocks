@@ -107,6 +107,7 @@
     "build:generate:typings-surface": "jiti scripts/build-generate-typings-surface.ts",
     "build:lib": "jiti scripts/build-lib.ts",
     "build:types": "jiti scripts/build-types.ts",
+    "check:vendored-eslint-rules": "jiti scripts/check-vendored-eslint-rules.ts",
     "commit": "jiti scripts/commit.ts",
     "docs:build": "jiti scripts/docs-build.ts",
     "docs:dev": "jiti scripts/docs-dev.ts",
