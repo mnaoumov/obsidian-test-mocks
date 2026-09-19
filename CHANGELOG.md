@@ -1,5 +1,87 @@
 # CHANGELOG
 
+## 6.0.0
+
+- chore(copy-sync): read both gates' subject from the git index, not the working tree
+- chore(copy-sync): take upstream's `../.astro/types.d.ts`, and roster `docs/tsconfig.json`
+- chore(copy-sync): extend the shape gate to astro.config.ts, docs/src and build-pages.yml
+- chore(docs-gen): gate the copy-sync tree by the shape of each file's diff against upstream
+- chore(docs-gen): re-sync with obsidian-dev-utils after its unicorn 75 adoption
+- chore(lint): record the deliberate ESLint-config divergences, and adopt one that was not
+- docs(lint): state the unicorn arm's reason in a form that is true in every consumer
+- chore(lint): gate the vendored rule sources against upstream, and re-sync three
+- docs(types): record that an inlined shape is not retired by a typings release
+- chore: update libs
+- docs(agents): correct the canOpenExternalFiles cross-reference
+- feat(setting): implement setIcon and iconEl, and promote setRowClick and rowClick
+- feat(platform): merge mobileDeviceHeight and mobileKeyboardHeight
+- feat(platform): merge the five remaining can* getters
+- feat(platform): merge the ten remaining PlatformEx members
+- fix(markdown-parser)!: merge the sequence-frontmatter fix
+- fix(markdown-parser)!: merge the empty-frontmatterLinks fix
+- fix(value)!: merge the Bases value rendering
+- fix(markdown-parser)!: merge the absent-frontmatter-cache fix
+- fix(reg-exp-value)!: merge the wrapped-pattern fix
+- fix(value)!: merge the Bases value type-name assignment
+- fix(null-value)!: merge the singleton and null-printing fix
+- fix(tags)!: merge the #-prefixed tag storage fix
+- fix(frontmatter)!: merge the aliases and entries fidelity fix
+- fix(markdown-parser)!: merge the broken-frontmatter catch
+- feat(settings): merge the addText Enter-blur affordance
+- fix(value)!: merge the per-class equals and looseEquals fidelity fix
+- feat(metadata-cache): merge the iterateRefsForFile walk
+- fix(tags)!: merge the tag-list subclass fix
+- fix(markdown-parser)!: merge the frontmatter-link fidelity fix
+- fix(tags)!: merge the tag-reading fidelity fix
+- fix(markdown-parser)!: merge the non-object frontmatter record fix
+- feat(workspace-leaf)!: merge the real leaf view and its view registry
+- fix(settings)!: merge the setClass split and mod-toggle fidelity fix
+- fix(value)!: merge the equals and looseEquals statics fidelity fix
+- feat(file-value)!: merge the five file-key accessors
+- fix(file-manager)!: merge the trashOption routing fidelity fix
+- fix(workspace)!: merge the empty-tab reuse fidelity fix
+- docs: record that the View base neither navigates nor carries an empty icon
+- fix(view)!: merge the navigation and icon default fidelity fix
+- fix(settings)!: merge the tooltip target and setWarning fidelity fix
+- feat(bases)!: merge the list aggregations and the value icon, keys and objectAccess work
+- fix(markdown-view)!: merge the four-buffer delegation fix
+- fix(editor)!: merge the deleteLine and line-swap fidelity fix
+- fix(vault)!: merge the trash routing and .trash folder fidelity fix
+- Merge branch T1592: leaf-lifecycle fidelity in the Workspace mock
+- fix(settings)!: disable the element, and build the row as Obsidian does
+- fix(bases)!: render a relative date relatively, and give ObjectValue its real lookups
+- fix(markdown-view)!: dispatch a minimal line diff on set, not a whole-document replace
+- fix(editor)!: map the selection through a change, restore it on undo and redo, and port processLines
+- fix(vault)!: clear a removed entry's parent, honour delete's force, and split the two adapters' rmdir and copy
+- fix(node)!: merge the insertAfter, setChildrenInPlace and empty fidelity fixes
+- fix(mocks)!: merge the debounce, search, heading, sanitizing, icon and event fidelity fixes
+- fix(workspace)!: merge the workspace layout tree, leaf event, Menu.hide and link text fixes
+- fix(mocks)!: merge the MenuItem, suggest, Events, PopoverState and QueryController fixes
+- fix(settings)!: merge the setting component change-callback and SettingGroup fidelity fixes
+- fix(bases)!: merge the DateValue, DurationValue, ListValue, FileValue and LinkValue fidelity fixes
+- fix(editor)!: merge the Editor position, word, transaction and setValue fidelity fixes
+- fix(vault)!: merge the folder delete, copy and create collision fidelity fixes
+- fix(globals): merge the receiver fix for onNodeInserted, onWindowMigrated and indexOf
+- chore: merge the TSDoc requirement on every exported member
+- chore: merge the adoption of the unicorn 75 recommended rules
+- chore(nano-staged): lint staged .astro files before a commit
+- chore: update libs
+- style(comments): restore a camelCase symbol that opens a comment
+- docs(eslint-rules): state the real upstream and the two deltas a copy applies
+- chore: update libs
+- docs(eslint-config): say why `no-console` is off over the script files
+- chore(deps): drop the dead glob and test-exclude overrides
+- docs(deps): fix the js-yaml pin's check, and what it says about markdownlint-cli2
+- style(comments): stop capitalizing the middle of a wrapped comment
+- chore(deps): drop the dead markdown-it override
+- docs: replace the private rule-id citations with what they assert
+- docs: name the library and the sibling plugins so a reader can resolve them
+- docs(agents): say that the custom rule sources are shared copies, and what that forbids
+- fix(eslint): move the recursion suppression out of the shared rule source
+- fix(scripts): resolve local tool hops through the node_modules/.bin shim
+- chore(spellcheck): teach cspell the word lintable
+- fix(scripts): reconcile the shared helper copies across the sibling projects
+
 ## 5.2.0
 
 - test(vitest): give both projects a shared testTimeout, off the 5s default
