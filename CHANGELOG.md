@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 6.1.0
+
+- feat: merge Plugins.manifests and a real Editor.cm
+
 ## 6.0.0
 
 - chore(copy-sync): read both gates' subject from the git index, not the working tree
