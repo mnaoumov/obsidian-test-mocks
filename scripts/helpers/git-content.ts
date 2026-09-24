@@ -81,11 +81,14 @@ export function readIndexContent(root: string, repoRelativePath: string): Promis
       }
 
       /*
-       * Git answers a path it cannot find in the index with exit 128 and a `fatal:` line, and there is no
-       * exit code that distinguishes "no such index entry" from "this is not a repository". Both are
-       * reported as the absence of a staged blob, and the caller decides what that means for it: the
-       * copy-sync gate lists its files with `git ls-files` so it cannot legitimately reach one, while the
-       * vendored-rules gate finds its files by walking and can.
+       * Git answers a path it cannot find in the index with exit 128 and a `fatal:` line, and the exit code
+       * alone does not say which `fatal:` it was - so the stderr text is what separates "no such index
+       * entry" from everything else. Only the first is the absence of a staged blob, and the caller decides
+       * what that means for it: the copy-sync gate lists its files with `git ls-files` so it cannot
+       * legitimately reach one, while the vendored-rules gate finds its files by walking and can. Anything
+       * else - "not a git repository" among them - is thrown rather than quietly answered with the working
+       * tree, because a gate whose subject is "the bytes a commit would write" has no honest answer where
+       * there are no commits.
        */
       if (isMissingPath(stderr)) {
         resolve(null);
