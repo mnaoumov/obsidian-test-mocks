@@ -100,6 +100,45 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public override parent: WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal = createParentPlaceholder<WorkspaceMobileDrawerOriginal | WorkspaceTabsOriginal>();
 
   /**
+   * The tab header's close button, the last child of the header's inner element. As in Obsidian it carries the
+   * `lucide-x` icon and the `Close` tooltip; the mock records them as its `data-icon` and `aria-label` attributes, and
+   * does not attach Obsidian's click listener, so clicking it does not detach the leaf.
+   */
+  public tabHeaderCloseEl: HTMLDivElement;
+
+  /**
+   * The leaf's tab header, a `workspace-tab-header tappable` div, built in the constructor exactly as Obsidian builds
+   * it. It holds one `workspace-tab-header-inner` div, whose children are, in order,
+   * {@link WorkspaceLeaf.tabHeaderInnerIconEl}, {@link WorkspaceLeaf.tabHeaderInnerTitleEl},
+   * {@link WorkspaceLeaf.tabHeaderStatusContainerEl} and {@link WorkspaceLeaf.tabHeaderCloseEl}.
+   *
+   * The mock builds the element but not the rest of the header: it is not placed in a tab group's header container,
+   * Obsidian's drag, context-menu and middle-click listeners are not attached, and `updateHeader` — which fills the
+   * icon and title and creates the pinned and linked status icons — is not modelled, so both inner elements stay
+   * empty.
+   */
+  public tabHeaderEl: HTMLElement;
+
+  /**
+   * The tab header's icon element, a `workspace-tab-header-inner-icon` div inside {@link WorkspaceLeaf.tabHeaderEl}.
+   * Empty in the mock, which does not model `updateHeader`.
+   */
+  public tabHeaderInnerIconEl: HTMLElement;
+
+  /**
+   * The tab header's title element, a `workspace-tab-header-inner-title` div inside {@link WorkspaceLeaf.tabHeaderEl}.
+   * Empty in the mock, which does not model `updateHeader`.
+   */
+  public tabHeaderInnerTitleEl: HTMLElement;
+
+  /**
+   * The container for the tab header's status icons, a `workspace-tab-header-status-container` div inside
+   * {@link WorkspaceLeaf.tabHeaderEl}, between the title and the close button. Obsidian puts the pinned and linked
+   * icons here, and plugins append their own indicators to it, which a test can read back.
+   */
+  public tabHeaderStatusContainerEl: HTMLDivElement;
+
+  /**
    * The view shown in the leaf. Never `null`: a leaf showing nothing holds {@link WorkspaceLeaf._empty}.
    */
   public view: ViewOriginal;
@@ -134,6 +173,18 @@ export class WorkspaceLeaf extends WorkspaceItem {
     this._empty = EmptyView.create2__(this);
     this.view = this._empty.asOriginalType2__();
     this.containerEl.append(this._empty.containerEl);
+
+    // Obsidian's own construction of the tab header, element for element.
+    this.tabHeaderEl = createDiv('workspace-tab-header tappable');
+    this.tabHeaderEl.draggable = true;
+    const tabHeaderInnerEl = this.tabHeaderEl.createDiv('workspace-tab-header-inner');
+    this.tabHeaderInnerIconEl = tabHeaderInnerEl.createDiv('workspace-tab-header-inner-icon');
+    this.tabHeaderInnerTitleEl = tabHeaderInnerEl.createDiv('workspace-tab-header-inner-title');
+    this.tabHeaderStatusContainerEl = tabHeaderInnerEl.createDiv('workspace-tab-header-status-container');
+    this.tabHeaderCloseEl = tabHeaderInnerEl.createDiv('workspace-tab-header-inner-close-button');
+    this.tabHeaderCloseEl.dataset['icon'] = 'lucide-x';
+    this.tabHeaderCloseEl.setAttribute('aria-label', 'Close');
+
     const self = strictProxy(this);
     self.constructor3__(app, id);
     return self;

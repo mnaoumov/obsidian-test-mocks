@@ -661,6 +661,43 @@ describe('WorkspaceLeaf', () => {
     });
   });
 
+  describe('tab header', () => {
+    it('should build the header Obsidian builds, element for element', () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app);
+
+      expect(leaf.tabHeaderEl.className).toBe('workspace-tab-header tappable');
+      expect(leaf.tabHeaderEl.draggable).toBe(true);
+      const innerEl = ensureNonNullable(leaf.tabHeaderEl.firstElementChild);
+      expect(innerEl.className).toBe('workspace-tab-header-inner');
+      expect([...innerEl.children]).toEqual([
+        leaf.tabHeaderInnerIconEl,
+        leaf.tabHeaderInnerTitleEl,
+        leaf.tabHeaderStatusContainerEl,
+        leaf.tabHeaderCloseEl
+      ]);
+      expect(leaf.tabHeaderInnerIconEl.className).toBe('workspace-tab-header-inner-icon');
+      expect(leaf.tabHeaderInnerTitleEl.className).toBe('workspace-tab-header-inner-title');
+      expect(leaf.tabHeaderStatusContainerEl.className).toBe('workspace-tab-header-status-container');
+      expect(leaf.tabHeaderCloseEl.className).toBe('workspace-tab-header-inner-close-button');
+      expect(leaf.tabHeaderCloseEl.dataset['icon']).toBe('lucide-x');
+      expect(leaf.tabHeaderCloseEl.getAttribute('aria-label')).toBe('Close');
+    });
+
+    it('should let a consumer append an indicator to the status container of a leaf holding a note', async () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'content' } });
+      const leaf = app.workspace.getLeaf(true);
+      await leaf.openFile(ensureNonNullable(app.vault.getFileByPath('note.md')));
+
+      // The route a lock indicator takes: from the view, back to its leaf, through the strict proxy.
+      expect(leaf.view).toBeInstanceOf(MarkdownView);
+      const statusContainerEl = WorkspaceLeaf.fromOriginalType3__(leaf.view.leaf).tabHeaderStatusContainerEl;
+      const indicatorEl = statusContainerEl.createSpan({ cls: 'lock-indicator' });
+
+      expect(leaf.tabHeaderEl.querySelector('.lock-indicator')).toBe(indicatorEl);
+    });
+  });
+
   describe('file__', () => {
     it('should return null for a leaf showing the empty view', () => {
       const app = App.createConfigured__();
