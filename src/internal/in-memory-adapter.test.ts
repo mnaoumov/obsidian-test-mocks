@@ -17,7 +17,8 @@ function createAdapter(): FileSystemAdapter {
   return FileSystemAdapter.create__('/vault');
 }
 
-// The desktop adapter overrides `copy` and `rmdir`, so the base behavior it replaces is reached through the mobile one.
+// The desktop adapter overrides `copy`, `rmdir` and the four writes (which refuse a missing folder), so the base behavior
+// it replaces is reached through the mobile one.
 function createMobileAdapter(): CapacitorAdapter {
   return CapacitorAdapter.create__('/vault', null);
 }
@@ -67,7 +68,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should create parent directories', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.append('a/b/c.txt', 'data');
 
       expect(await adapter.exists('a')).toBe(true);
@@ -113,7 +114,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should create parent directories', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.appendBinary('a/b/data.bin', Uint8Array.of(1).buffer);
 
       expect(await adapter.exists('a')).toBe(true);
@@ -165,7 +166,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should copy a folder with everything under it', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('src/a.md', 'A');
       await adapter.writeBinary('src/sub/b.bin', Uint8Array.of(1).buffer);
       await adapter.mkdir('src/empty');
@@ -179,7 +180,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should merge a copied folder into an existing folder', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('src/a.md', 'A');
       await adapter.write('dest/other.md', 'O');
 
@@ -235,21 +236,21 @@ describe('InMemoryAdapter', () => {
 
   describe('exists() with sensitive parameter', () => {
     it('should find exact match when sensitive is true', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('Notes/File.md', 'content');
 
       expect(await adapter.exists('Notes/File.md', true)).toBe(true);
     });
 
     it('should not find case-mismatched path when sensitive is true', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('Notes/File.md', 'content');
 
       expect(await adapter.exists('notes/file.md', true)).toBe(false);
     });
 
     it('should not find case-mismatched path when sensitive is true even on insensitive adapter', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       adapter.insensitive = true;
       await adapter.write('Notes/File.md', 'content');
 
@@ -257,7 +258,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should find case-mismatched text file on insensitive adapter without sensitive flag', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       adapter.insensitive = true;
       await adapter.write('Notes/File.md', 'content');
 
@@ -265,7 +266,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should find case-mismatched binary file on insensitive adapter', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       adapter.insensitive = true;
       await adapter.writeBinary('Data/Image.PNG', new ArrayBuffer(0));
 
@@ -281,14 +282,14 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should not find case-mismatched path on case-sensitive adapter (default)', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('Notes/File.md', 'content');
 
       expect(await adapter.exists('notes/file.md')).toBe(false);
     });
 
     it('should track lowercase keys after append', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       adapter.insensitive = true;
       await adapter.append('Notes/Log.txt', 'line1');
 
@@ -296,7 +297,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should track lowercase keys after appendBinary', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       adapter.insensitive = true;
       await adapter.appendBinary('Data/Chunk.bin', new ArrayBuffer(0));
 
@@ -314,7 +315,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should update lowercase keys after remove', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       adapter.insensitive = true;
       await adapter.write('Notes/File.md', 'content');
       await adapter.remove('Notes/File.md');
@@ -343,7 +344,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should find parent directories case-insensitively', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       adapter.insensitive = true;
       await adapter.write('Deeply/Nested/Path/File.md', 'content');
 
@@ -397,7 +398,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should list direct children under a subdirectory', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('dir/child.md', 'data');
       await adapter.write('dir/sub/nested.md', 'data');
 
@@ -427,7 +428,7 @@ describe('InMemoryAdapter', () => {
 
   describe('listAll__()', () => {
     it('should list all files and folders, excluding the root', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('a/b.md', 'x');
       await adapter.writeBinary('c.bin', Uint8Array.of(1).buffer);
       await adapter.mkdir('d');
@@ -672,7 +673,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should remove a directory and all contents recursively', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('dir/a.md', 'data');
       await adapter.writeBinary('dir/b.bin', new ArrayBuffer(0));
       await adapter.mkdir('dir/sub');
@@ -685,7 +686,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should not remove files outside the directory on recursive delete', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('dir/file.md', 'inside');
       await adapter.write('other.md', 'outside');
       await adapter.rmdir('dir', true);
@@ -769,7 +770,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should move a file out of its folder, keeping only its name', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('dir/sub/file.md', 'data');
       await adapter.trashLocal('dir/sub/file.md');
 
@@ -802,7 +803,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should move a folder with everything under it', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('dir/sub/deep.md', 'deep');
       await adapter.mkdir('dir/empty');
       await adapter.trashLocal('dir');
@@ -844,7 +845,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should remove a folder with everything under it', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('dir/sub/deep.md', 'deep');
       const isResult = await adapter.trashSystem('dir');
 
@@ -895,7 +896,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should create parent directories', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('a/b/file.md', 'data');
 
       expect(await adapter.exists('a')).toBe(true);
@@ -940,7 +941,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should create parent directories', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.writeBinary('a/b/file.bin', new ArrayBuffer(0));
 
       expect(await adapter.exists('a')).toBe(true);
@@ -950,7 +951,7 @@ describe('InMemoryAdapter', () => {
 
   describe('list() with binary files at root', () => {
     it('should not list files from subdirectories at root level', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('root.md', 'data');
       await adapter.write('sub/nested.md', 'data');
       await adapter.writeBinary('sub/nested.bin', new ArrayBuffer(0));
@@ -964,7 +965,7 @@ describe('InMemoryAdapter', () => {
 
   describe('rmdir() with binary files', () => {
     it('should remove binary files in recursive delete and preserve others', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.writeBinary('dir/file.bin', Uint8Array.of(1).buffer);
       await adapter.writeBinary('other/keep.bin', Uint8Array.of(0).buffer);
       await adapter.rmdir('dir', true);
@@ -976,7 +977,7 @@ describe('InMemoryAdapter', () => {
 
   describe('rename() directory with binary files', () => {
     it('should move binary files inside a renamed directory and preserve others', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.mkdir('src');
       await adapter.writeBinary('src/image.bin', Uint8Array.of(1).buffer);
       await adapter.writeBinary('other/stay.bin', Uint8Array.of(0).buffer);
@@ -1004,7 +1005,7 @@ describe('InMemoryAdapter', () => {
 
   describe('list() with binary files in subdirectory', () => {
     it('should list binary files under a subdirectory', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.writeBinary('sub/data.bin', Uint8Array.of(1).buffer);
       await adapter.write('sub/text.md', 'data');
 
@@ -1032,7 +1033,7 @@ describe('InMemoryAdapter', () => {
 
   describe('rmdir() recursive with files in other directories', () => {
     it('should not remove files from other directories', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.write('dir-a/file.md', 'a-content');
       await adapter.writeBinary('dir-a/data.bin', Uint8Array.of(1).buffer);
       await adapter.write('dir-b/other.md', 'b-content');
@@ -1046,7 +1047,7 @@ describe('InMemoryAdapter', () => {
     });
 
     it('should remove binary files in the directory', async () => {
-      const adapter = createAdapter();
+      const adapter = createMobileAdapter();
       await adapter.writeBinary('target/image.bin', Uint8Array.of(1, 0).buffer);
       await adapter.writeBinary('target/data.bin', Uint8Array.of(0, 1).buffer);
       await adapter.rmdir('target', true);

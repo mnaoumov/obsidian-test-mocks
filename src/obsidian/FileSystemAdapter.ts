@@ -4,7 +4,10 @@
  * Mock of Obsidian's `FileSystemAdapter`, the desktop vault adapter, backed by an in-memory filesystem.
  */
 
-import type { FileSystemAdapter as FileSystemAdapterOriginal } from 'obsidian';
+import type {
+  DataWriteOptions as DataWriteOptionsOriginal,
+  FileSystemAdapter as FileSystemAdapterOriginal
+} from 'obsidian';
 
 import { InMemoryAdapter } from '../internal/in-memory-adapter.ts';
 import {
@@ -63,6 +66,36 @@ export class FileSystemAdapter extends InMemoryAdapter {
   public static async readLocalFile(_path: string): Promise<ArrayBuffer> {
     await noopAsync();
     return new ArrayBuffer(0);
+  }
+
+  /**
+   * Adds text to the end of a text file, as the in-memory adapter does, except that the file's folder must already
+   * exist: Obsidian's desktop adapter runs `fs.appendFile`, which does not create parents.
+   *
+   * @param normalizedPath - The vault-relative path of the file.
+   * @param data - The text to append.
+   * @param options - Explicit `ctime` / `mtime` to record; by default `ctime` is kept and `mtime` is now.
+   * @throws Error `ENOENT: no such file or directory, open …` when the file's folder does not exist, and
+   * `ENOTDIR: not a directory, open …` when a file sits where that folder would be.
+   */
+  public override async append(normalizedPath: string, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
+    this.ensureParentFolderForOpen(normalizedPath);
+    await super.append(normalizedPath, data, options);
+  }
+
+  /**
+   * Adds bytes to the end of a binary file, as the in-memory adapter does, except that the file's folder must already
+   * exist: Obsidian's desktop adapter runs `fs.appendFile`, which does not create parents.
+   *
+   * @param normalizedPath - The vault-relative path of the file.
+   * @param data - The bytes to append.
+   * @param options - Explicit `ctime` / `mtime` to record; by default `ctime` is kept and `mtime` is now.
+   * @throws Error `ENOENT: no such file or directory, open …` when the file's folder does not exist, and
+   * `ENOTDIR: not a directory, open …` when a file sits where that folder would be.
+   */
+  public override async appendBinary(normalizedPath: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
+    this.ensureParentFolderForOpen(normalizedPath);
+    await super.appendBinary(normalizedPath, data, options);
   }
 
   /**
@@ -151,6 +184,48 @@ export class FileSystemAdapter extends InMemoryAdapter {
     }
 
     await super.rmdir(normalizedPath, true);
+  }
+
+  /**
+   * Writes a text file, as the in-memory adapter does, except that the file's folder must already exist: Obsidian's
+   * desktop adapter runs `fs.writeFile`, which does not create parents. This is what makes `Vault.create` reject a
+   * path whose folder is missing, exactly as in the app, where the vault itself checks nothing.
+   *
+   * @param normalizedPath - The vault-relative path of the file.
+   * @param data - The new content.
+   * @param options - Explicit `ctime` / `mtime` to record; by default `ctime` is kept and `mtime` is now.
+   * @throws Error `ENOENT: no such file or directory, open …` when the file's folder does not exist, and
+   * `ENOTDIR: not a directory, open …` when a file sits where that folder would be.
+   */
+  public override async write(normalizedPath: string, data: string, options?: DataWriteOptionsOriginal): Promise<void> {
+    this.ensureParentFolderForOpen(normalizedPath);
+    await super.write(normalizedPath, data, options);
+  }
+
+  /**
+   * Writes a binary file, as the in-memory adapter does, except that the file's folder must already exist: Obsidian's
+   * desktop adapter runs `fs.writeFile`, which does not create parents. This is what makes `Vault.createBinary` reject
+   * a path whose folder is missing, exactly as in the app, where the vault itself checks nothing.
+   *
+   * @param normalizedPath - The vault-relative path of the file.
+   * @param data - The new content, stored as is without copying.
+   * @param options - Explicit `ctime` / `mtime` to record; by default `ctime` is kept and `mtime` is now.
+   * @throws Error `ENOENT: no such file or directory, open …` when the file's folder does not exist, and
+   * `ENOTDIR: not a directory, open …` when a file sits where that folder would be.
+   */
+  public override async writeBinary(normalizedPath: string, data: ArrayBuffer, options?: DataWriteOptionsOriginal): Promise<void> {
+    this.ensureParentFolderForOpen(normalizedPath);
+    await super.writeBinary(normalizedPath, data, options);
+  }
+
+  private ensureParentFolderForOpen(normalizedPath: string): void {
+    const parentType = this.statSync__(getParentPath(normalizedPath))?.type;
+    if (parentType === 'folder') {
+      return;
+    }
+
+    const code = parentType === 'file' ? 'ENOTDIR: not a directory' : 'ENOENT: no such file or directory';
+    throw new Error(`${code}, open '${this.getFullPath(normalizedPath)}'`);
   }
 }
 

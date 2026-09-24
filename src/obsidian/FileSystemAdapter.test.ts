@@ -86,6 +86,7 @@ describe('FileSystemAdapter', () => {
 
     it('should copy a file to the vault root', async () => {
       const adapter = createAdapter();
+      await adapter.mkdir('dir');
       await adapter.write('dir/source.md', 'data');
       await adapter.copy('dir/source.md', 'dest.md');
 
@@ -94,6 +95,7 @@ describe('FileSystemAdapter', () => {
 
     it('should create the missing parents of a copied folder, as a recursive mkdir does', async () => {
       const adapter = createAdapter();
+      await adapter.mkdir('src');
       await adapter.write('src/a.md', 'A');
       await adapter.copy('src', 'Q/R/dest');
 
@@ -110,6 +112,7 @@ describe('FileSystemAdapter', () => {
   describe('rmdir', () => {
     it('should refuse a non-recursive removal of a non-empty folder with EISDIR', async () => {
       const adapter = createAdapter();
+      await adapter.mkdir('dir');
       await adapter.write('dir/a.md', 'data');
 
       await expect(adapter.rmdir('dir', false)).rejects.toThrow('Path is a directory: rm returned EISDIR (is a directory) /mock-vault/dir');
@@ -133,11 +136,68 @@ describe('FileSystemAdapter', () => {
 
     it('should remove a folder recursively', async () => {
       const adapter = createAdapter();
+      await adapter.mkdir('dir');
       await adapter.write('dir/a.md', 'data');
       await adapter.rmdir('dir', true);
 
       expect(await adapter.exists('dir')).toBe(false);
       expect(await adapter.exists('dir/a.md')).toBe(false);
+    });
+  });
+
+  describe('writing into a missing folder', () => {
+    it('should refuse to write a text file with ENOENT, as fs.writeFile does', async () => {
+      const adapter = createAdapter();
+      await expect(adapter.write('missing/a.md', 'data')).rejects.toThrow(
+        'ENOENT: no such file or directory, open \'/mock-vault/missing/a.md\''
+      );
+      expect(await adapter.exists('missing/a.md')).toBe(false);
+      expect(await adapter.exists('missing')).toBe(false);
+    });
+
+    it('should refuse to write a binary file with ENOENT, as fs.writeFile does', async () => {
+      const adapter = createAdapter();
+      await expect(adapter.writeBinary('missing/a.bin', new ArrayBuffer(1))).rejects.toThrow(
+        'ENOENT: no such file or directory, open \'/mock-vault/missing/a.bin\''
+      );
+      expect(await adapter.exists('missing')).toBe(false);
+    });
+
+    it('should refuse to append text with ENOENT, as fs.appendFile does', async () => {
+      const adapter = createAdapter();
+      await expect(adapter.append('missing/a.md', 'data')).rejects.toThrow(
+        'ENOENT: no such file or directory, open \'/mock-vault/missing/a.md\''
+      );
+      expect(await adapter.exists('missing')).toBe(false);
+    });
+
+    it('should refuse to append bytes with ENOENT, as fs.appendFile does', async () => {
+      const adapter = createAdapter();
+      await expect(adapter.appendBinary('missing/a.bin', new ArrayBuffer(1))).rejects.toThrow(
+        'ENOENT: no such file or directory, open \'/mock-vault/missing/a.bin\''
+      );
+      expect(await adapter.exists('missing')).toBe(false);
+    });
+
+    it('should refuse with ENOTDIR when a file sits where the folder would be', async () => {
+      const adapter = createAdapter();
+      await adapter.write('note.md', 'data');
+      await expect(adapter.write('note.md/a.md', 'data')).rejects.toThrow(
+        'ENOTDIR: not a directory, open \'/mock-vault/note.md/a.md\''
+      );
+    });
+
+    it('should write into a folder that exists, the vault root included', async () => {
+      const adapter = createAdapter();
+      await adapter.write('root.md', 'root');
+      await adapter.mkdir('a/b');
+      await adapter.writeBinary('a/b/c.bin', new ArrayBuffer(2));
+      await adapter.append('a/b/d.md', 'd');
+      await adapter.appendBinary('a/e.bin', new ArrayBuffer(1));
+      expect(await adapter.read('root.md')).toBe('root');
+      expect(await adapter.exists('a/b/c.bin')).toBe(true);
+      expect(await adapter.read('a/b/d.md')).toBe('d');
+      expect(await adapter.exists('a/e.bin')).toBe(true);
     });
   });
 
