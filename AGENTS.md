@@ -490,6 +490,17 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   `CapacitorAdapter` ignores `recursive` and always removes the whole folder. The desktop adapter also refuses to copy
   a FILE into a missing folder (`ENOENT … copyfile`), while a copied folder still gets its parents created; the mobile
   copy is native and is left creating parents.
+- **Neither `create` nor `createBinary` invents a missing folder on the desktop adapter** (2026-09-24, read in
+  Obsidian 1.14.2's `app.js`). The vault checks nothing about the parent: both call `adapter.write` /
+  `adapter.writeBinary` straight after the exists check, and the desktop adapter's `fs.writeFile` is what rejects. So the
+  desktop mock's `write`, `writeBinary`, `append` and `appendBinary` refuse a path whose folder does not exist with
+  `ENOENT: no such file or directory, open '<full path>'`, and with `ENOTDIR: not a directory, open …` when a file
+  sits where that folder would be, before anything is written, tracked or fired. `mkdir` stays recursive, as the app's
+  is. Until then the mock created the parents silently, so a writer that never called `createFolder` passed every unit
+  suite and failed on a real device. **A suite that writes into a folder it never created now goes red on purpose**:
+  create the folder first (`vault.createFolder`, `adapter.mkdir`), or seed with `createSync__`, whose adapter write
+  stays lenient. The mobile `CapacitorAdapter` also rejects in the app, through its native plugin, but that message has
+  never been measured, so the mobile mock still creates parents rather than invent a message.
 
 - **Trashing routes through the adapter, and the local trash is a real `.trash` folder** (2026-09-17, read in
   Obsidian 1.14.2's `app.js`). `Vault.trash(file, true)` calls `adapter.trashSystem` and falls back to

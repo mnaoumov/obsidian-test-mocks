@@ -241,6 +241,26 @@ describe('Vault', () => {
       const app = App.createConfigured__({ files: { 'Test.md': 'old' }, isAdapterCaseInsensitive: true });
       await expect(app.vault.create('test.md', 'new')).rejects.toThrow('File already exists.');
     });
+
+    it('should reject a path whose folder does not exist, as the desktop adapter does', async () => {
+      const app = App.createConfigured__();
+      const handler = vi.fn();
+      app.vault.on('create', handler);
+      await expect(app.vault.create('Exports/Not/There/A.zip', 'data')).rejects.toThrow(
+        'ENOENT: no such file or directory, open'
+      );
+      expect(app.vault.getAbstractFileByPath('Exports/Not/There/A.zip')).toBeNull();
+      expect(app.vault.getFolderByPath('Exports')).toBeNull();
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should create the file inside its folder once the folder exists', async () => {
+      const app = App.createConfigured__();
+      const folder = await app.vault.createFolder('Exports/Here');
+      const file = await app.vault.create('Exports/Here/A.zip', 'data');
+      expect(file.parent).toBe(folder);
+      expect(folder.children).toContain(file);
+    });
   });
 
   describe('createBinary()', () => {
@@ -264,6 +284,26 @@ describe('Vault', () => {
     it('should throw when a file already exists at the path', async () => {
       const app = App.createConfigured__({ files: { 'image.png': 'old' } });
       await expect(app.vault.createBinary('image.png', new ArrayBuffer(BINARY_SIZE_SMALL))).rejects.toThrow('File already exists.');
+    });
+
+    it('should reject a path whose folder does not exist, as the desktop adapter does', async () => {
+      const app = App.createConfigured__();
+      const handler = vi.fn();
+      app.vault.on('create', handler);
+      await expect(app.vault.createBinary('Exports/Not/There/A.zip', new ArrayBuffer(BINARY_SIZE_SMALL))).rejects.toThrow(
+        'ENOENT: no such file or directory, open'
+      );
+      expect(app.vault.getAbstractFileByPath('Exports/Not/There/A.zip')).toBeNull();
+      expect(app.vault.getFolderByPath('Exports')).toBeNull();
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should create the file inside its folder once the folder exists', async () => {
+      const app = App.createConfigured__();
+      const folder = await app.vault.createFolder('Exports/Here');
+      const file = await app.vault.createBinary('Exports/Here/A.zip', new ArrayBuffer(BINARY_SIZE_SMALL));
+      expect(file.parent).toBe(folder);
+      expect(folder.children).toContain(file);
     });
   });
 
@@ -1024,6 +1064,7 @@ describe('Vault', () => {
 
     it('should find a file created via vault.create', async () => {
       const app = App.createConfigured__();
+      await app.vault.createFolder('Test');
       await app.vault.create('Test/Note.md', 'data');
       const result = app.vault.getAbstractFileByPathInsensitive('test/note.md');
 
@@ -1170,6 +1211,7 @@ describe('Vault', () => {
 
     it('should register nested folders shallowest-first', async () => {
       const app = App.createConfigured__();
+      await app.vault.adapter.mkdir('x/y');
       await app.vault.adapter.write('x/y/z.md', 'x');
 
       app.vault.reconcile__();
@@ -1180,6 +1222,7 @@ describe('Vault', () => {
 
     it('should ignore dot-prefixed adapter paths', async () => {
       const app = App.createConfigured__();
+      await app.vault.adapter.mkdir('.hidden');
       await app.vault.adapter.write('.hidden/secret.md', 'x');
 
       app.vault.reconcile__();

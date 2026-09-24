@@ -322,6 +322,7 @@ describe('MetadataCache', () => {
 
     it('should find file by basename', async () => {
       const app = App.createConfigured__();
+      await app.vault.createFolder('folder');
       const file = await app.vault.create('folder/note.md', '');
       await flushMicrotasks();
       const found = app.metadataCache.getFirstLinkpathDest('note', '');
@@ -549,6 +550,7 @@ homepage: "[[Fm]]"
   describe('getFirstLinkpathDest by file name', () => {
     it('should find file by its full name including extension', async () => {
       const app = App.createConfigured__();
+      await app.vault.createFolder('folder');
       const file = await app.vault.create('folder/report.txt', '');
       await flushMicrotasks();
       const found = app.metadataCache.getFirstLinkpathDest('report.txt', '');
@@ -557,6 +559,7 @@ homepage: "[[Fm]]"
 
     it('should find file by f.name when basename does not match', async () => {
       const app = App.createConfigured__();
+      await app.vault.createFolder('folder');
       await app.vault.create('folder/other.md', '');
       const file = await app.vault.create('folder/test.md', '');
       await flushMicrotasks();

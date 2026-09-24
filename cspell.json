@@ -33,6 +33,7 @@
     "dotfolders",
     "EISDIR",
     "ENOENT",
+    "ENOTDIR",
     "EUNKNOWNCONFIG",
     "fflate",
     "frontmatter",
