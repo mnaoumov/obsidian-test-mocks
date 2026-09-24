@@ -227,6 +227,23 @@ export class MetadataCache extends Events {
   }
 
   /**
+   * Checks whether a file can be a link target at all — the per-file test Obsidian's own `getLinkSuggestions` walk
+   * applies.
+   *
+   * As in Obsidian, it is a view-registry question rather than an extension list: a file is supported when the vault's
+   * `showUnsupportedFiles` setting is on, or when its extension opens in a registered view type. The mock's registry
+   * starts with only Obsidian's Markdown view, so out of the box only `md` answers `true`; register a view for an
+   * extension (`Plugin.registerExtensions`, or `app.viewRegistry` directly) to make it supported, the way Obsidian's
+   * canvas, image, PDF and media views do in the app.
+   *
+   * @param file - The file to check.
+   * @returns Whether the file is supported.
+   */
+  public isSupportedFile(file: TFile): boolean {
+    return Boolean(this.app.vault.getConfig('showUnsupportedFiles')) || this.app.viewRegistry.isExtensionRegistered(file.extension);
+  }
+
+  /**
    * Iterates the file's own outgoing references, stopping as soon as the callback answers `true`.
    *
    * Obsidian looks the file's extension up in `MetadataCache.linkUpdaters` first and hands the whole walk to that

@@ -494,7 +494,6 @@
   "MetadataCache.initialize",
   "MetadataCache.initialized",
   "MetadataCache.isCacheClean",
-  "MetadataCache.isSupportedFile",
   "MetadataCache.isUnresolved",
   "MetadataCache.isUserIgnored",
   "MetadataCache.iterateAllRefs",

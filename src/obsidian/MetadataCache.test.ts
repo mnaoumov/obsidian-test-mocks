@@ -351,6 +351,34 @@ describe('MetadataCache', () => {
     });
   });
 
+  describe('isSupportedFile', () => {
+    it('should support a file whose extension opens in a registered view', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('note.md', '');
+      expect(app.metadataCache.isSupportedFile(file)).toBe(true);
+    });
+
+    it('should not support a file whose extension no view is registered for', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('board.canvas', '{}');
+      expect(app.metadataCache.isSupportedFile(file)).toBe(false);
+    });
+
+    it('should support a file once a view is registered for its extension', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('board.canvas', '{}');
+      app.viewRegistry.registerExtensions(['canvas'], 'markdown');
+      expect(app.metadataCache.isSupportedFile(file)).toBe(true);
+    });
+
+    it('should support every file when showUnsupportedFiles is on', () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('data.xyz', '');
+      app.vault.setConfig('showUnsupportedFiles', true);
+      expect(app.metadataCache.isSupportedFile(file)).toBe(true);
+    });
+  });
+
   describe('iterateRefsForFile', () => {
     const NOTE_WITH_EVERY_REFERENCE_KIND = `---
 homepage: "[[Fm]]"
