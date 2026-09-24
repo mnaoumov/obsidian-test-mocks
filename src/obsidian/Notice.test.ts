@@ -9,6 +9,7 @@ import {
 import { Notice } from './Notice.ts';
 
 const DURATION = 5000;
+const DEFAULT_DURATION = 4000;
 
 describe('Notice', () => {
   it('should create an instance via create__', () => {
@@ -35,8 +36,18 @@ describe('Notice', () => {
     expect(notice.duration__).toBe(DURATION);
   });
 
-  it('should default duration to 0', () => {
+  it('should default an omitted duration to Obsidian\'s 4000 ms', () => {
     const notice = Notice.create__('msg');
+    expect(notice.duration__).toBe(DEFAULT_DURATION);
+  });
+
+  it('should default an explicit undefined duration to Obsidian\'s 4000 ms', () => {
+    const notice = Notice.create__('msg', undefined);
+    expect(notice.duration__).toBe(DEFAULT_DURATION);
+  });
+
+  it('should keep an explicit 0, the never-hide value, distinct from the default', () => {
+    const notice = Notice.create__('msg', 0);
     expect(notice.duration__).toBe(0);
   });
 

@@ -922,6 +922,12 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     head's line alone; a non-empty selection ending at column 0 stops at the line before it. A swap keeps the
     selection's extent, while `deleteLine` collapses to a cursor, as `moveVertically` does.
 
+- **An omitted `Notice` duration records Obsidian's default, `4000`, not `0`** (2026-09-24, read in Obsidian
+  1.14.2's `app.js`, whose constructor opens `void 0 === t && (t = 4e3)`). `0` is the never-hide value, so recording
+  it for an omitted duration made `Notice.duration__` answer the same for "hide after the default" and "stay until
+  dismissed" — a consumer that dropped the duration of a notice meant to stay could not catch it. Only `undefined`
+  takes the default; an explicit `0` is still recorded as `0`.
+
 - **`Keymap.isModifier` / `Keymap.isModEvent` read the event.** They were unconditional `false` stubs
   until 2026-07-27, which made every modifier-branching behavior untestable without a spy — and let a
   test that forgot the spy silently exercise only the no-modifier path while looking green. Both now
