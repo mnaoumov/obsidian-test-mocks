@@ -869,6 +869,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     child's element is not inside its parent's. The one containment it maintains is the leaf's view, so
     `leaf.containerEl.contains(leaf.view.containerEl)` holds, and closing a view detaches and unloads it.
 
+- **Every leaf carries Obsidian's tab header** (2026-09-24, `GO` in Obsidian 1.14.x's `app.js`). The constructor builds
+  `tabHeaderEl` (`workspace-tab-header tappable`, draggable) holding one `workspace-tab-header-inner` div whose
+  children are, in order, `tabHeaderInnerIconEl`, `tabHeaderInnerTitleEl`, `tabHeaderStatusContainerEl` and
+  `tabHeaderCloseEl` (`lucide-x`, tooltip `Close`, recorded as `data-icon` / `aria-label`). `obsidian-dev-utils`' lock
+  indicators append to `tabHeaderStatusContainerEl` on every open Markdown leaf, which is what made the strict proxy
+  throw there. Not modelled: `updateHeader` (so the icon and title stay empty, and `tabHeaderStatusPinEl` /
+  `tabHeaderStatusLinkEl`, which it creates lazily, stay unmocked), the header's listeners (close click, drag, context
+  menu, middle click), and placing the header in its tab group's `tabHeaderContainerEl`.
+
 - **The `View` base does NOT navigate, and carries `lucide-file`** (2026-09-17, read in Obsidian 1.14.2's
   `app.js`). Obsidian's base constructor sets `icon = 'lucide-file'` and `navigation = false`; the mock had both
   inverted. It matters because `WorkspaceLeaf.canNavigate()` reads `view.navigation`, so a bare mock view used to
