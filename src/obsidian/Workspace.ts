@@ -647,11 +647,9 @@ export class Workspace extends Events {
       return item.some((child) => this.iterateLeaves(child, callback));
     }
 
-    if (item instanceof WorkspaceLeaf) {
-      return Boolean(callback(item));
-    }
-
-    return item instanceof WorkspaceParent ? [...item.children].some((child) => this.iterateLeaves(child, callback)) : false;
+    return item instanceof WorkspaceLeaf
+      ? Boolean(callback(item))
+      : item instanceof WorkspaceParent && [...item.children].some((child) => this.iterateLeaves(child, callback));
   }
 
   /**
