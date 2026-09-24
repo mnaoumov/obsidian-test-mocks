@@ -4,6 +4,7 @@
  * Mock of Obsidian's `Editor`, backed by an in-memory string buffer.
  */
 
+import type { ViewUpdate } from '@codemirror/view';
 import type {
   EditorChange as EditorChangeOriginal,
   EditorCommandName as EditorCommandNameOriginal,
@@ -14,6 +15,12 @@ import type {
   EditorSelection as EditorSelectionOriginal,
   EditorTransaction as EditorTransactionOriginal
 } from 'obsidian';
+
+import {
+  EditorSelection,
+  EditorState
+} from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
 
 import type { CoordsLeftTop } from '../internal/types.ts';
 
@@ -77,12 +84,38 @@ interface OffsetSelection {
  * entry (CodeMirror's `addChanges` joins them within its `newGroupDelay`, keyed on the `origin` the mock ignores).
  */
 export abstract class Editor {
+  /**
+   * The CodeMirror 6 `EditorView` behind the editor, as Obsidian's `Editor.cm` is.
+   *
+   * A REAL `EditorView`, built on first read and then kept in step with the mock's buffer in BOTH
+   * directions: a change or selection made through the mock is dispatched into it, and a transaction
+   * dispatched into it is applied to the mock as one change, undone in one step, carrying the selection CodeMirror
+   * ended up with. So `cm.state.doc.toString()` and {@link Editor.getValue} never disagree, and library
+   * code that reconfigures the view through it — `obsidian-dev-utils`' resource lock appends a
+   * `Compartment` and reconfigures it to `EditorState.readOnly` — runs against the real thing.
+   *
+   * What it is NOT is a rendered editor: the view is detached, nothing measures or paints, and it
+   * carries no extensions of its own beyond the listener that reads changes back. Its `state` is
+   * therefore the honest part, and its DOM is not.
+   *
+   * @returns The view, the same instance on every read.
+   */
+  public get cm(): EditorView {
+    this.codeMirror ??= this.createCodeMirror();
+    return this.codeMirror;
+  }
+
   private anchor: EditorPositionOriginal = { ch: 0, line: 0 };
+
+  private codeMirror: EditorView | null = null;
 
   private content = '';
 
   private focused = false;
   private head: EditorPositionOriginal = { ch: 0, line: 0 };
+  // Guards the two directions of the `cm` sync against each other: set while one side is being written from
+  // the other, so neither write is read back as an edit of its own.
+  private isSyncingCodeMirror = false;
   private redoStack: HistoryEntry[] = [];
   private scrollLeft = 0;
   private scrollTop = 0;
@@ -486,6 +519,7 @@ export abstract class Editor {
     this.head = { ch: 0, line: 0 };
     this.undoStack.length = 0;
     this.redoStack = [];
+    this.syncCodeMirror();
   }
 
   /**
@@ -525,6 +559,7 @@ export abstract class Editor {
       : { ...pos };
     this.anchor = { ...resolved };
     this.head = { ...resolved };
+    this.syncCodeMirror();
   }
 
   /**
@@ -550,6 +585,7 @@ export abstract class Editor {
   public setSelection(anchor: EditorPositionOriginal, head?: EditorPositionOriginal): void {
     this.anchor = { ...anchor };
     this.head = head ? { ...head } : { ...anchor };
+    this.syncCodeMirror();
   }
 
   /**
@@ -563,6 +599,7 @@ export abstract class Editor {
     const sel = ensureNonNullable(ranges[main] ?? ranges[0]);
     this.anchor = { ...sel.anchor };
     this.head = sel.head ? { ...sel.head } : { ...sel.anchor };
+    this.syncCodeMirror();
   }
 
   /**
@@ -683,6 +720,29 @@ export abstract class Editor {
       };
   }
 
+  // The mock's one selection as a CodeMirror selection, clamped to the document the way `dispatchChanges`
+  // clamps it: `posToOffset` deliberately runs a column past the end of its line, which CodeMirror refuses.
+  private codeMirrorSelection(): EditorSelection {
+    return EditorSelection.single(
+      Math.min(this.posToOffset(this.anchor), this.content.length),
+      Math.min(this.posToOffset(this.head), this.content.length)
+    );
+  }
+
+  private createCodeMirror(): EditorView {
+    return new EditorView({
+      state: EditorState.create({
+        doc: this.content,
+        extensions: [
+          EditorView.updateListener.of((update) => {
+            this.readCodeMirrorUpdate(update);
+          })
+        ],
+        selection: this.codeMirrorSelection()
+      })
+    });
+  }
+
   private dispatchChanges(
     changes: readonly OffsetChange[],
     resolveSelection?: (oldSelection: OffsetSelection, sections: readonly ChangeSection[]) => null | OffsetSelection
@@ -703,6 +763,7 @@ export abstract class Editor {
     const selection = resolveSelection?.(oldSelection, sections) ?? mapSelection(oldSelection, sections, -1);
     this.anchor = this.offsetToPos(selection.anchor);
     this.head = this.offsetToPos(selection.head);
+    this.syncCodeMirror();
   }
 
   // CodeMirror's `deleteLine`: the lines the selection covers go as one change, together with the line break
@@ -907,6 +968,35 @@ export abstract class Editor {
     this.content = entry.content;
     this.anchor = this.offsetToPos(entry.selection.anchor);
     this.head = this.offsetToPos(entry.selection.head);
+    this.syncCodeMirror();
+  }
+
+  // Reads a transaction dispatched into `cm` back into the mock, so the two never disagree about the
+  // document. A change is applied through `dispatchChanges`, which makes it one undo step like any
+  // other, and takes the selection CodeMirror itself landed on rather than mapping one of its own.
+  private readCodeMirrorUpdate(update: ViewUpdate): void {
+    if (this.isSyncingCodeMirror) {
+      return;
+    }
+
+    const { main } = update.state.selection;
+    const selection: OffsetSelection = { anchor: main.anchor, head: main.head };
+
+    this.isSyncingCodeMirror = true;
+    try {
+      if (update.docChanged) {
+        const changes: OffsetChange[] = [];
+        update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+          changes.push({ from: fromA, insert: inserted.toString(), to: toA });
+        });
+        this.dispatchChanges(changes, () => selection);
+      } else if (update.selectionSet) {
+        this.anchor = this.offsetToPos(selection.anchor);
+        this.head = this.offsetToPos(selection.head);
+      }
+    } finally {
+      this.isSyncingCodeMirror = false;
+    }
   }
 
   // CodeMirror's `selectedLineBlocks` over the mock's one selection: the lines it covers, whole. A NON-EMPTY
@@ -922,6 +1012,31 @@ export abstract class Editor {
       from: this.posToOffset({ ch: 0, line: firstLine }),
       to: this.posToOffset({ ch: this.getLine(lastLine).length, line: lastLine })
     };
+  }
+
+  // Writes the mock's document and selection into `cm`, when a view has been built and the write is not
+  // itself the tail of one coming the other way. A state that already matches is left alone, which is what
+  // keeps an effect-only transaction — the shape a locked editor is configured with — untouched.
+  private syncCodeMirror(): void {
+    const view = this.codeMirror;
+    if (view === null || this.isSyncingCodeMirror) {
+      return;
+    }
+
+    const selection = this.codeMirrorSelection();
+    if (view.state.doc.toString() === this.content && view.state.selection.eq(selection)) {
+      return;
+    }
+
+    this.isSyncingCodeMirror = true;
+    try {
+      view.dispatch({
+        changes: { from: 0, insert: this.content, to: view.state.doc.length },
+        selection
+      });
+    } finally {
+      this.isSyncingCodeMirror = false;
+    }
   }
 }
 

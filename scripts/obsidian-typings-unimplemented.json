@@ -135,7 +135,6 @@
   "Editor.activeCM",
   "Editor.addHighlights",
   "Editor.afterIndent",
-  "Editor.cm",
   "Editor.containerEl",
   "Editor.coordsAtPos",
   "Editor.editorComponent",

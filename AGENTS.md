@@ -647,6 +647,18 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     The instance can be a full `Plugin` mock via `asOriginalType2__()` or any stand-in carrying the
     members under test (`{ api }`, `{ settings }`) — which is what its call sites actually read.
     `enabledPlugins` is kept in step; this mock has no notion of installed-but-switched-off.
+  - **`app.plugins.manifests` is kept in step too** (2026-09-23): `registerPlugin__` files the instance's own
+    `manifest` when it carries one (read past the strict proxy, so a `strictProxy` stand-in without one does not
+    throw), and `unregisterPlugin__` drops it. A stand-in with no manifest files nothing; assign the entry directly.
+    `obsidian-dev-utils`' resource lock reads `manifests[id]?.name`, which is what made 6.0.0's real leaf views
+    reach it.
+- **`Editor.cm` is a real, lazily built CodeMirror 6 `EditorView`, synced both ways** (2026-09-23). Every mutation
+  of the mock's buffer or selection (`dispatchChanges`, undo/redo, `setCursor` / `setSelection(s)`,
+  `resetState__`) is written into the view, and an `updateListener` reads a transaction dispatched INTO the view
+  back through `dispatchChanges`, so it is one undo step and takes CodeMirror's selection. `isSyncingCodeMirror`
+  stops either direction echoing. An effect-only transaction (the `Compartment` + `EditorState.readOnly` shape
+  `obsidian-dev-utils`' `toggleEditorReadOnly` dispatches) leaves the buffer alone. The view is detached and
+  unpainted: only its `state` is honest.
   - Only that honest core is modeled. The enable/disable lifecycle, installing, updates and deprecation
     stay unmocked and throw, per L2.
   - **`App.internalPlugins` and `App.commands` are deliberately still unmocked**, because neither has an
