@@ -51,7 +51,7 @@
 - fix(markdown-view)!: merge the four-buffer delegation fix
 - fix(editor)!: merge the deleteLine and line-swap fidelity fix
 - fix(vault)!: merge the trash routing and .trash folder fidelity fix
-- Merge branch T1592: leaf-lifecycle fidelity in the Workspace mock
+- fix(workspace): merge the leaf-lifecycle fidelity fix
 - fix(settings)!: disable the element, and build the row as Obsidian does
 - fix(bases)!: render a relative date relatively, and give ObjectValue its real lookups
 - fix(markdown-view)!: dispatch a minimal line diff on set, not a whole-document replace
