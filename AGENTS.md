@@ -1311,6 +1311,11 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     updater registered for the file's extension and reads the metadata cache only as a fallback; this package
     has no such registry and nothing registers one, so every file — `.canvas` included — is walked through its
     cached metadata. That is the only behavior available, not a gap waiting to be filled.
+  - **`MetadataCache.isSupportedFile(file)` is Obsidian's own view-registry question** (2026-09-24, read in
+    Obsidian 1.14.x's `app.js`): the vault's `showUnsupportedFiles` setting, or else
+    `viewRegistry.isExtensionRegistered(file.extension)`. It is the per-file gate of Obsidian's `getLinkSuggestions` walk. Since the mock registry holds
+    only the Markdown view, a `.canvas`, image or PDF file answers `false` until a test registers a view for its
+    extension, which is the honest answer for a vault with no such view, not a gap.
   - **`FileValue.getLinks` is now the one-line walk Obsidian writes** over that member, rather than its own
     read of `getFileCache`. Same list, same order, same memo — what changes is that the order lives in one
     place instead of being restated by each caller.
