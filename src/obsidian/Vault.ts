@@ -125,17 +125,41 @@ export class Vault extends Events {
   }
 
   /**
-   * Walks a folder's descendants depth-first, calling the callback on each child before descending into it. The
-   * folder itself is not visited.
+   * Walks a folder and everything under it, exactly as Obsidian's own walk does: the folder ITSELF is visited first,
+   * and the walk is a stack, so each folder's children are visited last-first. A folder's `children` are read only
+   * after the callback has run on it, and the callback's return value is ignored - there is no early stop.
    *
-   * @param folder - The folder to walk.
-   * @param callback - Called with each descendant file and folder.
+   * @param folder - The folder to walk, visited first.
+   * @param callback - Called with the folder and with each descendant file and folder.
    */
   public static recurseChildren(folder: TFolder, callback: (f: TAbstractFile) => unknown): void {
+    let stack: TAbstractFile[] = [folder];
+    while (stack.length > 0) {
+      const entry = stack.pop();
+      // Obsidian guards the popped entry, so a hole in a folder's `children` is skipped rather than visited.
+      if (!entry) {
+        continue;
+      }
+      callback(entry);
+      if (entry instanceof TFolder) {
+        stack = [...stack, ...entry.children];
+      }
+    }
+  }
+
+  /**
+   * Visits a folder's descendants in pre-order, each child before its own children and siblings first-to-last, never
+   * the folder itself. The order the mock's own folder copy, rename and removal have always used; the public walk is
+   * {@link Vault.recurseChildren}, which is Obsidian's.
+   *
+   * @param folder - The folder whose descendants to visit.
+   * @param callback - Called with each descendant file and folder.
+   */
+  private static forEachDescendant(folder: TFolder, callback: (f: TAbstractFile) => void): void {
     for (const child of folder.children) {
       callback(child);
       if (child instanceof TFolder) {
-        Vault.recurseChildren(child, callback);
+        Vault.forEachDescendant(child, callback);
       }
     }
   }
@@ -214,7 +238,7 @@ export class Vault extends Events {
     }
 
     const copy = this.registerFolderTree(newPath);
-    Vault.recurseChildren(file, (child) => {
+    Vault.forEachDescendant(file, (child) => {
       const childPath = newPath + child.path.slice(file.path.length);
       if (child instanceof TFolder) {
         this.registerFolderTree(childPath);
@@ -734,7 +758,7 @@ export class Vault extends Events {
     // Capture descendants before mutating: a folder rename must cascade their paths.
     const descendants: TAbstractFile[] = [];
     if (file instanceof TFolder) {
-      Vault.recurseChildren(file, (child) => {
+      Vault.forEachDescendant(file, (child) => {
         descendants.push(child);
       });
     }
@@ -874,7 +898,7 @@ export class Vault extends Events {
     // Obsidian drops the descendants before the folder itself, each with its own `delete` event.
     const entries: TAbstractFile[] = [];
     if (file instanceof TFolder) {
-      Vault.recurseChildren(file, (child) => {
+      Vault.forEachDescendant(file, (child) => {
         entries.push(child);
       });
     }

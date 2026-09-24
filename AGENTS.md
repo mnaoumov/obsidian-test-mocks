@@ -485,6 +485,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   on purpose. Deleting or trashing a folder stops tracking every descendant, firing `delete` for each before the
   folder, and every removed entry's `parent` is `null` by the time its `delete` fires; deleting or trashing the root
   does nothing; `copy` accepts folders; `getAllFolders()` leaves the root out unless passed `true`.
+- **`Vault.recurseChildren(folder, callback)` is Obsidian's own walk, root included** (2026-09-24, read in Obsidian
+  1.14.x's `app.js`). It is a stack seeded with `folder`, so **the folder itself is visited FIRST**, and each folder's
+  children are concatenated onto the stack and popped, so **siblings are visited last-first**. `children` is read
+  only after the callback ran on the folder, and the callback's return value stops nothing. The mock used to visit
+  descendants only, first-to-last, which hid a consumer bug whose folder merge collected the source folder from the
+  walk and moved it inside its own destination — every unit test green, the real app broken. A consumer that wants
+  descendants only skips `entry === folder` itself, as it must against the real app. The mock's own folder `copy`,
+  `rename` and delete/trash cascade do NOT use it: they walk a private descendants-only pre-order, so their event order
+  is unchanged.
 - **The two adapters differ where Obsidian's do** (2026-09-17, read in Obsidian 1.14.2's `app.js`). `rmdir` of a
   missing path throws `ENOENT … lstat` on both. The desktop `FileSystemAdapter` (the one `App` uses) runs
   `fs.rm(path, { recursive })`, so `rmdir(path, false)` refuses ANY folder, an empty one included, with `EISDIR` —
