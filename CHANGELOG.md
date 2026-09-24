@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 7.0.0
+
+- docs(changelog): reword a shipped entry that named a private branch
+- fix(vault)!: merge the root-first recurseChildren walk
+- chore: merge the eslint-plugin-unicorn 76 raise
+- fix: merge the Notice omitted-duration default
+- chore(scripts): merge the file-header helper taken from typescript-template
+- chore: merge the repo-neutral git-content suite
+- chore: merge the eslint exit classification and batched-exec fixes
+- chore: merge the contributing-guide base-branch fix
+- chore: merge the missing-parent write refusal
+- chore: merge the re-measured eslint-plugin-unicorn consumer table
+- chore: merge MetadataCache.isSupportedFile
+- chore: merge the git-content non-repository comment fix
+- chore: merge the retired copy-sync divergences
+- fix: merge getFrontMatterInfo trailing-newline port
+
 ## 6.1.0
 
 - feat: merge Plugins.manifests and a real Editor.cm
