@@ -127,6 +127,26 @@ describe('FileSystemAdapter', () => {
       expect(await adapter.exists('dir')).toBe(true);
     });
 
+    it('should delete a FILE without recursive, as fs.rm does', async () => {
+      const adapter = createAdapter();
+      await adapter.write('a.md', 'data');
+
+      await adapter.rmdir('a.md', false);
+
+      expect(await adapter.exists('a.md')).toBe(false);
+    });
+
+    it('should delete a FILE with recursive too', async () => {
+      const adapter = createAdapter();
+      await adapter.mkdir('dir');
+      await adapter.writeBinary('dir/a.png', new ArrayBuffer(1));
+
+      await adapter.rmdir('dir/a.png', true);
+
+      expect(await adapter.exists('dir/a.png')).toBe(false);
+      expect(await adapter.exists('dir')).toBe(true);
+    });
+
     it('should throw ENOENT for a missing path, recursive or not', async () => {
       const adapter = createAdapter();
 

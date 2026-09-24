@@ -497,7 +497,9 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **The two adapters differ where Obsidian's do** (2026-09-17, read in Obsidian 1.14.2's `app.js`). `rmdir` of a
   missing path throws `ENOENT … lstat` on both. The desktop `FileSystemAdapter` (the one `App` uses) runs
   `fs.rm(path, { recursive })`, so `rmdir(path, false)` refuses ANY folder, an empty one included, with `EISDIR` —
-  which means `vault.delete(folder)` throws unless passed `force: true`, exactly as in the app. The mobile
+  which means `vault.delete(folder)` throws unless passed `force: true`, exactly as in the app. A FILE handed
+  to `rmdir` is deleted, `recursive` or not, because `fs.rm` removes one; only a folder answers `EISDIR` (measured
+  2026-09-24 on Node 26.10.0). The mobile
   `CapacitorAdapter` ignores `recursive` and always removes the whole folder. The desktop adapter also refuses to copy
   a FILE into a missing folder (`ENOENT … copyfile`), while a copied folder still gets its parents created; the mobile
   copy is native and is left creating parents.
