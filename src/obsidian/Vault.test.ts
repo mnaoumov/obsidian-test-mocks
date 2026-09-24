@@ -92,6 +92,69 @@ describe('Vault', () => {
       expect(files.length).toBeGreaterThanOrEqual(1);
       expect(folders.length).toBeGreaterThanOrEqual(1);
     });
+
+    it('should visit the folder itself first, then walk its children last-first, as Obsidian\'s stack does', () => {
+      const app = App.createConfigured__({
+        files: {
+          'D/a.md': 'a',
+          'D/b.md': 'b',
+          'D/sub/c.md': 'c'
+        }
+      });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('D'));
+      const paths: string[] = [];
+      Vault.recurseChildren(folder, (f) => {
+        paths.push(f.path);
+      });
+      const childPaths = folder.children.map((child) => child.path);
+      const expected = ['D'];
+      for (const childPath of [...childPaths].reverse()) {
+        expected.push(childPath);
+        if (childPath === 'D/sub') {
+          expected.push('D/sub/c.md');
+        }
+      }
+      expect(paths).toEqual(expected);
+    });
+
+    it('should visit the vault root first', () => {
+      const app = App.createConfigured__({ files: { 'note.md': 'n' } });
+      const root = app.vault.getRoot();
+      const visited: TAbstractFile[] = [];
+      Vault.recurseChildren(root, (f) => {
+        visited.push(f);
+      });
+      expect(visited[0]).toBe(root);
+      expect(visited).toHaveLength(2);
+    });
+
+    it('should read a folder\'s children only after the callback has run on it, and ignore its return value', () => {
+      const app = App.createConfigured__({ files: { 'D/sub/c.md': 'c' } });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('D'));
+      const sub = ensureNonNullable(app.vault.getFolderByPath('D/sub'));
+      const paths: string[] = [];
+      Vault.recurseChildren(folder, (f) => {
+        paths.push(f.path);
+        if (f === sub) {
+          sub.children = [];
+        }
+        return true;
+      });
+      expect(paths).toEqual(['D', 'D/sub']);
+    });
+
+    it('should skip a hole in a folder\'s children', () => {
+      const app = App.createConfigured__({ files: { 'D/a.md': 'a' } });
+      const folder = ensureNonNullable(app.vault.getFolderByPath('D'));
+      const paths: string[] = [];
+      Vault.recurseChildren(folder, (f) => {
+        paths.push(f.path);
+        if (f === folder) {
+          folder.children = [...folder.children, castTo<TAbstractFile>(undefined)];
+        }
+      });
+      expect(paths).toEqual(['D', 'D/a.md']);
+    });
   });
 
   describe('append()', () => {
