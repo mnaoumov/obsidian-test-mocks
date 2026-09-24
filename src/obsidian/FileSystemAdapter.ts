@@ -170,16 +170,22 @@ export class FileSystemAdapter extends InMemoryAdapter {
 
   /**
    * Removes a folder. Obsidian's desktop adapter runs `fs.rm(path, { recursive })`, so without `recursive` it
-   * refuses ANY folder, an empty one included.
+   * refuses ANY folder, an empty one included. A FILE at `normalizedPath` is deleted whatever `recursive` says, as
+   * `fs.rm` deletes one.
    *
    * @param normalizedPath - The vault-relative path of the folder.
    * @param recursive - Whether to delete everything under the folder too.
    * @throws Error `ENOENT: no such file or directory, lstat …` when nothing exists at `normalizedPath`, and
-   * `Path is a directory: rm returned EISDIR (is a directory) …` when `recursive` is not set.
+   * `Path is a directory: rm returned EISDIR (is a directory) …` when it is a folder and `recursive` is not set.
    */
   public override async rmdir(normalizedPath: string, recursive: boolean): Promise<void> {
+    this.ensureExistsForRmdir(normalizedPath);
+    if (this.statSync__(normalizedPath)?.type === 'file') {
+      await this.remove(normalizedPath);
+      return;
+    }
+
     if (!recursive) {
-      this.ensureExistsForRmdir(normalizedPath);
       throw new Error(`Path is a directory: rm returned EISDIR (is a directory) ${this.getFullPath(normalizedPath)}`);
     }
 
