@@ -10,6 +10,11 @@ import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 
 /**
+ * The duration Obsidian gives a notice created without one: `void 0 === t && (t = 4e3)` in its constructor.
+ */
+const DEFAULT_DURATION_IN_MILLISECONDS = 4000;
+
+/**
  * Mock of Obsidian's `Notice` notification component.
  *
  * Nothing is shown on screen: the message is rendered into detached elements, so a test can read it back from
@@ -22,9 +27,10 @@ export class Notice {
   public containerEl: HTMLElement;
 
   /**
-   * Mock-only: the duration, in milliseconds, the notice was created with (`0` when none was given).
+   * Mock-only: the duration, in milliseconds, the notice hides after. An omitted duration records Obsidian's
+   * default, `4000`; `0` is recorded only when passed, and means the notice stays until dismissed.
    */
-  public readonly duration__: number = 0;
+  public readonly duration__: number;
 
   /**
    * The element holding the notice's message.
@@ -40,7 +46,8 @@ export class Notice {
    * Creates a notice and renders its message.
    *
    * @param message - The message to display, as text or as a fragment (which is cloned).
-   * @param duration - Time in milliseconds to show the notice for; `0` or omitted keeps it until dismissed.
+   * @param duration - Time in milliseconds to show the notice for; `0` keeps it until dismissed, and omitted means
+   *   Obsidian's default of `4000`.
    */
   public constructor(message: DocumentFragment | string, duration?: number) {
     this.containerEl = createDiv();
@@ -51,7 +58,8 @@ export class Notice {
     } else {
       this.messageEl.append(message.cloneNode(true));
     }
-    this.duration__ = duration ?? 0;
+    // Not `||`: an explicit `0` is kept, as in Obsidian, whose check is `void 0 === t` rather than a falsy test.
+    this.duration__ = duration ?? DEFAULT_DURATION_IN_MILLISECONDS;
     const self = strictProxy(this);
     self.constructor__(message, duration);
     return self;
