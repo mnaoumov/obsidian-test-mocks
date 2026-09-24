@@ -6,38 +6,81 @@ import {
 
 import { getFrontMatterInfo } from './getFrontMatterInfo.ts';
 
+const MISSING = {
+  contentStart: 0,
+  exists: false,
+  from: 0,
+  frontmatter: '',
+  to: 0
+};
+
 describe('getFrontMatterInfo', () => {
-  it('should detect frontmatter and return info', () => {
+  it('should include the last property line newline in frontmatter and end to at the closing delimiter', () => {
     const content = '---\ntitle: Hello\n---\nBody';
-    const info = getFrontMatterInfo(content);
-    expect(info.exists).toBe(true);
-    expect(info.frontmatter).toBe('title: Hello');
-    expect(info.contentStart).toBeGreaterThan(0);
+    expect(getFrontMatterInfo(content)).toEqual({
+      contentStart: 21,
+      exists: true,
+      from: 4,
+      frontmatter: 'title: Hello\n',
+      to: 17
+    });
+    expect(content.slice(17, 20)).toBe('---');
   });
 
-  it('should return correct from and to offsets', () => {
-    const content = '---\nabc\n---\n';
+  it('should keep a CRLF line ending inside frontmatter', () => {
+    const content = '---\r\nabc\r\n---\r\nBody';
+    expect(getFrontMatterInfo(content)).toEqual({
+      contentStart: 15,
+      exists: true,
+      from: 5,
+      frontmatter: 'abc\r\n',
+      to: 10
+    });
+  });
+
+  it('should splice [from, to) byte-exactly with text ending in a newline', () => {
+    const content = '---\ntitle: Old\n---\nBody';
     const info = getFrontMatterInfo(content);
-    expect(info.exists).toBe(true);
-    // "---\n" is 4 chars, from should be 4
-    const FROM_OFFSET = 4;
-    expect(info.from).toBe(FROM_OFFSET);
-    // "abc" is 3 chars, to = from + 3 = 7
-    const TO_OFFSET = 7;
-    expect(info.to).toBe(TO_OFFSET);
+    const spliced = `${content.slice(0, info.from)}title: New\n${content.slice(info.to)}`;
+    expect(spliced).toBe('---\ntitle: New\n---\nBody');
+  });
+
+  it('should detect an empty block', () => {
+    expect(getFrontMatterInfo('---\n---\nBody')).toEqual({
+      contentStart: 8,
+      exists: true,
+      from: 4,
+      frontmatter: '',
+      to: 4
+    });
+  });
+
+  it('should handle a closing delimiter at the end of the file', () => {
+    expect(getFrontMatterInfo('---\nkey: val\n---')).toEqual({
+      contentStart: 16,
+      exists: true,
+      from: 4,
+      frontmatter: 'key: val\n',
+      to: 13
+    });
+  });
+
+  it('should skip a delimiter that does not start a line', () => {
+    const content = '---\nkey: ---\n---\nBody';
+    expect(getFrontMatterInfo(content)).toEqual({
+      contentStart: 17,
+      exists: true,
+      from: 4,
+      frontmatter: 'key: ---\n',
+      to: 13
+    });
   });
 
   it('should return exists false when no frontmatter', () => {
-    const info = getFrontMatterInfo('Just some text');
-    expect(info.exists).toBe(false);
-    expect(info.contentStart).toBe(0);
-    expect(info.frontmatter).toBe('');
+    expect(getFrontMatterInfo('Just some text')).toEqual(MISSING);
   });
 
-  it('should handle frontmatter at end of file without trailing newline', () => {
-    const content = '---\nkey: val\n---';
-    const info = getFrontMatterInfo(content);
-    expect(info.exists).toBe(true);
-    expect(info.frontmatter).toBe('key: val');
+  it('should return exists false when the block is never closed', () => {
+    expect(getFrontMatterInfo('---\nkey: val\nBody')).toEqual(MISSING);
   });
 });

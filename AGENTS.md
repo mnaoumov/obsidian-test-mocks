@@ -678,6 +678,12 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
   sliced source against `reference.original`.
 
+- **`getFrontMatterInfo` is a port of Obsidian's own, and its `frontmatter` ends WITH the newline** (2026-09-24, `hg`
+  in Obsidian 1.14.x's `app.js`). `to` is the index of the closing `---` itself, so `[from, to)` is exactly the region
+  to replace, and splicing in `stringifyYaml()` output leaves no blank line before the delimiter. The mock used to stop
+  one character short, excluding that newline, which is what put a spurious blank line into every mocked
+  `setFrontmatter`. An EMPTY block (`---\n---\n`) exists too, with `frontmatter` `''`; the mock used to report none.
+
 - **Frontmatter links are an EXACT port of Obsidian's own reader, not the approximation the rest of this
   parser is** (2026-09-17, read in Obsidian 1.14.2's `app.js`). Four of its properties look like defects
   and are not, so do not "fix" them back:
