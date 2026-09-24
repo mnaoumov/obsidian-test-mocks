@@ -10,7 +10,7 @@
  * `scripts/helpers/eslint-rules/` is byte-identical to `obsidian-dev-utils`' after two mechanical
  * transforms, so that gate asserts identity and reports every difference. The copy-sync areas cannot be
  * held to that: their divergences are semantic - barrel entry points, `-mock` route slugs,
- * `EXCLUDED_DIR_SEGMENTS`, the Sätteri port - and no transform expresses them. Answering "did upstream
+ * `EXCLUDED_DIR_SEGMENTS` - and no transform expresses them. Answering "did upstream
  * change anything here that this copy has not taken?" therefore meant hand-diffing every file and
  * classifying every hunk, which is what it cost the last time it was asked.
  *
@@ -34,11 +34,9 @@
  * 3. **Every differing file carries a REASON from a closed vocabulary** ({@link DIVERGENCE_REASONS}),
  *    keyed to the divergence list in `AGENTS.md`. A baseline of bare counts degrades into a number nobody
  *    can check; a file whose divergence is recorded with no reason fails this gate rather than passing it.
- * 4. **The rename is a pair, not two one-sided files.** This repo's
- *    `helpers/satteri-plugins/satteri-relative-links.{ts,test.ts}` IS upstream's
- *    `helpers/remark-plugins/remark-relative-links.{ts,test.ts}`, ported to Sätteri. Left unpaired, an
- *    upstream fix to that plugin's slug handling would be invisible here forever, so
- *    {@link UPSTREAM_TO_LOCAL_RENAMES} pairs them and the port's shape is recorded like any other.
+ * 4. **A rename is a pair, not two one-sided files.** A file this repo keeps under a different name from
+ *    upstream's is paired in {@link UPSTREAM_TO_LOCAL_RENAMES}, so an upstream fix to it is still compared
+ *    rather than reported as one file missing on each side. None is paired today - see that map.
  * 5. **A binary file is compared by hash, and knows it is one.** The Inter TTFs under
  *    `scripts/docs-gen/assets/fonts` have no hunks to shape, and `git diff` answers "Binary files differ"
  *    with no `@@` at all - which a hunk parser reads as "identical", the one wrong answer. So a file whose
@@ -167,12 +165,10 @@ export const DIVERGENCE_REASONS: Readonly<Record<string, string>> = {
   'api-surface-tables': 'The per-package data tables in `api-doc-constants.ts`: `GENERIC_TYPE_PARAMS` and `TS_GLOBAL_TYPES` list the identifiers and external types THIS package\'s API surface actually uses, so they differ by construction.',
   'barrel-entry-points': 'Divergence 2. This package publishes barrel entry points, so a namespace does not map onto an import subpath the way `obsidian-dev-utils`\' does.',
   'excluded-dir-segments': 'Divergence 4. `EXCLUDED_DIR_SEGMENTS` names this package\'s own private trees.',
-  'helpers-re-pointed': 'Anything the copy needed from upstream\'s `src/script-utils/*` was re-pointed at this repo\'s `scripts/helpers/*` (`execFromRoot`, `assertNever`).',
+  'helpers-re-pointed': 'Anything the copy needed from upstream\'s own `src/` was re-pointed at this repo\'s equivalent: `src/script-utils/*` at `scripts/helpers/*` (`execFromRoot`, `assertNever`), and `castTo` from `src/object-utils.ts` at `src/internal/castTo.ts`.',
   'local-strictness-rewrites': 'Divergence 7. Rules this repo enables that `obsidian-dev-utils` turns off force local rewrites, so a byte-identical copy would be lint-red here.',
   'mock-only-suffix': 'Divergence 3. The `__` suffix that marks a mock-only member has to survive slug generation as `-mock`, or two members collapse onto one route and one page overwrites the other.',
-  'own-favicon-mark': 'Divergence 5. This package has a favicon of its own where `obsidian-dev-utils` has no mark and no logo asset, so prose about what the site renders beside a title differs.',
-  'satteri-processor': 'Divergence 6. The absolute-to-relative link rewrite is expressed against Sätteri\'s mdast visitor rather than as a remark plugin. This is the one divergence where THIS repo is ahead.',
-  'vendored-og-assets': 'Both repos vendor the Inter TTFs under `scripts/docs-gen/assets/fonts`, but upstream\'s prose still says it does not and has no favicon to rasterize into an OG card, so the asset-loading and footer-branding comments differ.'
+  'own-favicon-mark': 'Divergence 5. This package has a favicon of its own where `obsidian-dev-utils` has no mark and no logo asset, so prose about what the site renders beside a title differs.'
 };
 
 /**
@@ -213,13 +209,12 @@ export const TRANSFORM_ARMS: readonly TransformArm[] = [
 /**
  * The upstream files this repo keeps under a different name, as `upstream path` to `local path`.
  *
- * Both sides are repo-relative. Pairing them is what makes divergence 6 checkable rather than merely
- * documented - see the file header.
+ * Both sides are repo-relative. It is empty: its one pair was this repo's Sätteri port of upstream's
+ * `remark-plugins/remark-relative-links.{ts,test.ts}`, until upstream took the port under this repo's own
+ * name. Keep it for the next rename - an unpaired one reads as a file missing on each side, and an upstream
+ * fix to it is then invisible here.
  */
-export const UPSTREAM_TO_LOCAL_RENAMES: Readonly<Record<string, string>> = {
-  'scripts/docs-gen/helpers/remark-plugins/remark-relative-links.test.ts': 'scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.test.ts',
-  'scripts/docs-gen/helpers/remark-plugins/remark-relative-links.ts': 'scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.ts'
-};
+export const UPSTREAM_TO_LOCAL_RENAMES: Readonly<Record<string, string>> = {};
 
 /*
  * How much of the sha-256 of a hunk's changed lines, or of a binary file's bytes, is kept. Twelve hex
