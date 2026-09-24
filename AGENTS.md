@@ -1335,16 +1335,17 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     method, and a key explicitly present holding `undefined` reads as `undefined` rather than `null` — the
     one way a caller can tell a key that is there from a key that is not.
 
-- **`MetadataCache.iterateRefsForFile` is implemented, and `obsidian-typings` declares it wrongly on all three
-  counts** (2026-09-17, `app.js:101047` and its helper at `47201` in Obsidian 1.14.2, prettified). The
-  augmentation says `iterateRefsForFile(path: string, callback: (reference: ReferenceCache) => void): void`.
-  Obsidian takes a **`TFile`** — it reads `file.extension` to look up `this.linkUpdaters[...]` and passes
+- **`MetadataCache.iterateRefsForFile` is implemented, in the shape Obsidian has** (2026-09-17, `app.js:101047`
+  and its helper at `47201` in Obsidian 1.14.2, prettified). The `obsidian-typings` augmentation used to say
+  `iterateRefsForFile(path: string, callback: (reference: ReferenceCache) => void): void`, wrong on all three
+  counts; since `@obsidian-typings/obsidian-public-1.13.7` 1.11.0 (through `obsidian-typings` 6.38.0,
+  2026-09-24) it declares the shape below, and `FileManager.iterateAllRefs` — which had no runtime
+  implementation — is gone from it. Obsidian takes a **`TFile`** — it reads `file.extension` to look up `this.linkUpdaters[...]` and passes
   `file.path` on — the callback is a **predicate** whose `true` stops the walk, and it receives the file's
   **frontmatter links first**, which are `FrontmatterLinkCache extends Reference` and carry no `position`, so
   they are not `ReferenceCache` at all. The mock implements what Obsidian has (L4), so the settled shape is
-  `iterateRefsForFile(file: TFile, callback: (reference: Reference) => MaybeReturn<boolean>): void`, and the
-  declaration is a sibling-repo fix tracked separately. The conformance test compares member NAMES, so the
-  differing signature costs nothing there.
+  `iterateRefsForFile(file: TFile, callback: (reference: Reference) => MaybeReturn<boolean>): void`, which the
+  declaration now matches. The conformance test compares member NAMES only, so it never saw the old mismatch.
   - **The `linkUpdaters` branch is unreachable here, permanently.** Obsidian hands the whole walk to the
     updater registered for the file's extension and reads the metadata cache only as a fallback; this package
     has no such registry and nothing registers one, so every file — `.canvas` included — is walked through its

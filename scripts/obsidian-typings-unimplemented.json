@@ -187,7 +187,6 @@
   "FileManager.getOrCreateFolder",
   "FileManager.inProgressUpdates",
   "FileManager.insertIntoFile",
-  "FileManager.iterateAllRefs",
   "FileManager.mergeFile",
   "FileManager.notifyForBulkUndo",
   "FileManager.promptForFileDeletion",
