@@ -289,7 +289,7 @@ read-and-merge, and the list below is what it is merged against.
 each upstream file's hunk count and each hunk's added/removed line counts plus a digest of its changed
 lines, and fails when a file's shape moves — which it does whether upstream edited the file or this repo
 did. Line numbers are deliberately not part of a shape, so one real edit is not reported as a dozen.
-**45 files, 31 of them identical** after the recorded transforms, measured 2026-09-19.
+**45 files, 33 of them identical** after the recorded transforms, measured 2026-09-24.
 
 Six things to know before touching a copied file:
 
@@ -306,9 +306,9 @@ Six things to know before touching a copied file:
   this list. A file whose divergence is recorded with no reason FAILS the gate; so does a reason that no
   longer applies. Re-record with `npm run check:copy-sync -- --update`, which keeps the reasons
   and rewrites only the shapes — it is not a way to make the gate green.
-- **`satteri-relative-links.{ts,test.ts}` is PAIRED with upstream's `remark-relative-links.{ts,test.ts}`**
-  in `UPSTREAM_TO_LOCAL_RENAMES`, not treated as a file of ours. Unpaired, an upstream fix to that
-  plugin's slug or self-link handling would be invisible here forever.
+- **A file kept under a different name from upstream's is PAIRED in `UPSTREAM_TO_LOCAL_RENAMES`**, not
+  treated as a file of ours. Unpaired, an upstream fix to it would be invisible here forever. The map is
+  empty today: its one pair was the Sätteri port, which upstream took under this repo's name.
 - **Two paths inside an area are never compared**, and are filtered out of BOTH listings so neither is
   reported as unpaired either (`NEVER_COMPARED_PATHS`): `docs/src/assets/favicon.svg`, divergence 5 below;
   and `docs/src/content/`, which is not a copy of anything — the guides and `index.mdx` are this package's
@@ -351,7 +351,8 @@ upstream's path makes the file byte-identical, so it sits in the gate's identica
 divergence reason. `docs/public/favicon.svg` is the one copied file still outside the roster, as the second
 copy of a file that must never be synced.
 
-Keep new divergence to the ten places this package genuinely differs:
+Keep new divergence to the eight places this package genuinely differs (the list runs to ten; 6 and 10
+are retired and keep their numbers):
 
 1. **`BASE_PATH` / site title / repo URLs** — mechanical renames, all of them the name, and all of them
    applied by the gate's two transform arms rather than recorded as divergence: the package name, and the
@@ -381,15 +382,12 @@ Keep new divergence to the ten places this package genuinely differs:
    outside the roster. Its CONSEQUENCE is recorded, though — `own-favicon-mark` on
    `docs/src/components/SiteTitle.astro`, whose prose says the site's only mark is the favicon beside the
    title where upstream's says it has no logo at all.
-6. **The Markdown processor is Sätteri, not remark** (`astro.config.ts`,
-   `scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.ts`). Astro 7.3 made Sätteri the
-   default, and `markdown.remarkPlugins` now runs only on the separate `unified` processor from
-   `@astrojs/markdown-remark`. This package names the Sätteri processor and carries the absolute→relative
-   link rewrite as one of its mdast plugins; `obsidian-dev-utils` still installs
-   `@astrojs/markdown-remark` and keeps `remark-plugins/remark-relative-links.ts`. This is the one
-   divergence where THIS repo is ahead, so it travels upstream rather than being re-synced away.
-   Baseline reason: `satteri-processor`, on the upstream file the port is paired with and on
-   `astro.config.ts`, which names the processor and imports the port.
+6. **Retired 2026-09-24: the Sätteri processor.** This repo moved the absolute→relative link rewrite
+   from remark onto Sätteri first, and upstream then took that port whole — the same processor in
+   `astro.config.ts` and the same `scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.*`
+   files, with `remark-plugins/remark-relative-links.*` deleted. Nothing diverges there now, so the
+   `satteri-processor` reason and the `UPSTREAM_TO_LOCAL_RENAMES` pair it needed are both gone. The number
+   stays so the reasons that cite 5 and 7 keep pointing at the right item.
 7. **Rules this repo enables that `obsidian-dev-utils` turns off force local rewrites.** The config
    comparison behind `eslint-config-divergences.json` prints twelve such rules as information, because
    this copy is the stricter one there and needs no entry to be stricter. For the *copy-sync* trees that
@@ -401,20 +399,19 @@ Keep new divergence to the ten places this package genuinely differs:
    configs move: when a sync makes lint red, check this class before assuming drift.
    Baseline reason: `local-strictness-rewrites`.
 8. **Helper imports re-pointed** — anything the copy needed from upstream's `src/script-utils/*` now
-   resolves to this repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`). Stated above as prose since
-   the copy was taken; it is in the list because the gate needs a name for it.
+   resolves to this repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`), and the Sätteri plugin's
+   test takes `castTo` from `src/internal/castTo.ts` where upstream's takes it from `src/object-utils.ts`.
+   Stated above as prose since the copy was taken; it is in the list because the gate needs a name for it.
    Baseline reason: `helpers-re-pointed`.
 9. **The `api-doc-constants.ts` data tables** — `GENERIC_TYPE_PARAMS` and `TS_GLOBAL_TYPES` enumerate the
    identifiers and external types *this* package's API surface actually uses, so they differ by
    construction: the CodeMirror and Turndown entries are ours, and upstream's hook/owner/suspect
    identifiers are not. Eleven of the gate's hunks are this one file.
    Baseline reason: `api-surface-tables`.
-10. **The vendored OG assets** — both repos now ship the same two Inter TTFs under
-    `scripts/docs-gen/assets/fonts` (byte-identical, measured 2026-09-19, and gated as a digest pair), but
-    upstream's own prose still says it vendors none, and it has no favicon to rasterize into a card where
-    this repo does. So the font-loading and footer-branding comments in `og-image.ts` say something
-    different from upstream's, in two hunks that are prose only.
-    Baseline reason: `vendored-og-assets`.
+10. **Retired 2026-09-24: the vendored OG assets.** `og-image.ts` differed in two prose-only hunks, about
+    the Inter TTFs both repos vendor under `scripts/docs-gen/assets/fonts` and the favicon this repo
+    draws onto a card. Upstream has since taken this repo's wording, so the file is byte-identical and
+    the `vendored-og-assets` reason is gone. The two TTFs are still gated as a digest pair.
 
 ### Type-checking and linting gaps (the same ones `obsidian-dev-utils` has)
 

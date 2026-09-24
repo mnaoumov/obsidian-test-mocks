@@ -194,7 +194,7 @@ describe('describeShapeChange', () => {
 
 describe('validateBaselineEntry', () => {
   it('accepts a divergence that names a reason from the vocabulary', () => {
-    expect(validateBaselineEntry('x.ts', { hunks: [{ added: 1, digest: 'aaaaaaaaaaaa', removed: 0 }], reasons: ['satteri-processor'] })).toBeNull();
+    expect(validateBaselineEntry('x.ts', { hunks: [{ added: 1, digest: 'aaaaaaaaaaaa', removed: 0 }], reasons: ['barrel-entry-points'] })).toBeNull();
   });
 
   it('accepts a byte-identical file with no reasons', () => {
@@ -208,11 +208,11 @@ describe('validateBaselineEntry', () => {
   it('rejects a reason outside the vocabulary, and lists the vocabulary', () => {
     const problem = validateBaselineEntry('x.ts', { hunks: [{ added: 1, digest: 'aaaaaaaaaaaa', removed: 0 }], reasons: ['because-i-said-so'] });
     expect(problem).toContain('because-i-said-so');
-    expect(problem).toContain('satteri-processor');
+    expect(problem).toContain('barrel-entry-points');
   });
 
   it('rejects a reason claimed by a file that no longer diverges', () => {
-    expect(validateBaselineEntry('x.ts', { hunks: [], reasons: ['satteri-processor'] })).toContain('no longer exists');
+    expect(validateBaselineEntry('x.ts', { hunks: [], reasons: ['barrel-entry-points'] })).toContain('no longer exists');
   });
 
   it('accepts a binary file whose two digests agree and claims nothing', () => {
@@ -227,7 +227,7 @@ describe('validateBaselineEntry', () => {
   });
 
   it('rejects a reason on a binary file whose digests agree', () => {
-    expect(validateBaselineEntry('font.ttf', { digests: { local: 'aaaaaaaaaaaa', upstream: 'aaaaaaaaaaaa' }, reasons: ['vendored-og-assets'] })).toContain('no longer exists');
+    expect(validateBaselineEntry('font.ttf', { digests: { local: 'aaaaaaaaaaaa', upstream: 'aaaaaaaaaaaa' }, reasons: ['own-favicon-mark'] })).toContain('no longer exists');
   });
 });
 
@@ -248,14 +248,7 @@ describe('applyTransformArms', () => {
 });
 
 describe('getLocalPath', () => {
-  it('pairs the Sätteri port with the remark plugin it was ported from', () => {
-    expect(getLocalPath('scripts/docs-gen/helpers/remark-plugins/remark-relative-links.ts')).toBe('scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.ts');
-    expect(getLocalPath('scripts/docs-gen/helpers/remark-plugins/remark-relative-links.test.ts')).toBe(
-      'scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.test.ts'
-    );
-  });
-
-  it('leaves every other path where it is', () => {
+  it('leaves a path with no recorded rename where it is', () => {
     expect(getLocalPath('scripts/docs-gen/helpers/remark-plugins/util.ts')).toBe('scripts/docs-gen/helpers/remark-plugins/util.ts');
   });
 });
