@@ -1,6 +1,12 @@
 import type { EditorPosition } from 'obsidian';
 
 import {
+  Compartment,
+  EditorState,
+  StateEffect
+} from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
+import {
   describe,
   expect,
   it
@@ -1457,6 +1463,114 @@ describe('Editor core methods', () => {
       editor.setSelection(pos(LINE_1, CH_5), pos(LINE_1, CH_2));
       expect(editor.getCursor('to')).toEqual(pos(LINE_1, CH_5));
     });
+  });
+});
+
+describe('Editor.cm', () => {
+  it('should be a real CodeMirror EditorView', () => {
+    const editor = createEditor('hello');
+    expect(editor.cm).toBeInstanceOf(EditorView);
+  });
+
+  it('should be the same view on every read', () => {
+    const editor = createEditor('hello');
+    expect(editor.cm).toBe(editor.cm);
+  });
+
+  it('should start with the editor document and selection', () => {
+    const editor = createEditor('hello world');
+    editor.setSelection(pos(LINE_1, CH_2), pos(LINE_1, CH_5));
+
+    expect(editor.cm.state.doc.toString()).toBe('hello world');
+    expect(editor.cm.state.selection.main.anchor).toBe(CH_2);
+    expect(editor.cm.state.selection.main.head).toBe(CH_5);
+  });
+
+  it('should follow a change made through the editor', () => {
+    const editor = createEditor('hello');
+    const { cm } = editor;
+
+    editor.replaceRange(' world', pos(LINE_1, CH_5));
+
+    expect(cm.state.doc.toString()).toBe('hello world');
+  });
+
+  it('should follow a selection made through the editor', () => {
+    const editor = createEditor('hello');
+    const { cm } = editor;
+
+    editor.setCursor(pos(LINE_1, CH_3));
+
+    expect(cm.state.selection.main.head).toBe(CH_3);
+  });
+
+  it('should dispatch nothing when the editor already matches it', () => {
+    const editor = createEditor('hello');
+    const { cm } = editor;
+    const { state } = cm;
+
+    editor.setCursor(pos(LINE_1, 0));
+
+    expect(cm.state).toBe(state);
+  });
+
+  it('should follow undo and redo', () => {
+    const editor = createEditor('hello');
+    const { cm } = editor;
+    editor.replaceRange(' world', pos(LINE_1, CH_5));
+
+    editor.undo();
+    expect(cm.state.doc.toString()).toBe('hello');
+
+    editor.redo();
+    expect(cm.state.doc.toString()).toBe('hello world');
+  });
+
+  it('should follow resetState__', () => {
+    const editor = createEditor('hello');
+    const { cm } = editor;
+
+    editor.resetState__('other');
+
+    expect(cm.state.doc.toString()).toBe('other');
+  });
+
+  it('should carry a change dispatched into it back into the editor', () => {
+    const editor = createEditor('hello');
+
+    editor.cm.dispatch({ changes: { from: 0, insert: 'say ' } });
+
+    expect(editor.getValue()).toBe('say hello');
+  });
+
+  it('should make a change dispatched into it one undo step', () => {
+    const editor = createEditor('hello');
+    editor.cm.dispatch({ changes: { from: 0, insert: 'say ' } });
+
+    editor.undo();
+
+    expect(editor.getValue()).toBe('hello');
+    expect(editor.cm.state.doc.toString()).toBe('hello');
+  });
+
+  it('should carry a selection dispatched into it back into the editor', () => {
+    const editor = createEditor('hello');
+
+    editor.cm.dispatch({ selection: { anchor: CH_2, head: CH_4 } });
+
+    expect(editor.getCursor('from')).toEqual(pos(LINE_1, CH_2));
+    expect(editor.getCursor('to')).toEqual(pos(LINE_1, CH_4));
+  });
+
+  it('should take the appendConfig and reconfigure effects a locked transaction uses', () => {
+    const editor = createEditor('hello');
+    const compartment = new Compartment();
+
+    editor.cm.dispatch({ effects: StateEffect.appendConfig.of(compartment.of([])) });
+    editor.cm.dispatch({ effects: compartment.reconfigure(EditorState.readOnly.of(true)) });
+
+    expect(editor.cm.state.readOnly).toBe(true);
+    expect(editor.getValue()).toBe('hello');
   });
 });
 

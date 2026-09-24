@@ -54,6 +54,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `DateValue` | `date`, `printDate`, `printTime`, `time` |
 | `DropdownComponent` | `changeCallback` |
 | `DurationValue` | `days`, `hours`, `milliseconds`, `minutes`, `months`, `seconds`, `years` |
+| `Editor` | `cm` |
 | `Events` | `_` |
 | `ExtraButtonComponent` | `changeCallback` |
 | `FileManager` | `app` |
@@ -125,6 +126,27 @@ app.plugins.enabledPlugins;                  // Set { 'notebook-navigator' }
 The instance can be a full `Plugin` mock via `asOriginalType2__()`, or any stand-in carrying just the
 members under test. `unregisterPlugin__(id)` reverses it. Only that core is modelled — the
 enable/disable lifecycle, installing, updates and deprecation checks throw, as below.
+
+`app.plugins.manifests` follows the same registrations: a registered instance that carries its own
+`manifest` (every `Plugin` mock does) is filed under its id, and unregistering drops it. A bare
+stand-in files nothing, so a test that needs the plugin's *name* — `obsidian-dev-utils`' resource
+lock reads `app.plugins.manifests[id]?.name` to say who holds a lock — assigns the entry directly:
+
+```typescript
+app.plugins.manifests['notebook-navigator'] = manifest;
+```
+
+## The editor's CodeMirror view
+
+`editor.cm` is a real CodeMirror 6 `EditorView`, built on first read and kept in step with the mock
+editor in both directions. An edit, selection, undo or `resetState__()` made through the editor is
+dispatched into the view, and a transaction dispatched into the view is applied back to the editor as
+one change, undone in one step, carrying the selection CodeMirror landed on. So `editor.cm.state.doc.toString()`
+and `editor.getValue()` always agree, and library code that reconfigures the view — `obsidian-dev-utils`
+makes a locked editor read-only by appending a `Compartment` and reconfiguring it to
+`EditorState.readOnly` — runs against the real thing rather than failing on an unmocked `cm`.
+
+The view is detached and never painted: its `state` is honest, its DOM is not.
 
 `app.internalPlugins` and `app.commands` are still unmocked on purpose: neither has an honest empty
 state. Real Obsidian always ships core plugins with several enabled, and this package's

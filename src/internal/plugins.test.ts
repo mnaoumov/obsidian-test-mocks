@@ -1,4 +1,7 @@
-import type { Plugin as PluginOriginal } from 'obsidian';
+import type {
+  PluginManifest as PluginManifestOriginal,
+  Plugin as PluginOriginal
+} from 'obsidian';
 
 import {
   describe,
@@ -8,12 +11,33 @@ import {
 } from 'vitest';
 
 import { App } from '../obsidian/App.ts';
+import { Plugin } from '../obsidian/Plugin.ts';
 import { castTo } from './castTo.ts';
+import { noop } from './noop.ts';
 import { Plugins } from './plugins.ts';
-import { bypassStrictProxy } from './strict-proxy.ts';
+import {
+  bypassStrictProxy,
+  strictProxy
+} from './strict-proxy.ts';
 import { ensureGenericObject } from './type-guards.ts';
 
 const PLUGIN_ID = 'notebook-navigator';
+
+const MANIFEST: PluginManifestOriginal = {
+  author: 'test',
+  description: 'test plugin',
+  id: PLUGIN_ID,
+  isDesktopOnly: false,
+  minAppVersion: '1.0.0',
+  name: 'Notebook Navigator',
+  version: '1.0.0'
+};
+
+class ConcretePlugin extends Plugin {
+  public override onload(): void {
+    noop();
+  }
+}
 
 function createPluginStandIn(): PluginOriginal {
   return castTo<PluginOriginal>({ api: {} });
@@ -74,11 +98,48 @@ describe('Plugins', () => {
     });
   });
 
+  describe('manifests', () => {
+    it('should be empty for a vault with no community plugins', () => {
+      const app = App.createConfigured__();
+      expect(app.plugins.manifests).toEqual({});
+    });
+
+    it('should accept a manifest assigned directly, for a stand-in that carries no manifest', () => {
+      const app = App.createConfigured__();
+      app.plugins.registerPlugin__(PLUGIN_ID, createPluginStandIn());
+      app.plugins.manifests[PLUGIN_ID] = MANIFEST;
+      expect(app.plugins.manifests[PLUGIN_ID]).toBe(MANIFEST);
+    });
+  });
+
   describe('registerPlugin__()', () => {
     it('should record the plugin as enabled', () => {
       const app = App.createConfigured__();
       app.plugins.registerPlugin__(PLUGIN_ID, createPluginStandIn());
       expect(app.plugins.enabledPlugins).toEqual(new Set([PLUGIN_ID]));
+    });
+
+    it('should file the manifest of a plugin that carries one', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      app.plugins.registerPlugin__(PLUGIN_ID, plugin.asOriginalType2__());
+      expect(app.plugins.manifests[PLUGIN_ID]).toBe(MANIFEST);
+    });
+
+    it('should leave the manifests alone for a stand-in that carries none', () => {
+      const app = App.createConfigured__();
+      app.plugins.registerPlugin__(PLUGIN_ID, createPluginStandIn());
+      expect(app.plugins.manifests).toEqual({});
+    });
+
+    it('should not throw on a strict-proxy stand-in that would throw for `manifest`', () => {
+      const app = App.createConfigured__();
+      const standIn = strictProxy<PluginOriginal>({});
+      expect(() => {
+        app.plugins.registerPlugin__(PLUGIN_ID, standIn);
+      }).not.toThrow();
+      expect(app.plugins.getPlugin(PLUGIN_ID)).toBe(standIn);
+      expect(app.plugins.manifests).toEqual({});
     });
 
     it('should replace an already registered plugin', () => {
@@ -98,6 +159,14 @@ describe('Plugins', () => {
       app.plugins.unregisterPlugin__(PLUGIN_ID);
       expect(app.plugins.getPlugin(PLUGIN_ID)).toBeNull();
       expect(app.plugins.enabledPlugins).toEqual(new Set());
+    });
+
+    it('should drop the manifest with the plugin', () => {
+      const app = App.createConfigured__();
+      const plugin = new ConcretePlugin(app, MANIFEST);
+      app.plugins.registerPlugin__(PLUGIN_ID, plugin.asOriginalType2__());
+      app.plugins.unregisterPlugin__(PLUGIN_ID);
+      expect(app.plugins.manifests).toEqual({});
     });
 
     it('should ignore an id that was never registered', () => {

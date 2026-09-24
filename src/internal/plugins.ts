@@ -4,13 +4,19 @@
  * Mock of the community-plugin registry Obsidian exposes as `app.plugins`.
  */
 
-import type { Plugin as PluginOriginal } from 'obsidian';
+import type {
+  PluginManifest as PluginManifestOriginal,
+  Plugin as PluginOriginal
+} from 'obsidian';
 
 import type { App } from '../obsidian/App.ts';
 
 import { Events } from '../obsidian/Events.ts';
 import { noop } from './noop.ts';
-import { strictProxy } from './strict-proxy.ts';
+import {
+  bypassStrictProxy,
+  strictProxy
+} from './strict-proxy.ts';
 
 /**
  * The community-plugin registry behind {@link App.plugins}.
@@ -38,8 +44,21 @@ export class Plugins extends Events {
    *
    * Kept in step with {@link plugins} by {@link registerPlugin__} / {@link unregisterPlugin__}: this
    * mock has no notion of a plugin that is installed but switched off, so the two always agree.
+   * {@link manifests} follows the same registrations, and holds an entry only for a plugin that came
+   * with a manifest.
    */
   public enabledPlugins = new Set<string>();
+  /**
+   * The manifests of the installed plugins, keyed by plugin id.
+   *
+   * Empty on a fresh registry for the same reason {@link plugins} is, and filled by
+   * {@link registerPlugin__} from the instance's own {@link Plugin.manifest} — which is where Obsidian
+   * takes it from too. A stand-in that carries no manifest registers the instance alone and leaves this
+   * record untouched, so a test that needs the plugin's NAME rather than its instance — as
+   * `obsidian-dev-utils`' resource lock does, reading `app.plugins.manifests[id]?.name` — assigns one
+   * here directly.
+   */
+  public manifests: Record<string, PluginManifestOriginal> = {};
   /**
    * The loaded plugin instances, keyed by plugin id.
    */
@@ -103,11 +122,19 @@ export class Plugins extends Events {
    *
    * @param id - The plugin id, as {@link getPlugin} is called with.
    * @param plugin - The instance {@link getPlugin} should answer. A full {@link Plugin} mock via
-   * `asOriginalType2__()`, or any stand-in carrying the members under test.
+   * `asOriginalType2__()`, or any stand-in carrying the members under test. One carrying a
+   * {@link Plugin.manifest} files it in {@link manifests} as installing the plugin does; one without
+   * leaves that record alone.
    */
   public registerPlugin__(id: string, plugin: PluginOriginal): void {
     this.plugins[id] = plugin;
     this.enabledPlugins.add(id);
+    // Read past the strict proxy: a stand-in built with `strictProxy` THROWS on a member it does not carry,
+    // and "does this one carry a manifest?" is exactly the question that has to be answerable without one.
+    const { manifest } = bypassStrictProxy<Partial<PluginOriginal>>(plugin);
+    if (manifest) {
+      this.manifests[id] = manifest;
+    }
   }
 
   /**
@@ -118,6 +145,8 @@ export class Plugins extends Events {
   public unregisterPlugin__(id: string): void {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- `plugins` is Obsidian's own record keyed by plugin id, so removing an entry is a dynamic delete by definition.
     delete this.plugins[id];
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- `manifests` is the same shape as `plugins`, keyed by the same plugin id.
+    delete this.manifests[id];
     this.enabledPlugins.delete(id);
   }
 }
