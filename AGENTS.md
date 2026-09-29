@@ -278,6 +278,16 @@ from a tag). It has two halves:
   `astro.config.ts` reads. Both are gitignored; so are `docs/public/og` (per-page Open Graph cards
   rendered by satori + resvg) and `docs/dist`. Never hand-edit anything under `docs/src/content/docs/api`.
 
+**GitHub alerts (`> [!NOTE]` and the other four types) become Starlight asides through the site's own Sätteri
+mdast plugin**, `scripts/docs-gen/helpers/satteri-plugins/satteri-github-alerts.ts`, registered first in
+`astro.config.ts`'s `mdastPlugins`, NOT through `starlight-github-alerts`, which left the dependencies on
+2026-09-29. That plugin (`0.4.0`) splices itself in front of an mdast plugin NAMED `starlight-asides`, and Starlight
+`0.42` registers its asides as an unnamed factory, so it returned in silence and every alert shipped as a plain
+blockquote opening with a literal `[!NOTE]`. `scripts/docs-link-check.ts`, the last step of `docs:build`, now fails
+on any page whose blockquote still opens with an alert marker (`scripts/docs-gen/helpers/unrendered-alerts.ts`).
+Both helpers are copies of `obsidian-dev-utils`' and sit inside the copy-sync roster; the guard's call site in
+`docs-link-check.ts` does not, since that script is this repo's own.
+
 ### The pipeline is a COPY of `obsidian-dev-utils`'
 
 Five areas were copied from `obsidian-dev-utils` and should be kept in copy-sync with it:
@@ -299,7 +309,7 @@ read-and-merge, and the list below is what it is merged against.
 each upstream file's hunk count and each hunk's added/removed line counts plus a digest of its changed
 lines, and fails when a file's shape moves — which it does whether upstream edited the file or this repo
 did. Line numbers are deliberately not part of a shape, so one real edit is not reported as a dozen.
-**45 files, 33 of them identical** after the recorded transforms, measured 2026-09-24.
+**49 files, 36 of them identical** after the recorded transforms, measured 2026-09-29.
 
 Six things to know before touching a copied file:
 

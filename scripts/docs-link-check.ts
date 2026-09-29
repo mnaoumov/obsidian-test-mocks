@@ -6,6 +6,9 @@
  * Internal links are resolved offline against the build output; external links are validated
  * over the network, deduplicated so each unique URL is fetched at most once. See
  * {@link ./docs-gen/helpers/link-check.ts} for the reusable, unit-tested core.
+ *
+ * It also fails on a GitHub alert that reached a page as a plain blockquote (see
+ * {@link ./docs-gen/helpers/unrendered-alerts.ts}), since nothing else notices when the conversion stops.
  */
 
 import {
@@ -28,6 +31,10 @@ import {
   NETWORK_FAILURE_STATUS,
   resolveWithinRoot
 } from './docs-gen/helpers/link-check.ts';
+import {
+  collectUnrenderedAlerts,
+  formatUnrenderedAlerts
+} from './docs-gen/helpers/unrendered-alerts.ts';
 import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
 
 exitIfScriptDisabled();
@@ -110,6 +117,14 @@ async function getAllFiles(outputRootPath: string): Promise<Set<string>> {
 async function main(): Promise<void> {
   const allFiles = await getAllFiles(DOCS_OUTPUT_PATH);
   const pages = await readPages(DOCS_OUTPUT_PATH, allFiles);
+
+  // Offline and instant, so it runs before the network half and fails first.
+  const unrenderedAlerts = collectUnrenderedAlerts(pages);
+  if (unrenderedAlerts.length > 0) {
+    throw new Error(
+      `Detected ${String(unrenderedAlerts.length)} GitHub alert(s) rendered as a plain blockquote instead of an aside:\n${formatUnrenderedAlerts(unrenderedAlerts)}`
+    );
+  }
 
   const internalBrokenLinks = collectBrokenLinks(pages, createFileSystem(allFiles, pages), SITE_BASE_URL);
 

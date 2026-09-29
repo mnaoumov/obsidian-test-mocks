@@ -374,6 +374,22 @@
       "hunks": [],
       "reasons": []
     },
+    "scripts/docs-gen/helpers/satteri-plugins/satteri-github-alerts.test.ts": {
+      "hunks": [
+        {
+          "added": 1,
+          "digest": "ce4405d84495",
+          "removed": 1
+        }
+      ],
+      "reasons": [
+        "helpers-re-pointed"
+      ]
+    },
+    "scripts/docs-gen/helpers/satteri-plugins/satteri-github-alerts.ts": {
+      "hunks": [],
+      "reasons": []
+    },
     "scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.test.ts": {
       "hunks": [
         {
@@ -387,6 +403,14 @@
       ]
     },
     "scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "scripts/docs-gen/helpers/unrendered-alerts.test.ts": {
+      "hunks": [],
+      "reasons": []
+    },
+    "scripts/docs-gen/helpers/unrendered-alerts.ts": {
       "hunks": [],
       "reasons": []
     },
