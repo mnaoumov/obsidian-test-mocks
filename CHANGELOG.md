@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 7.1.0
+
+- docs: merge the resolveLinks comment reword
+- feat: merge the WorkspaceLeaf tab header model
+- chore: merge the obsidian-typings 6.38.0 raise and regenerated typings surface
+- fix(file-system-adapter): merge the rmdir file deletion
+
 ## 7.0.0
 
 - docs(changelog): reword a shipped entry that named a private branch
