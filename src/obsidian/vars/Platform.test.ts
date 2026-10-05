@@ -111,19 +111,19 @@ describe('Platform', () => {
     });
   });
 
-  describe('canPopoutWindow', () => {
+  describe.each(['canOpenExternalFiles', 'canPopoutWindow'] as const)('%s', (member) => {
     it('should be true in the desktop app with a desktop UI', () => {
-      expect(Platform.canPopoutWindow).toBe(true);
+      expect(Platform[member]).toBe(true);
     });
 
     it('should be false in the desktop app emulating mobile', () => {
       Platform.isDesktop = false;
-      expect(Platform.canPopoutWindow).toBe(false);
+      expect(Platform[member]).toBe(false);
     });
 
     it('should be false in the mobile app', () => {
       Platform.isDesktopApp = false;
-      expect(Platform.canPopoutWindow).toBe(false);
+      expect(Platform[member]).toBe(false);
     });
   });
 
