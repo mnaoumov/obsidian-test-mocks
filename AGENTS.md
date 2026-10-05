@@ -587,16 +587,16 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     such listener, so do not go looking for it there. The listener is attached when the input is created, before the
     `addText` callback runs, which is why a listener a consumer adds to the input itself cannot get in ahead of it.
 
-- **`Platform` carries eighteen members beyond the thirteen `obsidian.d.ts` declares** (2026-09-18, read in Obsidian
+- **`Platform` carries nineteen members beyond the thirteen `obsidian.d.ts` declares** (2026-09-18, read in Obsidian
   1.14.2's `app.js` — the literal at `:48126-48170`, the desktop bootstrap that fills it at `:229307-229316`). All
-  eighteen are real Obsidian internals `obsidian-typings` declares as `PlatformEx`, so per L4 each takes its real name
+  nineteen are real Obsidian internals `obsidian-typings` declares as `PlatformEx`, so per L4 each takes its real name
   with no `__` suffix.
   - **`hasPhysicalKeyboard` is `true`**, the honest default beside `isDesktopApp: true`: the desktop bootstrap sets
     it, the emulate-mobile path resets it to `false`, and mobile detects it asynchronously — the `false` the app's
     own literal starts from is a pre-bootstrap placeholder no running app is observed in. **Set it to `false` to
     drive the affordances Obsidian gates on a soft keyboard**, of which `Setting.addText`'s `Enter`-blur is the one
     modeled so far; restore it afterwards, as `Keymap`'s suite does for `isMacOS`.
-  - **All six `can*` members are getters**, each re-evaluating Obsidian's own derivation on every read, which is how
+  - **All seven `can*` members are getters**, each re-evaluating Obsidian's own derivation on every read, which is how
     Obsidian writes them too — so flipping a flag in a test moves them, instead of freezing an answer at import time.
     Restore the flag afterwards, as `Keymap`'s suite does for `isMacOS`:
 
@@ -604,6 +604,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     | --- | --- | --- |
     | `canPinSidebar` | `isMobile && !isPhone` | `isMobile`, `isPhone` |
     | `canExportPdf` | `isDesktopApp` | `isDesktopApp` |
+    | `canOpenExternalFiles` | `isDesktopApp && isDesktop` | `isDesktopApp`, `isDesktop` |
     | `canPopoutWindow` | `isDesktopApp && isDesktop` | `isDesktopApp`, `isDesktop` |
     | `canDisplayRibbon` | `!isPhone` | `isPhone` |
     | `canSplit` | `!isPhone` | `isPhone` |
@@ -644,10 +645,10 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
        is a getter over that fact**, so a suite that changes the environment is believed. The reverse now needs the
        reason: a member answered from a frozen constant is one where the environment has no answer (`build`,
        `manufacturer`, `model`) or where the mock is deliberately asserting a platform (`isWin`, `isDesktopApp`).
-  - The app's literal also carries `canOpenExternalFiles` (`isDesktopApp && isDesktop`), which NEITHER
-    `obsidian.d.ts` nor `obsidian-typings` declares, so L1 / L4 keeps it off the surface. It wants an
-    `obsidian-typings` declaration first, not a mock member — the route `Setting.setIcon` took, declared
-    upstream and only then implemented here.
+  - **`canOpenExternalFiles` arrived last** (2026-10-05). The app's literal carried it all along, but until
+    `obsidian-typings` 6.39.0 — the first release whose public chain reaches a 1.14.x build — only the catalyst
+    typings declared it, so L1 / L4 kept it off the surface. It took the route `Setting.setIcon` took: declared
+    upstream first, implemented here only once a consumer-visible release carried the declaration.
   - Neither conformance test covers any of this: `Platform` is a `const`, so `conformance.test.ts` checks only that
     the export exists, and `obsidian-typings-conformance.test.ts` walks classes, which is why nothing was ever going
     to surface the gap.
