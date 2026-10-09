@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 7.2.0
+
+- fix(metadata-cache): merge resolving link paths without regard to case
+- feat(platform): merge Platform.canOpenExternalFiles
+- fix(docs): merge rendering GitHub alerts as Starlight asides again
+
 ## 7.1.0
 
 - docs: merge the resolveLinks comment reword
