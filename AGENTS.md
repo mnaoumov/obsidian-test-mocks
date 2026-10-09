@@ -718,6 +718,12 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
   sliced source against `reference.original`.
 
+- **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
+  in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`
+  reaches `HomePage.md`, and the link graph records it as resolved. One deliberate departure: an EXACT-case match still
+  wins over a case-folded one, where Obsidian has no case preference at all — the mock already ignores `sourcePath`, so
+  it never reproduced Obsidian's candidate order, and exact-first keeps every earlier answer unchanged.
+
 - **`getFrontMatterInfo` is a port of Obsidian's own, and its `frontmatter` ends WITH the newline** (2026-09-24, `hg`
   in Obsidian 1.14.x's `app.js`). `to` is the index of the closing `---` itself, so `[from, to)` is exactly the region
   to replace, and splicing in `stringifyYaml()` output leaves no blank line before the delimiter. The mock used to stop

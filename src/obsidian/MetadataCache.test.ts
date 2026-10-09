@@ -334,6 +334,44 @@ describe('MetadataCache', () => {
       const found = app.metadataCache.getFirstLinkpathDest('nonexistent', '');
       expect(found).toBeNull();
     });
+
+    it('should find file by basename regardless of case', async () => {
+      const app = App.createConfigured__();
+      await app.vault.createFolder('folder');
+      const file = await app.vault.create('folder/HomePage.md', '');
+      await flushMicrotasks();
+      expect(app.metadataCache.getFirstLinkpathDest('homepage', '')).toBe(file);
+      expect(app.metadataCache.getFirstLinkpathDest('HOMEPAGE.MD', '')).toBe(file);
+    });
+
+    it('should find file by path regardless of case', async () => {
+      const app = App.createConfigured__();
+      await app.vault.createFolder('Folder');
+      const file = await app.vault.create('Folder/Note.md', '');
+      await flushMicrotasks();
+      expect(app.metadataCache.getFirstLinkpathDest('folder/note', '')).toBe(file);
+      expect(app.metadataCache.getFirstLinkpathDest('folder/note.md', '')).toBe(file);
+    });
+
+    it('should prefer an exact match over a case-folded one', async () => {
+      const app = App.createConfigured__();
+      await app.vault.createFolder('a');
+      await app.vault.createFolder('b');
+      const upper = await app.vault.create('a/Note.md', '');
+      const lower = await app.vault.create('b/note.md', '');
+      await flushMicrotasks();
+      expect(app.metadataCache.getFirstLinkpathDest('note', '')).toBe(lower);
+      expect(app.metadataCache.getFirstLinkpathDest('Note', '')).toBe(upper);
+    });
+
+    it('should resolve a case-folded link in the link graph', async () => {
+      const app = App.createConfigured__();
+      await app.vault.create('Target.md', '');
+      await app.vault.create('source.md', '[[target]]');
+      await flushMicrotasks();
+      expect(app.metadataCache.resolvedLinks['source.md']).toEqual({ 'Target.md': 1 });
+      expect(app.metadataCache.unresolvedLinks['source.md']).toEqual({});
+    });
   });
 
   describe('getCache', () => {

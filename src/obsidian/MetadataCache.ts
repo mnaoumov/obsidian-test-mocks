@@ -202,7 +202,9 @@ export class MetadataCache extends Events {
    * Gets the best-matching file for a linkpath.
    *
    * The mock tries, in order: a file at exactly `linkpath`, a file at `linkpath` plus `.md`, then the first vault
-   * file whose basename or name equals `linkpath`. It does not prefer files near the source path.
+   * file whose basename or name equals `linkpath`; then the same three again ignoring case, as Obsidian's own link
+   * index does, so `[[homepage]]` reaches `HomePage.md`. An exact match always wins over a case-folded one.
+   * It does not prefer files near the source path.
    *
    * @param linkpath - The path part of a link, without any `#` subpath.
    * @param _sourcePath - The path of the note the link is in; ignored by the mock.
@@ -218,8 +220,24 @@ export class MetadataCache extends Events {
     if (withMd) {
       return withMd;
     }
-    for (const f of this.app.vault.getFiles()) {
+    const files = this.app.vault.getFiles();
+    for (const f of files) {
       if (f.basename === linkpath || f.name === linkpath) {
+        return f;
+      }
+    }
+    // Obsidian resolves a link without regard to case, through a lower-cased name index and lower-cased paths.
+    // An exact match above still wins, so a vault holding both spellings answers the exact one.
+    const lowerLinkpath = linkpath.toLowerCase();
+    const lowerLinkpathWithMd = `${lowerLinkpath}${MD_EXTENSION_SUFFIX}`;
+    for (const f of files) {
+      const lowerPath = f.path.toLowerCase();
+      if (lowerPath === lowerLinkpath || lowerPath === lowerLinkpathWithMd) {
+        return f;
+      }
+    }
+    for (const f of files) {
+      if (f.basename.toLowerCase() === lowerLinkpath || f.name.toLowerCase() === lowerLinkpath) {
         return f;
       }
     }
