@@ -766,6 +766,13 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **A tab right after a `>`, or after its optional space, starts no item**, as measured: `>\t- A` and `> \t- A` give
     none, while `>  \t- A` gives one. A fenced block inside a quote is a code zone, so it holds no items, tags or links.
 
+- **A callout gets a `callout` section, not a `blockquote` one** (2026-10-12, measured on a real Obsidian 1.14.4 over
+  CDP and read in its `worker.js`). Obsidian's blockquote tokenizer tests the block's FIRST line only: past the `>` and
+  the one optional space after it, the line must open with `[!`, a non-empty type, `]`, an optional `+` / `-`, then
+  whitespace or the end of the line. So `> [!NOTE]`, `>[!note]` and `> [!tip]- Fold` are callouts, while `>  [!note]`,
+  `>\t[!note]`, `> [!]`, `> [!note]x`, a header on a later line, and `> > [!note]` (the outer block stays a blockquote)
+  are not.
+
 - **A list item's `position.end` covers what the item holds, not just its marker line** (2026-10-12, 100 shapes
   measured on a real Obsidian 1.14.4 over CDP, and checked against its own metadata worker, the `worker.js` shipped in the
   app's archive, which runs offline in Node and gives the same answers). The worker takes the end of the item's parsed node and

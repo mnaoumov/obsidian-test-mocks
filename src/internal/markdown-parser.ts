@@ -214,6 +214,12 @@ export function parseMarkdownContent(content: string): CachedMetadata {
   return cache;
 }
 
+// A blockquote whose FIRST line, past its `>` and the one optional space after it, opens with a callout header: `[!`, a
+// non-empty type, `]`, an optional fold sign, then whitespace or the end of the line. Obsidian's blockquote tokenizer
+// tests exactly this and nothing else, so a tab or a second space before the `[`, an empty `[!]`, a header on a later
+// line, or one in a nested quote (`> > [!note]`) leaves the block a plain blockquote.
+const CALLOUT_HEADER_REGEX = /^> ?\[![^\]\n]+\][+-]?(?:\s|$)/;
+
 function addGapSections(
   content: string,
   gapStart: number,
@@ -239,7 +245,7 @@ function addGapSections(
       const blockEnd = blockStart + trimmed.length;
       let type = 'paragraph';
       if (trimmed.startsWith('>')) {
-        type = 'blockquote';
+        type = CALLOUT_HEADER_REGEX.test(trimmed) ? 'callout' : 'blockquote';
       } else if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
         type = 'code';
       } else if (/^(?:---|\*\*\*|___)\s*$/.test(trimmed)) {

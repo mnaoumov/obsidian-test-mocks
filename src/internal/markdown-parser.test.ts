@@ -988,6 +988,29 @@ describe('parseMarkdownContent', () => {
       expect(blockquoteSections?.length).toBeGreaterThan(0);
     });
 
+    // Measured on a real Obsidian 1.14.4 over CDP: a blockquote whose first line opens with a callout header is typed
+    // `callout`, and every near miss stays `blockquote`.
+    it.each([
+      ['a callout holding a list', '> [!note]\n> - A\n> - B\n', [['callout', 0, 21]]],
+      ['a folded callout with a title', '> [!tip]- Fold\n> 1. A\n>    - B\n> 2. C\n', [['callout', 0, 37]]],
+      ['a lowercase type with a lazy line', '> [!note]\ntext\n', [['callout', 0, 14]]],
+      ['an uppercase type', '> [!NOTE]\ntext\n', [['callout', 0, 14]]],
+      ['an expanded fold sign', '> [!note]+\n> body\n', [['callout', 0, 17]]],
+      ['no space after the `>`', '>[!note]\n>body\n', [['callout', 0, 14]]],
+      ['two callouts', '> [!note]\n\n> [!tip]\n', [['callout', 0, 9], ['callout', 11, 19]]],
+      ['a callout, then a plain blockquote', '> [!note]\nlazy\n\n> plain\n', [['callout', 0, 14], ['blockquote', 16, 23]]],
+      ['a callout nested in a blockquote', '> > [!note]\n> > body\n', [['blockquote', 0, 20]]],
+      ['two spaces after the `>`', '>  [!note]\n> body\n', [['blockquote', 0, 17]]],
+      ['a tab after the `>`', '>\t[!note]\n', [['blockquote', 0, 9]]],
+      ['a header on a later line', '> text\n> [!note]\n> body\n', [['blockquote', 0, 23]]],
+      ['an empty type', '> [!]\n> body\n', [['blockquote', 0, 12]]],
+      ['text right after the header', '> [!note]x\n', [['blockquote', 0, 10]]]
+    ])('should type %s as Obsidian does', (_name, content, expected) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.sections?.map((s) => [s.type, s.position.start.offset, s.position.end.offset])).toEqual(expected);
+    });
+
     it('should create code sections for fenced code blocks in gaps', () => {
       const content = '# Heading\n\n```\ncode\n```';
       const cache = parseMarkdownContent(content);
