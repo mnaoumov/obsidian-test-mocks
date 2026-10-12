@@ -751,8 +751,6 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     that only further lists follow keeps its item as the parent.
   - **A list section ends at the last line the list holds**, which is content after the last item when the list
     holds some, rather than at the last item.
-  - Still not modeled: a list item's own `position.end` covers only its marker line, where Obsidian extends it over
-    the item's continuation lines.
 
 - **Lists inside a blockquote or callout are list items too** (2026-10-12, 60 shapes measured on a real Obsidian 1.14.4
   over CDP). The mock used to report no `listItems` for them at all. Now:
@@ -767,6 +765,27 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **A quoted list has no `list` section.** The blockquote's own section is the only one Obsidian reports.
   - **A tab right after a `>`, or after its optional space, starts no item**, as measured: `>\t- A` and `> \t- A` give
     none, while `>  \t- A` gives one. A fenced block inside a quote is a code zone, so it holds no items, tags or links.
+
+- **A list item's `position.end` covers what the item holds, not just its marker line** (2026-10-12, 100 shapes
+  measured on a real Obsidian 1.14.4 over CDP, and checked against its own metadata worker, the `worker.js` shipped in the
+  app's archive, which runs offline in Node and gives the same answers). The worker takes the end of the item's parsed node and
+  then, for an item with more than one child, moves it back to the end of its last child that is NOT a list. So:
+  - **A nested list never extends its parent's end.** In `- A\n  - B`, `A` ends at the end of `- A`. An item with
+    nothing after its marker is the exception, because its only child is the nested list: `- \n  - B` ends where `B`
+    does.
+  - **Content after the marker line extends it**: a continuation line (`- A\n  more`), a lazy line (`- A\ntext`), and a
+    block after a blank line (`- A\n\n  text`) all do, and a block after a nested list does too (`- A\n  - B\n\n  text`
+    ends `A` at the end of `text`).
+  - **A blank line indented at least as far as the item's content belongs to it**, so `- A\n  \n- B` ends `A` at the end
+    of the `  ` line, while `- A\n \n- B` does not.
+  - **An item that holds only its first paragraph and is followed, after blank lines, by its own SIBLING ends at the
+    start of the first blank line**, past the containers' prefix: `- A\n\n- B` ends `A` at line 1, column 0, however
+    many blank lines there are, and `> - A\n>\n> - B` ends it just past that line's `>`. A following item that is not
+    its sibling, a paragraph, or the end of the note leaves the end at the last line, and an item with more than one
+    child never takes it.
+  - Not modeled: a line indented four or more columns after a quoted list, outside the quote, ends the quote in
+    Obsidian unless an item of an outer list holds that quote. The mock always reads such a line as a lazy
+    continuation, so that item's end, and the grouping after it, can differ.
 
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`

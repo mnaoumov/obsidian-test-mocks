@@ -94,6 +94,18 @@ interface ListItemLine {
 }
 
 /**
+ * The lines between two items of a list, as {@link closeListItems} reads them.
+ */
+interface ListLines {
+  // The offset just past each line, line break excluded.
+  readonly ends: number[];
+  // Each line, with the container's quote prefix removed.
+  readonly lines: string[];
+  // The offset each line starts at once the quote prefix is removed.
+  readonly starts: number[];
+}
+
+/**
  * The list currently open at one blockquote depth. Each depth keeps its own, since a list never spans two containers:
  * a quoted list inside an item of an outer list leaves that outer list open around it.
  */
@@ -115,6 +127,17 @@ interface ListState {
 }
 
 interface OpenListItem {
+  // Where the item would end if a sibling item followed it after the blank lines seen since its last value line: the
+  // start of the first of them, past the containers' prefix. `undefined` while no such blank line has been seen.
+  blankLineEnd: number | undefined;
+  // The end of the item's last child that is not a list, or `-1` while it has none.
+  blockEnd: number;
+  // The item in the cache, whose end is written when the item closes.
+  readonly cache: ListItemCache;
+  // How many child blocks the item holds: its first paragraph, each nested list and each later block.
+  childCount: number;
+  // The content column of the item's container, which a blank line's whitespace is part of the prefix up to.
+  readonly containerColumn: number;
   readonly contentColumn: number;
   readonly hasContent: boolean;
   readonly line: number;
@@ -123,6 +146,20 @@ interface OpenListItem {
   nestedListFirstLine: number | undefined;
   // The items of that nested list that name this item as their parent, re-rooted when a block follows the list.
   readonly nestedListItems: ListItemCache[];
+  // The end of the item's last value line: any line it holds, a nested item's included, or a blank line indented at
+  // least as far as its content.
+  valueEnd: number;
+}
+
+/**
+ * What {@link recordBlankListLine} needs.
+ */
+interface RecordBlankListLineParams {
+  // The visual column of each character of the line's leading whitespace, and the column past it.
+  readonly indentColumns: number[];
+  readonly lineEnd: number;
+  readonly lineStart: number;
+  readonly openItems: OpenListItem[];
 }
 
 /**
@@ -550,11 +587,34 @@ const LIST_INTERRUPTING_LINE_REGEX = /^ {0,3}(?:#{1,6}(?:[ \t]|$)|`{3}|~{3}|%%|(
 const LIST_ITEM_REGEX = /^(?<indent>[ \t]*)(?<marker>[-*+]|\d+[.)]) (?:\[(?<task>.)\] )?(?<rest>.*)$/;
 // A blockquote level: a `>` and the one space after it that belongs to the marker. Any indent may precede the first,
 // which lets a blockquote sit inside a list item; up to three spaces may precede each later one.
+// A code fence, which opens or closes a code block.
+const FENCE_LINE_REGEX = /^[ \t]*(?:`{3}|~{3})/;
+// A line opening a blockquote, which starts a block of its own inside a list item even with no blank line before it.
+const BLOCKQUOTE_LINE_REGEX = /^[ \t]*>/;
 const FIRST_QUOTE_LEVEL_REGEX = /^[ \t]*> ?/;
 const NESTED_QUOTE_LEVEL_REGEX = /^ {0,3}> ?/;
 
 function advanceColumn(column: number, char: string): number {
   return char === '\t' ? column + TAB_WIDTH - (column % TAB_WIDTH) : column + 1;
+}
+
+/**
+ * Writes a closed list item's end, as Obsidian computes it: the end of the item's last child that is not a list, when
+ * it has more than one child, and otherwise where the item's own text ends. That is its last value line, or, when a
+ * sibling item follows it after blank lines, the start of the first of them.
+ *
+ * @param item - The item.
+ * @param isFollowedBySibling - Whether the item is closed by the next item of its own list.
+ * @param lineStarts - The offset of each line's start.
+ */
+function closeListItem(item: OpenListItem, isFollowedBySibling: boolean, lineStarts: number[]): void {
+  let end = item.valueEnd;
+  if (item.childCount > 1 && item.blockEnd >= 0) {
+    end = item.blockEnd;
+  } else if (isFollowedBySibling && item.blankLineEnd !== undefined) {
+    end = item.blankLineEnd;
+  }
+  item.cache.position.end = offsetToLoc(lineStarts, end);
 }
 
 /**
@@ -568,34 +628,86 @@ function advanceColumn(column: number, char: string): number {
  * names an item as its nested list's parent only while nothing but lists follow that list inside it, and otherwise
  * roots the nested list at its own first line, as it does for a list nested in an item with nothing after its marker.
  *
- * @param lines - The lines after the item, up to the next item or the end of the note.
+ * Every line the list holds is recorded on the items it belongs to, for {@link closeListItem}.
+ *
+ * @param listLines - The lines after the item, up to the next item or the end of the note.
  * @param openItems - The stack of open items, root first; the nested items the lines close are popped off it.
- * @returns How many of `lines` belong to the list: all of them, or the index of the line that ends it.
+ * @param lineStarts - The offset of each line's start.
+ * @returns How many of the lines belong to the list: all of them, or the index of the line that ends it.
  */
-function closeListItems(lines: string[], openItems: OpenListItem[]): number {
+function closeListItems(listLines: ListLines, openItems: OpenListItem[], lineStarts: number[]): number {
+  const { ends, lines, starts } = listLines;
   const listContentColumn = ensureNonNullable(openItems[0]).contentColumn;
   let isAfterBlankLine = false;
+  let isInFence = false;
   for (const [index, line] of lines.entries()) {
+    const [indent] = ensureNonNullable(/^[ \t]*/.exec(line));
+    const indentColumns = getVisualColumns(indent);
+    const column = ensureNonNullable(indentColumns.at(-1));
+    const lineStart = ensureNonNullable(starts[index]);
+    const lineEnd = ensureNonNullable(ends[index]);
     if (line.trim() === '') {
       isAfterBlankLine = true;
+      recordBlankListLine({ indentColumns, lineEnd, lineStart, openItems });
+      // A blank line the innermost item holds inside a code fence is a line of the code.
+      const owner = ensureNonNullable(openItems.at(-1));
+      if (isInFence && owner.valueEnd === lineEnd) {
+        owner.blockEnd = lineEnd;
+      }
       continue;
     }
-    const [indent] = ensureNonNullable(/^[ \t]*/.exec(line));
-    const column = ensureNonNullable(getVisualColumns(indent).at(-1));
+    if (FENCE_LINE_REGEX.test(line)) {
+      isInFence = !isInFence;
+    }
     const canEndItems = isAfterBlankLine || LIST_INTERRUPTING_LINE_REGEX.test(line);
+    const isBlockStart = canEndItems || BLOCKQUOTE_LINE_REGEX.test(line);
     isAfterBlankLine = false;
-    if (!canEndItems) {
-      continue;
+    if (canEndItems) {
+      if (column < listContentColumn) {
+        return index;
+      }
+      while (ensureNonNullable(openItems.at(-1)).contentColumn > column) {
+        closeListItem(ensureNonNullable(openItems.pop()), false, lineStarts);
+      }
+      detachNestedList(ensureNonNullable(openItems.at(-1)));
     }
-    if (column < listContentColumn) {
-      return index;
+    recordListLine(openItems, lineEnd);
+    // The line is a block of the innermost item that holds it: a new one after a blank line or on a block that starts
+    // one, and otherwise a lazy continuation of the paragraph above.
+    const owner = ensureNonNullable(openItems.at(-1));
+    if (isBlockStart || owner.childCount === 0) {
+      owner.childCount++;
     }
-    while (ensureNonNullable(openItems.at(-1)).contentColumn > column) {
-      openItems.pop();
-    }
-    detachNestedList(ensureNonNullable(openItems.at(-1)));
+    owner.blockEnd = lineEnd;
   }
   return lines.length;
+}
+
+/**
+ * Closes the items a new item's marker falls short of. The shallowest of them is the new item's sibling, unless the
+ * new item starts a list of its own; the deeper ones end with their nested lists.
+ *
+ * @param closedItems - The items, deepest first.
+ * @param isNewList - Whether the new item starts a list of its own.
+ * @param lineStarts - The offset of each line's start.
+ */
+function closeListItemsBeforeItem(closedItems: OpenListItem[], isNewList: boolean, lineStarts: number[]): void {
+  for (const closedItem of closedItems) {
+    closeListItem(closedItem, !isNewList && closedItem === closedItems.at(-1), lineStarts);
+  }
+}
+
+/**
+ * Closes every item still open in a list that has ended.
+ *
+ * @param openItems - The stack of open items, emptied.
+ * @param lineStarts - The offset of each line's start.
+ */
+function closeOpenListItems(openItems: OpenListItem[], lineStarts: number[]): void {
+  for (const item of openItems) {
+    closeListItem(item, false, lineStarts);
+  }
+  openItems.length = 0;
 }
 
 /**
@@ -628,8 +740,16 @@ function detachNestedList(item: OpenListItem): void {
  */
 function doesListEndBefore(content: string, lineStarts: number[], state: ListState, endLine: number): boolean {
   const firstLine = state.previousLine + 1;
-  const { isCut, lines } = getContainerLines(getLines(content, lineStarts, firstLine, endLine), state.depth);
-  const listLineCount = closeListItems(lines, state.openItems);
+  const rawLines = getLines(content, lineStarts, firstLine, endLine);
+  const { isCut, lines } = getContainerLines(rawLines, state.depth);
+  const ends: number[] = [];
+  const starts: number[] = [];
+  for (const [index, line] of lines.entries()) {
+    const end = ensureNonNullable(lineStarts[firstLine + index]) + ensureNonNullable(rawLines[index]).length;
+    ends.push(end);
+    starts.push(end - line.length);
+  }
+  const listLineCount = closeListItems({ ends, lines, starts }, state.openItems, lineStarts);
   if (state.depth === 0) {
     state.groupEnd = Math.max(state.groupEnd, getListContentEnd(lineStarts, firstLine, lines, listLineCount));
   }
@@ -649,6 +769,7 @@ function doesListEndBefore(content: string, lineStarts: number[], state: ListSta
  */
 function finishList(content: string, lineStarts: number[], state: ListState, endLine: number, sections: SectionCache[]): void {
   doesListEndBefore(content, lineStarts, state, endLine);
+  closeOpenListItems(state.openItems, lineStarts);
   pushListSection(lineStarts, state, sections);
 }
 
@@ -768,7 +889,10 @@ function getListItemParent(parentItem: OpenListItem | undefined, listFirstLine: 
   if (!parentItem) {
     return getRootListParent(listFirstLine);
   }
-  parentItem.nestedListFirstLine ??= item.position.start.line;
+  if (parentItem.nestedListFirstLine === undefined) {
+    parentItem.nestedListFirstLine = item.position.start.line;
+    parentItem.childCount++;
+  }
   parentItem.nestedListItems.push(item);
   return parentItem.hasContent ? parentItem.line : getRootListParent(parentItem.nestedListFirstLine);
 }
@@ -913,16 +1037,14 @@ function parseListItems(
     // Blank lines alone never end a list in Obsidian; only content the list cannot hold does.
     let isNewList = state.openItems.length === 0 || doesListEndBefore(content, lineStarts, state, currentLine);
     if (isNewList) {
-      state.openItems.length = 0;
+      closeOpenListItems(state.openItems, lineStarts);
     }
 
     // The parent is the nearest open item whose content column the marker reaches, as in CommonMark: an item stays
     // open for exactly the lines indented at least as far as its content. `openItems` is that stack of open items,
     // whose content columns strictly increase upwards, so popping the ones this marker falls short of keeps the lookup
     // amortized O(n) - a flat list, where nothing stays open, used to re-read every earlier item.
-    while (state.openItems.length > 0 && ensureNonNullable(state.openItems.at(-1)).contentColumn > markerColumn) {
-      state.openItems.pop();
-    }
+    const closedItems = popListItemsPastColumn(state.openItems, markerColumn);
     const parentItem = state.openItems.at(-1);
 
     // Obsidian starts an item where its container's content starts, not at the line start: `  - B` under `- A` starts
@@ -942,6 +1064,9 @@ function parseListItems(
       isNewList = true;
     }
 
+    closeListItemsBeforeItem(closedItems, isNewList, lineStarts);
+    recordListLine(state.openItems, endOffset);
+
     if (isNewList) {
       pushListSection(lineStarts, state, sections);
       state.groupStart = lineStart;
@@ -958,12 +1083,20 @@ function parseListItems(
     };
     item.parent = getListItemParent(parentItem, state.firstLine, item);
     items.push(item);
+    // A task item with no text after its checkbox still counts as a parent, but holds no paragraph.
+    const hasText = rest.trim() !== '';
     state.openItems.push({
+      blankLineEnd: undefined,
+      blockEnd: hasText ? endOffset : -1,
+      cache: item,
+      childCount: hasText ? 1 : 0,
+      containerColumn,
       contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
-      hasContent: taskChar !== undefined || rest.trim() !== '',
+      hasContent: taskChar !== undefined || hasText,
       line: currentLine,
       nestedListFirstLine: undefined,
-      nestedListItems: []
+      nestedListItems: [],
+      valueEnd: endOffset
     });
   }
 
@@ -1050,6 +1183,21 @@ function parseWikilinkTarget(inner: string): WikilinkTarget {
   return { href: normalizeLinkTarget(href), title };
 }
 
+/**
+ * Pops the open items whose content column a marker falls short of, which the marker's item closes.
+ *
+ * @param openItems - The stack of open items, root first.
+ * @param markerColumn - The visual column of the marker.
+ * @returns The popped items, deepest first.
+ */
+function popListItemsPastColumn(openItems: OpenListItem[], markerColumn: number): OpenListItem[] {
+  const closedItems: OpenListItem[] = [];
+  while (openItems.length > 0 && ensureNonNullable(openItems.at(-1)).contentColumn > markerColumn) {
+    closedItems.push(ensureNonNullable(openItems.pop()));
+  }
+  return closedItems;
+}
+
 function pushListSection(lineStarts: number[], state: ListState, sections: SectionCache[]): void {
   if (state.depth > 0 || state.groupStart < 0) {
     return;
@@ -1059,6 +1207,45 @@ function pushListSection(lineStarts: number[], state: ListState, sections: Secti
     position: makePos(lineStarts, state.groupStart, state.groupEnd),
     type: 'list'
   });
+}
+
+/**
+ * Records a blank line on the items open around it. It is a value line of each item it is indented at least as far as
+ * the content of, and for every other item it is where that item's text would end, if a sibling followed it: the line's
+ * start past the item's containers, whose prefix takes the line's whitespace up to the item's container column.
+ *
+ * @param params - The line's leading whitespace columns, its start and end, and the open items.
+ */
+function recordBlankListLine(params: RecordBlankListLineParams): void {
+  const { indentColumns, lineEnd, lineStart, openItems } = params;
+  const width = ensureNonNullable(indentColumns.at(-1));
+  for (const item of openItems) {
+    // The containers take whole characters, so a tab reaching past the container column is theirs, and measured from
+    // there the line holds nothing.
+    let prefixLength = indentColumns.findIndex((column) => column >= item.containerColumn);
+    if (prefixLength === -1) {
+      prefixLength = indentColumns.length - 1;
+    }
+    if (width - ensureNonNullable(indentColumns[prefixLength]) >= item.contentColumn - item.containerColumn) {
+      item.valueEnd = lineEnd;
+      item.blankLineEnd = undefined;
+      continue;
+    }
+    item.blankLineEnd ??= lineStart + prefixLength;
+  }
+}
+
+/**
+ * Records a line holding content as a value line of every item open around it.
+ *
+ * @param openItems - The open items.
+ * @param lineEnd - The offset just past the line.
+ */
+function recordListLine(openItems: OpenListItem[], lineEnd: number): void {
+  for (const item of openItems) {
+    item.valueEnd = lineEnd;
+    item.blankLineEnd = undefined;
+  }
 }
 
 /**
