@@ -77,6 +77,11 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `in-memory-adapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
 - `lazy-evaluator.ts` — the conversion behind `ListValue.lazyEvaluator` and `ObjectValue.lazyEvaluator`: a raw element or property wrapped into a `Value`. Obsidian has ONE such function and installs it on both classes, so it lives here rather than in either of them; it has to construct the classes that call it, which is the one import cycle it carries a waiver for
 - `link-value-from-reference.ts` — a cached link, embed or frontmatter-link reference wrapped as a `LinkValue`, behind `FileValue.getLinks` and `getEmbeds`. Obsidian spells it `LinkValue.fromReference`, undeclared in the same way `front-matter-object-value.ts` describes
+- `markdown-gap-blocks.ts` — the top-level blocks between the sections the parser found first (headings, lists,
+  frontmatter): paragraphs, blockquotes and callouts, fenced and indented code, comments, math, HTML, tables, thematic
+  breaks, and the setext and indented ATX headings the heading regex cannot see. Each tokenizer is a port of the one
+  Obsidian's metadata worker runs, which is `remark-parse` 8 (`commonmark` and `gfm` on) plus Obsidian's own comment and
+  math tokenizers, so a quirk there is a quirk here on purpose
 - `markdown-leaf-blocks.ts` — the container-aware pre-pass behind `parseMarkdownContent`'s list items: which lines start
   an item, and which a fenced code block, a `%%` comment, a `$$` math block or an indented code block hides. A regular
   expression cannot answer either, since an unclosed block runs to the end of the blockquote or list item around it
@@ -776,6 +781,35 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **A quoted list has no `list` section.** The blockquote's own section is the only one Obsidian reports.
   - **A tab right after a `>`, or after its optional space, starts no item**, as measured: `>\t- A` and `> \t- A` give
     none, while `>  \t- A` gives one. A fenced block inside a quote is a code zone, so it holds no items, tags or links.
+
+- **The blocks between headings and lists are read by Obsidian's own block grammar** (2026-10-12, read in Obsidian
+  1.14.4's `worker.js` and fuzzed against it: 15,000 notes with no list item and no frontmatter agree). That worker is
+  `remark-parse` 8 with `commonmark` and `gfm` on and two block tokenizers of Obsidian's own, and
+  `src/internal/markdown-gap-blocks.ts` ports each tokenizer it runs. The mock used to split a gap at blank lines and
+  trim each part, which lost the indent, missed every block that interrupts a paragraph, and typed only four kinds. Now:
+  - **A section starts at its line start, indent included, and ends at its last line's end, trailing whitespace
+    included.** a quote indented three spaces starts at column 0, and a paragraph line with two trailing spaces ends after them.
+  - **A line opening with a tab, or with four spaces, is indented code**, outside a paragraph, which takes it as a
+    continuation. A tab after a space indents nothing, so a line opening with a space and a tab is a paragraph.
+  - **A paragraph is interrupted** by a thematic break, an ATX heading, a fence, a comment, a math block, a blockquote and
+    an HTML block of the first six CommonMark kinds, so `para\n> q` is two sections. A table and an inline tag such as
+    `<span>` are not interruptions.
+  - **A blockquote takes lazy lines** until a blank line, or a line that opens indented code, a fence, a comment, a math
+    block, an ATX or setext heading, a thematic break or one of those HTML blocks.
+  - **New section types**: `html`, `table`, `comment` and `math`, besides `paragraph`, `blockquote`, `callout`, `code`,
+    `thematicBreak` and `heading`. An unclosed fence, comment, math block or HTML block of the first five kinds runs to
+    the end of the gap, its final line break included. A comment ends just past its closing `%%`, and the rest of that
+    line starts a paragraph. A math opener needs a line break after it, so a note ending in `$$` is a paragraph.
+  - **A table row needs a `|` past its first character, and keeps the header's choice of a leading `|`**, so a table
+    whose header is `a|b` ends at a row `|x|y|`.
+  - **Setext headings and ATX headings the heading regex misses are headings**: `a\n===`, an empty `#`, and `# x` indented two spaces each
+    get a `heading` section and a `HeadingCache`. A setext heading needs exactly one line of text, so `a\nb\n---` is a
+    paragraph and a thematic break, and an underline with trailing spaces is no underline. Every ATX heading's text drops
+    its closing `#` run, as Obsidian's does (`# A #` is `A`), and `#\nText` is an empty heading and a paragraph, where
+    the heading regex used to carry `\s+` across the line break and read a heading `Text`.
+  - Not modeled: link reference definitions, footnote definitions and block ids, which stay paragraphs; a heading inside
+    an unclosed HTML block, comment or math block, which Obsidian hides; and the list items an HTML block hides, or that
+    Obsidian reads as a thematic break (`* * *`) or a table delimiter row (`- | -`).
 
 - **A callout gets a `callout` section, not a `blockquote` one** (2026-10-12, measured on a real Obsidian 1.14.4 over
   CDP and read in its `worker.js`). Obsidian's blockquote tokenizer tests the block's FIRST line only: past the `>` and
