@@ -718,6 +718,24 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
   sliced source against `reference.original`.
 
+- **A list item starts where its CONTAINER's content starts, and nests by content column** (2026-10-12, measured on a
+  real Obsidian 1.14.4 over CDP). The mock used to start every item at its line start, so `position.start.col` was
+  `0` for every item, and the parent lookup compared indents, which made `- A\n  - B\n  - C` report `B` as `C`'s
+  parent. Each of the following changes what a consumer observes:
+  - **A nested item's `position.start` is its parent's content column**, which is where the item's marker sits when it
+    is indented exactly that far. `- B` indented two spaces under `- A` starts at column 2, and `* B` indented four
+    spaces under `* A` also starts at column 2, with the extra two spaces inside the item. A top-level item keeps its
+    indent and starts at the line start. A tab is never split, so under tabs the item starts at the first character at
+    or past that column (`\t- B` under `- A` starts at column 1).
+  - **The parent is the nearest open item whose content column the marker reaches**, CommonMark's containment rule.
+    The content column is the marker's end plus the whitespace after it, up to four columns of it. So `-   A` takes a
+    `- B` indented three spaces as a SIBLING, and an item opened as a sibling closes the one before it. Obsidian counts that whitespace even
+    for an item with nothing after its marker, where strict CommonMark would not.
+  - **An item with nothing after its marker is never a parent.** A list nested in one is rooted at its own first line,
+    as if it stood alone. `- \n  - C` gives `C` the parent `-1`. A task item with no text after its checkbox is not empty.
+  - **A list that starts on line 0 is rooted at `-1`, not `-0`.** Everywhere else the root parent is still the
+    negative of the list's first line.
+
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`
   reaches `HomePage.md`, and the link graph records it as resolved. One deliberate departure: an EXACT-case match still
