@@ -946,6 +946,72 @@ describe('parseMarkdownContent', () => {
       expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset])).toEqual(expected);
     });
 
+    // Each row was measured on a real Obsidian 1.14.4 over CDP: every item's [start offset, end offset, parent]. A fenced
+    // code block, a `%%` comment, a `$$` math block and an indented code block hide every item inside them, an unclosed one
+    // runs to the end of its container, and which container that is depends on the quotes and items around it.
+    it.each([
+      { content: '%%\n- A', expected: [] },
+      { content: '%%\n- A\n%%\n- B', expected: [[10, 13, -3]] },
+      { content: 'text\n%%\n- A', expected: [] },
+      { content: ' %%\n- A', expected: [] },
+      { content: '    %%\n- A', expected: [[7, 10, -1]] },
+      { content: '%% x %%\n- A', expected: [[8, 11, -1]] },
+      { content: '- A\n%% x %%', expected: [[0, 11, -1]] },
+      { content: '%%\nx %%\n- A', expected: [[8, 11, -2]] },
+      { content: '- A\n  %%\n  - B\n- C', expected: [[0, 14, -1], [15, 18, -1]] },
+      { content: '- A\n  %%\n  - B\n  %%\n  - C', expected: [[0, 19, -1], [22, 25, 0]] },
+      { content: '> %%\n> - A\n- B', expected: [[11, 14, -2]] },
+      { content: '> %%\n>\ntext\n> - B', expected: [] },
+      { content: '```\n- A', expected: [] },
+      { content: '  ```\n- A', expected: [] },
+      { content: '    ```\n- A', expected: [[8, 11, -1]] },
+      { content: '```\n- A\n````\n- B', expected: [[13, 16, -3]] },
+      { content: '````\n- A\n```\n- B', expected: [] },
+      { content: '``` x ` y\n- A', expected: [[10, 13, -1]] },
+      { content: '~~~ x ` y\n- A\n~~~\n- B', expected: [[18, 21, -3]] },
+      { content: '- A\n  ```\n  - B\n- C', expected: [[0, 15, -1], [16, 19, -1]] },
+      { content: '- A\n  ```\nx\n  - B', expected: [[0, 17, -1]] },
+      { content: '- A\n  ```\n\n- B', expected: [[0, 10, -1], [11, 14, -1]] },
+      { content: '- A\n  ```\n  x\n\n- B', expected: [[0, 14, -1], [15, 18, -1]] },
+      { content: '- A\n  ```\n  x\n\n', expected: [[0, 13, -1]] },
+      { content: '- A\n  ```\n  x\n  \n', expected: [[0, 16, -1]] },
+      { content: '> ```\n> - A\n- B', expected: [[12, 15, -2]] },
+      { content: '> ```\nx\n> - B', expected: [] },
+      { content: '- A\n> q\n> ```\n> - B', expected: [[0, 19, -1]] },
+      { content: '- A\n  > ```\n  > - B\n- C', expected: [[0, 19, -1], [20, 23, -1]] },
+      { content: 'text\n> ```\n> - B', expected: [] },
+      { content: '> - A\n>   ```\n>\ntext\n> - B', expected: [[2, 13, -1], [23, 26, -4]] },
+      { content: '$$\n- A', expected: [] },
+      { content: '$$\n- A\n$$\n- B', expected: [[10, 13, -3]] },
+      { content: '$$\n- A\nx $$\n- B', expected: [[12, 15, -3]] },
+      { content: '$$\n- A\n$$ x\n- B', expected: [] },
+      { content: '$$ x $$\n- A', expected: [[8, 11, -1]] },
+      { content: 'text\n$$\n- A', expected: [] },
+      { content: '- A\n$$\n- B', expected: [[0, 6, -1], [7, 10, -1]] },
+      { content: '- A\n$$\n  1. G', expected: [[0, 13, -1]] },
+      { content: '- A\n  $$\n  - B\n- C', expected: [[0, 14, -1], [15, 18, -1]] },
+      { content: '> q\n$$\n>   - H', expected: [] },
+      { content: '    - D', expected: [] },
+      { content: '\t- D', expected: [] },
+      { content: 'text\n    - D', expected: [] },
+      { content: '- A\n      - D', expected: [[0, 13, -1]] },
+      { content: '- A\n\n      - D\n- B', expected: [[0, 14, -1], [15, 18, -1]] },
+      { content: '>     - D', expected: [] },
+      { content: '    a\n    - D', expected: [] },
+      { content: '    a\n\n    - D\n- E', expected: [[15, 18, -3]] },
+      { content: '- A\n\n      a\n      - D\n  - E', expected: [[0, 22, -1], [25, 28, 0]] },
+      { content: '-   A\n   - B\n    - C', expected: [[0, 5, -1], [6, 12, -1], [13, 20, -1]] },
+      { content: '> - A\n    text', expected: [[2, 5, -1]] },
+      { content: '> - A\n    text\n> - B', expected: [[2, 5, -1], [17, 20, -2]] },
+      { content: '- A\n> - G\n    text', expected: [[0, 18, -1], [6, 18, -1]] },
+      { content: '> > - A\n>     text\n> > - B', expected: [[4, 7, -1], [23, 26, -2]] },
+      { content: '>> - A\n    text\n>> - B', expected: [[3, 6, -1], [19, 22, -2]] },
+      { content: '- A\n> > - K\n> %%', expected: [[0, 16, -1], [8, 11, -1]] }
+    ])('should find the items of $content that no block hides, as Obsidian does', ({ content, expected }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(expected);
+    });
     it('should give every item of a large flat list the root parent', () => {
       const content = `Text\n\n${Array.from({ length: FLAT_LIST_ITEM_COUNT }, (_, index) => `- [ ] item ${String(index)}`).join('\n')}`;
       const cache = parseMarkdownContent(content);
@@ -1339,6 +1405,10 @@ describe('parseMarkdownContent', () => {
         ['heading', 2, 0, 8, 2, 3, 11],
         ['paragraph', 3, 0, 12, 3, 4, 16]
       ]);
+    });
+
+    it('should report nothing for a note holding only blank CRLF lines', () => {
+      expect(parseMarkdownContent('\r\n\r\n')).toEqual({});
     });
 
     it('should take CRLF and LF mixed in one note as one line break each', () => {
