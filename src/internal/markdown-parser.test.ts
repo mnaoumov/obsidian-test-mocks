@@ -696,6 +696,67 @@ describe('parseMarkdownContent', () => {
         .toEqual(expected);
     });
 
+    // Each row was measured on a real Obsidian 1.14.4: every item's parent, and every list section's
+    // [start line, end line, end col].
+    it.each([
+      // Blank lines alone never end a list.
+      { content: '- A\n\n- B', lists: [[0, 2, 3]], parents: [-1, -1] },
+      { content: '- A\n\n\n- B', lists: [[0, 3, 3]], parents: [-1, -1] },
+      { content: '- A\n\n\n  - B', lists: [[0, 3, 5]], parents: [-1, 0] },
+      { content: '- A\n  - B\n\n\n- C', lists: [[0, 4, 3]], parents: [-1, 0, -1] },
+      // After a blank line, content less indented than the list's content ends it; content indented that far stays in.
+      { content: '- A\n\ntext\n\n  - B', lists: [[0, 0, 3], [4, 4, 5]], parents: [-1, -4] },
+      { content: '- A\n\n  text\n\n- B', lists: [[0, 4, 3]], parents: [-1, -1] },
+      { content: '- A\n\n text\n\n- B', lists: [[0, 0, 3], [4, 4, 3]], parents: [-1, -4] },
+      { content: '- A\n\n    code\n\n- B', lists: [[0, 4, 3]], parents: [-1, -1] },
+      { content: '1. A\n\n   text\n\n2. B', lists: [[0, 4, 4]], parents: [-1, -1] },
+      { content: '1. A\n\n  text\n\n2. B', lists: [[0, 0, 4], [4, 4, 4]], parents: [-1, -4] },
+      { content: '- A\n\n  ```\n  x\n  ```\n\n- B', lists: [[0, 6, 3]], parents: [-1, -1] },
+      // With no blank line before it, only a heading, a fence, a thematic break or a comment ends a list.
+      { content: '- A\ntext\n- B', lists: [[0, 2, 3]], parents: [-1, -1] },
+      { content: '- A\ntext\n\n- B', lists: [[0, 3, 3]], parents: [-1, -1] },
+      { content: '- \ntext\n- B', lists: [[0, 2, 3]], parents: [-1, -1] },
+      { content: '- A\n> q\n- B', lists: [[0, 2, 3]], parents: [-1, -1] },
+      { content: '- A\n$$\nx\n$$\n- B', lists: [[0, 4, 3]], parents: [-1, -1] },
+      { content: '- A\n<div>x</div>\n- B', lists: [[0, 2, 3]], parents: [-1, -1] },
+      { content: '- A\n  # h\n- B', lists: [[0, 2, 3]], parents: [-1, -1] },
+      { content: '- A\n# H\n- B', lists: [[0, 0, 3], [2, 2, 3]], parents: [-1, -2] },
+      { content: '- A\n```\nx\n```\n- B', lists: [[0, 0, 3], [4, 4, 3]], parents: [-1, -4] },
+      { content: '- A\n***\n- B', lists: [[0, 0, 3], [2, 2, 3]], parents: [-1, -2] },
+      { content: '- A\n---\n- B', lists: [[0, 0, 3], [2, 2, 3]], parents: [-1, -2] },
+      { content: '- A\n%%\nx\n%%\n- B', lists: [[0, 0, 3], [4, 4, 3]], parents: [-1, -4] },
+      // A top-level item of another kind starts a list of its own; a nested one does not.
+      { content: '- A\n* B', lists: [[0, 0, 3], [1, 1, 3]], parents: [-1, -1] },
+      { content: '- A\n\n* B', lists: [[0, 0, 3], [2, 2, 3]], parents: [-1, -2] },
+      { content: '- A\n1. B', lists: [[0, 0, 3], [1, 1, 4]], parents: [-1, -1] },
+      { content: '1. A\n2) B', lists: [[0, 0, 4], [1, 1, 4]], parents: [-1, -1] },
+      { content: '- A\n  - B\n  * C\n- D', lists: [[0, 3, 3]], parents: [-1, 0, 0, -1] },
+      // A block after a nested list inside the same item roots that nested list at its own first line.
+      { content: '- A\n  - B\n\n  text\n\n    - C', lists: [[0, 5, 7]], parents: [-1, -1, 0] },
+      { content: '- A\n  - B\n  # h\n    - C', lists: [[0, 3, 7]], parents: [-1, -1, 0] },
+      { content: '- A\n  - B\n  text\n    - C', lists: [[0, 3, 7]], parents: [-1, 0, 1] },
+      { content: 'p\n\n- A\n  - B\n\n  text\n\n    - C', lists: [[2, 7, 7]], parents: [-2, -3, 2] },
+      { content: 'p\n\n- A\n  - B\n    - B2\n\n  text\n\n    - C', lists: [[2, 8, 7]], parents: [-2, -3, 3, 2] },
+      { content: 'p\n\n- A\n  - B\n\n  - B3', lists: [[2, 5, 6]], parents: [-2, 2, 2] },
+      { content: 'p\n\n- A\n\n  text\n\n  - C', lists: [[2, 6, 5]], parents: [-2, 2] },
+      { content: 'p\n\n- A\n  - B\n  # h', lists: [[2, 4, 5]], parents: [-2, -3] },
+      { content: 'p\n\n- A\n  - B\n\n  text', lists: [[2, 5, 6]], parents: [-2, -3] },
+      { content: 'p\n\n- A\n  - B\n\n  text\n- D\n  - E', lists: [[2, 7, 5]], parents: [-2, -3, -2, 6] },
+      { content: 'p\n\n- A\n  - B\n- D\n  - E\n\n  text', lists: [[2, 7, 6]], parents: [-2, 2, -2, -5] },
+      { content: 'p\n\n- A\n  - B\n    - C\n\n    text', lists: [[2, 6, 8]], parents: [-2, 2, -4] }
+    ])('should group the items of $content into lists as Obsidian does', ({ content, lists, parents }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => item.parent)).toEqual(parents);
+      expect(
+        cache.sections?.filter((section) => section.type === 'list').map((section) => [
+          section.position.start.line,
+          section.position.end.line,
+          section.position.end.col
+        ])
+      ).toEqual(lists);
+    });
+
     it('should end each item at the end of its line', () => {
       const content = '- A\n  - B';
       const cache = parseMarkdownContent(content);

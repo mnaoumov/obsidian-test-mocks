@@ -736,6 +736,24 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **A list that starts on line 0 is rooted at `-1`, not `-0`.** Everywhere else the root parent is still the
     negative of the list's first line.
 
+- **Blank lines alone never end a list; only content the list cannot hold does** (2026-10-12, measured on a real
+  Obsidian 1.14.4 over CDP). The mock used to start a new list, with its own `list` section and root parent, at every
+  line gap, so `- A\n\n- B` gave `B` the parent `-2` and two sections where Obsidian gives `-1` and one. Now:
+  - **After a blank line, a line indented less than the list's root item's content ends the list**, and one indented
+    at least that far stays inside it (`- A\n\n  text\n\n- B` is one list, `- A\n\n text\n\n- B` is two).
+  - **With no blank line before it, only a heading, a code fence, a thematic break or a `%%` comment ends a list.** Any
+    other line is a lazy continuation of the item above, including a blockquote, a `$$` block, HTML and a table, so
+    `- A\n> q\n- B` is one list.
+  - **A top-level item of another kind starts a new list**, gap or no gap: another bullet character (`-` then `*`), or
+    another ordered delimiter (`1.` then `2)`). A nested item may differ from its siblings without effect.
+  - **A block after a nested list inside the same item re-roots that nested list at its own first line**, the way a
+    list nested in an empty item is rooted. In `- A\n  - B\n\n  text`, `B`'s parent is `-1`, not `0`. A nested list
+    that only further lists follow keeps its item as the parent.
+  - **A list section ends at the last line the list holds**, which is content after the last item when the list
+    holds some, rather than at the last item.
+  - Still not modeled: a list item's own `position.end` covers only its marker line, where Obsidian extends it over
+    the item's continuation lines.
+
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`
   reaches `HomePage.md`, and the link graph records it as resolved. One deliberate departure: an EXACT-case match still
