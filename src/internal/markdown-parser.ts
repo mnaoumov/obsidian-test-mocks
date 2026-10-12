@@ -18,6 +18,8 @@ import type {
   TagCache
 } from 'obsidian';
 
+import type { LeafBlockScan } from './markdown-leaf-blocks.ts';
+
 import { getFrontMatterInfo } from '../obsidian/functions/getFrontMatterInfo.ts';
 import { parseYaml } from '../obsidian/functions/parseYaml.ts';
 import {
@@ -25,6 +27,7 @@ import {
   isInternalLinkTarget,
   normalizeLinkTarget
 } from './link-target.ts';
+import { scanLeafBlocks } from './markdown-leaf-blocks.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
 /**
@@ -69,6 +72,19 @@ interface ContainerLines {
 }
 
 /**
+ * What {@link getContainerLines} needs.
+ */
+interface GetContainerLinesParams {
+  // The number of `>` levels the list sits in.
+  readonly depth: number;
+  // The note's line number of the first raw line.
+  readonly firstLine: number;
+  // The lines, as they are in the note.
+  readonly rawLines: string[];
+  readonly scan: LeafBlockScan;
+}
+
+/**
  * What {@link getListState} needs.
  */
 interface GetListStateParams {
@@ -77,6 +93,7 @@ interface GetListStateParams {
   // The line of the item, which the deeper lists it finishes end before.
   readonly endLine: number;
   readonly lineStarts: number[];
+  readonly scan: LeafBlockScan;
   readonly sections: SectionCache[];
   readonly states: Map<number, ListState>;
 }
@@ -99,8 +116,12 @@ interface ListItemLine {
 interface ListLines {
   // The offset just past each line, line break excluded.
   readonly ends: number[];
+  // The note's line number of the first line.
+  readonly firstLine: number;
   // Each line, with the container's quote prefix removed.
   readonly lines: string[];
+  // What the leaf-block pre-pass found.
+  readonly scan: LeafBlockScan;
   // The offset each line starts at once the quote prefix is removed.
   readonly starts: number[];
 }
@@ -124,6 +145,8 @@ interface ListState {
   readonly openItems: OpenListItem[];
   // The line of the list's latest item.
   previousLine: number;
+  // What the leaf-block pre-pass found.
+  readonly scan: LeafBlockScan;
 }
 
 interface OpenListItem {
@@ -140,6 +163,8 @@ interface OpenListItem {
   readonly containerColumn: number;
   readonly contentColumn: number;
   readonly hasContent: boolean;
+  // Whether the item's last block is a fenced code block, a comment or a math block that no line has closed yet.
+  isInHidingBlock: boolean;
   readonly line: number;
   // The first line of the list currently nested in the item, which Obsidian roots that list at when the item has
   // nothing after its marker, or once a block follows the list inside the item.
@@ -264,7 +289,7 @@ function parseLfContent(content: string): CachedMetadata {
     cache.embeds = embeds;
   }
 
-  const listItems = parseListItems(content, bodyStart, lineStarts, codeZones, sections);
+  const listItems = parseListItems(content, bodyStart, lineStarts, sections);
   if (listItems.length > 0) {
     cache.listItems = listItems;
   }
@@ -650,15 +675,14 @@ function parseLinks(
 const TAB_WIDTH = 4;
 const MAX_LIST_ITEM_CONTENT_GAP = 4;
 // The blocks that end a list with no blank line before them, when indented less than the list's content: a heading, a
-// code fence, a thematic break and a `%%` comment. A blockquote, a `$$` math block, an HTML block and a table do not -
-// Obsidian reads each of those as a lazy continuation of the item above.
-const LIST_INTERRUPTING_LINE_REGEX = /^ {0,3}(?:#{1,6}(?:[ \t]|$)|`{3}|~{3}|%%|(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$)/;
+// code fence, a thematic break and a `%%` comment the line does not close. A blockquote, a `$$` math block, an HTML
+// block, a table and a one-line `%% … %%` comment do not - Obsidian reads each of those as a lazy continuation of the item
+// above.
+const LIST_INTERRUPTING_LINE_REGEX = /^ {0,3}(?:#{1,6}(?:[ \t]|$)|`{3}|~{3}|%%(?!.*%%)|(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$)/;
 
 const LIST_ITEM_REGEX = /^(?<indent>[ \t]*)(?<marker>[-*+]|\d+[.)]) (?:\[(?<task>.)\] )?(?<rest>.*)$/;
 // A blockquote level: a `>` and the one space after it that belongs to the marker. Any indent may precede the first,
 // which lets a blockquote sit inside a list item; up to three spaces may precede each later one.
-// A code fence, which opens or closes a code block.
-const FENCE_LINE_REGEX = /^[ \t]*(?:`{3}|~{3})/;
 // A line opening a blockquote, which starts a block of its own inside a list item even with no blank line before it.
 const BLOCKQUOTE_LINE_REGEX = /^[ \t]*>/;
 const FIRST_QUOTE_LEVEL_REGEX = /^[ \t]*> ?/;
@@ -679,10 +703,13 @@ function advanceColumn(column: number, char: string): number {
  */
 function closeListItem(item: OpenListItem, isFollowedBySibling: boolean, lineStarts: number[]): void {
   let end = item.valueEnd;
-  if (item.childCount > 1 && item.blockEnd >= 0) {
+  // An unclosed code block, comment or math block runs on over the empty lines before a sibling, so the item ends where
+  // they start, as an item holding only its first paragraph does.
+  const isEndedByBlankLines = isFollowedBySibling && item.blankLineEnd !== undefined;
+  if (item.childCount > 1 && item.blockEnd >= 0 && !(item.isInHidingBlock && isEndedByBlankLines)) {
     end = item.blockEnd;
-  } else if (isFollowedBySibling && item.blankLineEnd !== undefined) {
-    end = item.blankLineEnd;
+  } else if (isEndedByBlankLines) {
+    end = ensureNonNullable(item.blankLineEnd);
   }
   item.cache.position.end = offsetToLoc(lineStarts, end);
 }
@@ -706,31 +733,42 @@ function closeListItem(item: OpenListItem, isFollowedBySibling: boolean, lineSta
  * @returns How many of the lines belong to the list: all of them, or the index of the line that ends it.
  */
 function closeListItems(listLines: ListLines, openItems: OpenListItem[], lineStarts: number[]): number {
-  const { ends, lines, starts } = listLines;
+  const { ends, firstLine, lines, scan, starts } = listLines;
   const listContentColumn = ensureNonNullable(openItems[0]).contentColumn;
   let isAfterBlankLine = false;
-  let isInFence = false;
   for (const [index, line] of lines.entries()) {
     const [indent] = ensureNonNullable(/^[ \t]*/.exec(line));
     const indentColumns = getVisualColumns(indent);
     const column = ensureNonNullable(indentColumns.at(-1));
     const lineStart = ensureNonNullable(starts[index]);
     const lineEnd = ensureNonNullable(ends[index]);
+    const lineNumber = firstLine + index;
+    // A line inside a code block, a comment or a math block belongs to the block, which is a block of the innermost
+    // item that holds it, and it ends nothing.
+    if (scan.contentLines.has(lineNumber)) {
+      const owner = ensureNonNullable(openItems.at(-1));
+      if (line.trim() === '') {
+        recordBlankListLine({ indentColumns, lineEnd, lineStart, openItems });
+      } else {
+        recordListLine(openItems, lineEnd);
+      }
+      // A line of whitespace is a line of the block; an empty one is only when more of the block follows it.
+      if (line !== '') {
+        owner.blockEnd = lineEnd;
+      }
+      if (scan.closerLines.has(lineNumber)) {
+        owner.isInHidingBlock = false;
+      }
+      isAfterBlankLine = line.trim() === '';
+      continue;
+    }
     if (line.trim() === '') {
       isAfterBlankLine = true;
       recordBlankListLine({ indentColumns, lineEnd, lineStart, openItems });
-      // A blank line the innermost item holds inside a code fence is a line of the code.
-      const owner = ensureNonNullable(openItems.at(-1));
-      if (isInFence && owner.valueEnd === lineEnd) {
-        owner.blockEnd = lineEnd;
-      }
       continue;
     }
-    if (FENCE_LINE_REGEX.test(line)) {
-      isInFence = !isInFence;
-    }
     const canEndItems = isAfterBlankLine || LIST_INTERRUPTING_LINE_REGEX.test(line);
-    const isBlockStart = canEndItems || BLOCKQUOTE_LINE_REGEX.test(line);
+    const isBlockStart = canEndItems || BLOCKQUOTE_LINE_REGEX.test(line) || scan.openerLines.has(lineNumber);
     isAfterBlankLine = false;
     if (canEndItems) {
       if (column < listContentColumn) {
@@ -749,6 +787,7 @@ function closeListItems(listLines: ListLines, openItems: OpenListItem[], lineSta
       owner.childCount++;
     }
     owner.blockEnd = lineEnd;
+    owner.isInHidingBlock = scan.hidingOpenerLines.has(lineNumber);
   }
   return lines.length;
 }
@@ -811,7 +850,8 @@ function detachNestedList(item: OpenListItem): void {
 function doesListEndBefore(content: string, lineStarts: number[], state: ListState, endLine: number): boolean {
   const firstLine = state.previousLine + 1;
   const rawLines = getLines(content, lineStarts, firstLine, endLine);
-  const { isCut, lines } = getContainerLines(rawLines, state.depth);
+  const { scan } = state;
+  const { isCut, lines } = getContainerLines({ depth: state.depth, firstLine, rawLines, scan });
   const ends: number[] = [];
   const starts: number[] = [];
   for (const [index, line] of lines.entries()) {
@@ -819,7 +859,7 @@ function doesListEndBefore(content: string, lineStarts: number[], state: ListSta
     ends.push(end);
     starts.push(end - line.length);
   }
-  const listLineCount = closeListItems({ ends, lines, starts }, state.openItems, lineStarts);
+  const listLineCount = closeListItems({ ends, firstLine, lines, scan, starts }, state.openItems, lineStarts);
   if (state.depth === 0) {
     state.groupEnd = Math.max(state.groupEnd, getListContentEnd(lineStarts, firstLine, lines, listLineCount));
   }
@@ -849,17 +889,20 @@ function finishList(content: string, lineStarts: number[], state: ListState, end
  * is blank, follows a blank line, or can interrupt a paragraph; any other such line is a lazy continuation of the
  * paragraph above, and the list holds it.
  *
- * @param rawLines - The lines, as they are in the note.
- * @param depth - The number of quote levels the list sits in.
+ * A line that the leaf-block pre-pass found ending a container is no lazy continuation either.
+ *
+ * @param params - The lines, as they are in the note, the first one's line number, the number of quote levels the list
+ * sits in, and what the leaf-block pre-pass found.
  * @returns The lines inside the container, and whether one of the raw lines left it.
  */
-function getContainerLines(rawLines: string[], depth: number): ContainerLines {
+function getContainerLines(params: GetContainerLinesParams): ContainerLines {
+  const { depth, firstLine, rawLines, scan } = params;
   if (depth === 0) {
     return { isCut: false, lines: rawLines };
   }
   const lines: string[] = [];
   let isAfterBlankLine = false;
-  for (const rawLine of rawLines) {
+  for (const [index, rawLine] of rawLines.entries()) {
     const levelEnds = getQuoteLevelEnds(rawLine);
     const containerEnd = levelEnds[depth - 1];
     if (containerEnd !== undefined) {
@@ -869,7 +912,12 @@ function getContainerLines(rawLines: string[], depth: number): ContainerLines {
       continue;
     }
     const ownText = rawLine.slice(levelEnds.at(-1) ?? 0);
-    if (isAfterBlankLine || ownText.trim() === '' || LIST_INTERRUPTING_LINE_REGEX.test(ownText)) {
+    if (
+      isAfterBlankLine
+      || ownText.trim() === ''
+      || LIST_INTERRUPTING_LINE_REGEX.test(ownText)
+      || (scan.breakLines.get(firstLine + index) ?? depth) < depth
+    ) {
       return { isCut: true, lines };
     }
     lines.push(rawLine);
@@ -985,7 +1033,7 @@ function getListMarkerKind(marker: string): string {
  * @returns The list.
  */
 function getListState(params: GetListStateParams): ListState {
-  const { content, depth, endLine, lineStarts, sections, states } = params;
+  const { content, depth, endLine, lineStarts, scan, sections, states } = params;
   for (const [stateDepth, deeperState] of states) {
     if (!(stateDepth > depth)) {
       continue;
@@ -996,7 +1044,7 @@ function getListState(params: GetListStateParams): ListState {
   }
   let state = states.get(depth);
   if (!state) {
-    state = { depth, firstLine: -1, groupEnd: -1, groupStart: -1, kind: '', openItems: [], previousLine: -1 };
+    state = { depth, firstLine: -1, groupEnd: -1, groupStart: -1, kind: '', openItems: [], previousLine: -1, scan };
     states.set(depth, state);
   }
   return state;
@@ -1051,49 +1099,42 @@ function getVisualColumns(whitespace: string): number[] {
 }
 
 /**
- * Matches a line against the list-item shape, past its quote prefix.
+ * Matches a line the leaf-block pre-pass found starting a list item against the list-item shape, past its quote prefix.
  *
  * @param line - The line.
- * @returns The match, the number of quote levels, and the length of the quote prefix; `undefined` for a line that is
- * not a list item.
+ * @returns The match, the number of quote levels, and the length of the quote prefix.
  */
-function matchListItemLine(line: string): ListItemLine | undefined {
+function matchListItemLine(line: string): ListItemLine {
   const levelEnds = getQuoteLevelEnds(line);
   const prefixLength = levelEnds.at(-1) ?? 0;
-  const body = line.slice(prefixLength);
-  // Measured on Obsidian 1.14.4: a tab straight after a quote marker, or after its optional space, never starts a list
-  // item, while one after a further space does.
-  if (levelEnds.length > 0 && body.startsWith('\t')) {
-    return undefined;
-  }
-  const match = LIST_ITEM_REGEX.exec(body);
-  return match ? { depth: levelEnds.length, match, prefixLength } : undefined;
+  const match = ensureNonNullable(LIST_ITEM_REGEX.exec(line.slice(prefixLength)));
+  return { depth: levelEnds.length, match, prefixLength };
 }
 
 function parseListItems(
   content: string,
   bodyStart: number,
   lineStarts: number[],
-  codeZones: [number, number][],
   sections: SectionCache[]
 ): ListItemCache[] {
   const items: ListItemCache[] = [];
   // The open list at each blockquote depth. An item at one depth closes every list deeper than it, since the quote
   // those lists sat in has ended.
   const states = new Map<number, ListState>();
+  const bodyLine = offsetToLoc(lineStarts, bodyStart).line;
+  // Which lines start an item, and which a code block, a comment or a math block hides, depends on the containers
+  // around them, so the pre-pass decides both.
+  const scan = scanLeafBlocks(getLines(content, lineStarts, 0, lineStarts.length), bodyLine);
 
-  for (let currentLine = offsetToLoc(lineStarts, bodyStart).line; currentLine < lineStarts.length; currentLine++) {
-    const lineStart = ensureNonNullable(lineStarts[currentLine]);
-    if (isInCodeZone(codeZones, lineStart)) {
+  for (let currentLine = bodyLine; currentLine < lineStarts.length; currentLine++) {
+    if (!scan.itemLines.has(currentLine)) {
       continue;
     }
+    const lineStart = ensureNonNullable(lineStarts[currentLine]);
     const line = content.slice(lineStart, getLineEnd(content, lineStarts, currentLine));
     const itemLine = matchListItemLine(line);
-    if (!itemLine) {
-      continue;
-    }
     const { match, prefixLength } = itemLine;
-    const state = getListState({ content, depth: itemLine.depth, endLine: currentLine, lineStarts, sections, states });
+    const state = getListState({ content, depth: itemLine.depth, endLine: currentLine, lineStarts, scan, sections, states });
 
     const indent = ensureNonNullable(match.groups?.['indent']);
     const marker = ensureNonNullable(match.groups?.['marker']);
@@ -1163,6 +1204,7 @@ function parseListItems(
       containerColumn,
       contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
       hasContent: taskChar !== undefined || hasText,
+      isInHidingBlock: scan.hidingOpenerLines.has(currentLine),
       line: currentLine,
       nestedListFirstLine: undefined,
       nestedListItems: [],

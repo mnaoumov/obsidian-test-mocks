@@ -77,6 +77,9 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `in-memory-adapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
 - `lazy-evaluator.ts` — the conversion behind `ListValue.lazyEvaluator` and `ObjectValue.lazyEvaluator`: a raw element or property wrapped into a `Value`. Obsidian has ONE such function and installs it on both classes, so it lives here rather than in either of them; it has to construct the classes that call it, which is the one import cycle it carries a waiver for
 - `link-value-from-reference.ts` — a cached link, embed or frontmatter-link reference wrapped as a `LinkValue`, behind `FileValue.getLinks` and `getEmbeds`. Obsidian spells it `LinkValue.fromReference`, undeclared in the same way `front-matter-object-value.ts` describes
+- `markdown-leaf-blocks.ts` — the container-aware pre-pass behind `parseMarkdownContent`'s list items: which lines start
+  an item, and which a fenced code block, a `%%` comment, a `$$` math block or an indented code block hides. A regular
+  expression cannot answer either, since an unclosed block runs to the end of the blockquote or list item around it
 - `noop.ts` — `noop()` / `noopAsync()` helpers for otherwise-empty method bodies (see L2)
 - `plugins.ts` — the community-plugin registry behind `App.plugins`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1, L7)
 - `setting-definition-renderer.ts` — renders declarative setting definitions the way Obsidian 1.13 does; drives `SettingTab.renderTab__()` / `refreshDomState()`
@@ -749,9 +752,9 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   line gap, so `- A\n\n- B` gave `B` the parent `-2` and two sections where Obsidian gives `-1` and one. Now:
   - **After a blank line, a line indented less than the list's root item's content ends the list**, and one indented
     at least that far stays inside it (`- A\n\n  text\n\n- B` is one list, `- A\n\n text\n\n- B` is two).
-  - **With no blank line before it, only a heading, a code fence, a thematic break or a `%%` comment ends a list.** Any
-    other line is a lazy continuation of the item above, including a blockquote, a `$$` block, HTML and a table, so
-    `- A\n> q\n- B` is one list.
+  - **With no blank line before it, only a heading, a code fence, a thematic break or a `%%` comment the line does not
+    close ends a list.** Any other line is a lazy continuation of the item above, including a blockquote, a `$$` block,
+    a one-line `%% … %%` comment, HTML and a table, so `- A\n> q\n- B` is one list.
   - **A top-level item of another kind starts a new list**, gap or no gap: another bullet character (`-` then `*`), or
     another ordered delimiter (`1.` then `2)`). A nested item may differ from its siblings without effect.
   - **A block after a nested list inside the same item re-roots that nested list at its own first line**, the way a
@@ -798,9 +801,38 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     many blank lines there are, and `> - A\n>\n> - B` ends it just past that line's `>`. A following item that is not
     its sibling, a paragraph, or the end of the note leaves the end at the last line, and an item with more than one
     child never takes it.
-  - Not modeled: a line indented four or more columns after a quoted list, outside the quote, ends the quote in
-    Obsidian unless an item of an outer list holds that quote. The mock always reads such a line as a lazy
-    continuation, so that item's end, and the grouping after it, can differ.
+  - **A line indented four or more columns after a quoted list, outside the quote, ends the quote**, unless an item of
+    an outer list holds that quote: `> - A\n    text` ends `A` at the end of `> - A`, and the line is an indented code
+    block. An outer item continues on such a line, so `- A\n> - G\n    text` keeps it a lazy continuation of `G`.
+
+- **No list item is found inside a block that hides it** (2026-10-12, measured on a real Obsidian 1.14.4 over CDP,
+  fuzzed against its own metadata worker). Those blocks are a fenced code block, a `%%` comment, a `$$` math block
+  and an indented code block, and `src/internal/markdown-leaf-blocks.ts` finds them, container by container, before
+  the list parser runs. Several of their habits are not CommonMark's:
+  - **An unclosed block runs to the end of its container**: the end of the note at the top level, the end of the list
+    item or blockquote it sits in otherwise. So `%%\n- A` and `` ```\n- A `` have no items, and in
+    `- A\n  ```\n  - B\n- C` the fence hides `B` and ends with `A`.
+  - **A comment or a math block closed on the line that opens it is a paragraph**: `%% x %%` and `$$ x $$` hide
+    nothing, and a `%% x %%` line after a list item is a lazy continuation of the item, not an interruption. A comment
+    ends on the first later line that holds `%%`, and a math block on the first later line that ENDS with `$$`, so
+    `$$ x` closes nothing.
+  - **Laziness reaches every open block, not just a paragraph**: in `- A\n  ```\nx\n  - B` the unindented `x` is a line
+    of the fence, so `B` is hidden. Only a line that interrupts a paragraph, a blank line, or a line after one ends
+    the block early.
+  - **A lazy `$$` line opens a math block inside the item it continues**, so `- A\n$$\n  1. G` has the one item `A`;
+    after a blockquote it ends the quote and opens one at the top level instead. A lazy `>` line likewise opens a
+    blockquote inside the item, which its later `>` lines continue.
+  - **An item that ends inside an unclosed block before a sibling ends at the first empty line**, where an item with
+    more than one child otherwise ends at its last child: `- A\n  ```\n\n- B` ends `A` at line 2, column 0. A line of
+    whitespace inside a fence is a line of the code and extends the item.
+  - **A marker indented four or more columns is an indented code block**, not an item, at the top level, and four or
+    more columns past the content of the item above (`- A\n      - D`, a continuation of `A`), with one
+    exception Obsidian makes: on a line that closes a list item, a marker at any indent is the next item
+    (`-   A\n   - B\n    - C` has three items).
+  - Not modeled, and still found by the fuzz (274 of 20,000 generated notes differ, from 9,122 before): an item with
+    nothing after its marker becomes a parent in Obsidian once a later line gives it content (a lazy line, a quote, a
+    one-line comment) or once it holds two lists of different kinds, and stays rooted here; a `$$ x $$` line inside an
+    open math block does not end it there, while it does here; and a tab that a container takes only part of.
 
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`
