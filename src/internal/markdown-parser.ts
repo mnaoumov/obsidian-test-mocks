@@ -481,6 +481,7 @@ function parseListItems(
   sections: SectionCache[]
 ): ListItemCache[] {
   const items: ListItemCache[] = [];
+  const parentCandidates: ListItemCache[] = [];
   const regex = /^(?<indent>[ \t]*)(?<marker>[-*+]|\d+[.)]) (?:\[(?<task>.)\] )?(?<rest>.*)$/gm;
   regex.lastIndex = bodyStart;
 
@@ -521,14 +522,16 @@ function parseListItems(
       let parent = -listGroupFirstLine; // Default: negative of first item's line in group
       const indentLength = indent.length;
 
-      // Walk backwards through items to find parent with strictly less indent
-      for (let index = items.length - 1; index >= 0; index--) {
-        const previousItem = ensureNonNullable(items[index]);
-        const previousIndent = previousItem.position.start.col;
-        if (previousIndent < indentLength) {
-          parent = previousItem.position.start.line;
-          break;
-        }
+      // The nearest previous item with strictly less indent. `parentCandidates` is a stack of earlier items whose
+      // indents strictly increase upwards: an item with indent >= this one's can never be a later item's answer,
+      // because this item is nearer and no deeper, so popping it keeps the lookup amortized O(n) rather than
+      // rescanning every earlier item - which a flat list, where nothing has less indent, used to do for each item.
+      while (parentCandidates.length > 0 && ensureNonNullable(parentCandidates.at(-1)).position.start.col >= indentLength) {
+        parentCandidates.pop();
+      }
+      const parentItem = parentCandidates.at(-1);
+      if (parentItem) {
+        parent = parentItem.position.start.line;
       }
 
       const item: ListItemCache = {
@@ -537,6 +540,7 @@ function parseListItems(
         task: taskChar
       };
       items.push(item);
+      parentCandidates.push(item);
     }
     match = regex.exec(content);
   }

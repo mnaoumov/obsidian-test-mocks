@@ -16,6 +16,10 @@ const TAG_COL_OFFSET = 5;
 const LIST_ITEM_COUNT_3 = 3;
 const LIST_ITEM_COUNT_2 = 2;
 const ROOT_PARENT_LINE = -2;
+const LINE_A = 2;
+const LINE_B = 3;
+const LINE_D = 5;
+const FLAT_LIST_ITEM_COUNT = 10_000;
 const HEADING_OFFSET = 10;
 const COMPLEX_HEADING_COUNT = 2;
 const COMPLEX_LIST_ITEM_COUNT = 2;
@@ -648,6 +652,28 @@ describe('parseMarkdownContent', () => {
       // Root items have parent = negative of first root item's line (line 2 here)
       expect(cache.listItems?.[0]?.parent).toBe(ROOT_PARENT_LINE);
       expect(cache.listItems?.[1]?.parent).toBe(ROOT_PARENT_LINE);
+    });
+
+    it('should take the nearest earlier item with less indent as the parent across nesting changes', () => {
+      const content = 'Text\n\n- A\n  - B\n    - C\n- D\n  - E';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => item.parent)).toEqual([
+        ROOT_PARENT_LINE,
+        LINE_A,
+        LINE_B,
+        ROOT_PARENT_LINE,
+        LINE_D
+      ]);
+    });
+
+    it('should give every item of a large flat list the root parent', () => {
+      const content = `Text\n\n${Array.from({ length: FLAT_LIST_ITEM_COUNT }, (_, index) => `- [ ] item ${String(index)}`).join('\n')}`;
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems).toHaveLength(FLAT_LIST_ITEM_COUNT);
+      expect(cache.listItems?.every((item) => item.parent === ROOT_PARENT_LINE)).toBe(true);
+      expect(cache.sections?.filter((section) => section.type === 'list')).toHaveLength(1);
     });
   });
 
