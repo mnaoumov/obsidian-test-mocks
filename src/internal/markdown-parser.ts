@@ -58,6 +58,62 @@ const WIKILINK_CLOSE = ']]';
 
 const WIKILINK_OPEN = '[[';
 
+/**
+ * The lines between two items of a list, as the list's container sees them.
+ */
+interface ContainerLines {
+  // Whether a line that leaves the list's blockquote ended the list before the last of the raw lines.
+  readonly isCut: boolean;
+  // The lines inside the container, each with the container's quote prefix removed.
+  readonly lines: string[];
+}
+
+/**
+ * What {@link getListState} needs.
+ */
+interface GetListStateParams {
+  readonly content: string;
+  readonly depth: number;
+  // The line of the item, which the deeper lists it finishes end before.
+  readonly endLine: number;
+  readonly lineStarts: number[];
+  readonly sections: SectionCache[];
+  readonly states: Map<number, ListState>;
+}
+
+/**
+ * A line that holds a list item.
+ */
+interface ListItemLine {
+  // The number of `>` levels before the item.
+  readonly depth: number;
+  // The list-item match, against the text past the quote prefix.
+  readonly match: RegExpExecArray;
+  // The length of the quote prefix.
+  readonly prefixLength: number;
+}
+
+/**
+ * The list currently open at one blockquote depth. Each depth keeps its own, since a list never spans two containers:
+ * a quoted list inside an item of an outer list leaves that outer list open around it.
+ */
+interface ListState {
+  // The number of `>` levels the list sits in; `0` for a list outside any blockquote.
+  readonly depth: number;
+  // The first line of the list, which its root items are parented to.
+  firstLine: number;
+  // The end offset of the list's section so far; only a depth-0 list has a section.
+  groupEnd: number;
+  // The offset the list's section starts at.
+  groupStart: number;
+  // The kind of the list's top-level markers (see `getListMarkerKind`).
+  kind: string;
+  // The stack of open items, root first.
+  readonly openItems: OpenListItem[];
+  // The line of the list's latest item.
+  previousLine: number;
+}
+
 interface OpenListItem {
   readonly contentColumn: number;
   readonly hasContent: boolean;
@@ -172,8 +228,8 @@ function addGapSections(
 function buildCodeZones(content: string): [number, number][] {
   const zones: [number, number][] = [];
 
-  // Fenced code blocks: ``` or ~~~
-  const fencedRegex = /^(?<fence>`{3,}|~{3,}).*\n[\s\S]*?^\k<fence>\s*$/gm;
+  // Fenced code blocks: ``` or ~~~, inside a blockquote too, closed by a fence carrying the same quote prefix
+  const fencedRegex = /^(?<quote>(?:[ \t]*> ?)*)(?<fence>`{3,}|~{3,}).*\n[\s\S]*?^\k<quote>\k<fence>\s*$/gm;
   let match = fencedRegex.exec(content);
   while (match) {
     zones.push([match.index, match.index + match[0].length]);
@@ -491,6 +547,12 @@ const MAX_LIST_ITEM_CONTENT_GAP = 4;
 // Obsidian reads each of those as a lazy continuation of the item above.
 const LIST_INTERRUPTING_LINE_REGEX = /^ {0,3}(?:#{1,6}(?:[ \t]|$)|`{3}|~{3}|%%|(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$)/;
 
+const LIST_ITEM_REGEX = /^(?<indent>[ \t]*)(?<marker>[-*+]|\d+[.)]) (?:\[(?<task>.)\] )?(?<rest>.*)$/;
+// A blockquote level: a `>` and the one space after it that belongs to the marker. Any indent may precede the first,
+// which lets a blockquote sit inside a list item; up to three spaces may precede each later one.
+const FIRST_QUOTE_LEVEL_REGEX = /^[ \t]*> ?/;
+const NESTED_QUOTE_LEVEL_REGEX = /^ {0,3}> ?/;
+
 function advanceColumn(column: number, char: string): number {
   return char === '\t' ? column + TAB_WIDTH - (column % TAB_WIDTH) : column + 1;
 }
@@ -552,6 +614,76 @@ function detachNestedList(item: OpenListItem): void {
   }
   item.nestedListFirstLine = undefined;
   item.nestedListItems.length = 0;
+}
+
+/**
+ * Walks the lines between a list's latest item and a line, closing the items they end, and extends a depth-0 list's
+ * section over the content it holds there.
+ *
+ * @param content - The note's full text.
+ * @param lineStarts - The offset of each line's start.
+ * @param state - The list.
+ * @param endLine - The line to stop before.
+ * @returns Whether the lines ended the list.
+ */
+function doesListEndBefore(content: string, lineStarts: number[], state: ListState, endLine: number): boolean {
+  const firstLine = state.previousLine + 1;
+  const { isCut, lines } = getContainerLines(getLines(content, lineStarts, firstLine, endLine), state.depth);
+  const listLineCount = closeListItems(lines, state.openItems);
+  if (state.depth === 0) {
+    state.groupEnd = Math.max(state.groupEnd, getListContentEnd(lineStarts, firstLine, lines, listLineCount));
+  }
+  return isCut || listLineCount < lines.length;
+}
+
+/**
+ * Closes a list for good: walks the lines after its latest item, up to a line, for the blocks that re-root its nested
+ * lists, and records the section of a depth-0 list. Obsidian reports no `list` section for a list inside a blockquote,
+ * whose only section is the blockquote's own.
+ *
+ * @param content - The note's full text.
+ * @param lineStarts - The offset of each line's start.
+ * @param state - The list.
+ * @param endLine - The line to stop before.
+ * @param sections - The collection the section is pushed onto.
+ */
+function finishList(content: string, lineStarts: number[], state: ListState, endLine: number, sections: SectionCache[]): void {
+  doesListEndBefore(content, lineStarts, state, endLine);
+  pushListSection(lineStarts, state, sections);
+}
+
+/**
+ * Reads the lines between two items of a list as the list's container sees them. A line holding the list's quote
+ * levels is cut down to what follows them. A line holding fewer leaves the blockquote, and with it the list, when it
+ * is blank, follows a blank line, or can interrupt a paragraph; any other such line is a lazy continuation of the
+ * paragraph above, and the list holds it.
+ *
+ * @param rawLines - The lines, as they are in the note.
+ * @param depth - The number of quote levels the list sits in.
+ * @returns The lines inside the container, and whether one of the raw lines left it.
+ */
+function getContainerLines(rawLines: string[], depth: number): ContainerLines {
+  if (depth === 0) {
+    return { isCut: false, lines: rawLines };
+  }
+  const lines: string[] = [];
+  let isAfterBlankLine = false;
+  for (const rawLine of rawLines) {
+    const levelEnds = getQuoteLevelEnds(rawLine);
+    const containerEnd = levelEnds[depth - 1];
+    if (containerEnd !== undefined) {
+      const line = rawLine.slice(containerEnd);
+      isAfterBlankLine = line.trim() === '';
+      lines.push(line);
+      continue;
+    }
+    const ownText = rawLine.slice(levelEnds.at(-1) ?? 0);
+    if (isAfterBlankLine || ownText.trim() === '' || LIST_INTERRUPTING_LINE_REGEX.test(ownText)) {
+      return { isCut: true, lines };
+    }
+    lines.push(rawLine);
+  }
+  return { isCut: false, lines };
 }
 
 function getLineEnd(content: string, lineStarts: number[], line: number): number {
@@ -652,6 +784,50 @@ function getListMarkerKind(marker: string): string {
 }
 
 /**
+ * Finds the list an item at a blockquote depth joins, opening one when that depth has none, and finishes every list
+ * deeper than it, since the quote those lists sat in has ended.
+ *
+ * @param params - The note, the depth, the item's line and the lists open at each depth.
+ * @returns The list.
+ */
+function getListState(params: GetListStateParams): ListState {
+  const { content, depth, endLine, lineStarts, sections, states } = params;
+  for (const [stateDepth, deeperState] of states) {
+    if (!(stateDepth > depth)) {
+      continue;
+    }
+
+    finishList(content, lineStarts, deeperState, endLine, sections);
+    states.delete(stateDepth);
+  }
+  let state = states.get(depth);
+  if (!state) {
+    state = { depth, firstLine: -1, groupEnd: -1, groupStart: -1, kind: '', openItems: [], previousLine: -1 };
+    states.set(depth, state);
+  }
+  return state;
+}
+
+/**
+ * Finds where each blockquote level of a line's quote prefix ends: a `>` with any indent before the first and up to
+ * three spaces before each later one, each taking one optional space after it.
+ *
+ * @param line - The line.
+ * @returns The offset just past each level, outermost first; empty for a line outside any blockquote.
+ */
+function getQuoteLevelEnds(line: string): number[] {
+  const levelEnds: number[] = [];
+  let position = 0;
+  let match = FIRST_QUOTE_LEVEL_REGEX.exec(line);
+  while (match) {
+    position += match[0].length;
+    levelEnds.push(position);
+    match = NESTED_QUOTE_LEVEL_REGEX.exec(line.slice(position));
+  }
+  return levelEnds;
+}
+
+/**
  * Computes the `parent` Obsidian gives a root list item: the negative of its list's first line, except that a list
  * starting on line 0 is rooted at `-1`, since `-0` could not be told from a parent on line 0.
  *
@@ -680,6 +856,26 @@ function getVisualColumns(whitespace: string): number[] {
   return columns;
 }
 
+/**
+ * Matches a line against the list-item shape, past its quote prefix.
+ *
+ * @param line - The line.
+ * @returns The match, the number of quote levels, and the length of the quote prefix; `undefined` for a line that is
+ * not a list item.
+ */
+function matchListItemLine(line: string): ListItemLine | undefined {
+  const levelEnds = getQuoteLevelEnds(line);
+  const prefixLength = levelEnds.at(-1) ?? 0;
+  const body = line.slice(prefixLength);
+  // Measured on Obsidian 1.14.4: a tab straight after a quote marker, or after its optional space, never starts a list
+  // item, while one after a further space does.
+  if (levelEnds.length > 0 && body.startsWith('\t')) {
+    return undefined;
+  }
+  const match = LIST_ITEM_REGEX.exec(body);
+  return match ? { depth: levelEnds.length, match, prefixLength } : undefined;
+}
+
 function parseListItems(
   content: string,
   bodyStart: number,
@@ -688,110 +884,92 @@ function parseListItems(
   sections: SectionCache[]
 ): ListItemCache[] {
   const items: ListItemCache[] = [];
-  const parentCandidates: OpenListItem[] = [];
-  const regex = /^(?<indent>[ \t]*)(?<marker>[-*+]|\d+[.)]) (?:\[(?<task>.)\] )?(?<rest>.*)$/gm;
-  regex.lastIndex = bodyStart;
+  // The open list at each blockquote depth. An item at one depth closes every list deeper than it, since the quote
+  // those lists sat in has ended.
+  const states = new Map<number, ListState>();
 
-  // Track list groups for sections: the items of one top-level list
-  let listGroupStart = -1;
-  let listGroupEnd = -1;
-  let listGroupFirstLine = -1;
-  let listGroupKind = '';
-  const PREV_LINE_INITIAL = -2;
-  let previousLine = PREV_LINE_INITIAL;
-
-  let match = regex.exec(content);
-  while (match) {
-    if (!isInCodeZone(codeZones, match.index)) {
-      const indent = ensureNonNullable(match.groups?.['indent']);
-      const marker = ensureNonNullable(match.groups?.['marker']);
-      const taskChar = match.groups?.['task'];
-      const rest = ensureNonNullable(match.groups?.['rest']);
-      const indentColumns = getVisualColumns(indent);
-      const markerColumn = ensureNonNullable(indentColumns.at(-1));
-      const currentLine = offsetToLoc(lineStarts, match.index).line;
-      const kind = getListMarkerKind(marker);
-
-      // Blank lines alone never end a list in Obsidian; only content the list cannot hold does.
-      let isNewList = parentCandidates.length === 0;
-      if (!isNewList) {
-        const lines = getLines(content, lineStarts, previousLine + 1, currentLine);
-        const listLineCount = closeListItems(lines, parentCandidates);
-        listGroupEnd = Math.max(listGroupEnd, getListContentEnd(lineStarts, previousLine + 1, lines, listLineCount));
-        isNewList = listLineCount < lines.length;
-      }
-      if (isNewList) {
-        parentCandidates.length = 0;
-      }
-
-      // The parent is the nearest open item whose content column the marker reaches, as in CommonMark: an item stays
-      // open for exactly the lines indented at least as far as its content. `parentCandidates` is that stack of open
-      // items, whose content columns strictly increase upwards, so popping the ones this marker falls short of keeps
-      // the lookup amortized O(n) - a flat list, where nothing stays open, used to re-read every earlier item.
-      while (parentCandidates.length > 0 && ensureNonNullable(parentCandidates.at(-1)).contentColumn > markerColumn) {
-        parentCandidates.pop();
-      }
-      const parentItem = parentCandidates.at(-1);
-
-      // Obsidian starts an item where its container's content starts, not at the line start: `  - B` under `- A` starts
-      // at column 2, and a top-level item, whose container is the document, keeps its indent. A tab is never split, so
-      // the item starts at the first character at or past that column.
-      const containerColumn = parentItem?.contentColumn ?? 0;
-      const startColumn = indentColumns.findIndex((column) => column >= containerColumn);
-      const startOffset = match.index + startColumn;
-      const endOffset = match.index + match[0].length;
-      const pos = makePos(lineStarts, startOffset, endOffset);
-
-      // A list holds items of one kind only: a top-level item with another bullet character, or another ordered
-      // delimiter, starts a list of its own, gap or no gap. A nested item is free to differ from its siblings, since
-      // only the top-level lists are sections.
-      if (!parentItem && kind !== listGroupKind) {
-        isNewList = true;
-      }
-
-      if (isNewList) {
-        if (listGroupStart >= 0) {
-          sections.push({
-            id: undefined,
-            position: makePos(lineStarts, listGroupStart, listGroupEnd),
-            type: 'list'
-          });
-        }
-        listGroupStart = match.index;
-        listGroupFirstLine = currentLine;
-        listGroupKind = kind;
-      }
-      listGroupEnd = endOffset;
-      previousLine = currentLine;
-
-      const item: ListItemCache = {
-        parent: 0,
-        position: pos,
-        task: taskChar
-      };
-      item.parent = getListItemParent(parentItem, listGroupFirstLine, item);
-      items.push(item);
-      parentCandidates.push({
-        contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
-        hasContent: taskChar !== undefined || rest.trim() !== '',
-        line: currentLine,
-        nestedListFirstLine: undefined,
-        nestedListItems: []
-      });
+  for (let currentLine = offsetToLoc(lineStarts, bodyStart).line; currentLine < lineStarts.length; currentLine++) {
+    const lineStart = ensureNonNullable(lineStarts[currentLine]);
+    if (isInCodeZone(codeZones, lineStart)) {
+      continue;
     }
-    match = regex.exec(content);
+    const line = content.slice(lineStart, getLineEnd(content, lineStarts, currentLine));
+    const itemLine = matchListItemLine(line);
+    if (!itemLine) {
+      continue;
+    }
+    const { match, prefixLength } = itemLine;
+    const state = getListState({ content, depth: itemLine.depth, endLine: currentLine, lineStarts, sections, states });
+
+    const indent = ensureNonNullable(match.groups?.['indent']);
+    const marker = ensureNonNullable(match.groups?.['marker']);
+    const taskChar = match.groups?.['task'];
+    const rest = ensureNonNullable(match.groups?.['rest']);
+    // Columns count from the end of the quote prefix, which is where the list's container starts.
+    const indentColumns = getVisualColumns(indent);
+    const markerColumn = ensureNonNullable(indentColumns.at(-1));
+    const kind = getListMarkerKind(marker);
+
+    // Blank lines alone never end a list in Obsidian; only content the list cannot hold does.
+    let isNewList = state.openItems.length === 0 || doesListEndBefore(content, lineStarts, state, currentLine);
+    if (isNewList) {
+      state.openItems.length = 0;
+    }
+
+    // The parent is the nearest open item whose content column the marker reaches, as in CommonMark: an item stays
+    // open for exactly the lines indented at least as far as its content. `openItems` is that stack of open items,
+    // whose content columns strictly increase upwards, so popping the ones this marker falls short of keeps the lookup
+    // amortized O(n) - a flat list, where nothing stays open, used to re-read every earlier item.
+    while (state.openItems.length > 0 && ensureNonNullable(state.openItems.at(-1)).contentColumn > markerColumn) {
+      state.openItems.pop();
+    }
+    const parentItem = state.openItems.at(-1);
+
+    // Obsidian starts an item where its container's content starts, not at the line start: `  - B` under `- A` starts
+    // at column 2, a top-level item, whose container is the document, keeps its indent, and a top-level item in a
+    // blockquote starts just past the quote prefix. A tab is never split, so the item starts at the first character at
+    // or past that column.
+    const containerColumn = parentItem?.contentColumn ?? 0;
+    const startColumn = indentColumns.findIndex((column) => column >= containerColumn);
+    const startOffset = lineStart + prefixLength + startColumn;
+    const endOffset = lineStart + line.length;
+    const pos = makePos(lineStarts, startOffset, endOffset);
+
+    // A list holds items of one kind only: a top-level item with another bullet character, or another ordered
+    // delimiter, starts a list of its own, gap or no gap. A nested item is free to differ from its siblings, since
+    // only the top-level lists are sections.
+    if (!parentItem && kind !== state.kind) {
+      isNewList = true;
+    }
+
+    if (isNewList) {
+      pushListSection(lineStarts, state, sections);
+      state.groupStart = lineStart;
+      state.firstLine = currentLine;
+      state.kind = kind;
+    }
+    state.groupEnd = endOffset;
+    state.previousLine = currentLine;
+
+    const item: ListItemCache = {
+      parent: 0,
+      position: pos,
+      task: taskChar
+    };
+    item.parent = getListItemParent(parentItem, state.firstLine, item);
+    items.push(item);
+    state.openItems.push({
+      contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
+      hasContent: taskChar !== undefined || rest.trim() !== '',
+      line: currentLine,
+      nestedListFirstLine: undefined,
+      nestedListItems: []
+    });
   }
 
-  // Flush last list group, which holds whatever content after its last item it does not end on
-  if (listGroupStart >= 0) {
-    const lines = getLines(content, lineStarts, previousLine + 1, lineStarts.length);
-    const listLineCount = closeListItems(lines, parentCandidates);
-    listGroupEnd = Math.max(listGroupEnd, getListContentEnd(lineStarts, previousLine + 1, lines, listLineCount));
-    sections.push({
-      id: undefined,
-      position: makePos(lineStarts, listGroupStart, listGroupEnd),
-      type: 'list'
-    });
+  // Flush the open lists, each of which holds whatever content after its last item it does not end on
+  for (const state of states.values()) {
+    finishList(content, lineStarts, state, lineStarts.length, sections);
   }
 
   return items;
@@ -870,6 +1048,17 @@ function parseWikilinkTarget(inner: string): WikilinkTarget {
     href = href.slice(0, -1);
   }
   return { href: normalizeLinkTarget(href), title };
+}
+
+function pushListSection(lineStarts: number[], state: ListState, sections: SectionCache[]): void {
+  if (state.depth > 0 || state.groupStart < 0) {
+    return;
+  }
+  sections.push({
+    id: undefined,
+    position: makePos(lineStarts, state.groupStart, state.groupEnd),
+    type: 'list'
+  });
 }
 
 /**

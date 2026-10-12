@@ -754,6 +754,20 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - Still not modeled: a list item's own `position.end` covers only its marker line, where Obsidian extends it over
     the item's continuation lines.
 
+- **Lists inside a blockquote or callout are list items too** (2026-10-12, 60 shapes measured on a real Obsidian 1.14.4
+  over CDP). The mock used to report no `listItems` for them at all. Now:
+  - **An item starts just past the quote prefix**, which is each `>` plus the one optional space after it. In
+    `> - A` the item starts at column 2, in `>- A` at column 1, and in `>  - A` at column 2, with the extra space inside
+    the item. Nesting is decided by columns counted from that point, so `>   - B` under `> - A` is nested.
+  - **A list belongs to one blockquote depth.** A list in a quote is its own list, rooted at its own first line, even
+    when the quote sits inside an item of an outer list. So `- A\n> - B\n- C` gives `B` the parent `-1` and `C` stays
+    `A`'s sibling. An item at a shallower depth ends every deeper list.
+  - **A line outside the quote ends a quoted list** when it is blank, follows a blank line, or can interrupt a paragraph.
+    Any other such line is a lazy continuation, so `> - A\ntext\n> - B` is one list.
+  - **A quoted list has no `list` section.** The blockquote's own section is the only one Obsidian reports.
+  - **A tab right after a `>`, or after its optional space, starts no item**, as measured: `>\t- A` and `> \t- A` give
+    none, while `>  \t- A` gives one. A fenced block inside a quote is a code zone, so it holds no items, tags or links.
+
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`
   reaches `HomePage.md`, and the link graph records it as resolved. One deliberate departure: an EXACT-case match still

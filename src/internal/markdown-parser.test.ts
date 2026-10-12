@@ -757,6 +757,78 @@ describe('parseMarkdownContent', () => {
       ).toEqual(lists);
     });
 
+    // Each row was measured on a real Obsidian 1.14.4: every item's [start line, start col, start offset, parent], and
+    // every list section's [start offset, end offset]. A list inside a blockquote has no section of its own.
+    it.each([
+      { content: '> - A\n>   - B\n', expected: [[0, 2, 2, -1], [1, 4, 10, 0]], lists: [] },
+      { content: '> - A\n> - B\n', expected: [[0, 2, 2, -1], [1, 2, 8, -1]], lists: [] },
+      { content: '> > - A\n> >   - B\n', expected: [[0, 4, 4, -1], [1, 6, 14, 0]], lists: [] },
+      { content: '> [!note]\n> - A\n> - B\n', expected: [[1, 2, 12, -1], [2, 2, 18, -1]], lists: [] },
+      { content: '> [!note] Title\n> - A\n>   - B\n', expected: [[1, 2, 18, -1], [2, 4, 26, 1]], lists: [] },
+      { content: '> text\n> - A\n', expected: [[1, 2, 9, -1]], lists: [] },
+      { content: '> text\n>\n> - A\n', expected: [[2, 2, 11, -2]], lists: [] },
+      { content: '> - A\n- B\n', expected: [[0, 2, 2, -1], [1, 0, 6, -1]], lists: [[6, 9]] },
+      { content: '- A\n> - B\n', expected: [[0, 0, 0, -1], [1, 2, 6, -1]], lists: [[0, 9]] },
+      { content: '- A\n  > - B\n', expected: [[0, 0, 0, -1], [1, 4, 8, -1]], lists: [[0, 11]] },
+      { content: '>- A\n>- B\n', expected: [[0, 1, 1, -1], [1, 1, 6, -1]], lists: [] },
+      { content: '>  - A\n>    - B\n', expected: [[0, 2, 2, -1], [1, 5, 12, 0]], lists: [] },
+      { content: '> 1. A\n> 2. B\n', expected: [[0, 2, 2, -1], [1, 2, 9, -1]], lists: [] },
+      { content: '> - A\n\n> - B\n', expected: [[0, 2, 2, -1], [2, 2, 9, -2]], lists: [] },
+      { content: '> - A\n>\n> - B\n', expected: [[0, 2, 2, -1], [2, 2, 10, -1]], lists: [] },
+      { content: '> - A\n  - B\n', expected: [[0, 2, 2, -1], [1, 0, 6, -1]], lists: [[6, 11]] },
+      { content: '> - A\ntext\n> - B\n', expected: [[0, 2, 2, -1], [2, 2, 13, -1]], lists: [] },
+      { content: '>\t- A\n', expected: [], lists: [] },
+      { content: '> - A\n>   more\n> - B\n', expected: [[0, 2, 2, -1], [2, 2, 17, -1]], lists: [] },
+      { content: '> - [ ] A\n> - [x] B\n', expected: [[0, 2, 2, -1], [1, 2, 12, -1]], lists: [] },
+      { content: '  > - A\n  >   - B\n', expected: [[0, 4, 4, -1], [1, 6, 14, 0]], lists: [] },
+      { content: 'text\n\n> - A\n', expected: [[2, 2, 8, -2]], lists: [] },
+      { content: '> - A\n> > - B\n', expected: [[0, 2, 2, -1], [1, 4, 10, -1]], lists: [] },
+      { content: '> - A\n>   - B\n>     - C\n>   - D\n', expected: [[0, 2, 2, -1], [1, 4, 10, 0], [2, 6, 20, 1], [3, 4, 28, 0]], lists: [] },
+      { content: '> - A\n> > - B\n> - C\n', expected: [[0, 2, 2, -1], [1, 4, 10, -1], [2, 2, 16, -1]], lists: [] },
+      { content: '> - A\n- B\n> - C\n', expected: [[0, 2, 2, -1], [1, 0, 6, -1], [2, 2, 12, -2]], lists: [[6, 15]] },
+      { content: '- A\n> - B\n- C\n', expected: [[0, 0, 0, -1], [1, 2, 6, -1], [2, 0, 10, -1]], lists: [[0, 13]] },
+      { content: '- A\n  - B\n> - C\n  - D\n', expected: [[0, 0, 0, -1], [1, 2, 6, 0], [2, 2, 12, -2], [3, 2, 18, 0]], lists: [[0, 21]] },
+      { content: '> - A\n>\n>   text\n> - B\n', expected: [[0, 2, 2, -1], [3, 2, 19, -1]], lists: [] },
+      { content: '> - A\n>\n> text\n> - B\n', expected: [[0, 2, 2, -1], [3, 2, 17, -3]], lists: [] },
+      { content: '> - A\n> # H\n> - B\n', expected: [[0, 2, 2, -1], [2, 2, 14, -2]], lists: [] },
+      { content: '> - A\n>   - B\n>\n>   text\n', expected: [[0, 2, 2, -1], [1, 4, 10, -1]], lists: [] },
+      { content: '> \t- A\n', expected: [], lists: [] },
+      { content: '>\t\t- A\n', expected: [], lists: [] },
+      { content: '>  \t- A\n', expected: [[0, 2, 2, -1]], lists: [] },
+      { content: '> - A\n> \n> - B\n', expected: [[0, 2, 2, -1], [2, 2, 11, -1]], lists: [] },
+      { content: '> ```\n> - A\n> ```\n', expected: [], lists: [] },
+      { content: '- A\n\n> - B\n', expected: [[0, 0, 0, -1], [2, 2, 7, -2]], lists: [[0, 3]] },
+      { content: '- A\n\n  > - B\n', expected: [[0, 0, 0, -1], [2, 4, 9, -2]], lists: [[0, 12]] },
+      { content: '> - A\n\n- B\n', expected: [[0, 2, 2, -1], [2, 0, 7, -2]], lists: [[7, 10]] },
+      { content: '> > - A\n> - B\n', expected: [[0, 4, 4, -1], [1, 2, 10, -1]], lists: [] },
+      { content: '> - A\n> > - B\n>   - C\n', expected: [[0, 2, 2, -1], [1, 4, 10, -1], [2, 4, 18, 0]], lists: [] },
+      { content: '> 1. A\n> - B\n', expected: [[0, 2, 2, -1], [1, 2, 9, -1]], lists: [] },
+      { content: 'text\n> - A\n', expected: [[1, 2, 7, -1]], lists: [] },
+      { content: '- A\n  > - B\n  >   - C\n- D\n', expected: [[0, 0, 0, -1], [1, 4, 8, -1], [2, 6, 18, 1], [3, 0, 22, -1]], lists: [[0, 25]] },
+      { content: '>>- A\n', expected: [[0, 2, 2, -1]], lists: [] },
+      { content: '   > - A\n', expected: [[0, 5, 5, -1]], lists: [] },
+      { content: '> - A\n>     - B\n', expected: [[0, 2, 2, -1], [1, 4, 10, 0]], lists: [] },
+      { content: '> - A\n>   - B\n>\n>   - C\n', expected: [[0, 2, 2, -1], [1, 4, 10, 0], [3, 4, 20, 0]], lists: [] },
+      { content: '> - A\n>\n>     code\n> - B\n', expected: [[0, 2, 2, -1], [3, 2, 21, -1]], lists: [] },
+      { content: '> * A\n> - B\n', expected: [[0, 2, 2, -1], [1, 2, 8, -1]], lists: [] },
+      { content: '- A\n  > - B\n  - C\n', expected: [[0, 0, 0, -1], [1, 4, 8, -1], [2, 2, 14, 0]], lists: [[0, 17]] },
+      { content: '- A\n  > - B\n\n  > - C\n', expected: [[0, 0, 0, -1], [1, 4, 8, -1], [3, 4, 17, -3]], lists: [[0, 20]] },
+      { content: '> - A\n> ---\n> - B\n', expected: [[0, 2, 2, -1], [2, 2, 14, -2]], lists: [] },
+      { content: '> > - A\n> >\n> > - B\n> - C\n', expected: [[0, 4, 4, -1], [2, 4, 16, -1], [3, 2, 22, -3]], lists: [] },
+      { content: '> [!tip]- Fold\n> 1. A\n>    - B\n> 2. C\n', expected: [[1, 2, 17, -1], [2, 5, 27, 1], [3, 2, 33, -1]], lists: [] },
+      { content: '1. x\n   > - A\n   >   - B\n2. y\n', expected: [[0, 0, 0, -1], [1, 5, 10, -1], [2, 7, 21, 1], [3, 0, 25, -1]], lists: [[0, 29]] },
+      { content: '> - A\n> ~~~\n> - x\n> ~~~\n> - B\n', expected: [[0, 2, 2, -1], [4, 2, 26, -4]], lists: [] },
+      { content: '> - A\n   - B\n', expected: [[0, 2, 2, -1], [1, 0, 6, -1]], lists: [[6, 12]] },
+      { content: '> - A\n> - \n>   - B\n', expected: [[0, 2, 2, -1], [1, 2, 8, -1], [2, 4, 15, -2]], lists: [] }
+    ])('should find the items of the lists inside a blockquote in $content', ({ content, expected, lists }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => [item.position.start.line, item.position.start.col, item.position.start.offset, item.parent]) ?? [])
+        .toEqual(expected);
+      expect(
+        cache.sections?.filter((section) => section.type === 'list').map((section) => [section.position.start.offset, section.position.end.offset])
+      ).toEqual(lists);
+    });
     it('should end each item at the end of its line', () => {
       const content = '- A\n  - B';
       const cache = parseMarkdownContent(content);
@@ -928,6 +1000,14 @@ describe('parseMarkdownContent', () => {
       const content = '```\n- not a list\n```\n- real item';
       const cache = parseMarkdownContent(content);
       expect(cache.listItems).toHaveLength(1);
+    });
+
+    // Measured on a real Obsidian 1.14.4.
+    it('should not parse tags or links inside a code block in a blockquote', () => {
+      const cache = parseMarkdownContent('> ```\n> #tag [[L]]\n> ```\n\n#out [[M]]\n');
+
+      expect(cache.tags?.map((tag) => tag.tag)).toEqual(['#out']);
+      expect(cache.links?.map((link) => link.link)).toEqual(['M']);
     });
   });
 
