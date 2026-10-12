@@ -169,10 +169,74 @@ interface RecordBlankListLineParams {
  * expressions outside fenced code blocks and inline code spans, and blocks between the recognized sections become
  * paragraph, blockquote, code or thematic-break sections.
  *
+ * Obsidian takes `\r\n`, `\n` and a lone `\r` as one line break each, and reports every position in the original text,
+ * with a line ending before its `\r`. So a note holding a `\r` is parsed with its line breaks turned into `\n`, which
+ * keeps every line and every column, and each position is then moved to the same line and column of the original.
+ *
  * @param content - The note's full text, frontmatter included.
  * @returns The metadata, with each collection present only when it is non-empty.
  */
 export function parseMarkdownContent(content: string): CachedMetadata {
+  if (!content.includes('\r')) {
+    return parseLfContent(content);
+  }
+
+  const cache = parseLfContent(content.replaceAll(/\r\n?/g, '\n'));
+  const lineStarts = buildOriginalLineStarts(content);
+  const positions = [
+    ...cache.embeds ?? [],
+    ...cache.headings ?? [],
+    ...cache.links ?? [],
+    ...cache.listItems ?? [],
+    ...cache.sections ?? [],
+    ...cache.tags ?? []
+  ].map((entry) => entry.position);
+  if (cache.frontmatterPosition) {
+    positions.push(cache.frontmatterPosition);
+  }
+  for (const pos of positions) {
+    pos.start = moveLocToOriginal(lineStarts, pos.start);
+    pos.end = moveLocToOriginal(lineStarts, pos.end);
+  }
+  // A link's text may span a line break, which the original spells with its `\r`.
+  for (const reference of [...cache.embeds ?? [], ...cache.links ?? []]) {
+    reference.original = content.slice(reference.position.start.offset, reference.position.end.offset);
+  }
+  return cache;
+}
+
+/**
+ * Computes the offset each line of a note starts at, taking `\r\n`, `\n` and a lone `\r` as one line break each.
+ *
+ * @param content - The note's full text.
+ * @returns The line start offsets, beginning with `0`.
+ */
+function buildOriginalLineStarts(content: string): number[] {
+  const starts: number[] = [0];
+  for (const match of content.matchAll(/\r\n?|\n/g)) {
+    starts.push(match.index + match[0].length);
+  }
+  return starts;
+}
+
+/**
+ * Moves a location in the text with its line breaks turned into `\n` to the same line and column of the original.
+ *
+ * @param lineStarts - The offset each line of the original starts at.
+ * @param loc - The location.
+ * @returns The location in the original.
+ */
+function moveLocToOriginal(lineStarts: number[], loc: Loc): Loc {
+  return { col: loc.col, line: loc.line, offset: ensureNonNullable(lineStarts[loc.line]) + loc.col };
+}
+
+/**
+ * Parses markdown content whose every line break is a `\n`.
+ *
+ * @param content - The note's full text.
+ * @returns The metadata.
+ */
+function parseLfContent(content: string): CachedMetadata {
   const cache: CachedMetadata = {};
   const lineStarts = buildLineStarts(content);
   const sections: SectionCache[] = [];

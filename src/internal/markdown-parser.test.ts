@@ -1,3 +1,5 @@
+import type { Pos } from 'obsidian';
+
 import {
   describe,
   expect,
@@ -1273,6 +1275,79 @@ describe('parseMarkdownContent', () => {
 
       const item = ensureNonNullable(cache.listItems?.[0]);
       expect(content.slice(item.position.start.offset, item.position.end.offset)).toBe('- First item');
+    });
+  });
+
+  // Measured with Obsidian 1.14.4's own metadata worker: `\r\n`, `\n` and a lone `\r` are one line break each, and every
+  // position is in the original text, a line ending before its `\r`.
+  describe('line breaks other than LF', () => {
+    function toTuple(pos: Pos): number[] {
+      return [pos.start.line, pos.start.col, pos.start.offset, pos.end.line, pos.end.col, pos.end.offset];
+    }
+
+    it('should end an item followed by a sibling after a blank CRLF line at that line', () => {
+      const cache = parseMarkdownContent('- A\r\n\r\n- B\r\n');
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset])).toEqual([[0, 5], [7, 10]]);
+    });
+
+    it('should end an item at an indented blank CRLF line it holds', () => {
+      const cache = parseMarkdownContent('- A\r\n  \r\n- B\r\n');
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset])).toEqual([[0, 7], [9, 12]]);
+    });
+
+    it('should report every collection of a CRLF note at its original positions', () => {
+      const content = '# Head\r\n\r\nPara #tag [[L]] ![[E]]\r\n\r\n- [ ] item\r\n  - sub\r\n\r\n```\r\ncode #no\r\n```\r\n';
+      const cache = parseMarkdownContent(content);
+      expect(cache.headings?.map((heading) => toTuple(heading.position))).toEqual([[0, 0, 0, 0, 6, 6]]);
+      expect(cache.tags?.map((tag) => [tag.tag, ...toTuple(tag.position)])).toEqual([['#tag', 2, 5, 15, 2, 9, 19]]);
+      expect(cache.links?.map((link) => [link.original, ...toTuple(link.position)])).toEqual([['[[L]]', 2, 10, 20, 2, 15, 25]]);
+      expect(cache.embeds?.map((embed) => [embed.original, ...toTuple(embed.position)])).toEqual([['![[E]]', 2, 16, 26, 2, 22, 32]]);
+      expect(cache.listItems?.map((item) => [item.parent, ...toTuple(item.position)])).toEqual([
+        [-4, 4, 0, 36, 4, 10, 46],
+        [4, 5, 2, 50, 5, 7, 55]
+      ]);
+      expect(cache.sections?.map((section) => [section.type, ...toTuple(section.position)])).toEqual([
+        ['heading', 0, 0, 0, 0, 6, 6],
+        ['paragraph', 2, 0, 10, 2, 22, 32],
+        ['list', 4, 0, 36, 5, 7, 55],
+        ['code', 7, 0, 59, 9, 3, 77]
+      ]);
+    });
+
+    it('should read a CRLF frontmatter block', () => {
+      const cache = parseMarkdownContent('---\r\na: "[[T]]"\r\n---\r\nbody\r\n');
+      expect(cache.frontmatter).toEqual({ a: '[[T]]' });
+      expect(cache.frontmatterLinks).toEqual([{ displayText: 'T', key: 'a', link: 'T', original: '[[T]]' }]);
+      expect(cache.frontmatterPosition?.start.offset).toBe(0);
+    });
+
+    it('should keep the CRLF inside a link that spans two lines in its original', () => {
+      const cache = parseMarkdownContent('See [a\r\nb](x.md) here');
+      expect(cache.links?.map((link) => [link.original, link.displayText, ...toTuple(link.position)])).toEqual([
+        ['[a\r\nb](x.md)', 'a\nb', 0, 4, 4, 1, 8, 16]
+      ]);
+    });
+
+    it('should take a lone CR as a line break', () => {
+      const cache = parseMarkdownContent('- A\r- B\r# H\rtext');
+      expect(cache.listItems?.map((item) => [item.parent, ...toTuple(item.position)])).toEqual([
+        [-1, 0, 0, 0, 0, 3, 3],
+        [-1, 1, 0, 4, 1, 3, 7]
+      ]);
+      expect(cache.sections?.map((section) => [section.type, ...toTuple(section.position)])).toEqual([
+        ['list', 0, 0, 0, 1, 3, 7],
+        ['heading', 2, 0, 8, 2, 3, 11],
+        ['paragraph', 3, 0, 12, 3, 4, 16]
+      ]);
+    });
+
+    it('should take CRLF and LF mixed in one note as one line break each', () => {
+      const cache = parseMarkdownContent('- A\r\n- B\n- C\r\n');
+      expect(cache.listItems?.map((item) => toTuple(item.position))).toEqual([
+        [0, 0, 0, 0, 3, 3],
+        [1, 0, 5, 1, 3, 8],
+        [2, 0, 9, 2, 3, 12]
+      ]);
     });
   });
 
