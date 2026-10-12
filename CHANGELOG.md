@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 7.2.1
+
+- fix(metadata-cache): merge list items starting at their container's content column
+- perf(metadata-cache): merge linear-time list parent lookup
+
 ## 7.2.0
 
 - fix(metadata-cache): merge resolving link paths without regard to case
