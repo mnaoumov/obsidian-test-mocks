@@ -58,6 +58,14 @@ const WIKILINK_CLOSE = ']]';
 
 const WIKILINK_OPEN = '[[';
 
+interface OpenListItem {
+  readonly contentColumn: number;
+  readonly hasContent: boolean;
+  readonly line: number;
+  // The first line of the list nested in an item with nothing after its marker, which Obsidian roots that list at.
+  nestedListFirstLine?: number;
+}
+
 /**
  * Parses markdown content into a `CachedMetadata` object.
  *
@@ -473,6 +481,82 @@ function parseLinks(
   return links;
 }
 
+const TAB_WIDTH = 4;
+const MAX_LIST_ITEM_CONTENT_GAP = 4;
+
+function advanceColumn(column: number, char: string): number {
+  return char === '\t' ? column + TAB_WIDTH - (column % TAB_WIDTH) : column + 1;
+}
+
+/**
+ * Computes the visual column where a list item's content starts, by CommonMark's rule: one to four columns of
+ * whitespace after the marker belong to the marker, and anything wider leaves the content one column past it. Unlike
+ * CommonMark, Obsidian applies that rule to an item with nothing after the marker too, rather than always putting its
+ * content one column past the marker.
+ *
+ * @param markerEndColumn - The visual column just past the marker.
+ * @param textAfterGap - The line's text after the single space the marker requires.
+ * @returns The content column.
+ */
+function getListItemContentColumn(markerEndColumn: number, textAfterGap: string): number {
+  const [extraWhitespace] = ensureNonNullable(/^[ \t]*/.exec(textAfterGap));
+  let column = markerEndColumn + 1;
+  for (const char of extraWhitespace) {
+    column = advanceColumn(column, char);
+  }
+  return column - markerEndColumn > MAX_LIST_ITEM_CONTENT_GAP ? markerEndColumn + 1 : column;
+}
+
+/**
+ * Computes a list item's `parent`. A root item's parent is the negative of the first line of its list. Obsidian never
+ * names an item with nothing after its marker as a parent: the list nested in one is rooted at its own first line
+ * instead.
+ *
+ * @param parentItem - The open item the new item is nested in, if any.
+ * @param listFirstLine - The first line of the new item's list.
+ * @param line - The new item's line.
+ * @returns The parent.
+ */
+function getListItemParent(parentItem: OpenListItem | undefined, listFirstLine: number, line: number): number {
+  if (!parentItem) {
+    return getRootListParent(listFirstLine);
+  }
+  if (parentItem.hasContent) {
+    return parentItem.line;
+  }
+  parentItem.nestedListFirstLine ??= line;
+  return getRootListParent(parentItem.nestedListFirstLine);
+}
+
+/**
+ * Computes the `parent` Obsidian gives a root list item: the negative of its list's first line, except that a list
+ * starting on line 0 is rooted at `-1`, since `-0` could not be told from a parent on line 0.
+ *
+ * @param listFirstLine - The first line of the item's list.
+ * @returns The root parent.
+ */
+function getRootListParent(listFirstLine: number): number {
+  return -Math.max(listFirstLine, 1);
+}
+
+/**
+ * Computes the visual column at which each character of a line's leading whitespace starts, with tab stops every
+ * {@link TAB_WIDTH} columns as in CommonMark.
+ *
+ * @param whitespace - The line's leading whitespace.
+ * @returns One column per character, plus the column just past the whitespace, so the result is one longer than
+ * `whitespace`.
+ */
+function getVisualColumns(whitespace: string): number[] {
+  const columns = [0];
+  let column = 0;
+  for (const char of whitespace) {
+    column = advanceColumn(column, char);
+    columns.push(column);
+  }
+  return columns;
+}
+
 function parseListItems(
   content: string,
   bodyStart: number,
@@ -481,7 +565,7 @@ function parseListItems(
   sections: SectionCache[]
 ): ListItemCache[] {
   const items: ListItemCache[] = [];
-  const parentCandidates: ListItemCache[] = [];
+  const parentCandidates: OpenListItem[] = [];
   const regex = /^(?<indent>[ \t]*)(?<marker>[-*+]|\d+[.)]) (?:\[(?<task>.)\] )?(?<rest>.*)$/gm;
   regex.lastIndex = bodyStart;
 
@@ -496,8 +580,27 @@ function parseListItems(
   while (match) {
     if (!isInCodeZone(codeZones, match.index)) {
       const indent = ensureNonNullable(match.groups?.['indent']);
+      const marker = ensureNonNullable(match.groups?.['marker']);
       const taskChar = match.groups?.['task'];
-      const startOffset = match.index;
+      const rest = ensureNonNullable(match.groups?.['rest']);
+      const indentColumns = getVisualColumns(indent);
+      const markerColumn = ensureNonNullable(indentColumns.at(-1));
+
+      // The parent is the nearest open item whose content column the marker reaches, as in CommonMark: an item stays
+      // open for exactly the lines indented at least as far as its content. `parentCandidates` is that stack of open
+      // items, whose content columns strictly increase upwards, so popping the ones this marker falls short of keeps
+      // the lookup amortized O(n) - a flat list, where nothing stays open, used to re-read every earlier item.
+      while (parentCandidates.length > 0 && ensureNonNullable(parentCandidates.at(-1)).contentColumn > markerColumn) {
+        parentCandidates.pop();
+      }
+      const parentItem = parentCandidates.at(-1);
+
+      // Obsidian starts an item where its container's content starts, not at the line start: `  - B` under `- A` starts
+      // at column 2, and a top-level item, whose container is the document, keeps its indent. A tab is never split, so
+      // the item starts at the first character at or past that column.
+      const containerColumn = parentItem?.contentColumn ?? 0;
+      const startColumn = indentColumns.findIndex((column) => column >= containerColumn);
+      const startOffset = match.index + startColumn;
       const endOffset = match.index + match[0].length;
       const pos = makePos(lineStarts, startOffset, endOffset);
       const currentLine = pos.start.line;
@@ -512,35 +615,23 @@ function parseListItems(
             type: 'list'
           });
         }
-        listGroupStart = startOffset;
+        listGroupStart = match.index;
         listGroupFirstLine = currentLine;
       }
       listGroupEnd = endOffset;
       previousLine = currentLine;
 
-      // Determine parent: find previous item with strictly less indent
-      let parent = -listGroupFirstLine; // Default: negative of first item's line in group
-      const indentLength = indent.length;
-
-      // The nearest previous item with strictly less indent. `parentCandidates` is a stack of earlier items whose
-      // indents strictly increase upwards: an item with indent >= this one's can never be a later item's answer,
-      // because this item is nearer and no deeper, so popping it keeps the lookup amortized O(n) rather than
-      // rescanning every earlier item - which a flat list, where nothing has less indent, used to do for each item.
-      while (parentCandidates.length > 0 && ensureNonNullable(parentCandidates.at(-1)).position.start.col >= indentLength) {
-        parentCandidates.pop();
-      }
-      const parentItem = parentCandidates.at(-1);
-      if (parentItem) {
-        parent = parentItem.position.start.line;
-      }
-
       const item: ListItemCache = {
-        parent,
+        parent: getListItemParent(parentItem, listGroupFirstLine, currentLine),
         position: pos,
         task: taskChar
       };
       items.push(item);
-      parentCandidates.push(item);
+      parentCandidates.push({
+        contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
+        hasContent: taskChar !== undefined || rest.trim() !== '',
+        line: currentLine
+      });
     }
     match = regex.exec(content);
   }

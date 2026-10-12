@@ -667,6 +667,42 @@ describe('parseMarkdownContent', () => {
       ]);
     });
 
+    // Each row was measured on a real Obsidian 1.14.4: every item's [start line, start col, start offset, parent].
+    it.each([
+      { content: '- A\n  - B\n  - C', expected: [[0, 0, 0, -1], [1, 2, 6, 0], [2, 2, 12, 0]] },
+      { content: '- A\n  - B\n    - C\n  - D\n- E', expected: [[0, 0, 0, -1], [1, 2, 6, 0], [2, 4, 14, 1], [3, 2, 20, 0], [4, 0, 24, -1]] },
+      { content: '- A\n\t- B\n\t\t- C\n\t- D', expected: [[0, 0, 0, -1], [1, 1, 5, 0], [2, 2, 11, 1], [3, 1, 16, 0]] },
+      { content: '1. A\n   1. B\n   2. C\n2. D', expected: [[0, 0, 0, -1], [1, 3, 8, 0], [2, 3, 16, 0], [3, 0, 21, -1]] },
+      { content: '- [ ] A\n  - [x] B\n  - C', expected: [[0, 0, 0, -1], [1, 2, 10, 0], [2, 2, 20, 0]] },
+      { content: 'para\n\n  - A\n    - B\n  - C', expected: [[2, 0, 6, -2], [3, 4, 16, 2], [4, 0, 20, -2]] },
+      { content: '* A\n    * B\n  * C', expected: [[0, 0, 0, -1], [1, 2, 6, 0], [2, 2, 14, 0]] },
+      { content: '- A\n - B\n   - C', expected: [[0, 0, 0, -1], [1, 0, 4, -1], [2, 3, 12, 1]] },
+      { content: '- A\n  - B\n\ntext\n\n- C\n  - D', expected: [[0, 0, 0, -1], [1, 2, 6, 0], [5, 0, 17, -5], [6, 2, 23, 5]] },
+      // Whitespace after the marker moves the content column, up to four columns of it.
+      { content: '-   A\n   - B\n    - C', expected: [[0, 0, 0, -1], [1, 0, 6, -1], [2, 0, 13, -1]] },
+      { content: '-      A\n  - B\n-  \n  - C', expected: [[0, 0, 0, -1], [1, 2, 11, 0], [2, 0, 15, -1], [3, 0, 19, -1]] },
+      // An item with nothing after its marker is never a parent: the list nested in it is rooted at its own first line.
+      { content: '- \n  - C', expected: [[0, 0, 0, -1], [1, 2, 5, -1]] },
+      { content: '-  \n   - C', expected: [[0, 0, 0, -1], [1, 3, 7, -1]] },
+      { content: '- A\n- \n  - C', expected: [[0, 0, 0, -1], [1, 0, 4, -1], [2, 2, 9, -2]] },
+      { content: '- \n\n  - C', expected: [[0, 0, 0, -1], [2, 2, 6, -2]] },
+      { content: '- \n  - C\n    - D\n  - E', expected: [[0, 0, 0, -1], [1, 2, 5, -1], [2, 4, 13, 1], [3, 2, 19, -1]] },
+      { content: '- [ ]\n  - C', expected: [[0, 0, 0, -1], [1, 2, 8, 0]] },
+      { content: '- [ ] \n  - C', expected: [[0, 0, 0, -1], [1, 2, 9, 0]] }
+    ])('should start each item where its container\'s content starts in $content', ({ content, expected }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => [item.position.start.line, item.position.start.col, item.position.start.offset, item.parent]))
+        .toEqual(expected);
+    });
+
+    it('should end each item at the end of its line', () => {
+      const content = '- A\n  - B';
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => content.slice(item.position.start.offset, item.position.end.offset))).toEqual(['- A', '- B']);
+    });
+
     it('should give every item of a large flat list the root parent', () => {
       const content = `Text\n\n${Array.from({ length: FLAT_LIST_ITEM_COUNT }, (_, index) => `- [ ] item ${String(index)}`).join('\n')}`;
       const cache = parseMarkdownContent(content);
