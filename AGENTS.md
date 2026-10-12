@@ -718,6 +718,14 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
   sliced source against `reference.original`.
 
+- **A note with CRLF or lone-CR line breaks parses as its LF form does** (2026-10-12, measured with Obsidian 1.14.4's
+  own metadata worker). Obsidian takes `\r\n`, `\n` and a lone `\r` as one line break each, and reports every position
+  in the ORIGINAL text, a line ending before its `\r`. `parseMarkdownContent` parses a copy with each break turned into
+  `\n`, which keeps every line and column, and moves each position back to the same line and column of the original.
+  Before that, a CRLF note had no list items or list sections at all, since `.*$` stops at the `\r`, and its code fences
+  went unrecognized, so a tag inside one was reported. A lone-`\r` note collapsed onto line 0. A link whose text spans a
+  line break keeps the `\r\n` in `original` and shows `\n` in `displayText`, as Obsidian does.
+
 - **A list item starts where its CONTAINER's content starts, and nests by content column** (2026-10-12, measured on a
   real Obsidian 1.14.4 over CDP). The mock used to start every item at its line start, so `position.start.col` was
   `0` for every item, and the parent lookup compared indents, which made `- A\n  - B\n  - C` report `B` as `C`'s
