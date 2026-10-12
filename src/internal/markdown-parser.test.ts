@@ -1079,6 +1079,120 @@ describe('parseMarkdownContent', () => {
       expect(cache.sections?.map((s) => [s.type, s.position.start.offset, s.position.end.offset])).toEqual(expected);
     });
 
+    // Measured with Obsidian 1.14.4's own metadata worker, which is remark-parse 8 with Obsidian's comment and math
+    // tokenizers: the blocks between the sections found earlier, each starting at its line start, indent included.
+    it.each([
+      ['an indented callout, whose indent the section starts at', '   > [!note]\n> body\n', [['callout', 0, 19]]],
+      ['a callout indented four spaces, which is indented code', '    > [!note]\n', [['code', 0, 13]]],
+      ['a callout interrupting a paragraph', 'para\n> [!note]\n', [['paragraph', 0, 4], ['callout', 5, 14]]],
+      ['an indented paragraph', '  para\n  more\n', [['paragraph', 0, 13]]],
+      ['a line indented four spaces', '    code\n', [['code', 0, 8]]],
+      ['a line opening with a tab', '\tcode\n', [['code', 0, 5]]],
+      ['a tab after a space, which indents nothing', ' \tcode\n', [['paragraph', 0, 6]]],
+      ['indented code across a blank line', '    code\n\n    more\n', [['code', 0, 18]]],
+      ['indented code and a whitespace line indented as far', '    a\n    \nb\n', [['code', 0, 10], ['paragraph', 11, 12]]],
+      ['indented code, then a less indented paragraph', '    code\n  para\n', [['code', 0, 8], ['paragraph', 9, 15]]],
+      ['a line indented four spaces inside a paragraph', 'para\n    not code\n', [['paragraph', 0, 17]]],
+      ['a tab-indented line inside a paragraph', 'para\n\tmore\n', [['paragraph', 0, 10]]],
+      ['a paragraph ending in an indent-only line', 'para\n    ', [['paragraph', 0, 9]]],
+      ['a whitespace line after indented code at the end', '    a\n  ', [['code', 0, 5]]],
+      ['an empty line after a blockquote', '> q\n\n', [['blockquote', 0, 3]]],
+      ['indented code after a blank line', 'para\n\n    code\n', [['paragraph', 0, 4], ['code', 6, 14]]],
+      ['a fence interrupting a paragraph', 'para\n```\nx\n```\n', [['paragraph', 0, 4], ['code', 5, 14]]],
+      ['an unclosed fence, which runs to the end', 'a\n```\nb', [['paragraph', 0, 1], ['code', 2, 7]]],
+      ['a fence indented four spaces', '    ```\nx\n```\n', [['code', 0, 7], ['paragraph', 8, 9], ['code', 10, 14]]],
+      ['a fence line indented four spaces, which closes nothing', '```\n    ```\n```\n', [['code', 0, 15]]],
+      ['a tilde fence holding a backtick fence', '~~~\nx\n```\n~~~\n', [['code', 0, 13]]],
+      ['a backtick in a backtick fence\'s info', '``` a`b\nx\n', [['paragraph', 0, 9]]],
+      ['a thematic break interrupting a paragraph', 'para\n***\n', [['paragraph', 0, 4], ['thematicBreak', 5, 8]]],
+      ['a thematic break with spaces', 'x\n  _ _ _\n', [['paragraph', 0, 1], ['thematicBreak', 2, 9]]],
+      ['a thematic break indented four spaces', '    ---\n', [['code', 0, 7]]],
+      ['a blockquote interrupting a paragraph', 'para\n> q\n', [['paragraph', 0, 4], ['blockquote', 5, 8]]],
+      ['a lazy line of a blockquote', '> q\n> r\nlazy\n', [['blockquote', 0, 12]]],
+      ['a blockquote ended by indented code', '> q\n    code\n', [['blockquote', 0, 3], ['code', 4, 12]]],
+      ['a blockquote ended by a fence', '> q\n```\nx\n```\n', [['blockquote', 0, 3], ['code', 4, 13]]],
+      ['a blockquote ended by a thematic break', '> q\n  ***\n', [['blockquote', 0, 3], ['thematicBreak', 4, 9]]],
+      ['a blockquote ended by a math block', '> q\n$$\nx\n$$\n', [['blockquote', 0, 3], ['math', 4, 11]]],
+      ['a blockquote ended by a comment', '> q\n%%\nx\n%%\n', [['blockquote', 0, 3], ['comment', 4, 11]]],
+      ['a blockquote ended by an HTML block', '> q\n<!-- c -->\n', [['blockquote', 0, 3], ['html', 4, 14]]],
+      ['a blockquote continued by an inline tag', '> q\n<span>\n', [['blockquote', 0, 10]]],
+      ['a blockquote ended by a setext heading', '> q\nfoo\n---\n', [['blockquote', 0, 3], ['heading', 4, 11]]],
+      ['a blockquote ended by an ATX heading', '> q\n  # x\n', [['blockquote', 0, 3], ['heading', 4, 9]]],
+      ['a lazy line of an open fence in a blockquote', '> ```\n> x\nlazy\n', [['blockquote', 0, 14]]],
+      ['a comment', '%%\nx\n%%\n', [['comment', 0, 7]]],
+      ['a comment interrupting a paragraph', 'para\n%%\nx\n%%\n', [['paragraph', 0, 4], ['comment', 5, 12]]],
+      ['an unclosed comment', '%%\nx\n', [['comment', 0, 5]]],
+      ['a comment closed mid-line', '%%\nx\n%% after\nmore\n\nnext\n', [['comment', 0, 7], ['paragraph', 7, 18], ['paragraph', 20, 24]]],
+      ['a comment closed on its own line', '%% a %%\n', [['paragraph', 0, 7]]],
+      ['a second percent sign on the opening line', '%%x%y\nz\n', [['paragraph', 0, 7]]],
+      ['a comment opener with nothing after it', '%%', [['comment', 0, 2]]],
+      ['a math block', '$$\nx\n$$\n', [['math', 0, 7]]],
+      ['a math block interrupting a paragraph', 'para\n$$x\n', [['paragraph', 0, 4], ['math', 5, 9]]],
+      ['a math block closed on its own line', 'para\n$$ x $$\n', [['paragraph', 0, 12]]],
+      ['an unclosed math block', '$$\nx\n$$ after\n', [['math', 0, 14]]],
+      ['a math block closed after text', '$$\nx\nafter $$  \nnext\n', [['math', 0, 15], ['paragraph', 16, 20]]],
+      ['a math closer holding another dollar sign', '$$\na $ b $$\nc\n', [['math', 0, 14]]],
+      ['three dollar signs', '$$$\nx\n$$$\n', [['math', 0, 9]]],
+      ['a math opener at the very end', '$$', [['paragraph', 0, 2]]],
+      ['a math block whose second line is empty', '$$\n\n$$\nx\n', [['math', 0, 6], ['paragraph', 7, 8]]],
+      ['an HTML block', '<div>\nx\n\ny\n', [['html', 0, 7], ['paragraph', 9, 10]]],
+      ['an HTML block interrupting a paragraph', 'para\n<div>\n', [['paragraph', 0, 4], ['html', 5, 10]]],
+      ['an inline tag after a paragraph', 'para\n<span>\n', [['paragraph', 0, 11]]],
+      ['an inline tag alone', '<a href="x">\n', [['html', 0, 12]]],
+      ['an inline tag followed by text', '<a href="x"> text\n', [['paragraph', 0, 17]]],
+      ['an HTML comment across a blank line', '<!-- c\n\nd -->\n', [['html', 0, 13]]],
+      ['an unclosed HTML comment', '<!-- open\nx\n', [['html', 0, 12]]],
+      ['an HTML comment closed on its first line', '<!-- a -->b\nc\n\nd\n', [['html', 0, 11], ['paragraph', 12, 13], ['paragraph', 15, 16]]],
+      ['a script block', 'para\n<script>\nx\n</script>\n', [['paragraph', 0, 4], ['html', 5, 25]]],
+      ['a processing instruction', '<?php\nx ?>\ny\n', [['html', 0, 10], ['paragraph', 11, 12]]],
+      ['a declaration', '<!DOCTYPE html>\nx\n', [['html', 0, 15], ['paragraph', 16, 17]]],
+      ['a CDATA section', '<![CDATA[\nx\n]]>\n', [['html', 0, 15]]],
+      ['an HTML block line of only whitespace', '<div>\n  \nx\n', [['html', 0, 10]]],
+      ['an indented HTML block', '  <div>\n', [['html', 0, 7]]],
+      ['a table', '| a | b |\n| - | - |\n| 1 | 2 |\n', [['table', 0, 29]]],
+      ['a table without outer pipes', 'a | b\n:- | -:\n1 | 2\n\npara\n', [['table', 0, 19], ['paragraph', 21, 25]]],
+      ['a table ended by a row starting with a pipe', 'a|b\n-|-\n|x|y|\n', [['table', 0, 7], ['paragraph', 8, 13]]],
+      ['a table ended by a row without a leading pipe', '|a|b|\n|-|-|\nx|y\n', [['table', 0, 11], ['paragraph', 12, 15]]],
+      ['a table ended by a line without a pipe', '| a | b |\n| - | - |\n| 1 | 2 |\npara\n', [['table', 0, 29], ['paragraph', 30, 34]]],
+      ['a table row whose only pipe comes first', '|a|\n|-|\n|x\n', [['table', 0, 7], ['paragraph', 8, 10]]],
+      ['a table with alignment', 'a|b\n:-|-:\n', [['table', 0, 9]]],
+      ['a delimiter row with a stray character', 'a|b\n-|x\n', [['paragraph', 0, 7]]],
+      ['a delimiter row of only a pipe', 'a|b\n|\n', [['paragraph', 0, 5]]],
+      ['a delimiter row with an empty cell', 'a|b\n-||-\n', [['paragraph', 0, 8]]],
+      ['a delimiter row with a colon cell', 'a|b\n:|:\n', [['table', 0, 7]]],
+      ['a header with no delimiter row', 'a|b\n', [['paragraph', 0, 3]]],
+      ['a table after a paragraph', 'para\n| a | b |\n| - | - |\n', [['paragraph', 0, 24]]],
+      ['a setext heading', 'a\n===\n', [['heading', 0, 5]]],
+      ['a setext heading over two lines of text', 'a\nb\n---\n', [['paragraph', 0, 3], ['thematicBreak', 4, 7]]],
+      ['an indented setext underline', '  a\n  ---\n', [['paragraph', 0, 3], ['thematicBreak', 4, 9]]],
+      ['a setext underline with trailing spaces', 'a\n===  \n', [['paragraph', 0, 7]]],
+      ['an empty ATX heading', 'x\n#\n', [['paragraph', 0, 1], ['heading', 2, 3]]],
+      ['an indented ATX heading', 'para\n  # x\n', [['paragraph', 0, 4], ['heading', 5, 10]]],
+      ['a hash run with no space after it', '#x\n', [['paragraph', 0, 2]]],
+      ['seven hashes', '####### x\n', [['paragraph', 0, 9]]],
+      ['a trailing whitespace-only line', 'a\n   ', [['paragraph', 0, 5]]],
+      ['paragraphs separated by blank lines', 'para\n\n\n   para2\n', [['paragraph', 0, 4], ['paragraph', 7, 15]]]
+    ])('should read %s as Obsidian does', (_name, content, expected) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.sections?.map((s) => [s.type, s.position.start.offset, s.position.end.offset])).toEqual(expected);
+    });
+
+    // Measured the same way: a heading the gap scan finds is a heading in the cache too, in document order.
+    it.each([
+      ['a setext heading before an ATX one', 'a\n===\n# B\n', [['a', 1, 0, 5], ['B', 1, 6, 9]]],
+      ['an empty ATX heading after a paragraph', '# B\nx\n#\n', [['B', 1, 0, 3], ['', 1, 6, 7]]],
+      ['an empty ATX heading before a paragraph', '#\nText\n', [['', 1, 0, 1]]],
+      ['a closing sequence', '# A #\n', [['A', 1, 0, 5]]],
+      ['a setext heading whose text opens with whitespace', ' \tx\n===\n', [['x', 1, 0, 7]]],
+      ['hashes inside the text', '## A ## b\n', [['A ## b', 2, 0, 9]]],
+      ['a hash glued to a word', '# a#b\n', [['a#b', 1, 0, 5]]],
+      ['only whitespace after the hashes', '#  \n', [['', 1, 0, 3]]]
+    ])('should read the headings of %s as Obsidian does', (_name, content, expected) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.headings?.map((h) => [h.heading, h.level, h.position.start.offset, h.position.end.offset])).toEqual(expected);
+    });
     it('should create code sections for fenced code blocks in gaps', () => {
       const content = '# Heading\n\n```\ncode\n```';
       const cache = parseMarkdownContent(content);

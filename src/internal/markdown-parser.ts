@@ -27,6 +27,10 @@ import {
   isInternalLinkTarget,
   normalizeLinkTarget
 } from './link-target.ts';
+import {
+  scanGapBlocks,
+  tokenizeAtxHeading
+} from './markdown-gap-blocks.ts';
 import { scanLeafBlocks } from './markdown-leaf-blocks.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
@@ -191,8 +195,8 @@ interface RecordBlankListLineParams {
  * Parses markdown content into a `CachedMetadata` object.
  *
  * This approximates Obsidian's parser rather than reproducing it: tags, links and embeds are found by regular
- * expressions outside fenced code blocks and inline code spans, and blocks between the recognized sections become
- * paragraph, blockquote, code or thematic-break sections.
+ * expressions outside fenced code blocks and inline code spans, and the blocks between the recognized sections are read
+ * by a port of the block tokenizers Obsidian's metadata worker runs (see `markdown-gap-blocks.ts`).
  *
  * Obsidian takes `\r\n`, `\n` and a lone `\r` as one line break each, and reports every position in the original text,
  * with a line ending before its `\r`. So a note holding a `\r` is parsed with its line breaks turned into `\n`, which
@@ -231,122 +235,33 @@ export function parseMarkdownContent(content: string): CachedMetadata {
 }
 
 /**
- * Computes the offset each line of a note starts at, taking `\r\n`, `\n` and a lone `\r` as one line break each.
+ * Adds a section for each block between two sections found earlier, and a heading for each heading among them.
  *
  * @param content - The note's full text.
- * @returns The line start offsets, beginning with `0`.
+ * @param gapStart - The offset the gap starts at.
+ * @param gapEnd - The offset just past the gap.
+ * @param lineStarts - The offset each line starts at.
+ * @param sections - The collection each section is pushed onto.
+ * @param headings - The collection each heading is pushed onto.
  */
-function buildOriginalLineStarts(content: string): number[] {
-  const starts: number[] = [0];
-  for (const match of content.matchAll(/\r\n?|\n/g)) {
-    starts.push(match.index + match[0].length);
-  }
-  return starts;
-}
-
-/**
- * Moves a location in the text with its line breaks turned into `\n` to the same line and column of the original.
- *
- * @param lineStarts - The offset each line of the original starts at.
- * @param loc - The location.
- * @returns The location in the original.
- */
-function moveLocToOriginal(lineStarts: number[], loc: Loc): Loc {
-  return { col: loc.col, line: loc.line, offset: ensureNonNullable(lineStarts[loc.line]) + loc.col };
-}
-
-/**
- * Parses markdown content whose every line break is a `\n`.
- *
- * @param content - The note's full text.
- * @returns The metadata.
- */
-function parseLfContent(content: string): CachedMetadata {
-  const cache: CachedMetadata = {};
-  const lineStarts = buildLineStarts(content);
-  const sections: SectionCache[] = [];
-  const codeZones = buildCodeZones(content);
-
-  const bodyStart = parseFrontmatter(content, lineStarts, cache, sections);
-
-  const headings = parseHeadings(content, bodyStart, lineStarts, codeZones, sections);
-  if (headings.length > 0) {
-    cache.headings = headings;
-  }
-
-  const tags = parseTags(content, bodyStart, lineStarts, codeZones);
-  if (tags.length > 0) {
-    cache.tags = tags;
-  }
-
-  const links = parseLinks(content, bodyStart, lineStarts, codeZones);
-  if (links.length > 0) {
-    cache.links = links;
-  }
-
-  const embeds = parseEmbeds(content, bodyStart, lineStarts, codeZones);
-  if (embeds.length > 0) {
-    cache.embeds = embeds;
-  }
-
-  const listItems = parseListItems(content, bodyStart, lineStarts, sections);
-  if (listItems.length > 0) {
-    cache.listItems = listItems;
-  }
-
-  parseParagraphSections(content, bodyStart, lineStarts, sections, codeZones);
-
-  if (sections.length > 0) {
-    cache.sections = sections.sort((a, b) => a.position.start.offset - b.position.start.offset);
-  }
-
-  return cache;
-}
-
-// A blockquote whose FIRST line, past its `>` and the one optional space after it, opens with a callout header: `[!`, a
-// non-empty type, `]`, an optional fold sign, then whitespace or the end of the line. Obsidian's blockquote tokenizer
-// tests exactly this and nothing else, so a tab or a second space before the `[`, an empty `[!]`, a header on a later
-// line, or one in a nested quote (`> > [!note]`) leaves the block a plain blockquote.
-const CALLOUT_HEADER_REGEX = /^> ?\[![^\]\n]+\][+-]?(?:\s|$)/;
-
 function addGapSections(
   content: string,
   gapStart: number,
   gapEnd: number,
   lineStarts: number[],
-  _codeZones: [number, number][],
-  sections: SectionCache[]
+  sections: SectionCache[],
+  headings: HeadingCache[]
 ): void {
-  const gapContent = content.slice(gapStart, gapEnd);
-  // Split by blank lines into paragraphs, CAPTURING the separators. Every part's own length then
-  // advances the running offset, so each block's position is the one it actually occupies rather than
-  // one reconstructed from the block length plus a guessed single separator character. That
-  // reconstruction both double-counted the block (the offset had already advanced to its end) and
-  // assumed a one-character separator, while a blank line is at least two — so from the second block
-  // of a gap onwards the lookup ran past the block and failed. A `%%` comment on its own line after a
-  // blank line is the everyday shape that hit it.
-  const parts = gapContent.split(/(?<blankLine>\n\s*\n)/);
-  let offset = gapStart;
-  for (const part of parts) {
-    const trimmed = part.trim();
-    if (trimmed.length > 0) {
-      const blockStart = offset + part.indexOf(trimmed);
-      const blockEnd = blockStart + trimmed.length;
-      let type = 'paragraph';
-      if (trimmed.startsWith('>')) {
-        type = CALLOUT_HEADER_REGEX.test(trimmed) ? 'callout' : 'blockquote';
-      } else if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
-        type = 'code';
-      } else if (/^(?:---|\*\*\*|___)\s*$/.test(trimmed)) {
-        type = 'thematicBreak';
-      }
-      sections.push({
-        id: undefined,
-        position: makePos(lineStarts, blockStart, blockEnd),
-        type
+  for (const block of scanGapBlocks(content.slice(gapStart, gapEnd))) {
+    const position = makePos(lineStarts, gapStart + block.start, gapStart + block.end);
+    sections.push({ id: undefined, position, type: block.type });
+    if (block.heading) {
+      headings.push({
+        heading: block.heading.text,
+        level: block.heading.level,
+        position: makePos(lineStarts, gapStart + block.start, gapStart + block.end)
       });
     }
-    offset += part.length;
   }
 }
 
@@ -393,6 +308,20 @@ function buildLineStarts(content: string): number[] {
     if (content[index] === '\n') {
       starts.push(index + 1);
     }
+  }
+  return starts;
+}
+
+/**
+ * Computes the offset each line of a note starts at, taking `\r\n`, `\n` and a lone `\r` as one line break each.
+ *
+ * @param content - The note's full text.
+ * @returns The line start offsets, beginning with `0`.
+ */
+function buildOriginalLineStarts(content: string): number[] {
+  const starts: number[] = [0];
+  for (const match of content.matchAll(/\r\n?|\n/g)) {
+    starts.push(match.index + match[0].length);
   }
   return starts;
 }
@@ -456,6 +385,17 @@ function makePos(lineStarts: number[], startOffset: number, endOffset: number): 
     end: offsetToLoc(lineStarts, endOffset),
     start: offsetToLoc(lineStarts, startOffset)
   };
+}
+
+/**
+ * Moves a location in the text with its line breaks turned into `\n` to the same line and column of the original.
+ *
+ * @param lineStarts - The offset each line of the original starts at.
+ * @param loc - The location.
+ * @returns The location in the original.
+ */
+function moveLocToOriginal(lineStarts: number[], loc: Loc): Loc {
+  return { col: loc.col, line: loc.line, offset: ensureNonNullable(lineStarts[loc.line]) + loc.col };
 }
 
 function offsetToLoc(lineStarts: number[], offset: number): Loc {
@@ -599,18 +539,19 @@ function parseHeadings(
   sections: SectionCache[]
 ): HeadingCache[] {
   const headings: HeadingCache[] = [];
-  const regex = /^(?<hashes>#{1,6})\s+(?<text>.+)$/gm;
+  // `[ \t]`, not `\s`, which would carry a heading across a line break and read `#\nText` as a heading `Text`. A line
+  // that is no more than `#` is a heading too, and is left to the gap scan, which reads it in its context.
+  const regex = /^#{1,6}[ \t]+.+$/gm;
   regex.lastIndex = bodyStart;
   let match = regex.exec(content);
   while (match) {
     if (!isInCodeZone(codeZones, match.index)) {
-      const hashes = ensureNonNullable(match.groups?.['hashes']);
-      const text = ensureNonNullable(match.groups?.['text']);
+      const heading = ensureNonNullable(ensureNonNullable(tokenizeAtxHeading(match[0])).heading);
       const startOffset = match.index;
       const endOffset = match.index + match[0].length;
       headings.push({
-        heading: text.trim(),
-        level: hashes.length,
+        heading: heading.text,
+        level: heading.level,
         position: makePos(lineStarts, startOffset, endOffset)
       });
       sections.push({
@@ -622,6 +563,54 @@ function parseHeadings(
     match = regex.exec(content);
   }
   return headings;
+}
+
+/**
+ * Parses markdown content whose every line break is a `\n`.
+ *
+ * @param content - The note's full text.
+ * @returns The metadata.
+ */
+function parseLfContent(content: string): CachedMetadata {
+  const cache: CachedMetadata = {};
+  const lineStarts = buildLineStarts(content);
+  const sections: SectionCache[] = [];
+  const codeZones = buildCodeZones(content);
+
+  const bodyStart = parseFrontmatter(content, lineStarts, cache, sections);
+
+  const headings = parseHeadings(content, bodyStart, lineStarts, codeZones, sections);
+
+  const tags = parseTags(content, bodyStart, lineStarts, codeZones);
+  if (tags.length > 0) {
+    cache.tags = tags;
+  }
+
+  const links = parseLinks(content, bodyStart, lineStarts, codeZones);
+  if (links.length > 0) {
+    cache.links = links;
+  }
+
+  const embeds = parseEmbeds(content, bodyStart, lineStarts, codeZones);
+  if (embeds.length > 0) {
+    cache.embeds = embeds;
+  }
+
+  const listItems = parseListItems(content, bodyStart, lineStarts, sections);
+  if (listItems.length > 0) {
+    cache.listItems = listItems;
+  }
+
+  parseParagraphSections(content, bodyStart, lineStarts, sections, headings);
+  if (headings.length > 0) {
+    cache.headings = headings.sort((a, b) => a.position.start.offset - b.position.start.offset);
+  }
+
+  if (sections.length > 0) {
+    cache.sections = sections.sort((a, b) => a.position.start.offset - b.position.start.offset);
+  }
+
+  return cache;
 }
 
 function parseLinks(
@@ -1225,7 +1214,7 @@ function parseParagraphSections(
   bodyStart: number,
   lineStarts: number[],
   existingSections: SectionCache[],
-  codeZones: [number, number][]
+  headings: HeadingCache[]
 ): void {
   // Find paragraph sections in gaps between existing sections
   const sortedSections = [...existingSections].sort((a, b) => a.position.start.offset - b.position.start.offset);
@@ -1235,13 +1224,13 @@ function parseParagraphSections(
     const gapStart = cursor;
     const gapEnd = section.position.start.offset;
     if (gapStart < gapEnd) {
-      addGapSections(content, gapStart, gapEnd, lineStarts, codeZones, existingSections);
+      addGapSections(content, gapStart, gapEnd, lineStarts, existingSections, headings);
     }
     cursor = section.position.end.offset;
   }
   // Trailing gap
   if (cursor < content.length) {
-    addGapSections(content, cursor, content.length, lineStarts, codeZones, existingSections);
+    addGapSections(content, cursor, content.length, lineStarts, existingSections, headings);
   }
 }
 
