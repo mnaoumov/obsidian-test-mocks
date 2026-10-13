@@ -948,10 +948,18 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     it hold `text`. Only a whitespace-only line is measured that way here. Doing it for every line means comparing each
     line's columns level by level after each strip rather than as absolute visual columns, across both the pre-pass and
     the list parser, which a tab-indented item followed by space-indented content does not justify (decided 2026-10-12).
-  - Not modeled either: **a line after a blockquote that starts an ordered item not numbered 1.** It cannot interrupt the
-    quote's paragraph, so Obsidian takes it into the quote lazily and reads it there, as a quoted list item after a list
-    or an empty `>` line (`>\n9. C` is one blockquote holding the item) and as paragraph text after a paragraph
-    (`> text\n9. C` has no item). The mock ends the quote and reads the line as a top-level list.
+  - **A line after a blockquote that starts an ordered item not numbered 1 stays in the quote** (2026-10-12). Such an
+    item cannot interrupt a blockquote, so Obsidian takes the line into the quote lazily and reads it there with the
+    quote's prefix as if it had no width: as a quoted item after an item, a heading or an empty `>` line
+    (`>\n9. C` is one blockquote holding the item, `> - q\n2. y` one holding two lists), as paragraph text after a
+    paragraph (`> text\n9. C` has no item), as a line of an open fence, and as paragraph text of a quoted item it is
+    indented to the content of (`> - q\n  2. y` is one item). A bullet, an item numbered 1, a thematic break and a line
+    indented four or more columns still end the quote. The pre-pass records such lines in `lazyQuoteLines`.
+  - **A line holding several markers starts an item at each, nested in the one before it** (2026-10-12): `- - x` is an
+    item holding a nested item (`[0, 5, -1]` and `[2, 5, -1]`, the outer item holding nothing but the nested list), and
+    `- - - x` three. `* * *` and `- - -` alone are still thematic breaks. The pre-pass records every marker's index in
+    `itemMarkerIndexes`, and the parser reads each later marker's item off a copy of the line whose characters before
+    the marker are spaces, so every column stays where it was.
 
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`

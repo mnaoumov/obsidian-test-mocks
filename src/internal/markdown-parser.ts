@@ -68,6 +68,29 @@ const WIKILINK_CLOSE = ']]';
 const WIKILINK_OPEN = '[[';
 
 /**
+ * What {@link addListItem} needs.
+ */
+interface AddListItemParams {
+  readonly content: string;
+  // The item's line number.
+  readonly currentLine: number;
+  // Whether another marker after this one on the line starts an item nested in this one.
+  readonly hasNestedMarker: boolean;
+  // The collection the item is pushed onto.
+  readonly items: ListItemCache[];
+  // The number of blockquote levels the line continues lazily, if it does (see `LeafBlockScan.lazyQuoteLines`).
+  readonly lazyQuoteDepth: number | undefined;
+  // The item's line, with everything before the marker past the quote prefix turned into spaces for a later marker.
+  readonly line: string;
+  // The offset the line starts at.
+  readonly lineStart: number;
+  readonly lineStarts: number[];
+  readonly scan: LeafBlockScan;
+  readonly sections: SectionCache[];
+  readonly states: Map<number, ListState>;
+}
+
+/**
  * What a note's body holds, everything but its frontmatter and its block ids.
  */
 interface BodyMetadata {
@@ -792,6 +815,99 @@ const BLOCKQUOTE_LINE_REGEX = /^[ \t]*>/;
 const FIRST_QUOTE_LEVEL_REGEX = /^[ \t]*> ?/;
 const NESTED_QUOTE_LEVEL_REGEX = /^ {0,3}> ?/;
 
+/**
+ * Adds the list item a line starts, closing the items and the lists it ends.
+ *
+ * @param params - The note, the line and its number, whether another marker on the line nests an item in this one, the
+ * lazily continued blockquote depth, the collections, the pre-pass and the lists open at each depth.
+ */
+function addListItem(params: AddListItemParams): void {
+  const { content, currentLine, hasNestedMarker, items, lazyQuoteDepth, line, lineStart, lineStarts, scan, sections, states } = params;
+  const itemLine = matchListItemLine(line, lazyQuoteDepth);
+  const { match, prefixLength } = itemLine;
+  const state = getListState({ content, depth: itemLine.depth, endLine: currentLine, lineStarts, scan, sections, states });
+
+  const indent = ensureNonNullable(match.groups?.['indent']);
+  const marker = ensureNonNullable(match.groups?.['marker']);
+  const taskChar = match.groups?.['task'];
+  const rest = ensureNonNullable(match.groups?.['rest']);
+  // Columns count from the end of the quote prefix, which is where the list's container starts.
+  const indentColumns = getVisualColumns(indent);
+  const markerColumn = ensureNonNullable(indentColumns.at(-1));
+  const kind = getListMarkerKind(marker);
+
+  // Blank lines alone never end a list in Obsidian; only content the list cannot hold does.
+  let isNewList = state.openItems.length === 0 || doesListEndBefore(content, lineStarts, state, currentLine);
+  if (isNewList) {
+    closeOpenListItems(state.openItems, lineStarts);
+  }
+
+  // The parent is the nearest open item whose content column the marker reaches, as in CommonMark: an item stays
+  // open for exactly the lines indented at least as far as its content. `openItems` is that stack of open items,
+  // whose content columns strictly increase upwards, so popping the ones this marker falls short of keeps the lookup
+  // amortized O(n) - a flat list, where nothing stays open, used to re-read every earlier item.
+  const closedItems = popListItemsPastColumn(state.openItems, markerColumn);
+  const parentItem = state.openItems.at(-1);
+
+  // Obsidian starts an item where its container's content starts, not at the line start: `  - B` under `- A` starts
+  // at column 2, a top-level item, whose container is the document, keeps its indent, and a top-level item in a
+  // blockquote starts just past the quote prefix. A tab is never split, so the item starts at the first character at
+  // or past that column.
+  const containerColumn = parentItem?.contentColumn ?? 0;
+  const startColumn = indentColumns.findIndex((column) => column >= containerColumn);
+  const startOffset = lineStart + prefixLength + startColumn;
+  const endOffset = lineStart + line.length;
+  const pos = makePos(lineStarts, startOffset, endOffset);
+
+  // A list holds items of one kind only: a top-level item with another bullet character, or another ordered
+  // delimiter, starts a list of its own, gap or no gap. A nested item is free to differ from its siblings, since
+  // only the top-level lists are sections.
+  if (!parentItem && kind !== state.kind) {
+    isNewList = true;
+  }
+
+  closeListItemsBeforeItem(closedItems, isNewList, kind, lineStarts);
+  recordListLine(state.openItems, endOffset);
+  recordListLineIndent(state.openItems, markerColumn);
+
+  if (isNewList) {
+    pushListSection(lineStarts, state, sections);
+    state.groupStart = lineStart;
+    state.firstLine = currentLine;
+    state.kind = kind;
+  }
+  state.groupEnd = endOffset;
+  state.previousLine = currentLine;
+
+  const item: ListItemCache = {
+    parent: 0,
+    position: pos,
+    task: taskChar
+  };
+  item.parent = getListItemParent({ item, kind, listFirstLine: state.firstLine, parentItem });
+  items.push(item);
+  parentItem?.childLines.push({ cache: item, indentColumns, textStart: lineStart + prefixLength });
+  // A task item with no text after its checkbox still counts as a parent, but holds no paragraph, and neither does an
+  // item whose text is another item's marker.
+  const hasText = rest.trim() !== '' && !hasNestedMarker;
+  const afterMarker = line.slice(prefixLength + indent.length + marker.length);
+  state.openItems.push({
+    blankLineEnd: undefined,
+    blockEnd: hasText ? endOffset : -1,
+    cache: item,
+    childCount: taskChar !== undefined || hasText ? 1 : 0,
+    childLines: [],
+    containerColumn,
+    contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
+    isInHidingBlock: !hasNestedMarker && scan.hidingOpenerLines.has(currentLine),
+    kind,
+    line: currentLine,
+    nestedLists: [],
+    removalColumn: markerColumn + getBulletWidth(indent.length - startColumn, marker, afterMarker),
+    valueEnd: endOffset
+  });
+}
+
 function advanceColumn(column: number, char: string): number {
   return char === '\t' ? column + TAB_WIDTH - (column % TAB_WIDTH) : column + 1;
 }
@@ -1032,6 +1148,12 @@ function getContainerLines(params: GetContainerLinesParams): ContainerLines {
       continue;
     }
     const ownText = rawLine.slice(levelEnds.at(-1) ?? 0);
+    // A line the blockquote reads as its own, though it carries no `>` for it, is read there whole.
+    if ((scan.lazyQuoteLines.get(firstLine + index) ?? 0) >= depth) {
+      isAfterBlankLine = false;
+      lines.push(ownText);
+      continue;
+    }
     if (
       isAfterBlankLine
       || ownText.trim() === ''
@@ -1195,16 +1317,33 @@ function getVisualColumns(whitespace: string): number[] {
 }
 
 /**
+ * Turns every character between a line's quote prefix and one of its later list markers into a space, tabs aside, so
+ * the line reads as the marker's item alone, indented as far as its marker is. Each character but a tab takes one
+ * column, so every column stays where it was.
+ *
+ * @param line - The line.
+ * @param prefixLength - The length of its quote prefix.
+ * @param markerIndex - The index of the marker.
+ * @returns The line, with the same length.
+ */
+function maskLineBeforeMarker(line: string, prefixLength: number, markerIndex: number): string {
+  const masked = line.slice(prefixLength, markerIndex).replaceAll(/[^\t]/g, ' ');
+  return line.slice(0, prefixLength) + masked + line.slice(markerIndex);
+}
+
+/**
  * Matches a line the leaf-block pre-pass found starting a list item against the list-item shape, past its quote prefix.
  *
  * @param line - The line.
+ * @param lazyQuoteDepth - The number of blockquote levels the line continues lazily, if it does, which it sits in
+ * whatever its own prefix holds.
  * @returns The match, the number of quote levels, and the length of the quote prefix.
  */
-function matchListItemLine(line: string): ListItemLine {
+function matchListItemLine(line: string, lazyQuoteDepth: number | undefined): ListItemLine {
   const levelEnds = getQuoteLevelEnds(line);
   const prefixLength = levelEnds.at(-1) ?? 0;
   const match = ensureNonNullable(LIST_ITEM_REGEX.exec(line.slice(prefixLength)));
-  return { depth: levelEnds.length, match, prefixLength };
+  return { depth: lazyQuoteDepth ?? levelEnds.length, match, prefixLength };
 }
 
 function parseListItems(
@@ -1223,93 +1362,21 @@ function parseListItems(
   const scan = scanLeafBlocks(getLines(content, lineStarts, 0, lineStarts.length), bodyLine);
 
   for (let currentLine = bodyLine; currentLine < lineStarts.length; currentLine++) {
-    if (!scan.itemLines.has(currentLine)) {
+    const markerIndexes = scan.itemMarkerIndexes.get(currentLine);
+    if (!markerIndexes) {
       continue;
     }
     const lineStart = ensureNonNullable(lineStarts[currentLine]);
-    const line = content.slice(lineStart, getLineEnd(content, lineStarts, currentLine));
-    const itemLine = matchListItemLine(line);
-    const { match, prefixLength } = itemLine;
-    const state = getListState({ content, depth: itemLine.depth, endLine: currentLine, lineStarts, scan, sections, states });
-
-    const indent = ensureNonNullable(match.groups?.['indent']);
-    const marker = ensureNonNullable(match.groups?.['marker']);
-    const taskChar = match.groups?.['task'];
-    const rest = ensureNonNullable(match.groups?.['rest']);
-    // Columns count from the end of the quote prefix, which is where the list's container starts.
-    const indentColumns = getVisualColumns(indent);
-    const markerColumn = ensureNonNullable(indentColumns.at(-1));
-    const kind = getListMarkerKind(marker);
-
-    // Blank lines alone never end a list in Obsidian; only content the list cannot hold does.
-    let isNewList = state.openItems.length === 0 || doesListEndBefore(content, lineStarts, state, currentLine);
-    if (isNewList) {
-      closeOpenListItems(state.openItems, lineStarts);
+    const rawLine = content.slice(lineStart, getLineEnd(content, lineStarts, currentLine));
+    const lazyQuoteDepth = scan.lazyQuoteLines.get(currentLine);
+    const { prefixLength: rawPrefixLength } = matchListItemLine(rawLine, lazyQuoteDepth);
+    // A line holding several markers starts an item at each, nested in the one before it, and each is read as if the
+    // line held nothing before its marker.
+    for (const [markerNumber, markerIndex] of markerIndexes.entries()) {
+      const line = markerNumber === 0 ? rawLine : maskLineBeforeMarker(rawLine, rawPrefixLength, markerIndex);
+      const hasNestedMarker = markerNumber < markerIndexes.length - 1;
+      addListItem({ content, currentLine, hasNestedMarker, items, lazyQuoteDepth, line, lineStart, lineStarts, scan, sections, states });
     }
-
-    // The parent is the nearest open item whose content column the marker reaches, as in CommonMark: an item stays
-    // open for exactly the lines indented at least as far as its content. `openItems` is that stack of open items,
-    // whose content columns strictly increase upwards, so popping the ones this marker falls short of keeps the lookup
-    // amortized O(n) - a flat list, where nothing stays open, used to re-read every earlier item.
-    const closedItems = popListItemsPastColumn(state.openItems, markerColumn);
-    const parentItem = state.openItems.at(-1);
-
-    // Obsidian starts an item where its container's content starts, not at the line start: `  - B` under `- A` starts
-    // at column 2, a top-level item, whose container is the document, keeps its indent, and a top-level item in a
-    // blockquote starts just past the quote prefix. A tab is never split, so the item starts at the first character at
-    // or past that column.
-    const containerColumn = parentItem?.contentColumn ?? 0;
-    const startColumn = indentColumns.findIndex((column) => column >= containerColumn);
-    const startOffset = lineStart + prefixLength + startColumn;
-    const endOffset = lineStart + line.length;
-    const pos = makePos(lineStarts, startOffset, endOffset);
-
-    // A list holds items of one kind only: a top-level item with another bullet character, or another ordered
-    // delimiter, starts a list of its own, gap or no gap. A nested item is free to differ from its siblings, since
-    // only the top-level lists are sections.
-    if (!parentItem && kind !== state.kind) {
-      isNewList = true;
-    }
-
-    closeListItemsBeforeItem(closedItems, isNewList, kind, lineStarts);
-    recordListLine(state.openItems, endOffset);
-    recordListLineIndent(state.openItems, markerColumn);
-
-    if (isNewList) {
-      pushListSection(lineStarts, state, sections);
-      state.groupStart = lineStart;
-      state.firstLine = currentLine;
-      state.kind = kind;
-    }
-    state.groupEnd = endOffset;
-    state.previousLine = currentLine;
-
-    const item: ListItemCache = {
-      parent: 0,
-      position: pos,
-      task: taskChar
-    };
-    item.parent = getListItemParent({ item, kind, listFirstLine: state.firstLine, parentItem });
-    items.push(item);
-    parentItem?.childLines.push({ cache: item, indentColumns, textStart: lineStart + prefixLength });
-    // A task item with no text after its checkbox still counts as a parent, but holds no paragraph.
-    const hasText = rest.trim() !== '';
-    const afterMarker = line.slice(prefixLength + indent.length + marker.length);
-    state.openItems.push({
-      blankLineEnd: undefined,
-      blockEnd: hasText ? endOffset : -1,
-      cache: item,
-      childCount: taskChar !== undefined || hasText ? 1 : 0,
-      childLines: [],
-      containerColumn,
-      contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
-      isInHidingBlock: scan.hidingOpenerLines.has(currentLine),
-      kind,
-      line: currentLine,
-      nestedLists: [],
-      removalColumn: markerColumn + getBulletWidth(indent.length - startColumn, marker, afterMarker),
-      valueEnd: endOffset
-    });
   }
 
   // Flush the open lists, each of which holds whatever content after its last item it does not end on
