@@ -940,7 +940,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **`frontmatterPosition` and the `yaml` section end at the end of the closing `---`** (2026-10-12, measured on a real
   Obsidian 1.14.4 over CDP and with its own metadata worker). So `---\na: 1\n---\ntext` ends both at line 2, column 3,
   offset 12, and a CRLF note ends them before the `\r`. The mock used to end them at the start of the next line, which is
-  `getFrontMatterInfo(...).contentStart`; the body is still read from there.
+  `getFrontMatterInfo(...).contentStart`.
+
+- **The parser finds the frontmatter block with the worker's own tokenizer, not with `getFrontMatterInfo`** (2026-10-12,
+  read in Obsidian 1.14.4's `worker.js` and `app.js`). The worker wants `---` and a line break to open the note, then
+  takes the first later `---` that starts a line as the closing delimiter, whatever follows it on that line, and goes on
+  tokenizing right after it. So `---` followed by spaces or a tab, `----` and `---x` all close the block there, where the
+  public `getFrontMatterInfo`, a port of `app.js`'s own, still wants the line to end after the `---` and is left as it
+  is. What follows the delimiter on its line is body: `---x` leaves a paragraph `x` starting at column 3. The opening
+  `---` takes no trailing whitespace, and a closing `---` indented by a space closes nothing, in both.
 
 - **Frontmatter links are an EXACT port of Obsidian's own reader, not the approximation the rest of this
   parser is** (2026-09-17, read in Obsidian 1.14.2's `app.js`). Four of its properties look like defects

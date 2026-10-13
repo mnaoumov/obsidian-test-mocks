@@ -95,6 +95,63 @@ describe('parseMarkdownContent', () => {
       ]).toEqual(expected);
     });
 
+    // Rows from Obsidian 1.14.4's own metadata worker, whose frontmatter tokenizer takes the first `---` starting a later
+    // line as the closing delimiter, whatever follows it there, and goes on tokenizing right after it. The public
+    // `getFrontMatterInfo` does not: it wants the line to end after the `---`. The opening `---` takes no trailing
+    // whitespace, and an indented ` ---` closes nothing. Each row is the frontmatterPosition's end (or null), every
+    // section as [type, start line, start col, end offset], the start offsets of the tags and then the links, and every
+    // list item as [parent, start col, end offset].
+    it.each([
+      { content: '---\na: 1\n---   \ntext', expected: [[2, 3, 12], [['yaml', 0, 0, 12], ['paragraph', 3, 0, 20]], [], []] },
+      { content: '---\na: 1\n---\t\ntext', expected: [[2, 3, 12], [['yaml', 0, 0, 12], ['paragraph', 3, 0, 18]], [], []] },
+      { content: '---\na: 1\n---  \n', expected: [[2, 3, 12], [['yaml', 0, 0, 12]], [], []] },
+      { content: '---\r\na: 1\r\n---  \r\ntext', expected: [[2, 3, 14], [['yaml', 0, 0, 14], ['paragraph', 3, 0, 22]], [], []] },
+      { content: '---\n---  \ntext', expected: [null, [['yaml', 0, 0, 7], ['paragraph', 2, 0, 14]], [], []] },
+      { content: '---\na: 1\n---   \n# H', expected: [[2, 3, 12], [['yaml', 0, 0, 12], ['heading', 3, 0, 19]], [], []] },
+      { content: '---\na: 1\n---x\ntext', expected: [[2, 3, 12], [['yaml', 0, 0, 12], ['paragraph', 2, 3, 18]], [], []] },
+      {
+        content: '---\na: 1\n--- #tag [[L]]\ntext',
+        expected: [[2, 3, 12], [['yaml', 0, 0, 12], ['paragraph', 2, 3, 28]], [13, 18], []]
+      },
+      {
+        content: '---\na: 1\n---- \n- A',
+        expected: [[2, 3, 12], [['yaml', 0, 0, 12], ['list', 2, 3, 18]], [], [[-2, 3, 14], [-2, 0, 18]]]
+      },
+      {
+        content: '---\na: 1\n ---\ntext',
+        expected: [
+          null,
+          [['thematicBreak', 0, 0, 3], ['paragraph', 1, 0, 8], ['thematicBreak', 2, 0, 13], ['paragraph', 3, 0, 18]],
+          [],
+          []
+        ]
+      },
+      {
+        content: '---  \na: 1\n---\ntext',
+        expected: [null, [['thematicBreak', 0, 0, 5], ['heading', 1, 0, 14], ['paragraph', 3, 0, 19]], [], []]
+      }
+    ])('should read the closing delimiter\'s line as Obsidian\'s worker does in $content', ({ content, expected }) => {
+      const cache = parseMarkdownContent(content);
+      const end = cache.frontmatterPosition?.end;
+      expect([
+        end ? [end.line, end.col, end.offset] : null,
+        cache.sections?.map((section) => [
+          section.type,
+          section.position.start.line,
+          section.position.start.col,
+          section.position.end.offset
+        ]),
+        [...cache.tags ?? [], ...cache.links ?? []].map((reference) => reference.position.start.offset),
+        (cache.listItems ?? []).map((item) => [item.parent, item.position.start.col, item.position.end.offset])
+      ]).toEqual(expected);
+    });
+
+    it('should read the frontmatter of a block closed by a delimiter with trailing whitespace', () => {
+      const cache = parseMarkdownContent('---\ntitle: Hello\nrelated: "[[T]]"\n---   \nBody');
+      expect(cache.frontmatter).toEqual({ related: '[[T]]', title: 'Hello' });
+      expect(cache.frontmatterLinks?.map((link) => link.link)).toEqual(['T']);
+    });
+
     it('should add yaml section', () => {
       const content = '---\ntitle: Hello\n---\n';
       const cache = parseMarkdownContent(content);

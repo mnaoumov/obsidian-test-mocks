@@ -20,7 +20,6 @@ import type {
 
 import type { LeafBlockScan } from './markdown-leaf-blocks.ts';
 
-import { getFrontMatterInfo } from '../obsidian/functions/getFrontMatterInfo.ts';
 import { parseYaml } from '../obsidian/functions/parseYaml.ts';
 import {
   decodeUriSafely,
@@ -67,6 +66,19 @@ const FRONTMATTER_MARKDOWN_LINK_REGEX = /^(?<open>!?\[)(?<displayText>.*?)(?<sep
 const WIKILINK_CLOSE = ']]';
 
 const WIKILINK_OPEN = '[[';
+
+/**
+ * What a note's body holds, everything but its frontmatter and its block ids.
+ */
+interface BodyMetadata {
+  readonly embeds: EmbedCache[];
+  // Sorted by where each heading starts.
+  readonly headings: HeadingCache[];
+  readonly links: LinkCache[];
+  readonly listItems: ListItemCache[];
+  readonly sections: SectionCache[];
+  readonly tags: TagCache[];
+}
 
 /**
  * The lines between two items of a list, as the list's container sees them.
@@ -416,6 +428,28 @@ function extractFrontmatterLinks(frontmatter: object): FrontmatterLinkCache[] {
   return links;
 }
 
+/**
+ * Finds the frontmatter block the way Obsidian's metadata worker does, which is NOT the way the public
+ * `getFrontMatterInfo` does.
+ *
+ * The worker's own `frontmatter` tokenizer wants `---` and a line break to open the note, and takes the first later `---`
+ * that starts a line as the closing delimiter, whatever follows it on that line. So `---   `, `---\t`, `----` and `---x`
+ * all close the block, where `getFrontMatterInfo` takes only a `---` the line ends right after.
+ *
+ * @param content - The note's full text, every line break a `\n`.
+ * @returns The offset the closing `---` starts at, or `-1` when the note has no frontmatter block.
+ */
+function findFrontmatterClose(content: string): number {
+  if (!content.startsWith(`${FRONTMATTER_DELIMITER}\n`)) {
+    return -1;
+  }
+  let closeOffset = content.indexOf(FRONTMATTER_DELIMITER, FRONTMATTER_DELIMITER.length);
+  while (closeOffset !== -1 && content.charAt(closeOffset - 1) !== '\n') {
+    closeOffset = content.indexOf(FRONTMATTER_DELIMITER, closeOffset + FRONTMATTER_DELIMITER.length);
+  }
+  return closeOffset;
+}
+
 function isInCodeZone(zones: [number, number][], offset: number): boolean {
   return zones.some(([start, end]) => offset >= start && offset < end);
 }
@@ -434,6 +468,22 @@ function makePos(lineStarts: number[], startOffset: number, endOffset: number): 
  * @param loc - The location.
  * @returns The location in the original.
  */
+/**
+ * Moves a location in the padded copy {@link parseBodyAfterFrontmatter} parses to the same place in the note.
+ *
+ * @param loc - The location in the padded copy.
+ * @param bodyLoc - Where the body starts in the note: just past the closing delimiter.
+ * @returns The location in the note.
+ */
+function moveBodyLoc(loc: Loc, bodyLoc: Loc): Loc {
+  return {
+    col: loc.line === bodyLoc.line ? loc.col + bodyLoc.col : loc.col,
+    line: loc.line,
+    // The padded copy's body starts at the offset equal to its line number.
+    offset: loc.offset + bodyLoc.offset - bodyLoc.line
+  };
+}
+
 function moveLocToOriginal(lineStarts: number[], loc: Loc): Loc {
   return { col: loc.col, line: loc.line, offset: ensureNonNullable(lineStarts[loc.line]) + loc.col };
 }
@@ -452,6 +502,62 @@ function offsetToLoc(lineStarts: number[], offset: number): Loc {
   }
   const lineStart = ensureNonNullable(lineStarts[low]);
   return { col: offset - lineStart, line: low, offset };
+}
+
+/**
+ * Parses a note's body, from a line start to the end of the note.
+ *
+ * @param content - The note's full text.
+ * @param bodyStart - The offset the body starts at, which is a line start.
+ * @param lineStarts - The offset each line starts at.
+ * @returns The body's metadata.
+ */
+function parseBody(content: string, bodyStart: number, lineStarts: number[]): BodyMetadata {
+  const codeZones = buildCodeZones(content);
+  const sections: SectionCache[] = [];
+  // Every heading comes from the gap scan, which reads it in its block context, so a heading line inside an unclosed
+  // fence, comment, math block or HTML block stays a line of that block, as it does in Obsidian.
+  const headings: HeadingCache[] = [];
+  const listItems = parseListItems(content, bodyStart, lineStarts, sections);
+  parseParagraphSections(content, bodyStart, lineStarts, sections, headings);
+  return {
+    embeds: parseEmbeds(content, bodyStart, lineStarts, codeZones),
+    headings: headings.sort((a, b) => a.position.start.offset - b.position.start.offset),
+    links: parseLinks(content, bodyStart, lineStarts, codeZones),
+    listItems,
+    sections,
+    tags: parseTags(content, bodyStart, lineStarts, codeZones)
+  };
+}
+
+/**
+ * Parses what follows a note's frontmatter block, the rest of the closing delimiter's line included.
+ *
+ * Obsidian's worker goes on tokenizing right after the closing `---`, so whatever follows it on its line starts a block
+ * there: `---x` leaves a paragraph `x` at column 3, and `----` an empty list item. The line parser reads whole lines
+ * only, so the body is parsed as a copy that starts with as many empty lines as the delimiter's line number, which puts
+ * that rest at column 0 of the same line, and every position is then moved back to where it is in the note.
+ *
+ * @param content - The note's full text.
+ * @param bodyStart - The offset just past the closing delimiter, or `0` when the note has no frontmatter block.
+ * @param lineStarts - The offset each line starts at.
+ * @returns The body's metadata, with every position in the note.
+ */
+function parseBodyAfterFrontmatter(content: string, bodyStart: number, lineStarts: number[]): BodyMetadata {
+  if (bodyStart === 0) {
+    return parseBody(content, 0, lineStarts);
+  }
+
+  const bodyLoc = offsetToLoc(lineStarts, bodyStart);
+  const paddedContent = '\n'.repeat(bodyLoc.line) + content.slice(bodyStart);
+  // Each padding line is one `\n`, so the body's first line starts at the offset equal to its line number.
+  const body = parseBody(paddedContent, bodyLoc.line, buildLineStarts(paddedContent));
+  for (
+    const entry of [...body.embeds, ...body.headings, ...body.links, ...body.listItems, ...body.sections, ...body.tags]
+  ) {
+    entry.position = { end: moveBodyLoc(entry.position.end, bodyLoc), start: moveBodyLoc(entry.position.start, bodyLoc) };
+  }
+  return body;
 }
 
 function parseEmbeds(
@@ -507,16 +613,16 @@ function parseFrontmatter(
   cache: CachedMetadata,
   sections: SectionCache[]
 ): number {
-  const info = getFrontMatterInfo(content);
-  if (!info.exists) {
+  const closeOffset = findFrontmatterClose(content);
+  if (closeOffset === -1) {
     return 0;
   }
 
-  const parsed = parseFrontmatterYaml(info.frontmatter);
+  // The worker parses the text between the two delimiters, without the line break before the closing one.
+  const parsed = parseFrontmatterYaml(content.slice(FRONTMATTER_DELIMITER.length + 1, closeOffset - 1));
   // Both positions end at the end of the closing `---`, not at the start of the line after it, as Obsidian's metadata
-  // worker reports them. `to` is where that delimiter starts, so the block's end is three characters later. The body
-  // still starts at `contentStart`, past the line break.
-  const endOffset = info.to + FRONTMATTER_DELIMITER.length;
+  // worker reports them. Whatever follows the delimiter on its line is already the body.
+  const endOffset = closeOffset + FRONTMATTER_DELIMITER.length;
 
   // A block that does not parse to a plain object leaves NO `frontmatter` and NO `frontmatterPosition`
   // behind - not an empty record, which is what a consumer branching on `cache.frontmatter` would read as
@@ -555,7 +661,7 @@ function parseFrontmatter(
     type: 'yaml'
   });
 
-  return info.contentStart;
+  return endOffset;
 }
 
 function parseFrontmatterYaml(yaml: string): unknown {
@@ -585,37 +691,26 @@ function parseLfContent(content: string): CachedMetadata {
   const cache: CachedMetadata = {};
   const lineStarts = buildLineStarts(content);
   const sections: SectionCache[] = [];
-  const codeZones = buildCodeZones(content);
 
   const bodyStart = parseFrontmatter(content, lineStarts, cache, sections);
+  const body = parseBodyAfterFrontmatter(content, bodyStart, lineStarts);
+  const { embeds, headings, links, listItems, tags } = body;
+  sections.push(...body.sections);
 
-  // Every heading comes from the gap scan, which reads it in its block context, so a heading line inside an unclosed
-  // fence, comment, math block or HTML block stays a line of that block, as it does in Obsidian.
-  const headings: HeadingCache[] = [];
-
-  const tags = parseTags(content, bodyStart, lineStarts, codeZones);
   if (tags.length > 0) {
     cache.tags = tags;
   }
-
-  const links = parseLinks(content, bodyStart, lineStarts, codeZones);
   if (links.length > 0) {
     cache.links = links;
   }
-
-  const embeds = parseEmbeds(content, bodyStart, lineStarts, codeZones);
   if (embeds.length > 0) {
     cache.embeds = embeds;
   }
-
-  const listItems = parseListItems(content, bodyStart, lineStarts, sections);
   if (listItems.length > 0) {
     cache.listItems = listItems;
   }
-
-  parseParagraphSections(content, bodyStart, lineStarts, sections, headings);
   if (headings.length > 0) {
-    cache.headings = headings.sort((a, b) => a.position.start.offset - b.position.start.offset);
+    cache.headings = headings;
   }
 
   sections.sort((a, b) => a.position.start.offset - b.position.start.offset);
