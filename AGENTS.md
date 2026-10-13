@@ -747,8 +747,19 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     The content column is the marker's end plus the whitespace after it, up to four columns of it. So `-   A` takes a
     `- B` indented three spaces as a SIBLING, and an item opened as a sibling closes the one before it. Obsidian counts that whitespace even
     for an item with nothing after its marker, where strict CommonMark would not.
-  - **An item with nothing after its marker is never a parent.** A list nested in one is rooted at its own first line,
-    as if it stood alone. `- \n  - C` gives `C` the parent `-1`. A task item with no text after its checkbox is not empty.
+  - **An item is its nested list's parent only when it has more than one child** and no other block follows that list
+    inside it (2026-10-12, the worker's own rule). So an item holding nothing but one nested list is no parent, and the
+    list is rooted at its own first line, as if it stood alone: `- \n  - C` gives `C` the parent `-1`. An empty item
+    gains a child from any later block it holds, a lazy line, a quote or a one-line comment among them
+    (`- \ntext\n  1. G` gives `G` the parent `0`), and from a second nested list of another kind (`- \n  1. G\n  - C`
+    parents both to `0`). A task item with no text after its checkbox is not empty.
+  - **Obsidian strips an item's later lines before it reads them, and a nested item starts where that leaves it**
+    (2026-10-12, `remark-parse` 8's list tokenizer, read in the worker). It strips each later line to the least indent
+    among them, counting only lines indented past the item's container, and to at most the marker's width with the
+    spaces after it. That width is one column wider for `1.` to `9.` followed by a single space, so `1. A\n    - D`
+    starts `D` at column 4 where its content column is 3, while `1. A\n    - D\n   - E` starts it at 3. The same column
+    decides an indented code block: `1. A\n       - D` is an item, and `1. A\n       - D\n   - K` makes `D` a paragraph
+    line of `A`, because the later `- K`, indented three spaces, lowers it.
   - **A list that starts on line 0 is rooted at `-1`, not `-0`.** Everywhere else the root parent is still the
     negative of the list's first line.
 
@@ -848,25 +859,32 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     `- A\n  ```\n  - B\n- C` the fence hides `B` and ends with `A`.
   - **A comment or a math block closed on the line that opens it is a paragraph**: `%% x %%` and `$$ x $$` hide
     nothing, and a `%% x %%` line after a list item is a lazy continuation of the item, not an interruption. A comment
-    ends on the first later line that holds `%%`, and a math block on the first later line that ENDS with `$$`, so
-    `$$ x` closes nothing.
+    ends on the first later line that holds `%%`. A math block ends on the first later line whose only `$` run is the
+    one it ends with, at least as long as the opening run, so `$$ x` and `$$ x $$` close nothing while `x $$` does. The
+    note's last line opens no math block, since Obsidian wants a line break after the opener: `> - K\n$$` is a lazy
+    continuation of `K`.
   - **Laziness reaches every open block, not just a paragraph**: in `- A\n  ```\nx\n  - B` the unindented `x` is a line
     of the fence, so `B` is hidden. Only a line that interrupts a paragraph, a blank line, or a line after one ends
     the block early.
   - **A lazy `$$` line opens a math block inside the item it continues**, so `- A\n$$\n  1. G` has the one item `A`;
-    after a blockquote it ends the quote and opens one at the top level instead. A lazy `>` line likewise opens a
-    blockquote inside the item, which its later `>` lines continue.
+    after a blockquote it ends the quote and opens one at the top level instead, unless that quote sits in an item, which
+    then holds the math block. A lazy `>` line likewise opens a blockquote inside the item, which its later `>` lines
+    continue, and a line that ends such a quote without an empty line before it stays in the item.
   - **An item that ends inside an unclosed block before a sibling ends at the first empty line**, where an item with
     more than one child otherwise ends at its last child: `- A\n  ```\n\n- B` ends `A` at line 2, column 0. A line of
     whitespace inside a fence is a line of the code and extends the item.
   - **A marker indented four or more columns is an indented code block**, not an item, at the top level, and four or
     more columns past the content of the item above (`- A\n      - D`, a continuation of `A`), with one
-    exception Obsidian makes: on a line that closes a list item, a marker at any indent is the next item
-    (`-   A\n   - B\n    - C` has three items).
-  - Not modeled, and still found by the fuzz (274 of 20,000 generated notes differ, from 9,122 before): an item with
-    nothing after its marker becomes a parent in Obsidian once a later line gives it content (a lazy line, a quote, a
-    one-line comment) or once it holds two lists of different kinds, and stays rooted here; a `$$ x $$` line inside an
-    open math block does not end it there, while it does here; and a tab that a container takes only part of.
+    exception Obsidian makes: on a line that closes a list item, a marker of the item's kind at any indent is the next
+    item (`-   A\n   - B\n    - C` has three items). A marker of another kind ends the list there and starts an
+    indented code block (a `- K` indented three spaces, then a `1. R` indented four, has the one item `K`).
+  - **Only a bullet or an ordered marker numbered exactly 1 interrupts a paragraph**, so `text\n2. B` and
+    `- A\n  2. B` have no item `B`, while `text\n1. B` does.
+  - Not modeled, and still found by the fuzz (52 of 20,000 generated notes differ, from 274 before): a tab that a
+    container takes only part of (`- A\n\t- D\n\t\n    text` nests `D` and lets it hold `text`); a math block opened
+    lazily in an item whose content ends right after it, which Obsidian reads as a paragraph (`1. G\n$$\n` with `1. G`
+    and the last line indented two spaces ends `G` at the end of `$$`); and the stripping above for an item inside a
+    blockquote, whose later lines are not read ahead.
 
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`

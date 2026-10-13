@@ -31,7 +31,10 @@ import {
   scanGapBlocks,
   tokenizeAtxHeading
 } from './markdown-gap-blocks.ts';
-import { scanLeafBlocks } from './markdown-leaf-blocks.ts';
+import {
+  getBulletWidth,
+  scanLeafBlocks
+} from './markdown-leaf-blocks.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
 /**
@@ -88,6 +91,19 @@ interface GetContainerLinesParams {
   // The lines, as they are in the note.
   readonly rawLines: string[];
   readonly scan: LeafBlockScan;
+}
+
+/**
+ * What {@link getListItemParent} needs.
+ */
+interface GetListItemParentParams {
+  readonly item: ListItemCache;
+  // The kind of the item's marker (see `getListMarkerKind`).
+  readonly kind: string;
+  // The first line of the item's list.
+  readonly listFirstLine: number;
+  // The open item the item is nested in, if any.
+  readonly parentItem: OpenListItem | undefined;
 }
 
 /**
@@ -155,6 +171,28 @@ interface ListState {
   readonly scan: LeafBlockScan;
 }
 
+/**
+ * The line of an item nested directly in an open list item.
+ */
+interface NestedItemLine {
+  readonly cache: ListItemCache;
+  // The visual column of each character of the line's leading whitespace past its quote prefix, and the column past it.
+  readonly indentColumns: number[];
+  // The offset just past the line's quote prefix.
+  readonly textStart: number;
+}
+
+/**
+ * A list nested in an open list item.
+ */
+interface NestedList {
+  // The list's first line, which its items are rooted at unless they name the item as their parent.
+  readonly firstLine: number;
+  readonly items: ListItemCache[];
+  // The kind of the list's markers (see `getListMarkerKind`); an item of another kind starts a list of its own.
+  readonly kind: string;
+}
+
 interface OpenListItem {
   // Where the item would end if a sibling item followed it after the blank lines seen since its last value line: the
   // start of the first of them, past the containers' prefix. `undefined` while no such blank line has been seen.
@@ -165,18 +203,20 @@ interface OpenListItem {
   readonly cache: ListItemCache;
   // How many child blocks the item holds: its first paragraph, each nested list and each later block.
   childCount: number;
+  // The lines of the items nested directly in the item, whose start is moved when the item closes.
+  readonly childLines: NestedItemLine[];
   // The content column of the item's container, which a blank line's whitespace is part of the prefix up to.
   readonly containerColumn: number;
   readonly contentColumn: number;
-  readonly hasContent: boolean;
   // Whether the item's last block is a fenced code block, a comment or a math block that no line has closed yet.
   isInHidingBlock: boolean;
   readonly line: number;
-  // The first line of the list currently nested in the item, which Obsidian roots that list at when the item has
-  // nothing after its marker, or once a block follows the list inside the item.
-  nestedListFirstLine: number | undefined;
-  // The items of that nested list that name this item as their parent, re-rooted when a block follows the list.
-  readonly nestedListItems: ListItemCache[];
+  // The lists nested in the item since its last block that is not a list, whose items are parented when the item
+  // closes, or re-rooted when a block follows them inside the item.
+  readonly nestedLists: NestedList[];
+  // The visual column up to which Obsidian strips each later line of the item before it reads the item's blocks: the
+  // least indent of those lines past the item's container, and at most the width of the item's marker.
+  removalColumn: number;
   // The end of the item's last value line: any line it holds, a nested item's included, or a blank line indented at
   // least as far as its content.
   valueEnd: number;
@@ -697,6 +737,19 @@ function advanceColumn(column: number, char: string): number {
  * @param lineStarts - The offset of each line's start.
  */
 function closeListItem(item: OpenListItem, isFollowedBySibling: boolean, lineStarts: number[]): void {
+  // Obsidian names the item as the parent of the lists nested in it only when it has more than one child, so a list
+  // nested in an item with nothing else in it is rooted at its own first line.
+  for (const nestedList of item.nestedLists) {
+    const parent = item.childCount > 1 ? item.line : getRootListParent(nestedList.firstLine);
+    for (const nestedItem of nestedList.items) {
+      nestedItem.parent = parent;
+    }
+  }
+  // A nested item starts where Obsidian's stripping of the item's lines leaves its line, and a tab is never split.
+  for (const childLine of item.childLines) {
+    const startColumn = childLine.indentColumns.findIndex((column) => column >= item.removalColumn);
+    childLine.cache.position.start = offsetToLoc(lineStarts, childLine.textStart + startColumn);
+  }
   let end = item.valueEnd;
   // An unclosed code block, comment or math block runs on over the empty lines before a sibling, so the item ends where
   // they start, as an item holding only its first paragraph does.
@@ -746,6 +799,7 @@ function closeListItems(listLines: ListLines, openItems: OpenListItem[], lineSta
         recordBlankListLine({ indentColumns, lineEnd, lineStart, openItems });
       } else {
         recordListLine(openItems, lineEnd);
+        recordListLineIndent(openItems, column);
       }
       // A line of whitespace is a line of the block; an empty one is only when more of the block follows it.
       if (line !== '') {
@@ -762,7 +816,7 @@ function closeListItems(listLines: ListLines, openItems: OpenListItem[], lineSta
       recordBlankListLine({ indentColumns, lineEnd, lineStart, openItems });
       continue;
     }
-    const canEndItems = isAfterBlankLine || LIST_INTERRUPTING_LINE_REGEX.test(line);
+    const canEndItems = isAfterBlankLine || LIST_INTERRUPTING_LINE_REGEX.test(line) || scan.listEndLines.has(lineNumber);
     const isBlockStart = canEndItems || BLOCKQUOTE_LINE_REGEX.test(line) || scan.openerLines.has(lineNumber);
     isAfterBlankLine = false;
     if (canEndItems) {
@@ -775,6 +829,7 @@ function closeListItems(listLines: ListLines, openItems: OpenListItem[], lineSta
       detachNestedList(ensureNonNullable(openItems.at(-1)));
     }
     recordListLine(openItems, lineEnd);
+    recordListLineIndent(openItems, column);
     // The line is a block of the innermost item that holds it: a new one after a blank line or on a block that starts
     // one, and otherwise a lazy continuation of the paragraph above.
     const owner = ensureNonNullable(openItems.at(-1));
@@ -821,15 +876,13 @@ function closeOpenListItems(openItems: OpenListItem[], lineStarts: number[]): vo
  * @param item - The item the block landed in.
  */
 function detachNestedList(item: OpenListItem): void {
-  if (item.nestedListFirstLine === undefined) {
-    return;
+  for (const nestedList of item.nestedLists) {
+    const rootParent = getRootListParent(nestedList.firstLine);
+    for (const nestedItem of nestedList.items) {
+      nestedItem.parent = rootParent;
+    }
   }
-  const rootParent = getRootListParent(item.nestedListFirstLine);
-  for (const nestedItem of item.nestedListItems) {
-    nestedItem.parent = rootParent;
-  }
-  item.nestedListFirstLine = undefined;
-  item.nestedListItems.length = 0;
+  item.nestedLists.length = 0;
 }
 
 /**
@@ -988,26 +1041,28 @@ function getListItemContentColumn(markerEndColumn: number, textAfterGap: string)
 }
 
 /**
- * Computes a list item's `parent`, recording the item in its parent's nested list so a later block can re-root it
- * (see {@link closeListItems}). A root item's parent is the negative of the first line of its list. Obsidian never
- * names an item with nothing after its marker as a parent: the list nested in one is rooted at its own first line
- * instead.
+ * Computes a root list item's `parent`, or records a nested item in its parent's nested list, which decides the item's
+ * `parent` when it closes (see {@link closeListItem}) or when a later block re-roots the list (see
+ * {@link closeListItems}). A root item's parent is the negative of the first line of its list. A nested item of another
+ * kind than the list before it starts a list of its own, which is another child of the parent item.
  *
- * @param parentItem - The open item the new item is nested in, if any.
- * @param listFirstLine - The first line of the new item's list.
- * @param item - The new item.
- * @returns The parent.
+ * @param params - The open item the new item is nested in, if any, the first line of the new item's list, the new item
+ * and the kind of its marker.
+ * @returns The parent, which is provisional for a nested item.
  */
-function getListItemParent(parentItem: OpenListItem | undefined, listFirstLine: number, item: ListItemCache): number {
+function getListItemParent(params: GetListItemParentParams): number {
+  const { item, kind, listFirstLine, parentItem } = params;
   if (!parentItem) {
     return getRootListParent(listFirstLine);
   }
-  if (parentItem.nestedListFirstLine === undefined) {
-    parentItem.nestedListFirstLine = item.position.start.line;
+  let nestedList = parentItem.nestedLists.at(-1);
+  if (nestedList?.kind !== kind) {
+    nestedList = { firstLine: item.position.start.line, items: [], kind };
+    parentItem.nestedLists.push(nestedList);
     parentItem.childCount++;
   }
-  parentItem.nestedListItems.push(item);
-  return parentItem.hasContent ? parentItem.line : getRootListParent(parentItem.nestedListFirstLine);
+  nestedList.items.push(item);
+  return getRootListParent(nestedList.firstLine);
 }
 
 /**
@@ -1172,6 +1227,7 @@ function parseListItems(
 
     closeListItemsBeforeItem(closedItems, isNewList, lineStarts);
     recordListLine(state.openItems, endOffset);
+    recordListLineIndent(state.openItems, markerColumn);
 
     if (isNewList) {
       pushListSection(lineStarts, state, sections);
@@ -1187,22 +1243,24 @@ function parseListItems(
       position: pos,
       task: taskChar
     };
-    item.parent = getListItemParent(parentItem, state.firstLine, item);
+    item.parent = getListItemParent({ item, kind, listFirstLine: state.firstLine, parentItem });
     items.push(item);
+    parentItem?.childLines.push({ cache: item, indentColumns, textStart: lineStart + prefixLength });
     // A task item with no text after its checkbox still counts as a parent, but holds no paragraph.
     const hasText = rest.trim() !== '';
+    const afterMarker = line.slice(prefixLength + indent.length + marker.length);
     state.openItems.push({
       blankLineEnd: undefined,
       blockEnd: hasText ? endOffset : -1,
       cache: item,
-      childCount: hasText ? 1 : 0,
+      childCount: taskChar !== undefined || hasText ? 1 : 0,
+      childLines: [],
       containerColumn,
       contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
-      hasContent: taskChar !== undefined || hasText,
       isInHidingBlock: scan.hidingOpenerLines.has(currentLine),
       line: currentLine,
-      nestedListFirstLine: undefined,
-      nestedListItems: [],
+      nestedLists: [],
+      removalColumn: markerColumn + getBulletWidth(indent.length - startColumn, marker, afterMarker),
       valueEnd: endOffset
     });
   }
@@ -1352,6 +1410,21 @@ function recordListLine(openItems: OpenListItem[], lineEnd: number): void {
   for (const item of openItems) {
     item.valueEnd = lineEnd;
     item.blankLineEnd = undefined;
+  }
+}
+
+/**
+ * Records the indent of a line holding content on every item open around it, for the column Obsidian strips the item's
+ * lines to. A line indented no further than an item's container is not indented within the item, and does not count.
+ *
+ * @param openItems - The open items.
+ * @param column - The visual column of the line's content, past its quote prefix.
+ */
+function recordListLineIndent(openItems: OpenListItem[], column: number): void {
+  for (const item of openItems) {
+    if (column > item.containerColumn) {
+      item.removalColumn = Math.min(item.removalColumn, column);
+    }
   }
 }
 
