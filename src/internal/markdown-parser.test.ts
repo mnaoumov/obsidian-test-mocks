@@ -712,7 +712,7 @@ describe('parseMarkdownContent', () => {
       // Whitespace after the marker moves the content column, up to four columns of it.
       { content: '-   A\n   - B\n    - C', expected: [[0, 0, 0, -1], [1, 0, 6, -1], [2, 0, 13, -1]] },
       { content: '-      A\n  - B\n-  \n  - C', expected: [[0, 0, 0, -1], [1, 2, 11, 0], [2, 0, 15, -1], [3, 0, 19, -1]] },
-      // An item with nothing after its marker is never a parent: the list nested in it is rooted at its own first line.
+      // An item holding nothing but the list nested in it is no parent: that list is rooted at its own first line.
       { content: '- \n  - C', expected: [[0, 0, 0, -1], [1, 2, 5, -1]] },
       { content: '-  \n   - C', expected: [[0, 0, 0, -1], [1, 3, 7, -1]] },
       { content: '- A\n- \n  - C', expected: [[0, 0, 0, -1], [1, 0, 4, -1], [2, 2, 9, -2]] },
@@ -1035,8 +1035,58 @@ describe('parseMarkdownContent', () => {
       { content: '- A\n> - G\n    text', expected: [[0, 18, -1], [6, 18, -1]] },
       { content: '> > - A\n>     text\n> > - B', expected: [[4, 7, -1], [23, 26, -2]] },
       { content: '>> - A\n    text\n>> - B', expected: [[3, 6, -1], [19, 22, -2]] },
-      { content: '- A\n> > - K\n> %%', expected: [[0, 16, -1], [8, 11, -1]] }
+      { content: '- A\n> > - K\n> %%', expected: [[0, 16, -1], [8, 11, -1]] },
+      // A math block ends on a line whose only `$` run is the one it ends with, at least as long as the opening one.
+      { content: '$$\n$$ x $$\n1. E', expected: [] },
+      { content: '$$\n$$ x $$\n$$\n- A', expected: [[14, 17, -3]] },
+      { content: '$$$\n$$\n- A\n$$$\n- B', expected: [[15, 18, -4]] },
+      // The note's last line opens no math block, so it continues the item lazily.
+      { content: '> - K\n$$', expected: [[2, 8, -1]] },
+      { content: '> - K\n$$\n', expected: [[2, 5, -1]] },
+      // A line that ends a blockquote nested in an item stays in the item.
+      { content: '- A\n>\n$$\n- B', expected: [[0, 8, -1], [9, 12, -1]] },
+      { content: '- \n> > - K\n$$\n%% x %%', expected: [[0, 21, -1], [7, 10, -1]] },
+      { content: '+ L\n> > - K\n$$\n  ~~~', expected: [[0, 20, -1], [8, 11, -1]] }
     ])('should find the items of $content that no block hides, as Obsidian does', ({ content, expected }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(expected);
+    });
+
+    // Each row was measured on a real Obsidian 1.14.4 over CDP: every item's [start offset, end offset, parent].
+    it.each([
+      // An item with nothing after its marker is a parent once it holds something besides one nested list.
+      { content: '- \ntext\n  1. G', expected: [[0, 7, -1], [10, 14, 0]] },
+      { content: '- \n  1. G\n  - C', expected: [[0, 15, -1], [5, 9, 0], [12, 15, 0]] },
+      { content: '- \n%% x %%\n  - C', expected: [[0, 10, -1], [13, 16, 0]] },
+      { content: '- \n> q\n  - C', expected: [[0, 6, -1], [9, 12, 0]] },
+      { content: '- \n\n  text\n  - C', expected: [[0, 10, -1], [13, 16, 0]] },
+      { content: '- A\n  - B\n  1. C', expected: [[0, 3, -1], [6, 9, 0], [12, 16, 0]] },
+      { content: '- \n  - C\n\n  text', expected: [[0, 16, -1], [5, 8, -1]] },
+      // Obsidian strips an item's later lines to their least indent, and at most to its marker's width, which is one
+      // column wider for `1.` to `9.` followed by one space.
+      { content: '1. A\n    - D', expected: [[0, 4, -1], [9, 12, 0]] },
+      { content: '1. A\n    - D\n   - E', expected: [[0, 4, -1], [8, 12, 0], [16, 19, 0]] },
+      { content: '1. A\n       - D', expected: [[0, 4, -1], [9, 15, 0]] },
+      { content: '1. A\n   x\n       - M', expected: [[0, 20, -1]] },
+      { content: '1.  A\n    - B', expected: [[0, 5, -1], [10, 13, 0]] },
+      { content: '1) A\n    - B', expected: [[0, 4, -1], [8, 12, 0]] },
+      { content: '10. A\n     - D', expected: [[0, 5, -1], [10, 14, 0]] },
+      { content: '  1. A\n      - B', expected: [[0, 6, -1], [13, 16, 0]] },
+      { content: '   - K\n text\n       - M', expected: [[0, 23, -1]] },
+      // A later line counts too, so it can turn an earlier line into a paragraph continuation.
+      { content: '1. A\n       - M\n   - K', expected: [[0, 15, -1], [19, 22, 0]] },
+      { content: '9. C\n       - M\n text', expected: [[0, 21, -1]] },
+      // Only a bullet or an ordered marker numbered 1 interrupts a paragraph.
+      { content: 'text\n2. B', expected: [] },
+      { content: 'text\n1. B', expected: [[5, 9, -1]] },
+      { content: '- A\n  2. B', expected: [[0, 10, -1]] },
+      { content: '> q\n> 2. B', expected: [] },
+      // A marker of another kind indented too far to start an item ends the list and starts an indented code block.
+      { content: '   - K\n    1. R', expected: [[0, 6, -1]] },
+      { content: '   - K\n    1. R\n- C', expected: [[0, 6, -1], [16, 19, -2]] },
+      { content: '   - K\n    - R', expected: [[0, 6, -1], [7, 14, -1]] }
+    ])('should place the items of $content as Obsidian does', ({ content, expected }) => {
       const cache = parseMarkdownContent(content);
 
       expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(expected);
