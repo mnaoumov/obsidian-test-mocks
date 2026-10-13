@@ -66,6 +66,35 @@ describe('parseMarkdownContent', () => {
       expect(cache.frontmatterPosition?.start.offset).toBe(0);
     });
 
+    // Rows from Obsidian 1.14.4's own metadata worker: the block ends at the end of the closing `---`, never at the
+    // start of the line after it. Each row is the frontmatterPosition (or null when the block is not an object), then
+    // every section as [type, start offset, end line, end col, end offset].
+    it.each([
+      { content: '---\ntags: [x]\nrel: "[[T]]"\n---\n# Head', expected: [[3, 3, 30], [['yaml', 0, 3, 3, 30], ['heading', 31, 4, 6, 37]]] },
+      { content: '---\na: 1\n---', expected: [[2, 3, 12], [['yaml', 0, 2, 3, 12]]] },
+      { content: '---\na: 1\n---\n', expected: [[2, 3, 12], [['yaml', 0, 2, 3, 12]]] },
+      { content: '---\na: 1\n---\n\n', expected: [[2, 3, 12], [['yaml', 0, 2, 3, 12]]] },
+      { content: '---\na: 1\n---\ntext', expected: [[2, 3, 12], [['yaml', 0, 2, 3, 12], ['paragraph', 13, 3, 4, 17]]] },
+      { content: '---\na: 1\n---\n\ntext', expected: [[2, 3, 12], [['yaml', 0, 2, 3, 12], ['paragraph', 14, 4, 4, 18]]] },
+      { content: '---\na: 1\n---\n- A', expected: [[2, 3, 12], [['yaml', 0, 2, 3, 12], ['list', 13, 3, 3, 16]]] },
+      { content: '---\na: 1\n---\n***', expected: [[2, 3, 12], [['yaml', 0, 2, 3, 12], ['thematicBreak', 13, 3, 3, 16]]] },
+      { content: '---\n---\ntext', expected: [null, [['yaml', 0, 1, 3, 7], ['paragraph', 8, 2, 4, 12]]] },
+      { content: '---\nx\n---\ntext', expected: [null, [['yaml', 0, 2, 3, 9], ['paragraph', 10, 3, 4, 14]]] }
+    ])('should end the block at its closing delimiter in $content', ({ content, expected }) => {
+      const cache = parseMarkdownContent(content);
+      const end = cache.frontmatterPosition?.end;
+      expect([
+        end ? [end.line, end.col, end.offset] : null,
+        cache.sections?.map((section) => [
+          section.type,
+          section.position.start.offset,
+          section.position.end.line,
+          section.position.end.col,
+          section.position.end.offset
+        ])
+      ]).toEqual(expected);
+    });
+
     it('should add yaml section', () => {
       const content = '---\ntitle: Hello\n---\n';
       const cache = parseMarkdownContent(content);
@@ -1499,6 +1528,15 @@ describe('parseMarkdownContent', () => {
       expect(cache.frontmatter).toEqual({ a: '[[T]]' });
       expect(cache.frontmatterLinks).toEqual([{ displayText: 'T', key: 'a', link: 'T', original: '[[T]]' }]);
       expect(cache.frontmatterPosition?.start.offset).toBe(0);
+    });
+
+    it('should end a CRLF frontmatter block at its closing delimiter, before the CR', () => {
+      const cache = parseMarkdownContent('---\r\ntags: [x]\r\nrel: "[[T]]"\r\n---\r\n# Head');
+      expect(cache.frontmatterPosition && toTuple(cache.frontmatterPosition)).toEqual([0, 0, 0, 3, 3, 33]);
+      expect(cache.sections?.map((section) => [section.type, ...toTuple(section.position)])).toEqual([
+        ['yaml', 0, 0, 0, 3, 3, 33],
+        ['heading', 4, 0, 35, 4, 6, 41]
+      ]);
     });
 
     it('should keep the CRLF inside a link that spans two lines in its original', () => {

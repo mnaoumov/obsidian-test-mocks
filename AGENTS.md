@@ -880,6 +880,11 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   one character short, excluding that newline, which is what put a spurious blank line into every mocked
   `setFrontmatter`. An EMPTY block (`---\n---\n`) exists too, with `frontmatter` `''`; the mock used to report none.
 
+- **`frontmatterPosition` and the `yaml` section end at the end of the closing `---`** (2026-10-12, measured on a real
+  Obsidian 1.14.4 over CDP and with its own metadata worker). So `---\na: 1\n---\ntext` ends both at line 2, column 3,
+  offset 12, and a CRLF note ends them before the `\r`. The mock used to end them at the start of the next line, which is
+  `getFrontMatterInfo(...).contentStart`; the body is still read from there.
+
 - **Frontmatter links are an EXACT port of Obsidian's own reader, not the approximation the rest of this
   parser is** (2026-09-17, read in Obsidian 1.14.2's `app.js`). Four of its properties look like defects
   and are not, so do not "fix" them back:
