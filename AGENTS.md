@@ -999,7 +999,34 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     `remark-parse` 8 adds the run's width before it finds no whitespace after it. So `-\n\n-x`, `- a\n\n1.x` and
     `-\n---` are each one item, while `10.\n\n9.x` is an item and a paragraph. It matters only next to an item whose
     content starts that close, which is mostly an empty one.
-  - Not modeled here: a tab after a marker, which starts an item too, belongs with the other tab gaps.
+
+- **A tab after a list marker starts an item, and the marker's whitespace is `remark-parse` 8's, not CommonMark's**
+  (2026-10-13, measured on a real Obsidian 1.14.4 over CDP and fuzzed against its own metadata worker). `-\tx`,
+  `1.\tx` and `-\t` are each an item, and `- a\n-\tb` is two. Before that the mock read a paragraph, or folded the line
+  into the item above. `getItemContentColumn` (`markdown-leaf-blocks.ts`) is the one place both the pre-pass and the
+  list parser take the content column from:
+  - **A tab right after the marker is the whole of its whitespace**, and the content starts at that tab's stop, so
+    `-\tx` has its content at column 4: `-\tx\n  - y` is two siblings, and `-\tx\n\t- y` nests `y`.
+  - **Only SPACES count after the marker**: one to four of them, and one column when there are more. A tab after them
+    is content, so `- \tx` has its content at column 2 and nests a `- y` indented two spaces, where the mock used to skip the tab too and
+    put the content at column 4. Likewise `-    \tv` stops at column 5, after its four spaces.
+  - The item's lines are stripped to that tab's stop as well (`getBulletWidth`), past the indent and a widened marker.
+
+- **A backtick fence whose info string holds a backtick does not end a list** (2026-10-13). It is no fence, so
+  `- a\n``` a`b\nx` is one item holding all three lines. The list parser's own interrupting-line check used to read it as
+  a fence, although the pre-pass already did not.
+
+- **A kind-6 or kind-7 HTML block ends only before a line its containers strip to nothing** (2026-10-13, read in
+  `remark-parse` 8's HTML tokenizer, whose end test for those kinds is `/^$/`). A line of spaces or a tab is one of its
+  lines, so `<div>\n  \n- a` is one `html` section and no item. Inside a list item the line is first stripped as the item
+  strips every later line, whole whitespace characters up to its removal width, so `- <div>\n \n  - b` still ends the
+  block and nests `b`, while `- <div>\n   \n  - b` does not. A blockquote strips its `>` and one space, so after
+  `> <div>` a `>` line with one space after it ends the block, and one with two spaces does not.
+
+- **A line leaving a blockquote that a list item holds is measured after the item strips it** (2026-10-13). The rule
+  that a line indented four or more columns ends a quoted list applies to the indent left once the outer item, which
+  gathers the line lazily, has stripped it. So `-    v\n> > - K\n    text` keeps `text` in `K`: the item's content
+  starts at column 5, its later lines are stripped by 4, and nothing is left of the indent.
 
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`
