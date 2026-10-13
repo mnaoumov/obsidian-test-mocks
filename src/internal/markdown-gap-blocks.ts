@@ -2,9 +2,9 @@
  * @file
  *
  * The top-level blocks of the text between two sections the parser has already found, read the way Obsidian's metadata
- * worker reads them. That worker is `remark-parse` 8 with `commonmark` and `gfm` on, plus two block tokenizers of
- * Obsidian's own, a `%%` comment and a `$$` math block, so each tokenizer below is a port of one of those, quirks and
- * all:
+ * worker reads them. That worker is `remark-parse` 8 with `commonmark` and `gfm` on, plus block tokenizers of
+ * Obsidian's own - a `%%` comment, a `$$` math block, a footnote definition and a standalone block id - so each tokenizer
+ * below is a port of one of those, quirks and all:
  *
  * - A block's position starts at its line start, its indent included, and ends at the end of its last line, trailing
  *   whitespace included. An unclosed fenced code block, comment, math block or HTML block of the first five kinds runs to
@@ -18,14 +18,22 @@
  *   six kinds.
  * - A comment ends just past its closing `%%`, wherever on the line that is, and the rest of the line starts a paragraph.
  * - A table row needs a `|` past its first character, and keeps the header's choice of a leading `|`.
+ * - A link reference definition, a footnote definition or a standalone block id interrupts no paragraph.
  *
- * List items, link reference definitions, footnote definitions and block ids are not read here.
+ * List items are not read here.
  */
+
+import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * A block found in the text.
  */
 export interface GapBlock {
+  /**
+   * The id of a standalone block id, which is no section of its own.
+   */
+  readonly blockId?: string;
+
   /**
    * The offset just past the block, relative to the text.
    */
@@ -67,6 +75,11 @@ export interface GapHeading {
  */
 export interface GapToken {
   /**
+   * The id of a standalone block id.
+   */
+  readonly blockId?: string;
+
+  /**
    * The heading's level and text, when the block is a heading.
    */
   readonly heading?: GapHeading;
@@ -80,6 +93,16 @@ export interface GapToken {
    * The section type Obsidian reports for the block.
    */
   readonly type: string;
+}
+
+/**
+ * A line's leading whitespace as a footnote definition measures it.
+ */
+interface LineIndent {
+  // The columns counted, which stop growing once they pass four.
+  readonly column: number;
+  // The offset the line's content starts at.
+  readonly contentStart: number;
 }
 
 type Token = GapToken;
@@ -168,14 +191,28 @@ const HTML_BLOCK_NAMES = [
 
 const HTML_OPEN_TAG = String.raw`<[A-Za-z][A-Za-z0-9\-]*(?:\s+[a-zA-Z_:][a-zA-Z0-9:._-]*(?:\s*=\s*(?:[^"'=<>\u0060\u0000-\u0020]+|'[^']*'|"[^"]*"))?)*\s*\/?>`;
 const HTML_CLOSE_TAG = String.raw`<\/[A-Za-z][A-Za-z0-9\-]*\s*>`;
-const BLANK_LINE_END_REGEX = /^$/;
+/**
+ * What a line ending an HTML block of the last two kinds holds: nothing, since such a block ends before an empty line.
+ */
+export const BLANK_LINE_END_REGEX = /^$/;
 
-interface HtmlBlockKind {
-  // Whether the kind may interrupt a paragraph or a blockquote.
+/**
+ * One of the seven kinds of HTML block CommonMark defines.
+ */
+export interface HtmlBlockKind {
+  /**
+   * Whether the kind may interrupt a paragraph or a blockquote.
+   */
   readonly canInterrupt: boolean;
-  // What a line ending the block holds.
+
+  /**
+   * What a line ending the block holds; an empty line for the last two kinds, which end before it.
+   */
   readonly end: RegExp;
-  // What the block's first line starts with.
+
+  /**
+   * What the block's first line starts with.
+   */
   readonly start: RegExp;
 }
 
@@ -190,14 +227,55 @@ const HTML_BLOCK_KINDS: readonly HtmlBlockKind[] = [
 ];
 
 const BLANK_LINE_REGEX = /^[ \t]*(?:\n|$)/;
+const BLOCK_ID_LINE_REGEX = /^\^(?<id>[a-zA-Z0-9-]+)/;
+const NOT_FOUND = -1;
+const ESCAPE_LENGTH = 2;
+const LABEL_CLOSER = ']:';
+const FOOTNOTE_LABEL_OPENER = '[^';
+// The length of <>, an empty destination in angle brackets.
+const EMPTY_ANGLE_DESTINATION_LENGTH = 2;
+const DEFINITION_TITLE_CLOSERS = new Map([['"', '"'], ['(', ')'], ['\'', '\'']]);
 
 /**
- * Reads the top-level blocks of a text that holds no list item and no heading the parser has already found.
+ * The type of the token a standalone block id is read as. Obsidian reports no section for it: the parser gives its id to
+ * the section before it and drops it.
+ */
+export const BLOCK_ID_TYPE = 'blockId';
+
+/**
+ * Checks whether a text starts an HTML block of a kind that may interrupt a paragraph or a blockquote: one of the first
+ * six.
+ *
+ * @param text - The text, from the line start.
+ * @returns Whether it does.
+ */
+export function canHtmlBlockInterrupt(text: string): boolean {
+  return findHtmlBlockKind(text)?.canInterrupt === true;
+}
+
+/**
+ * Finds the kind of HTML block a text starts with, if any, by its first line.
+ *
+ * @param text - The text, from the line start.
+ * @returns The kind.
+ */
+export function findHtmlBlockKind(text: string): HtmlBlockKind | undefined {
+  const tagStart = skipSpacesAndTabs(text, 0);
+  if (text[tagStart] !== '<') {
+    return undefined;
+  }
+  const firstLine = text.slice(tagStart, findLineEnd(text, tagStart + 1));
+  return HTML_BLOCK_KINDS.find((kind) => kind.start.test(firstLine));
+}
+
+/**
+ * Reads the top-level blocks of a text that holds no list item the parser has already found.
  *
  * @param text - The text.
+ * @param isAtNoteEnd - Whether the text runs to the end of the note, which a standalone block id can need.
  * @returns The blocks, in order, with positions relative to the text.
  */
-export function scanGapBlocks(text: string): GapBlock[] {
+export function scanGapBlocks(text: string, isAtNoteEnd: boolean): GapBlock[] {
   const blocks: GapBlock[] = [];
   let index = 0;
   while (index < text.length) {
@@ -207,8 +285,9 @@ export function scanGapBlocks(text: string): GapBlock[] {
       index += blankLength;
       continue;
     }
-    const token = tokenizeBlock(rest);
+    const token = tokenizeBlock(rest, isAtNoteEnd);
     blocks.push({
+      ...token.blockId !== undefined && { blockId: token.blockId },
       end: index + token.length,
       ...token.heading !== undefined && { heading: token.heading },
       start: index,
@@ -268,17 +347,56 @@ export function tokenizeAtxHeading(text: string): GapToken | undefined {
   return { heading: { level, text: headingText }, length: index, type: 'heading' };
 }
 
-function canHtmlBlockInterrupt(text: string): boolean {
-  return findHtmlBlockKind(text)?.canInterrupt === true;
-}
-
-function findHtmlBlockKind(text: string): HtmlBlockKind | undefined {
-  const tagStart = skipSpacesAndTabs(text, 0);
-  if (text[tagStart] !== '<') {
+/**
+ * Reads a link reference definition, a port of `remark-parse` 8's: a label in brackets and a `:`, a destination after
+ * any whitespace, line breaks included, an optional title after more of it, and nothing else on the last line. A title
+ * that opens and never closes, or holds an empty line, spoils the whole definition rather than being left out.
+ *
+ * @param text - The text, from the definition's line start.
+ * @returns The definition, if the text starts with one.
+ */
+export function tokenizeDefinition(text: string): Token | undefined {
+  const labelEnd = readDefinitionLabel(text);
+  const destinationEnd = labelEnd === NOT_FOUND ? NOT_FOUND : readDefinitionDestination(text, skipWhitespaceAndLineBreaks(text, labelEnd));
+  const titleEnd = destinationEnd === NOT_FOUND ? NOT_FOUND : readDefinitionTitle(text, destinationEnd);
+  if (titleEnd === NOT_FOUND) {
     return undefined;
   }
-  const firstLine = text.slice(tagStart, findLineEnd(text, tagStart + 1));
-  return HTML_BLOCK_KINDS.find((kind) => kind.start.test(firstLine));
+  const end = skipSpacesAndTabs(text, titleEnd);
+  return end === text.length || text[end] === '\n' ? { length: end, type: 'definition' } : undefined;
+}
+
+/**
+ * Reads a table: a header row, a delimiter row and the rows after it. Every row holds a `|` past its first character,
+ * and starts with a `|` exactly when the header does.
+ *
+ * @param text - The text, from the table's line start.
+ * @returns The table, if the text starts with one.
+ */
+export function tokenizeTable(text: string): Token | undefined {
+  const rows: string[] = [];
+  let end = 0;
+  let lineStart = 0;
+  let hasLeadingPipe = false;
+  while (lineStart <= text.length) {
+    const lineEnd = findLineEnd(text, lineStart);
+    const pipeIndex = text.indexOf('|', lineStart + 1);
+    if (pipeIndex === -1 || pipeIndex > lineEnd) {
+      break;
+    }
+    const row = text.slice(lineStart, lineEnd);
+    if (rows.length === 0) {
+      hasLeadingPipe = row.startsWith('|');
+    } else if (row.startsWith('|') !== hasLeadingPipe) {
+      break;
+    }
+    rows.push(row);
+    end = lineEnd;
+    lineStart = lineEnd + 1;
+  }
+  // A header and a delimiter row are the least a table holds.
+  const delimiterRow = rows[1];
+  return delimiterRow === undefined || !isTableDelimiterRow(delimiterRow) ? undefined : { length: end, type: 'table' };
 }
 
 function findLineEnd(text: string, from: number): number {
@@ -295,6 +413,29 @@ function isBlockquoteInterrupted(text: string): boolean {
     tokenizeAtxHeading,
     tokenizeSetextHeading,
     tokenizeThematicBreak
+  ].some((tokenizer) => tokenizer(text) !== undefined) || canHtmlBlockInterrupt(text);
+}
+
+/**
+ * Checks whether a line starts a block that ends a footnote definition: every block Obsidian's worker knew when the
+ * footnote tokenizer was installed, other than a paragraph, an indented code block and an empty line. The comment and the
+ * standalone block id came later, so they do not end one. Neither does a list item here: only a bullet or an item
+ * numbered 1 ends one, and the list parser has already taken each such line out of the text, as an item.
+ *
+ * @param text - The text, from the line's first character past its indent.
+ * @returns Whether it does.
+ */
+function isFootnoteDefinitionInterrupted(text: string): boolean {
+  return [
+    tokenizeMath,
+    tokenizeFencedCode,
+    tokenizeBlockquoteStart,
+    tokenizeAtxHeading,
+    tokenizeThematicBreak,
+    tokenizeSetextHeading,
+    tokenizeFootnoteDefinition,
+    tokenizeDefinition,
+    tokenizeTable
   ].some((tokenizer) => tokenizer(text) !== undefined) || canHtmlBlockInterrupt(text);
 }
 
@@ -349,6 +490,126 @@ function measureBlankLines(text: string): number {
   }
 }
 
+/**
+ * Measures a later line of a footnote definition the way the worker does: its leading whitespace, counted in columns
+ * until it is wider than four, where the worker stops counting and takes the rest of the line as content.
+ *
+ * @param text - The text.
+ * @param lineStart - Where the line starts.
+ * @param lineEnd - Where it ends.
+ * @returns The columns counted and the offset the line's content starts at.
+ */
+function measureFootnoteLineIndent(text: string, lineStart: number, lineEnd: number): LineIndent {
+  let column = 0;
+  let contentStart = lineStart;
+  while (contentStart < lineEnd && [' ', '\t'].includes(text.charAt(contentStart)) && column <= INDENTED_CODE_COLUMNS) {
+    column += text[contentStart] === ' ' ? 1 : INDENTED_CODE_COLUMNS - (column % INDENTED_CODE_COLUMNS);
+    contentStart++;
+  }
+  return { column, contentStart };
+}
+
+/**
+ * Reads a definition's destination: one in angle brackets, which may hold whitespace but no bracket, or a run of
+ * characters that are neither whitespace nor a bracket. An empty pair of angle brackets is followed by such a run.
+ *
+ * @param text - The text.
+ * @param start - Where the destination starts.
+ * @returns The offset past it, or {@link NOT_FOUND}.
+ */
+function readDefinitionDestination(text: string, start: number): number {
+  let index = start;
+  if (text[index] === '<') {
+    index++;
+    while (index < text.length && !'>[]'.includes(text.charAt(index))) {
+      index++;
+    }
+    if (text[index] !== '>') {
+      return NOT_FOUND;
+    }
+    index++;
+    if (index - start > EMPTY_ANGLE_DESTINATION_LENGTH) {
+      return index;
+    }
+  }
+  const runStart = index;
+  while (index < text.length && !/[[\]\s]/.test(text.charAt(index))) {
+    index++;
+  }
+  return index === runStart ? NOT_FOUND : index;
+}
+
+/**
+ * Reads a definition's label: a `[`, a non-empty label in which a `\` escapes the character after it, and `]:`.
+ *
+ * @param text - The text, from the definition's line start.
+ * @returns The offset past the `:`, or {@link NOT_FOUND}.
+ */
+function readDefinitionLabel(text: string): number {
+  let index = skipSpacesAndTabs(text, 0);
+  if (text[index] !== '[' || text[index + 1] === '^') {
+    return NOT_FOUND;
+  }
+  index++;
+  const labelStart = index;
+  while (index < text.length && text[index] !== ']') {
+    index += text[index] === '\\' ? ESCAPE_LENGTH : 1;
+  }
+  return index === labelStart || text[index] !== ']' || text[index + 1] !== ':' ? NOT_FOUND : index + LABEL_CLOSER.length;
+}
+
+/**
+ * Reads a definition's optional title: after whitespace, line breaks included, a run in double quotes, single quotes or
+ * parentheses. An opened title that never closes, or holds an empty line, spoils the definition.
+ *
+ * @param text - The text.
+ * @param destinationEnd - Where the destination ends.
+ * @returns The offset past the title, `destinationEnd` when there is none, or {@link NOT_FOUND}.
+ */
+function readDefinitionTitle(text: string, destinationEnd: number): number {
+  let index = skipWhitespaceAndLineBreaks(text, destinationEnd);
+  const titleCloser = DEFINITION_TITLE_CLOSERS.get(text.charAt(index));
+  if (titleCloser === undefined) {
+    return destinationEnd;
+  }
+  if (index === destinationEnd) {
+    return NOT_FOUND;
+  }
+  index++;
+  while (index < text.length && text[index] !== titleCloser) {
+    if (text[index] === '\n') {
+      index++;
+      if (text[index] === '\n' || text[index] === titleCloser) {
+        return NOT_FOUND;
+      }
+    }
+    index++;
+  }
+  return text[index] === titleCloser ? index + 1 : NOT_FOUND;
+}
+
+/**
+ * Reads a footnote definition's label: `[^`, a non-empty label holding no space, tab or line break, and `]:`.
+ *
+ * @param text - The text, from the definition's line start.
+ * @returns The offset past the `:`, or {@link NOT_FOUND}.
+ */
+function readFootnoteLabel(text: string): number {
+  let index = skipSpacesAndTabs(text, 0);
+  if (!text.startsWith(FOOTNOTE_LABEL_OPENER, index)) {
+    return NOT_FOUND;
+  }
+  index += FOOTNOTE_LABEL_OPENER.length;
+  const labelStart = index;
+  while (index < text.length && text[index] !== ']') {
+    if ([' ', '\t', '\n'].includes(text.charAt(index))) {
+      return NOT_FOUND;
+    }
+    index++;
+  }
+  return index === labelStart || !text.startsWith(LABEL_CLOSER, index) ? NOT_FOUND : index + LABEL_CLOSER.length;
+}
+
 function skipSpaces(text: string, from: number): number {
   let index = from;
   while (text[index] === ' ') {
@@ -365,7 +626,15 @@ function skipSpacesAndTabs(text: string, from: number): number {
   return index;
 }
 
-function tokenizeBlock(text: string): Token {
+function skipWhitespaceAndLineBreaks(text: string, from: number): number {
+  let index = from;
+  while ([' ', '\t', '\n'].includes(text.charAt(index))) {
+    index++;
+  }
+  return index;
+}
+
+function tokenizeBlock(text: string, isAtNoteEnd: boolean): Token {
   const tokenizers: Tokenizer[] = [
     tokenizeIndentedCode,
     tokenizeMath,
@@ -376,7 +645,10 @@ function tokenizeBlock(text: string): Token {
     tokenizeThematicBreak,
     tokenizeSetextHeading,
     tokenizeHtml,
-    tokenizeTable
+    tokenizeFootnoteDefinition,
+    tokenizeDefinition,
+    tokenizeTable,
+    (blockText): Token | undefined => tokenizeBlockId(blockText, isAtNoteEnd)
   ];
   for (const tokenizer of tokenizers) {
     const token = tokenizer(text);
@@ -385,6 +657,25 @@ function tokenizeBlock(text: string): Token {
     }
   }
   return tokenizeParagraph(text);
+}
+
+/**
+ * Reads a standalone block id: `^` and an id of letters, digits and `-` alone on its line, followed by the end of the
+ * note, a line break and the end of the note, or an empty line. Obsidian gives the id to the block before it and reports
+ * no section for the id itself.
+ *
+ * @param text - The text, from the id's line start.
+ * @param isAtNoteEnd - Whether the text runs to the end of the note, rather than stopping before a later section.
+ * @returns The block id, if the text starts with one.
+ */
+function tokenizeBlockId(text: string, isAtNoteEnd: boolean): Token | undefined {
+  const match = BLOCK_ID_LINE_REGEX.exec(text);
+  if (!match) {
+    return undefined;
+  }
+  const after = text.slice(match[0].length);
+  const isFollowedByEnd = isAtNoteEnd && (after === '' || after === '\n');
+  return !isFollowedByEnd && !after.startsWith('\n\n') ? undefined : { blockId: ensureNonNullable(match[1]), length: match[0].length, type: BLOCK_ID_TYPE };
 }
 
 /**
@@ -486,6 +777,42 @@ function tokenizeFencedCode(text: string): Token | undefined {
     lineStart = lineEnd + 1;
   }
   return { length: text.length, type: 'code' };
+}
+
+/**
+ * Reads a footnote definition, a port of the tokenizer Obsidian's worker carries: `[^label]:` with a label holding no
+ * whitespace, then every later line until an empty line followed by a line indented less than four columns, or a line
+ * indented less than four columns that starts another block. Any other line is a lazy continuation. It ends at the end
+ * of its last line that holds more than whitespace, that whitespace included.
+ *
+ * @param text - The text, from the definition's line start.
+ * @returns The footnote definition, if the text starts with one.
+ */
+function tokenizeFootnoteDefinition(text: string): Token | undefined {
+  const labelEnd = readFootnoteLabel(text);
+  if (labelEnd === NOT_FOUND) {
+    return undefined;
+  }
+  // The end of the last line that holds more than whitespace; the first line always counts, and is empty only when
+  // nothing follows its `:`.
+  let end = findLineEnd(text, labelEnd);
+  let isAfterEmptyLine = end === labelEnd;
+  let lineStart = end + 1;
+  while (lineStart <= text.length) {
+    const lineEnd = findLineEnd(text, lineStart);
+    const { column, contentStart } = measureFootnoteLineIndent(text, lineStart, lineEnd);
+    // Whitespace wider than four columns counts as content, as the worker counts it.
+    const hasContent = contentStart < lineEnd || column > INDENTED_CODE_COLUMNS;
+    if (hasContent && column < INDENTED_CODE_COLUMNS && (isAfterEmptyLine || isFootnoteDefinitionInterrupted(text.slice(contentStart)))) {
+      break;
+    }
+    if (hasContent) {
+      end = lineEnd;
+    }
+    isAfterEmptyLine = !hasContent;
+    lineStart = lineEnd + 1;
+  }
+  return { length: end, type: 'footnoteDefinition' };
 }
 
 /**
@@ -663,39 +990,6 @@ function tokenizeSetextHeading(text: string): Token | undefined {
     length: underlineEnd,
     type: 'heading'
   };
-}
-
-/**
- * Reads a table: a header row, a delimiter row and the rows after it. Every row holds a `|` past its first character,
- * and starts with a `|` exactly when the header does.
- *
- * @param text - The text, from the table's line start.
- * @returns The table, if the text starts with one.
- */
-function tokenizeTable(text: string): Token | undefined {
-  const rows: string[] = [];
-  let end = 0;
-  let lineStart = 0;
-  let hasLeadingPipe = false;
-  while (lineStart <= text.length) {
-    const lineEnd = findLineEnd(text, lineStart);
-    const pipeIndex = text.indexOf('|', lineStart + 1);
-    if (pipeIndex === -1 || pipeIndex > lineEnd) {
-      break;
-    }
-    const row = text.slice(lineStart, lineEnd);
-    if (rows.length === 0) {
-      hasLeadingPipe = row.startsWith('|');
-    } else if (row.startsWith('|') !== hasLeadingPipe) {
-      break;
-    }
-    rows.push(row);
-    end = lineEnd;
-    lineStart = lineEnd + 1;
-  }
-  // A header and a delimiter row are the least a table holds.
-  const delimiterRow = rows[1];
-  return delimiterRow === undefined || !isTableDelimiterRow(delimiterRow) ? undefined : { length: end, type: 'table' };
 }
 
 /**

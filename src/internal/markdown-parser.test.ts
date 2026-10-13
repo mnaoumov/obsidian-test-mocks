@@ -1272,6 +1272,157 @@ describe('parseMarkdownContent', () => {
 
       expect(cache.headings?.map((h) => [h.heading, h.level, h.position.start.offset, h.position.end.offset])).toEqual(expected);
     });
+
+    // Measured with Obsidian 1.14.4's own metadata worker: a heading comes from block context, so a heading line inside
+    // an unclosed fence, comment, math block or HTML block is a line of that block, and no heading at all.
+    it.each([
+      ['a heading line in an unclosed HTML comment', '<!-- c\n# H\n', [['html', 0, 11]], undefined],
+      ['a heading line in an unclosed comment', '%% end\n# H\n', [['comment', 0, 11]], undefined],
+      ['a heading line in an unclosed fence', '```\n# H\n', [['code', 0, 8]], undefined],
+      ['a heading line in an unclosed math block', '$$\n# H\n', [['math', 0, 7]], undefined],
+      ['a heading line in an HTML block before an empty line', '<div>\n# H\n\n# I\n', [['html', 0, 9], ['heading', 11, 14]], [['I', 1, 11, 14]]],
+      ['a heading line in a closing-tag HTML block', '</script>\n## a b\n', [['html', 0, 16]], undefined],
+      ['a heading after a closed fence', '```\nx\n```\n# H\n', [['code', 0, 9], ['heading', 10, 13]], [['H', 1, 10, 13]]],
+      ['a heading line in a comment after a paragraph', 'para\n%%\n# H\n%%\n# I\n', [['paragraph', 0, 4], ['comment', 5, 14], ['heading', 15, 18]], [['I', 1, 15, 18]]]
+    ])('should hide the heading lines of %s as Obsidian does', (_name, content, expectedSections, expectedHeadings) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.sections?.map((s) => [s.type, s.position.start.offset, s.position.end.offset])).toEqual(expectedSections);
+      expect(cache.headings?.map((h) => [h.heading, h.level, h.position.start.offset, h.position.end.offset])).toEqual(expectedHeadings);
+    });
+
+    // Measured the same way: link reference definitions, footnote definitions and block ids, with every section's id,
+    // every list item's id and the `blocks` collection, keyed by the lower-cased id.
+    it.each([
+      ['a link reference definition', '[a]: http://x "t"\n', [['definition', 0, 17, undefined]], undefined, undefined],
+      ['a definition whose destination is on the next line', '[a]:\n  /url\n', [['definition', 0, 11, undefined]], undefined, undefined],
+      ['a definition whose title is on the next line', '[a]: /u\n"title"\n', [['definition', 0, 15, undefined]], undefined, undefined],
+      ['a definition whose title never closes', '[a]: /u\n"title\n', [['paragraph', 0, 14, undefined]], undefined, undefined],
+      ['a definition with text after its title', '[a]: /u "t" x\n', [['paragraph', 0, 13, undefined]], undefined, undefined],
+      ['a definition with an angle-bracket destination', '[a]: <u v>\n', [['definition', 0, 10, undefined]], undefined, undefined],
+      ['a definition with an unclosed angle bracket', '[a]: <u\n', [['paragraph', 0, 7, undefined]], undefined, undefined],
+      ['a definition after a paragraph', 'para\n[a]: /u\n', [['paragraph', 0, 12, undefined]], undefined, undefined],
+      ['an indented definition', '   [a]: /u\n', [['definition', 0, 10, undefined]], undefined, undefined],
+      ['a definition with an empty label', '[]: /u\n', [['paragraph', 0, 6, undefined]], undefined, undefined],
+      ['a definition across an empty line', '[a]:\n\n/u\n', [['definition', 0, 8, undefined]], undefined, undefined],
+      ['a space before the colon', '[a] : /u\n', [['paragraph', 0, 8, undefined]], undefined, undefined],
+      ['a definition and a paragraph', '[a]: /u\npara\n', [['definition', 0, 7, undefined], ['paragraph', 8, 12, undefined]], undefined, undefined],
+      ['two definitions', '[a]: /u\n[b]: /v\n', [['definition', 0, 7, undefined], ['definition', 8, 15, undefined]], undefined, undefined],
+      ['a definition whose destination looks like a fence', '[c]:\n```\n- a\n', [['definition', 0, 8, undefined], ['list', 9, 12, undefined]], [[9, undefined]], undefined],
+      ['a footnote definition with an indented line', '[^1]: n\n    more\n', [['footnoteDefinition', 0, 16, undefined]], undefined, undefined],
+      ['a footnote definition with a lazy line', '[^1]: n\nlazy\n', [['footnoteDefinition', 0, 12, undefined]], undefined, undefined],
+      ['a footnote definition before an empty line', '[^1]: n\n\nlazy\n', [['footnoteDefinition', 0, 7, undefined], ['paragraph', 9, 13, undefined]], undefined, undefined],
+      ['a footnote definition across an empty line', '[^1]: n\n\n    more\n', [['footnoteDefinition', 0, 17, undefined]], undefined, undefined],
+      ['a footnote definition ended by a list', '[^1]: n\n- a\n', [['footnoteDefinition', 0, 7, undefined], ['list', 8, 11, undefined]], [[8, undefined]], undefined],
+      ['a footnote definition ended by a heading', '[^1]: n\n# h\n', [['footnoteDefinition', 0, 7, undefined], ['heading', 8, 11, undefined]], undefined, undefined],
+      ['a footnote definition ended by a setext heading', '[^1]: n\nfoo\n===\n', [['footnoteDefinition', 0, 7, undefined], ['heading', 8, 15, undefined]], undefined, undefined],
+      ['two footnote definitions', '[^1]: n\n[^2]: m\n', [['footnoteDefinition', 0, 7, undefined], ['footnoteDefinition', 8, 15, undefined]], undefined, undefined],
+      ['a footnote definition ended by a definition', '[^1]: n\n[a]: /u\n', [['footnoteDefinition', 0, 7, undefined], ['definition', 8, 15, undefined]], undefined, undefined],
+      ['an empty footnote definition', '[^1]:\n', [['footnoteDefinition', 0, 5, undefined]], undefined, undefined],
+      ['an empty footnote definition and a lazy line', '[^1]:\nlazy\n', [['footnoteDefinition', 0, 5, undefined], ['paragraph', 6, 10, undefined]], undefined, undefined],
+      ['a footnote label with a space', '[^ 1]: n\n', [['paragraph', 0, 8, undefined]], undefined, undefined],
+      ['a footnote definition after a paragraph', 'para\n[^1]: n\n', [['paragraph', 0, 12, undefined]], undefined, undefined],
+      ['trailing empty lines after a footnote definition', '[^1]: n\n\n\n', [['footnoteDefinition', 0, 7, undefined]], undefined, undefined],
+      ['an id ending a paragraph', 'para ^abc\n', [['paragraph', 0, 9, 'abc']], undefined, [['abc', 'abc', 0, 9]]],
+      ['an id on a paragraph\'s last line', 'para\n^abc\n', [['paragraph', 0, 9, 'abc']], undefined, [['abc', 'abc', 0, 9]]],
+      ['an id with trailing whitespace', 'para ^abc  \n', [['paragraph', 0, 11, undefined]], undefined, undefined],
+      ['an id holding an underscore', 'para ^a_b\n', [['paragraph', 0, 9, undefined]], undefined, undefined],
+      ['an id glued to a word', 'para^abc\n', [['paragraph', 0, 8, undefined]], undefined, undefined],
+      ['an id mid-paragraph', 'a ^x\nb\n', [['paragraph', 0, 6, undefined]], undefined, undefined],
+      ['an id in an indented paragraph', '   para ^x\n', [['paragraph', 0, 10, 'x']], undefined, [['x', 'x', 0, 10]]],
+      ['an id after a tab', 'p\t^ab\n', [['paragraph', 0, 5, 'ab']], undefined, [['ab', 'ab', 0, 5]]],
+      ['two ids on a line', 'p ^x ^y\n', [['paragraph', 0, 7, 'y']], undefined, [['y', 'y', 0, 7]]],
+      ['an id after emphasis', 'p *e* ^x\n', [['paragraph', 0, 8, 'x']], undefined, [['x', 'x', 0, 8]]],
+      ['an escaped caret', 'p \\^x\n', [['paragraph', 0, 5, undefined]], undefined, undefined],
+      ['an upper-case id', 'p ^A\n', [['paragraph', 0, 4, 'A']], undefined, [['a', 'A', 0, 4]]],
+      ['a standalone id after a paragraph', 'para\n\n^abc\n', [['paragraph', 0, 4, 'abc']], undefined, [['abc', 'abc', 0, 4]]],
+      ['a standalone id alone', '^abc\n', undefined, undefined, undefined],
+      ['a standalone id with no line break', '^abc', undefined, undefined, undefined],
+      ['an id opening a paragraph a list interrupts', '^abc\n- a\n', [['paragraph', 0, 4, 'abc'], ['list', 5, 8, undefined]], [[5, undefined]], [['abc', 'abc', 0, 4]]],
+      ['a standalone id before a list', '^abc\n\n- a\n', [['list', 6, 9, undefined]], [[6, undefined]], undefined],
+      ['two ids on two lines', '^a\n^b\n', [['paragraph', 0, 5, 'b']], undefined, [['b', 'b', 0, 5]]],
+      ['two standalone ids after a paragraph', 'p\n\n^a\n\n^b\n', [['paragraph', 0, 1, 'b']], undefined, [['b', 'b', 0, 1]]],
+      ['a standalone id overriding an inline one', 'p ^x\n\n^y\n', [['paragraph', 0, 4, 'y']], undefined, [['y', 'y', 0, 4]]],
+      ['a standalone id after a list', '- a\n\n^x\n', [['list', 0, 3, 'x']], [[0, undefined]], [['x', 'x', 0, 3]]],
+      ['a standalone id after code', '```\nx\n```\n^c\n', [['code', 0, 9, 'c']], undefined, [['c', 'c', 0, 9]]],
+      ['a standalone id after a heading', '# H\n^h\n', [['heading', 0, 3, 'h']], undefined, [['h', 'h', 0, 3]]],
+      ['a standalone id after frontmatter', '---\na: 1\n---\n^y\n', [['yaml', 0, 12, 'y']], undefined, [['y', 'y', 0, 12]]],
+      ['a standalone id after a definition', '[a]: /u\n^d\n', [['definition', 0, 7, 'd']], undefined, [['d', 'd', 0, 7]]],
+      ['an id in a heading', '# H ^id\n', [['heading', 0, 7, 'id']], undefined, [['id', 'id', 0, 7]]],
+      ['an id in a blockquote', '> q\n> ^q1\n', [['blockquote', 0, 9, 'q1']], undefined, [['q1', 'q1', 0, 9]]],
+      ['ids in two paragraphs of a blockquote', '> a ^x\n>\n> b ^y\n', [['blockquote', 0, 15, 'y']], undefined, [['y', 'y', 0, 15]]],
+      ['an id in a quoted list', '> - a ^x\n', [['blockquote', 0, 8, 'x']], [[2, undefined]], [['x', 'x', 0, 8]]],
+      ['an id in a table cell', '| a | b |\n| - | - |\n| c | d ^t |\n', [['table', 0, 32, 't']], undefined, [['t', 't', 0, 32]]],
+      ['an id in a footnote definition', '[^1]: n ^id\n', [['footnoteDefinition', 0, 11, 'id']], undefined, [['id', 'id', 0, 11]]],
+      ['an id on a footnote definition\'s lazy line', '[^1]: n\n^abc\n', [['footnoteDefinition', 0, 12, 'abc']], undefined, [['abc', 'abc', 0, 12]]],
+      ['ids on list items', '- a ^x\n  - b ^y\n', [['list', 0, 15, undefined]], [[0, 'x'], [9, 'y']], [['x', 'x', 0, 6], ['y', 'y', 9, 15]]],
+      ['an id on an item\'s continuation line', '- a\n  ^sub\n- b ^S\n', [['list', 0, 17, undefined]], [[0, 'sub'], [11, 'S']], [['sub', 'sub', 0, 10], ['s', 'S', 11, 17]]],
+      ['a standalone id inside an item', '- a\n\n  ^sub\n', [['list', 0, 11, undefined]], [[0, 'sub']], [['sub', 'sub', 0, 11]]],
+      ['an id on a nested item\'s lazy line', '- a\n  - b ^y\n  ^z\n', [['list', 0, 17, undefined]], [[0, undefined], [6, 'z']], [['z', 'z', 6, 17]]],
+      ['an id on an ordered item', '1. a ^x\n2. b\n', [['list', 0, 12, undefined]], [[0, 'x'], [8, undefined]], [['x', 'x', 0, 7]]],
+      ['an id on a task', '- [ ] t ^x\n', [['list', 0, 10, undefined]], [[0, 'x']], [['x', 'x', 0, 10]]],
+      ['an item\'s id before a lazy blockquote\'s', '- a ^li\n> q ^q\n', [['list', 0, 14, undefined]], [[0, 'li']], [['li', 'li', 0, 14]]],
+      ['an id in a list nested in an empty item', '- \n  - b ^y\n', [['list', 0, 11, undefined]], [[0, undefined], [5, 'y']], [['y', 'y', 5, 11]]],
+      ['a definition with an escaped bracket in its label', '[a\\]b]: /u\n', [['definition', 0, 10, undefined]], undefined, undefined],
+      ['a definition with an empty angle-bracket destination', '[a]: <>\n', [['paragraph', 0, 7, undefined]], undefined, undefined],
+      ['a title glued to an angle-bracket destination', '[a]: <u>"t"\n', [['paragraph', 0, 11, undefined]], undefined, undefined],
+      ['a title holding an empty line', '[a]: /u "t\n\nx"\n', [['paragraph', 0, 10, undefined], ['paragraph', 12, 14, undefined]], undefined, undefined],
+      ['a title closed right after a line break', '[a]: /u "t\n"\n', [['paragraph', 0, 12, undefined]], undefined, undefined],
+      ['a title across a line break', '[a]: /u "t\nu"\n', [['definition', 0, 13, undefined]], undefined, undefined],
+      ['a title in parentheses', '[a]: /u (t)\n', [['definition', 0, 11, undefined]], undefined, undefined],
+      ['a title in single quotes', '[a]: /u \'t\'\n', [['definition', 0, 11, undefined]], undefined, undefined],
+      ['an unclosed footnote label', '[^ab\n', [['paragraph', 0, 4, undefined]], undefined, undefined],
+      ['a footnote definition with a tab-indented line', '[^1]: n\n\tmore\n', [['footnoteDefinition', 0, 13, undefined]], undefined, undefined],
+      ['a footnote definition and an item numbered 2', '[^1]: n\n2. a\n', [['footnoteDefinition', 0, 12, undefined]], undefined, undefined],
+      ['a footnote definition and an item numbered 10', '[^1]: n\n10. a\n', [['footnoteDefinition', 0, 13, undefined]], undefined, undefined],
+      ['a footnote label running to the end of the note', '[^ab', [['paragraph', 0, 4, undefined]], undefined, undefined],
+      ['an empty footnote label', '[^]: n\n', [['paragraph', 0, 6, undefined]], undefined, undefined],
+      ['a footnote label without a colon', '[^a] n\n', [['paragraph', 0, 6, undefined]], undefined, undefined]
+    ])('should read the definitions and block ids of %s as Obsidian does', (_name, content, expectedSections, expectedItemIds, expectedBlocks) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.sections?.map((s) => [s.type, s.position.start.offset, s.position.end.offset, s.id])).toEqual(expectedSections);
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.id])).toEqual(expectedItemIds);
+      expect(cache.blocks && Object.entries(cache.blocks).map(([key, block]) => [key, block.id, block.position.start.offset, block.position.end.offset]))
+        .toEqual(expectedBlocks);
+    });
+
+    // Measured the same way: the list lines Obsidian reads as something else - a thematic break, which `remark-parse`
+    // tries before a list item, a table row, and a line an HTML block hides.
+    it.each([
+      ['a thematic break of asterisks', '* * *\n', [['thematicBreak', 0, 5]], undefined],
+      ['a thematic break interrupting a paragraph', 'para\n- - -\n', [['paragraph', 0, 4], ['thematicBreak', 5, 10]], undefined],
+      ['a thematic break ending a list', '- a\n- - -\n- b\n', [['list', 0, 3], ['thematicBreak', 4, 9], ['list', 10, 13]], [[0, 3, -1], [10, 13, -2]]],
+      ['a thematic break inside an item', '- a\n  - - -\n', [['list', 0, 11]], [[0, 11, -1]]],
+      ['a thematic break indented inside an item', '- a\n    * * *\n', [['list', 0, 13]], [[0, 13, -1]]],
+      ['a thematic break inside an item\'s first line', '- * * *\n', [['list', 0, 7]], [[0, 7, -1]]],
+      ['a thematic break in a blockquote', '> * * *\n', [['blockquote', 0, 7]], undefined],
+      ['a table delimiter row of dashes', 'a | b\n- | -\n', [['table', 0, 11]], undefined],
+      ['a table row that looks like an item', 'a | b\n- | -\n- c | d\n', [['table', 0, 19]], undefined],
+      ['a row without the header\'s leading pipe', '|a|b|\n|-|-|\n- x|y\n', [['table', 0, 11], ['list', 12, 17]], [[12, 17, -2]]],
+      ['a delimiter-like row inside an item', '- x\n  a | b\n  - | -\n', [['list', 0, 19]], [[0, 11, -1], [14, 19, 0]]],
+      ['an ordered item numbered 2 after a paragraph', 'a\n2. b\n', [['paragraph', 0, 6]], undefined],
+      ['an HTML block hiding an item', '<div>\n- a\n', [['html', 0, 9]], undefined],
+      ['an HTML block ended by an empty line', '<div>\n\n- a\n', [['html', 0, 5], ['list', 7, 10]], [[7, 10, -2]]],
+      ['an HTML comment hiding an item', '<!-- c\n- a\n-->\n- b\n', [['html', 0, 14], ['list', 15, 18]], [[15, 18, -3]]],
+      ['a one-line HTML comment', '<!-- c -->\n- a\n', [['html', 0, 10], ['list', 11, 14]], [[11, 14, -1]]],
+      ['an HTML block interrupting a paragraph', 'para\n<div>\n- a\n', [['paragraph', 0, 4], ['html', 5, 14]], undefined],
+      ['an inline tag after a paragraph', 'para\n<span>\n- a\n', [['paragraph', 0, 11], ['list', 12, 15]], [[12, 15, -2]]],
+      ['an inline tag alone', '<span>\n* b\n', [['html', 0, 10]], undefined],
+      ['an HTML block after a list', '- a\n\n<div>\n- b\n', [['list', 0, 3], ['html', 5, 14]], [[0, 3, -1]]],
+      ['an HTML block inside an item', '- a\n\n  <div>\n  - b\n', [['list', 0, 18]], [[0, 18, -1]]],
+      ['an HTML comment inside an item', '- a\n  <!-- x\n  - b\n', [['list', 0, 18]], [[0, 18, -1]]],
+      ['an HTML block lazily inside an item', '- a\n<div>\n  - n\n', [['list', 0, 15]], [[0, 15, -1]]],
+      ['an HTML block lazily inside an item, then a sibling', '- a\n<div>\n- b\n', [['list', 0, 13]], [[0, 9, -1], [10, 13, -1]]],
+      ['a lazy HTML block before an empty line', '2. y\n<p>x</p>\n\n2. y\n', [['list', 0, 19]], [[0, 13, -1], [15, 19, -1]]],
+      ['an HTML block in a blockquote', '> <div>\n> - a\n', [['blockquote', 0, 13]], undefined],
+      ['an HTML block leaving a blockquote', '> q\n<div>\n- a\n', [['blockquote', 0, 3], ['html', 4, 13]], undefined]
+    ])('should read the list lines of %s as Obsidian does', (_name, content, expectedSections, expectedItems) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.sections?.map((s) => [s.type, s.position.start.offset, s.position.end.offset])).toEqual(expectedSections);
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent])).toEqual(expectedItems);
+    });
     it('should create code sections for fenced code blocks in gaps', () => {
       const content = '# Heading\n\n```\ncode\n```';
       const cache = parseMarkdownContent(content);

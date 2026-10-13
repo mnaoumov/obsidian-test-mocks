@@ -24,6 +24,15 @@
  * - Only a bullet or an ordered marker numbered 1 starts a list that interrupts a paragraph.
  */
 
+import type { HtmlBlockKind } from './markdown-gap-blocks.ts';
+
+import {
+  BLANK_LINE_END_REGEX,
+  canHtmlBlockInterrupt,
+  findHtmlBlockKind,
+  tokenizeDefinition,
+  tokenizeTable
+} from './markdown-gap-blocks.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
 /**
@@ -70,7 +79,7 @@ export interface LeafBlockScan {
   readonly openerLines: ReadonlySet<number>;
 }
 
-type ClosableLeaf = CommentLeaf | FencedLeaf | MathLeaf;
+type ClosableLeaf = CommentLeaf | FencedLeaf | HtmlLeaf | MathLeaf;
 
 interface CommentLeaf {
   readonly kind: 'comment';
@@ -89,10 +98,23 @@ interface Cursor {
   index: number;
 }
 
+interface DefinitionLeaf {
+  // The definition's last line, which can be a later one than its first: its destination and its title may each follow a
+  // line break.
+  readonly endLine: number;
+  readonly kind: 'definition';
+}
+
 interface FencedLeaf {
   readonly char: string;
   readonly kind: 'fence';
   readonly length: number;
+}
+
+interface HtmlLeaf {
+  // The block's kind, whose `end` says which line closes it.
+  readonly htmlKind: HtmlBlockKind;
+  readonly kind: 'html';
 }
 
 interface ItemContainer {
@@ -110,7 +132,7 @@ interface ItemMarker extends LinePosition {
   readonly marker: string;
 }
 
-type Leaf = ClosableLeaf | SimpleLeaf;
+type Leaf = ClosableLeaf | DefinitionLeaf | SimpleLeaf | TableLeaf;
 
 interface LinePosition {
   // The visual column of `line[index]`.
@@ -165,6 +187,12 @@ interface SimpleLeaf {
   readonly kind: 'heading' | 'indented' | 'paragraph';
 }
 
+interface TableLeaf {
+  // Whether the header row starts with a `|`, which every later row must match.
+  readonly hasLeadingPipe: boolean;
+  readonly kind: 'table';
+}
+
 const TAB_WIDTH = 4;
 const INDENTED_CODE_COLUMNS = 4;
 const MAX_LIST_ITEM_CONTENT_GAP = 4;
@@ -179,7 +207,10 @@ const HEADING_REGEX = /^#{1,6}(?:[ \t]|$)/;
 const THEMATIC_BREAK_REGEX = /^(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$/;
 const COMMENT_MARK = '%%';
 const MATH_MIN_LENGTH = 2;
-const CLOSABLE_LEAF_KINDS: ReadonlySet<Leaf['kind']> = new Set<Leaf['kind']>(['comment', 'fence', 'math']);
+// How many lines a link reference definition is looked for in: its label line, and the empty lines and the destination and
+// title lines after it.
+const DEFINITION_MAX_LINES = 16;
+const CLOSABLE_LEAF_KINDS: ReadonlySet<Leaf['kind']> = new Set<Leaf['kind']>(['comment', 'fence', 'html', 'math']);
 
 /**
  * Computes the widest indent Obsidian strips from a list item's later lines before it reads the item's blocks: the
@@ -257,6 +288,14 @@ function continueLazily(state: ScanState, line: string, lineNumber: number, rest
     openHidingLeaf(state, { kind: 'math', length: mathLength }, lineNumber);
     return;
   }
+  // The container gathers the line before it reads its blocks, so an HTML block the line starts opens inside it, and
+  // hides what follows: one of the first six kinds interrupts the paragraph above, and any kind starts a block after a
+  // block that is not a paragraph.
+  const htmlKind = findHtmlBlockKind(text);
+  if (htmlKind && (htmlKind.canInterrupt || leaf?.kind !== 'paragraph')) {
+    openHtmlLeaf(state, htmlKind, text, lineNumber);
+    return;
+  }
   if (text.startsWith('>') && state.containers.at(-1)?.kind === 'item') {
     state.containers.push({ isLazy: true, kind: 'quote' });
     const cursor: Cursor = { base: 0, column: 0, indentBase: 0, index: 0 };
@@ -305,6 +344,19 @@ function doesContinueContainer(container: Container, line: string, cursor: Curso
   cursor.base = contentBase;
   cursor.indentBase = indentBase;
   return true;
+}
+
+/**
+ * Checks whether a line is one of the open link reference definition's later lines, or a row of the open table, which
+ * holds a `|` past its first character and starts with one exactly when the header does.
+ *
+ * @param leaf - The open leaf, if any.
+ * @param row - The line past its containers.
+ * @param lineNumber - The line's number.
+ * @returns Whether the leaf takes the line.
+ */
+function doesDefinitionOrTableTakeLine(leaf: Leaf | undefined, row: string, lineNumber: number): boolean {
+  return leaf?.kind === 'definition' ? lineNumber <= leaf.endLine : leaf?.kind === 'table' && row.includes('|', 1) && row.startsWith('|') === leaf.hasLeadingPipe;
 }
 
 /**
@@ -441,7 +493,8 @@ function isLazyInterrupter(text: string): boolean {
  */
 function isLazyLine(state: ScanState, matchedCount: number, rest: LineRest): boolean {
   const isLeavingQuote = countQuotes(state.containers.slice(matchedCount)) > 0;
-  return !(isLeavingQuote && (rest.indent >= INDENTED_CODE_COLUMNS || isMathOpener(state, rest.text))) && !isLazyInterrupter(rest.text);
+  return !(isLeavingQuote && (rest.indent >= INDENTED_CODE_COLUMNS || isMathOpener(state, rest.text) || canHtmlBlockInterrupt(rest.text)))
+    && !isLazyInterrupter(rest.text);
 }
 
 /**
@@ -466,6 +519,10 @@ function isLeafClosedBy(leaf: ClosableLeaf, text: string, indent: number): boole
         runLength++;
       }
       return runLength >= leaf.length && text.slice(runLength).trim() === '';
+    }
+    case 'html': {
+      // The last two kinds end before an empty line, which is no line of theirs; see `scanMatchedLine`.
+      return leaf.htmlKind.end !== BLANK_LINE_END_REGEX && leaf.htmlKind.end.test(text);
     }
     default: {
       // Obsidian closes a math block on a line whose only `$` run is the one it ends with, trailing spaces aside, so
@@ -501,8 +558,8 @@ function isMathOpener(state: ScanState, text: string): boolean {
 function isParagraphInterrupter(state: ScanState, text: string): boolean {
   // Only a bullet or an ordered marker numbered exactly 1 starts a list that interrupts a paragraph.
   const itemMarker = ITEM_REGEX.exec(text)?.groups?.['marker'];
-  return itemMarker === undefined
-    ? isLazyInterrupter(text) || text.startsWith('>') || isMathOpener(state, text)
+  return itemMarker === undefined || THEMATIC_BREAK_REGEX.test(text)
+    ? isLazyInterrupter(text) || text.startsWith('>') || isMathOpener(state, text) || canHtmlBlockInterrupt(text)
     : PARAGRAPH_INTERRUPTING_MARKER_REGEX.test(itemMarker);
 }
 
@@ -575,9 +632,10 @@ function openBlocks(state: ScanState, line: string, lineNumber: number, cursor: 
     }
     // Measured on Obsidian 1.14.4: a tab straight after a quote marker, or after its optional space, never starts a list
     // item.
-    const itemMatch = isAfterQuote && line[cursor.index] === '\t' ? null : ITEM_REGEX.exec(text);
+    // `remark-parse` tries a thematic break before a list item, so `* * *` and `- - -` are breaks.
+    const itemMatch = (isAfterQuote && line[cursor.index] === '\t') || THEMATIC_BREAK_REGEX.test(text) ? null : ITEM_REGEX.exec(text);
     if (!itemMatch) {
-      openLeaf(state, text, lineNumber);
+      openLeaf(state, line, text, lineNumber);
       return;
     }
     openItem(state, line, lineNumber, cursor, { ...position, marker: ensureNonNullable(itemMatch.groups?.['marker']) });
@@ -599,6 +657,29 @@ function openHidingLeaf(state: ScanState, leaf: Leaf, lineNumber: number): void 
   if (state.containers.at(-1)?.kind !== 'quote') {
     state.hidingOpenerLines.add(lineNumber);
   }
+}
+
+/**
+ * Opens an HTML block. One of the first five kinds hides the lines up to the one holding its end marker, which can be its
+ * own first line, and one of the last two the lines up to the next empty one.
+ *
+ * @param state - The scan.
+ * @param htmlKind - The block's kind.
+ * @param text - The text past the line's containers and whitespace.
+ * @param lineNumber - The line that opens it.
+ */
+function openHtmlLeaf(state: ScanState, htmlKind: HtmlBlockKind, text: string, lineNumber: number): void {
+  if (htmlKind.end === BLANK_LINE_END_REGEX) {
+    state.leaf = { htmlKind, kind: 'html' };
+    state.openerLines.add(lineNumber);
+    return;
+  }
+  if (htmlKind.end.test(text)) {
+    state.leaf = { kind: 'heading' };
+    state.openerLines.add(lineNumber);
+    return;
+  }
+  openHidingLeaf(state, { htmlKind, kind: 'html' }, lineNumber);
 }
 
 /**
@@ -643,10 +724,11 @@ function openItem(state: ScanState, line: string, lineNumber: number, cursor: Cu
  * Opens the leaf a line's text starts.
  *
  * @param state - The scan.
+ * @param line - The line.
  * @param text - The text past the line's containers and whitespace.
  * @param lineNumber - The line's number.
  */
-function openLeaf(state: ScanState, text: string, lineNumber: number): void {
+function openLeaf(state: ScanState, line: string, text: string, lineNumber: number): void {
   const fenceMatch = FENCE_OPEN_REGEX.exec(text);
   if (fenceMatch && !isBacktickFenceWithBacktickInfo(text)) {
     const fence = ensureNonNullable(fenceMatch.groups?.['fence']);
@@ -663,7 +745,33 @@ function openLeaf(state: ScanState, text: string, lineNumber: number): void {
     openHidingLeaf(state, { kind: 'math', length: mathLength }, lineNumber);
     return;
   }
-  state.leaf = { kind: HEADING_REGEX.test(text) || THEMATIC_BREAK_REGEX.test(text) ? 'heading' : 'paragraph' };
+  if (HEADING_REGEX.test(text) || THEMATIC_BREAK_REGEX.test(text)) {
+    state.leaf = { kind: 'heading' };
+    return;
+  }
+  const htmlKind = findHtmlBlockKind(text);
+  if (htmlKind) {
+    openHtmlLeaf(state, htmlKind, text, lineNumber);
+    return;
+  }
+  // A link reference definition and a table are read only where a block starts, never as an interruption, and only
+  // outside every container, where the later lines' own text is the whole line. A definition hides the lines its
+  // destination and title run onto, which could otherwise open a block.
+  if (state.containers.length === 0 && text.startsWith('[')) {
+    const definitionLines = state.lines.slice(lineNumber, lineNumber + DEFINITION_MAX_LINES);
+    const definition = tokenizeDefinition(definitionLines.join('\n'));
+    if (definition) {
+      const lineCount = definitionLines.join('\n').slice(0, definition.length).split('\n').length;
+      state.leaf = { endLine: lineNumber + lineCount - 1, kind: 'definition' };
+      return;
+    }
+  }
+  const nextLine = state.lines[lineNumber + 1];
+  if (state.containers.length === 0 && nextLine !== undefined && tokenizeTable(`${line}\n${nextLine}`)) {
+    state.leaf = { hasLeadingPipe: line.startsWith('|'), kind: 'table' };
+    return;
+  }
+  state.leaf = { kind: 'paragraph' };
 }
 
 /**
@@ -770,6 +878,12 @@ function scanMatchedLine(state: ScanState, line: string, lineNumber: number, cur
   const { leaf } = state;
   const { indent, text } = rest;
   const isBlank = text === '';
+  // An HTML block of the last two kinds ends before an empty line, which is not one of its lines.
+  if (leaf?.kind === 'html' && leaf.htmlKind.end === BLANK_LINE_END_REGEX && isBlank) {
+    state.leaf = undefined;
+    state.isAfterBlankLine = true;
+    return;
+  }
   if (isClosableLeaf(leaf)) {
     takeHiddenLine(state, leaf, lineNumber, text, indent);
     // A blank line inside a block a blockquote holds leaves the next line free to continue it lazily.
@@ -777,6 +891,9 @@ function scanMatchedLine(state: ScanState, line: string, lineNumber: number, cur
     return;
   }
   state.isAfterBlankLine = isBlank;
+  if (doesDefinitionOrTableTakeLine(leaf, line.slice(cursor.index), lineNumber)) {
+    return;
+  }
   // A blank line inside an indented code block is left an ordinary blank line, since one that trails the block is not
   // part of it.
   if (leaf?.kind === 'indented' && (isBlank || indent >= INDENTED_CODE_COLUMNS)) {
