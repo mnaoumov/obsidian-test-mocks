@@ -917,6 +917,48 @@ describe('parseMarkdownContent', () => {
         cache.sections?.filter((section) => section.type === 'list').map((section) => [section.position.start.offset, section.position.end.offset])
       ).toEqual(lists);
     });
+    // Rows from Obsidian 1.14.4's own metadata worker: every item as [start offset, end offset, parent], and every
+    // section as [type, start offset, end offset]. A line holding several markers starts an item at each, nested in the
+    // one before it. An ordered item not numbered 1 cannot interrupt a blockquote, so a line starting one is taken into
+    // the quote lazily and read there: as an item after an item, a heading or an empty `>` line, as paragraph text after
+    // a paragraph, and as a line of a fence.
+    it.each([
+      { content: '- - x', items: [[0, 5, -1], [2, 5, -1]], sections: [['list', 0, 5]] },
+      { content: '- - x\n', items: [[0, 5, -1], [2, 5, -1]], sections: [['list', 0, 5]] },
+      { content: '* * *x', items: [[0, 6, -1], [2, 6, -1]], sections: [['list', 0, 6]] },
+      { content: '1. - x', items: [[0, 6, -1], [3, 6, -1]], sections: [['list', 0, 6]] },
+      { content: '- 1. x\n  - y', items: [[0, 12, -1], [2, 6, 0], [9, 12, 0]], sections: [['list', 0, 12]] },
+      { content: '- - x\n  more', items: [[0, 12, -1], [2, 12, -1]], sections: [['list', 0, 12]] },
+      { content: '- - x\n- y', items: [[0, 5, -1], [2, 5, -1], [6, 9, -1]], sections: [['list', 0, 9]] },
+      { content: '> - - x', items: [[2, 7, -1], [4, 7, -1]], sections: [['blockquote', 0, 7]] },
+      { content: '- - - x', items: [[0, 7, -1], [2, 7, -1], [4, 7, -1]], sections: [['list', 0, 7]] },
+      { content: '- - [ ] x', items: [[0, 9, -1], [2, 9, -1]], sections: [['list', 0, 9]] },
+      { content: '> - q\n2. y', items: [[2, 5, -1], [6, 10, -1]], sections: [['blockquote', 0, 10]] },
+      { content: '> - q\n2) y', items: [[2, 5, -1], [6, 10, -1]], sections: [['blockquote', 0, 10]] },
+      { content: '> q\n2. y', items: [], sections: [['blockquote', 0, 8]] },
+      { content: '> text\n9. C\n', items: [], sections: [['blockquote', 0, 11]] },
+      { content: '>\n9. C', items: [[2, 6, -1]], sections: [['blockquote', 0, 6]] },
+      { content: '> - q\n  2. y', items: [[2, 12, -1]], sections: [['blockquote', 0, 12]] },
+      { content: '> - q\n 2. y', items: [[2, 5, -1], [6, 11, -1]], sections: [['blockquote', 0, 11]] },
+      { content: '> 9. C\n9. C', items: [[2, 6, -1], [7, 11, -1]], sections: [['blockquote', 0, 11]] },
+      { content: '> > - q\n2. y', items: [[4, 7, -1], [8, 12, -1]], sections: [['blockquote', 0, 12]] },
+      { content: '> - q\n2. y\n3. z', items: [[2, 5, -1], [6, 10, -1], [11, 15, -1]], sections: [['blockquote', 0, 15]] },
+      { content: '> - q\n2. y\n- z', items: [[2, 5, -1], [6, 10, -1], [11, 14, -2]], sections: [['blockquote', 0, 10], ['list', 11, 14]] },
+      { content: '> - q\n2. y\n\n3. z', items: [[2, 5, -1], [6, 10, -1], [12, 16, -3]], sections: [['blockquote', 0, 10], ['list', 12, 16]] },
+      { content: '> - q\n>\n2. y', items: [[2, 5, -1], [8, 12, -2]], sections: [['blockquote', 0, 12]] },
+      { content: '> # h\n2. y', items: [[6, 10, -1]], sections: [['blockquote', 0, 10]] },
+      { content: '> ```\n2. y', items: [], sections: [['blockquote', 0, 10]] },
+      { content: '> - q\ntext\n2. y', items: [[2, 10, -1], [11, 15, -2]], sections: [['blockquote', 0, 15]] },
+      { content: '> - q\n    2. y', items: [[2, 5, -1]], sections: [['blockquote', 0, 5], ['code', 6, 14]] },
+      { content: '- a\n> - q\n2. y', items: [[0, 9, -1], [6, 9, -1], [10, 14, -2]], sections: [['list', 0, 9], ['list', 10, 14]] },
+      { content: '> * * *\n2. y', items: [[8, 12, -1]], sections: [['blockquote', 0, 12]] },
+      { content: '> - q\n2. y\ntext', items: [[2, 5, -1], [6, 15, -1]], sections: [['blockquote', 0, 15]] }
+    ])('should read $content as Obsidian does', ({ content, items, sections }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(items);
+      expect(cache.sections?.map((section) => [section.type, section.position.start.offset, section.position.end.offset])).toEqual(sections);
+    });
     // Each row was measured on a real Obsidian 1.14.4: every item's [start offset, end offset]. An item with more than
     // one child ends where its last child that is not a list ends; any other item ends at its last value line, or, when
     // a sibling follows it after blank lines, at the start of the first of them.

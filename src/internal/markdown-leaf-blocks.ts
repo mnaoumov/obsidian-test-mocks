@@ -23,6 +23,8 @@
  *   the least indent among them, and at most the marker's width (see {@link getBulletWidth}).
  * - A whitespace-only line led by a tab continues a paragraph outside a list item.
  * - Only a bullet or an ordered marker numbered 1 starts a list that interrupts a paragraph.
+ * - A line starting an ordered item not numbered 1 continues a blockquote lazily, and is read inside it as if it carried
+ *   the quote's prefix.
  */
 
 import type { HtmlBlockKind } from './markdown-gap-blocks.ts';
@@ -64,9 +66,18 @@ export interface LeafBlockScan {
   readonly hidingOpenerLines: ReadonlySet<number>;
 
   /**
-   * Lines that start a list item.
+   * Lines that start a list item, each with the index of every marker on it. A line can start several items, each
+   * nested in the one before it: `- - x` is an item holding a nested item.
    */
-  readonly itemLines: ReadonlySet<number>;
+  readonly itemMarkerIndexes: ReadonlyMap<number, readonly number[]>;
+
+  /**
+   * Lines that continue blockquote levels lazily, with no `>` of their own for those levels, and that are still read
+   * inside them, each with the number of blockquote levels it sits in. Only a line that starts an ordered list item not
+   * numbered 1 is one, since that item cannot interrupt the blockquote: `> - q\n2. y` is one blockquote holding both
+   * items.
+   */
+  readonly lazyQuoteLines: ReadonlyMap<number, number>;
 
   /**
    * Lines that close a list item with a marker of another kind than the item's, indented too far to start an item, so
@@ -173,7 +184,8 @@ interface ScanState {
   isAfterBlankLine: boolean;
   // Whether the line before the current one was blank, containers' prefixes included.
   isAfterEmptyLine: boolean;
-  readonly itemLines: Set<number>;
+  readonly itemMarkerIndexes: Map<number, number[]>;
+  readonly lazyQuoteLines: Map<number, number>;
   // The leaf block open in the innermost container, if any.
   leaf: Leaf | undefined;
   // The number of the line being scanned.
@@ -249,7 +261,8 @@ export function scanLeafBlocks(lines: readonly string[], firstLine: number): Lea
     hidingOpenerLines: new Set(),
     isAfterBlankLine: false,
     isAfterEmptyLine: false,
-    itemLines: new Set(),
+    itemMarkerIndexes: new Map(),
+    lazyQuoteLines: new Map(),
     leaf: undefined,
     lineNumber: firstLine,
     lines,
@@ -700,6 +713,43 @@ function matchContainers(containers: readonly Container[], line: string, cursor:
 }
 
 /**
+ * Continues the blockquotes a line leaves lazily when the line starts an ordered list item not numbered 1, which cannot
+ * interrupt a blockquote, and matches the containers inside them against the line as if the quotes' prefixes were
+ * there with no width. `remark-parse` 8, which Obsidian's metadata worker runs, takes such a line into the blockquote
+ * and reads it there with the rest of the quote's content, so `> - q\n2. y` is one blockquote holding two lists,
+ * `> text\n9. C` one holding a paragraph, and `> - q\n  2. y` one holding an item whose paragraph runs on.
+ *
+ * @param state - The scan.
+ * @param line - The line.
+ * @param cursor - Past the containers the line continues; moved past the ones it continues lazily.
+ * @param matchedCount - How many containers the line continues.
+ * @returns How many containers the line continues, the lazily continued ones included.
+ */
+function matchLazyQuotes(state: ScanState, line: string, cursor: Cursor, matchedCount: number): number {
+  const { containers } = state;
+  let quoteEnd = matchedCount;
+  while (containers[quoteEnd]?.kind === 'quote') {
+    quoteEnd++;
+  }
+  if (quoteEnd === matchedCount) {
+    return matchedCount;
+  }
+  const position = skipWhitespace(line, cursor);
+  const text = line.slice(position.index);
+  const marker = ITEM_REGEX.exec(text)?.groups?.['marker'];
+  if (
+    marker === undefined
+    || PARAGRAPH_INTERRUPTING_MARKER_REGEX.test(marker)
+    || THEMATIC_BREAK_REGEX.test(text)
+    || position.column - cursor.indentBase >= INDENTED_CODE_COLUMNS
+  ) {
+    return matchedCount;
+  }
+  state.lazyQuoteLines.set(state.lineNumber, countQuotes(containers.slice(0, quoteEnd)));
+  return quoteEnd + matchContainers(containers.slice(quoteEnd), line, cursor);
+}
+
+/**
  * Opens the blocks a line starts past the containers it continues: blockquote levels and list items, then one leaf.
  *
  * @param state - The scan.
@@ -821,7 +871,12 @@ function openItem(state: ScanState, line: string, lineNumber: number, cursor: Cu
     removalWidth: removalColumn - cursor.base,
     width: content.column - cursor.base
   });
-  state.itemLines.add(lineNumber);
+  let markerIndexes = state.itemMarkerIndexes.get(lineNumber);
+  if (!markerIndexes) {
+    markerIndexes = [];
+    state.itemMarkerIndexes.set(lineNumber, markerIndexes);
+  }
+  markerIndexes.push(marker.index);
   state.leaf = undefined;
   cursor.index = content.index;
   cursor.column = content.column;
@@ -932,7 +987,7 @@ function scanLine(state: ScanState, line: string, lineNumber: number): void {
   const wasAfterEmptyLine = state.isAfterEmptyLine;
   state.isAfterEmptyLine = line.trim() === '';
   const cursor: Cursor = { base: 0, column: 0, indentBase: 0, index: 0 };
-  const matchedCount = matchContainers(containers, line, cursor);
+  const matchedCount = matchLazyQuotes(state, line, cursor, matchContainers(containers, line, cursor));
   const position = skipWhitespace(line, cursor);
   const rest: LineRest = { ...position, indent: position.column - cursor.indentBase, text: line.slice(position.index) };
 
