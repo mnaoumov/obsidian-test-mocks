@@ -27,10 +27,8 @@ import {
   isInternalLinkTarget,
   normalizeLinkTarget
 } from './link-target.ts';
-import {
-  scanGapBlocks,
-  tokenizeAtxHeading
-} from './markdown-gap-blocks.ts';
+import { assignBlockIds } from './markdown-block-ids.ts';
+import { scanGapBlocks } from './markdown-gap-blocks.ts';
 import {
   getBulletWidth,
   scanLeafBlocks
@@ -294,9 +292,9 @@ function addGapSections(
   sections: SectionCache[],
   headings: HeadingCache[]
 ): void {
-  for (const block of scanGapBlocks(content.slice(gapStart, gapEnd))) {
+  for (const block of scanGapBlocks(content.slice(gapStart, gapEnd), gapEnd === content.length)) {
     const position = makePos(lineStarts, gapStart + block.start, gapStart + block.end);
-    sections.push({ id: undefined, position, type: block.type });
+    sections.push({ id: block.blockId, position, type: block.type });
     if (block.heading) {
       headings.push({
         heading: block.heading.text,
@@ -577,40 +575,6 @@ function parseFrontmatterYaml(yaml: string): unknown {
   }
 }
 
-function parseHeadings(
-  content: string,
-  bodyStart: number,
-  lineStarts: number[],
-  codeZones: [number, number][],
-  sections: SectionCache[]
-): HeadingCache[] {
-  const headings: HeadingCache[] = [];
-  // `[ \t]`, not `\s`, which would carry a heading across a line break and read `#\nText` as a heading `Text`. A line
-  // that is no more than `#` is a heading too, and is left to the gap scan, which reads it in its context.
-  const regex = /^#{1,6}[ \t]+.+$/gm;
-  regex.lastIndex = bodyStart;
-  let match = regex.exec(content);
-  while (match) {
-    if (!isInCodeZone(codeZones, match.index)) {
-      const heading = ensureNonNullable(ensureNonNullable(tokenizeAtxHeading(match[0])).heading);
-      const startOffset = match.index;
-      const endOffset = match.index + match[0].length;
-      headings.push({
-        heading: heading.text,
-        level: heading.level,
-        position: makePos(lineStarts, startOffset, endOffset)
-      });
-      sections.push({
-        id: undefined,
-        position: makePos(lineStarts, startOffset, endOffset),
-        type: 'heading'
-      });
-    }
-    match = regex.exec(content);
-  }
-  return headings;
-}
-
 /**
  * Parses markdown content whose every line break is a `\n`.
  *
@@ -625,7 +589,9 @@ function parseLfContent(content: string): CachedMetadata {
 
   const bodyStart = parseFrontmatter(content, lineStarts, cache, sections);
 
-  const headings = parseHeadings(content, bodyStart, lineStarts, codeZones, sections);
+  // Every heading comes from the gap scan, which reads it in its block context, so a heading line inside an unclosed
+  // fence, comment, math block or HTML block stays a line of that block, as it does in Obsidian.
+  const headings: HeadingCache[] = [];
 
   const tags = parseTags(content, bodyStart, lineStarts, codeZones);
   if (tags.length > 0) {
@@ -652,8 +618,14 @@ function parseLfContent(content: string): CachedMetadata {
     cache.headings = headings.sort((a, b) => a.position.start.offset - b.position.start.offset);
   }
 
+  sections.sort((a, b) => a.position.start.offset - b.position.start.offset);
+  const blocks = assignBlockIds({ content, headings, listItems, sections });
+  if (Object.keys(blocks).length > 0) {
+    cache.blocks = blocks;
+  }
+
   if (sections.length > 0) {
-    cache.sections = sections.sort((a, b) => a.position.start.offset - b.position.start.offset);
+    cache.sections = sections;
   }
 
   return cache;

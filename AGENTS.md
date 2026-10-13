@@ -77,14 +77,18 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `in-memory-adapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
 - `lazy-evaluator.ts` — the conversion behind `ListValue.lazyEvaluator` and `ObjectValue.lazyEvaluator`: a raw element or property wrapped into a `Value`. Obsidian has ONE such function and installs it on both classes, so it lives here rather than in either of them; it has to construct the classes that call it, which is the one import cycle it carries a waiver for
 - `link-value-from-reference.ts` — a cached link, embed or frontmatter-link reference wrapped as a `LinkValue`, behind `FileValue.getLinks` and `getEmbeds`. Obsidian spells it `LinkValue.fromReference`, undeclared in the same way `front-matter-object-value.ts` describes
-- `markdown-gap-blocks.ts` — the top-level blocks between the sections the parser found first (headings, lists,
-  frontmatter): paragraphs, blockquotes and callouts, fenced and indented code, comments, math, HTML, tables, thematic
-  breaks, and the setext and indented ATX headings the heading regex cannot see. Each tokenizer is a port of the one
-  Obsidian's metadata worker runs, which is `remark-parse` 8 (`commonmark` and `gfm` on) plus Obsidian's own comment and
-  math tokenizers, so a quirk there is a quirk here on purpose
+- `markdown-block-ids.ts` — the block ids of a note's sections and list items, and its `blocks` collection, assigned
+  after parsing the way Obsidian's worker assigns them: an inline `^id` ending a paragraph's or a heading's text, and a
+  standalone `^id` block given to the section before it and then dropped
+- `markdown-gap-blocks.ts` — the top-level blocks between the sections the parser found first (lists, frontmatter):
+  paragraphs, blockquotes and callouts, fenced and indented code, comments, math, HTML, tables, thematic breaks, every
+  heading, link reference definitions, footnote definitions and standalone block ids. Each tokenizer is a port of the one
+  Obsidian's metadata worker runs, which is `remark-parse` 8 (`commonmark` and `gfm` on) plus Obsidian's own comment,
+  math, footnote and block-id tokenizers, so a quirk there is a quirk here on purpose
 - `markdown-leaf-blocks.ts` — the container-aware pre-pass behind `parseMarkdownContent`'s list items: which lines start
-  an item, and which a fenced code block, a `%%` comment, a `$$` math block or an indented code block hides. A regular
-  expression cannot answer either, since an unclosed block runs to the end of the blockquote or list item around it
+  an item, and which a fenced code block, a `%%` comment, a `$$` math block, an HTML block, an indented code block, a
+  table or a link reference definition hides. A regular expression cannot answer either, since an unclosed block runs to
+  the end of the blockquote or list item around it
 - `noop.ts` — `noop()` / `noopAsync()` helpers for otherwise-empty method bodies (see L2)
 - `plugins.ts` — the community-plugin registry behind `App.plugins`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1, L7)
 - `setting-definition-renderer.ts` — renders declarative setting definitions the way Obsidian 1.13 does; drives `SettingTab.renderTab__()` / `refreshDomState()`
@@ -793,7 +797,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **A tab right after a `>`, or after its optional space, starts no item**, as measured: `>\t- A` and `> \t- A` give
     none, while `>  \t- A` gives one. A fenced block inside a quote is a code zone, so it holds no items, tags or links.
 
-- **The blocks between headings and lists are read by Obsidian's own block grammar** (2026-10-12, read in Obsidian
+- **The blocks around the lists are read by Obsidian's own block grammar** (2026-10-12, read in Obsidian
   1.14.4's `worker.js` and fuzzed against it: 15,000 notes with no list item and no frontmatter agree). That worker is
   `remark-parse` 8 with `commonmark` and `gfm` on and two block tokenizers of Obsidian's own, and
   `src/internal/markdown-gap-blocks.ts` ports each tokenizer it runs. The mock used to split a gap at blank lines and
@@ -818,9 +822,35 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     paragraph and a thematic break, and an underline with trailing spaces is no underline. Every ATX heading's text drops
     its closing `#` run, as Obsidian's does (`# A #` is `A`), and `#\nText` is an empty heading and a paragraph, where
     the heading regex used to carry `\s+` across the line break and read a heading `Text`.
-  - Not modeled: link reference definitions, footnote definitions and block ids, which stay paragraphs; a heading inside
-    an unclosed HTML block, comment or math block, which Obsidian hides; and the list items an HTML block hides, or that
-    Obsidian reads as a thematic break (`* * *`) or a table delimiter row (`- | -`).
+  - **Every heading comes from the same scan** (2026-10-12), so a heading line inside an unclosed fence, comment, math
+    block or HTML block is a line of that block and no heading at all: `<!-- c\n# H` is one `html` section, as in
+    Obsidian. A regular expression over the whole note used to find headings first, which split such a block in two.
+  - **`definition` and `footnoteDefinition` sections** (2026-10-12, ports of the worker's tokenizers). Neither interrupts a
+    paragraph, so `para\n[a]: /u` stays one paragraph. A definition's destination and title may each follow a line
+    break, even an empty one before the destination, and a title that opens and never closes spoils the whole definition
+    rather than being left out (`[a]: /u\n"title` is a paragraph). A footnote definition takes lazy lines and lines
+    indented four columns, and ends at an empty line followed by a line indented less, or at a line that starts another
+    block, a bullet or an item numbered 1 among them but no comment and no block id: the worker installed its footnote
+    tokenizer before those two existed. An empty first line (`[^1]:`) ends it at once.
+  - Not modeled: the `referenceLinks`, `footnotes` and `footnoteRefs` collections those definitions feed, and the empty
+    `text` and `element` sections the worker appends when two footnote definitions share a label.
+
+- **Block ids are assigned, and `blocks` is filled** (2026-10-12, read in Obsidian 1.14.4's `worker.js` and fuzzed
+  against it). An id is `^` and a run of letters, digits and `-`, and `blocks` keys each one lower-cased, sections first
+  and list items after them, each entry sharing its section's or item's `position`. Four habits catch a consumer out:
+  - **Inline, the id must END the text** of a paragraph or a heading, with the `^` starting it or following whitespace:
+    `para ^abc` and `para\n^abc` take `abc`, while `a ^x\nb`, `para^abc`, and `para ^abc` followed by trailing spaces take nothing. A heading
+    keeps the id in its `heading` text (`# H ^id` reads `H ^id`).
+  - **A standalone id goes to the top-level section before it, whatever that is** - a code block, a definition, a list,
+    even the frontmatter's `yaml` section - and leaves no section of its own. It needs the end of the note or an empty
+    line after it, so `^abc\n- a` is a paragraph `^abc`, which takes `abc` inline. A note that opens with one keeps no
+    trace of it, and one after an inline id overrides it.
+  - **A section takes the LAST id inside it**, so `> a ^x\n>\n> b ^y` gives the blockquote `y`, and a table takes the id
+    ending a cell. **A list item takes the FIRST** among its own blocks, the lists nested in it left out, while the list
+    section takes none but a standalone id after it. An item in a quoted list takes none at all: only the blockquote
+    does.
+  - Approximated: the mock reads ids off the text rather than off a parsed tree, so a `^id` ending an unclosed fence
+    inside a blockquote or an item counts here and not in Obsidian.
 
 - **A callout gets a `callout` section, not a `blockquote` one** (2026-10-12, measured on a real Obsidian 1.14.4 over
   CDP and read in its `worker.js`). Obsidian's blockquote tokenizer tests the block's FIRST line only: past the `>` and
@@ -851,9 +881,18 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     block. An outer item continues on such a line, so `- A\n> - G\n    text` keeps it a lazy continuation of `G`.
 
 - **No list item is found inside a block that hides it** (2026-10-12, measured on a real Obsidian 1.14.4 over CDP,
-  fuzzed against its own metadata worker). Those blocks are a fenced code block, a `%%` comment, a `$$` math block
-  and an indented code block, and `src/internal/markdown-leaf-blocks.ts` finds them, container by container, before
-  the list parser runs. Several of their habits are not CommonMark's:
+  fuzzed against its own metadata worker). Those blocks are a fenced code block, a `%%` comment, a `$$` math block,
+  an HTML block and an indented code block, and `src/internal/markdown-leaf-blocks.ts` finds them, container by
+  container, before the list parser runs. Several of their habits are not CommonMark's:
+  - **An HTML block hides items like a fence** (2026-10-12): one of the first five kinds up to the line holding its end
+    marker (`<!-- c\n- a\n-->\n- b` has the one item `b`), and one of the last two up to the next empty line. A lazy
+    line continuing an item opens one inside the item when it is one of the first six kinds, which interrupt the
+    paragraph there, so `- a\n<div>\n  - n` has the one item `a`; a lazy `<span>` does not.
+  - **Some list-shaped lines are something else** (2026-10-12). `remark-parse` tries a thematic break before a list
+    item, so `* * *` and `- - -` are breaks, inside an item and a blockquote too. A table read where a block starts
+    takes its rows, so `a | b\n- | -\n- c | d` is one table; a table cannot interrupt a paragraph, so the same rows inside
+    an item after its first line are items. A link reference definition hides the lines its destination and title run
+    onto, so `[c]:\n```\n- a` has the item `a` and no fence.
   - **An unclosed block runs to the end of its container**: the end of the note at the top level, the end of the list
     item or blockquote it sits in otherwise. So `%%\n- A` and `` ```\n- A `` have no items, and in
     `- A\n  ```\n  - B\n- C` the fence hides `B` and ends with `A`.
