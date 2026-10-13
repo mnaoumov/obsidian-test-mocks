@@ -12,7 +12,7 @@
  * - A line that leaves a container is a lazy continuation of whatever block is open, a fenced code block or a comment
  *   included, unless it starts a block that can interrupt a paragraph, or follows a blank line.
  * - A `$$` line lazily continuing a list item opens a math block inside the item, while one leaving a blockquote ends
- *   the blockquote.
+ *   the blockquote. Either needs a line break after it in the text the list item around it gathers.
  * - A line indented four or more columns past a blockquote it does not continue is no lazy continuation: it ends the
  *   blockquote and starts an indented code block.
  * - A `>` line that lazily continues a list item opens a blockquote inside that item, which later `>` lines continue at
@@ -21,6 +21,7 @@
  *   marker of another kind ends the list there.
  * - An indented code block inside a list item is measured from the column Obsidian strips the item's lines to, which is
  *   the least indent among them, and at most the marker's width (see {@link getBulletWidth}).
+ * - A whitespace-only line led by a tab continues a paragraph outside a list item.
  * - Only a bullet or an ordered marker numbered 1 starts a list that interrupts a paragraph.
  */
 
@@ -172,11 +173,11 @@ interface ScanState {
   isAfterBlankLine: boolean;
   // Whether the line before the current one was blank, containers' prefixes included.
   isAfterEmptyLine: boolean;
-  // Whether the current line is the note's last, with no line break after it.
-  isOnLastLine: boolean;
   readonly itemLines: Set<number>;
   // The leaf block open in the innermost container, if any.
   leaf: Leaf | undefined;
+  // The number of the line being scanned.
+  lineNumber: number;
   // The note's lines, which an opening list item reads ahead in.
   readonly lines: readonly string[];
   readonly listEndLines: Set<number>;
@@ -248,15 +249,15 @@ export function scanLeafBlocks(lines: readonly string[], firstLine: number): Lea
     hidingOpenerLines: new Set(),
     isAfterBlankLine: false,
     isAfterEmptyLine: false,
-    isOnLastLine: false,
     itemLines: new Set(),
     leaf: undefined,
+    lineNumber: firstLine,
     lines,
     listEndLines: new Set(),
     openerLines: new Set()
   };
   for (let lineNumber = firstLine; lineNumber < lines.length; lineNumber++) {
-    state.isOnLastLine = lineNumber === lines.length - 1;
+    state.lineNumber = lineNumber;
     scanLine(state, ensureNonNullable(lines[lineNumber]), lineNumber);
   }
   return state;
@@ -360,6 +361,20 @@ function doesDefinitionOrTableTakeLine(leaf: Leaf | undefined, row: string, line
 }
 
 /**
+ * Checks whether the open paragraph takes a whitespace-only line whose whitespace holds a tab after any spaces.
+ * `remark-parse` 8 reads such a tab as four columns of indent and takes the line into the paragraph without looking
+ * further. Inside a list item the strip has already changed what precedes the tab, so only a paragraph outside every
+ * item is read that way here.
+ *
+ * @param state - The scan.
+ * @param rest - The line past its containers' prefixes.
+ * @returns Whether it does.
+ */
+function doesParagraphTakeTabLine(state: ScanState, rest: string): boolean {
+  return state.leaf?.kind === 'paragraph' && /^ *\t[ \t]*$/.test(rest) && state.containers.every((container) => container.kind === 'quote');
+}
+
+/**
  * Finds the first blockquote among the containers after a position, if it opened lazily inside a list item.
  *
  * @param containers - The open containers.
@@ -377,25 +392,38 @@ function findLazyQuoteAfter(containers: readonly Container[], afterIndex: number
 }
 
 /**
- * Reads ahead over the lines a list item outside any blockquote gathers, for the least indent among them that Obsidian
- * strips the item's lines to. `remark-parse` 8 gathers an item's lines before it reads any block in them: a line indented
- * to the item's content, or more than four columns, belongs to it, and so does a lazy line, one not after a blank line
- * that starts no item and interrupts nothing. Only a line indented past the item's container counts.
+ * Reads ahead over the lines a list item gathers, for the least indent among them that Obsidian strips the item's lines
+ * to. `remark-parse` 8 gathers an item's lines before it reads any block in them: a line indented to the item's content,
+ * or more than four columns, belongs to it, and so does a lazy line, one not after a blank line that starts no item and
+ * interrupts nothing. Only a line indented past the item's container counts.
  *
- * @param lines - The note's lines.
- * @param lineNumber - The item's line.
+ * Inside blockquotes the columns are the quote content's: a line carrying the quotes' prefixes is measured past them, and
+ * a lazy line the quote holds without one is measured whole, as the quote's content holds it.
+ *
+ * @param state - The scan.
+ * @param containers - The containers around the item: list items only, or blockquotes only.
  * @param contentColumn - The visual column the item's content starts at.
  * @param baseColumn - The visual column the item's container content starts at.
  * @returns The least indent, or `Infinity` when no later line counts.
  */
-function findLeastLaterIndent(lines: readonly string[], lineNumber: number, contentColumn: number, baseColumn: number): number {
+function findLeastLaterIndent(state: ScanState, containers: readonly Container[], contentColumn: number, baseColumn: number): number {
+  const { lines } = state;
+  const quotes = containers.filter((container) => container.kind === 'quote');
+  // Inside blockquotes the item's container content starts where the innermost quote's does.
+  const quoteBase = quotes.length === 0 ? 0 : baseColumn;
   let leastIndent = Infinity;
   let isAfterBlankLine = false;
-  for (let index = lineNumber + 1; index < lines.length; index++) {
+  for (let index = state.lineNumber + 1; index < lines.length; index++) {
     const line = ensureNonNullable(lines[index]);
-    const { column, index: textIndex } = skipWhitespace(line, { column: 0, index: 0 });
-    const text = line.slice(textIndex);
-    if (text === '') {
+    const cursor: Cursor = { base: 0, column: 0, indentBase: 0, index: 0 };
+    const isInQuotes = matchContainers(quotes.map((quote) => ({ ...quote })), line, cursor) === quotes.length;
+    const position = skipWhitespace(line, isInQuotes ? cursor : { column: 0, index: 0 });
+    const column = position.column - (isInQuotes ? cursor.base : 0) + quoteBase;
+    const text = line.slice(position.index);
+    if (text === '' || (!isInQuotes && isAfterBlankLine)) {
+      if (!isInQuotes) {
+        break;
+      }
       isAfterBlankLine = true;
       continue;
     }
@@ -418,14 +446,16 @@ function getMarkerKind(marker: string): string {
 /**
  * Reads the `$` run that opens a math block: at least two `$` at the start of a line's text, with no other `$` after
  * them on the line, since a math block closed on the line that opens it is part of a paragraph. Obsidian also wants a
- * line break after the run's line, so the note's last line opens none.
+ * line break after the run's line in the text its container reads, so the note's last line opens none, and neither does
+ * the last line a list item gathers (see {@link hasLineBreakInItem}).
  *
  * @param state - The scan.
  * @param text - The line's text past its whitespace.
+ * @param containers - The containers that hold the line, outermost first.
  * @returns The length of the run, or `undefined` when the line opens no math block.
  */
-function getMathOpenerLength(state: ScanState, text: string): number | undefined {
-  if (state.isOnLastLine) {
+function getMathOpenerLength(state: ScanState, text: string, containers: readonly Container[] = state.containers): number | undefined {
+  if (state.lineNumber === state.lines.length - 1 || !hasLineBreakInItem(state, containers)) {
     return undefined;
   }
   let length = 0;
@@ -433,6 +463,79 @@ function getMathOpenerLength(state: ScanState, text: string): number | undefined
     length++;
   }
   return length >= MATH_MIN_LENGTH && !text.slice(length).includes('$') ? length : undefined;
+}
+
+/**
+ * Measures a line of whitespace once list items have stripped it. `remark-parse` 8 strips each item's later lines to the
+ * item's removal width, taking whole characters, so a tab it takes only part of goes whole, and measures what is left
+ * afresh, from a column of its own.
+ *
+ * @param line - The line of whitespace.
+ * @param items - The list items around the line, outermost first.
+ * @returns The visual width of what is left.
+ */
+function getStrippedWidth(line: string, items: readonly ItemContainer[]): number {
+  let rest = line;
+  for (const item of items) {
+    let column = 0;
+    let index = 0;
+    while (index < rest.length && column < item.removalWidth) {
+      column = advanceColumn(column, rest.charAt(index));
+      index++;
+    }
+    rest = rest.slice(index);
+  }
+  return skipWhitespace(rest, { column: 0, index: 0 }).column;
+}
+
+/**
+ * Checks whether the innermost list item holding the current line gathers a later line, so that the line ends with a
+ * line break in the text the item reads. `remark-parse` 8 gathers an item's lines before it reads any block in them: a
+ * line indented to the item's content belongs to it, whitespace-only or not, and so does a lazy line, one not after an
+ * empty line that interrupts nothing. Empty lines belong to it only when a later line does, and a sibling item after
+ * them leaves one empty line behind. Trailing empty lines are dropped.
+ *
+ * @param state - The scan.
+ * @param containers - The containers that hold the current line, outermost first.
+ * @returns Whether a line break follows the current line, or `true` when no list item holds it.
+ */
+function hasLineBreakInItem(state: ScanState, containers: readonly Container[]): boolean {
+  let itemIndex = containers.length - 1;
+  while (itemIndex >= 0 && containers[itemIndex]?.kind !== 'item') {
+    itemIndex--;
+  }
+  const item = containers[itemIndex];
+  if (item?.kind !== 'item') {
+    return true;
+  }
+  const outerContainers = containers.slice(0, itemIndex);
+  const outerItems = outerContainers.filter((container) => container.kind === 'item');
+  let isAfterEmptyLine = false;
+  for (let lineNumber = state.lineNumber + 1; lineNumber < state.lines.length; lineNumber++) {
+    const line = ensureNonNullable(state.lines[lineNumber]);
+    const cursor: Cursor = { base: 0, column: 0, indentBase: 0, index: 0 };
+    const isInItemContainer = matchContainers(outerContainers.map((container) => ({ ...container })), line, cursor) === itemIndex;
+    const position = skipWhitespace(line, cursor);
+    const text = line.slice(position.index);
+    if (text === '') {
+      // A line of whitespace continues no blockquote, and each list item around this one strips it as Obsidian strips
+      // every later line of an item, a tab the strip takes only part of included.
+      if (outerItems.length === itemIndex && getStrippedWidth(line, outerItems) >= item.width) {
+        return true;
+      }
+      isAfterEmptyLine = true;
+      continue;
+    }
+    if (isInItemContainer && position.column - cursor.base >= item.width) {
+      return true;
+    }
+    const marker = ITEM_REGEX.exec(text)?.groups?.['marker'];
+    // A sibling item leaves one empty line behind it; any other line belongs to the item only lazily.
+    return isInItemContainer && marker !== undefined && !THEMATIC_BREAK_REGEX.test(text)
+      ? isAfterEmptyLine && getMarkerKind(marker) === item.markerKind
+      : !isAfterEmptyLine && !isLazyInterrupter(text);
+  }
+  return false;
 }
 
 /**
@@ -492,8 +595,11 @@ function isLazyInterrupter(text: string): boolean {
  * @returns Whether it does.
  */
 function isLazyLine(state: ScanState, matchedCount: number, rest: LineRest): boolean {
-  const isLeavingQuote = countQuotes(state.containers.slice(matchedCount)) > 0;
-  return !(isLeavingQuote && (rest.indent >= INDENTED_CODE_COLUMNS || isMathOpener(state, rest.text) || canHtmlBlockInterrupt(rest.text)))
+  const quoteIndex = state.containers.findIndex((container, index) => index >= matchedCount && container.kind === 'quote');
+  const isLeavingQuote = quoteIndex !== -1;
+  // A `$$` is read as a math opener in the text of the containers around the blockquote it would end.
+  const isLeavingMathOpener = isLeavingQuote && getMathOpenerLength(state, rest.text, state.containers.slice(0, quoteIndex)) !== undefined;
+  return !(isLeavingQuote && (rest.indent >= INDENTED_CODE_COLUMNS || isLeavingMathOpener || canHtmlBlockInterrupt(rest.text)))
     && !isLazyInterrupter(rest.text);
 }
 
@@ -702,9 +808,12 @@ function openItem(state: ScanState, line: string, lineNumber: number, cursor: Cu
   }
   const bulletWidth = getBulletWidth(marker.index - cursor.index, marker.marker, line.slice(marker.index + marker.marker.length));
   let removalColumn = marker.column + bulletWidth;
-  // Outside a blockquote every column is the line's own, so the item's later lines can be read ahead for their indent.
-  if (countQuotes(state.containers) === 0) {
-    removalColumn = Math.min(removalColumn, findLeastLaterIndent(state.lines, lineNumber, content.column, cursor.base));
+  // The item's later lines are read ahead for their indent when nothing but blockquotes stands around it, whose prefixes
+  // the read-ahead strips. Behind a list item, those prefixes sit past an indent the read-ahead would have to strip too.
+  const { containers } = state;
+  const quoteCount = countQuotes(containers);
+  if (quoteCount === 0 || quoteCount === containers.length) {
+    removalColumn = Math.min(removalColumn, findLeastLaterIndent(state, containers, content.column, cursor.base));
   }
   state.containers.push({
     kind: 'item',
@@ -888,6 +997,10 @@ function scanMatchedLine(state: ScanState, line: string, lineNumber: number, cur
     takeHiddenLine(state, leaf, lineNumber, text, indent);
     // A blank line inside a block a blockquote holds leaves the next line free to continue it lazily.
     state.isAfterBlankLine = isBlank && state.containers.at(-1)?.kind !== 'quote';
+    return;
+  }
+  if (doesParagraphTakeTabLine(state, line.slice(cursor.index))) {
+    state.isAfterBlankLine = false;
     return;
   }
   state.isAfterBlankLine = isBlank;

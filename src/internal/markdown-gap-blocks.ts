@@ -845,7 +845,8 @@ function tokenizeHtml(text: string): Token | undefined {
 }
 
 /**
- * Reads an indented code block: lines that start with a tab or with four spaces, and the blank lines between them.
+ * Reads an indented code block: lines that start with a tab or with four spaces, and the blank lines between them. A
+ * last line holding only that indent is left out, as `remark-parse` 8 leaves it out, unless a line break follows it.
  *
  * @param text - The text, from the block's line start.
  * @returns The code block, if the text starts with one.
@@ -866,7 +867,8 @@ function tokenizeIndentedCode(text: string): Token | undefined {
       if (skipSpacesAndTabs(text, lineStart) !== lineEnd || lineEnd === text.length) {
         break;
       }
-    } else {
+    } else if (contentStart < lineEnd || lineEnd < text.length) {
+      // A line holding nothing past its indent belongs to the block only when a line break follows it.
       end = lineEnd;
       hasContent ||= contentStart < lineEnd;
     }
