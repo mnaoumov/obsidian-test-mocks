@@ -1260,6 +1260,50 @@ describe('parseMarkdownContent', () => {
       expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(items);
       expect(cache.sections?.map((section) => [section.type, section.position.start.offset, section.position.end.offset])).toEqual(sections);
     });
+
+    // Each row was measured on a real Obsidian 1.14.4 over CDP: every item's [start offset, end offset, parent], and every
+    // section's [type, start offset, end offset].
+    it.each([
+      // A backtick fence whose info string holds a backtick is no fence, so it continues the item above lazily.
+      { content: '- a\n``` a`b\nx', items: [[0, 13, -1]], sections: [['list', 0, 13]] },
+      { content: '?>\n* * *x\n``` a`b\n```\n   para\n  \n', items: [[3, 17, -1], [5, 17, -1]], sections: [['paragraph', 0, 2], ['list', 3, 17], ['code', 18, 33]] },
+      { content: '- a\n```js\nx\n```', items: [[0, 3, -1]], sections: [['list', 0, 3], ['code', 4, 15]] },
+      // An HTML block of the sixth or seventh kind ends only before a line its containers strip to nothing, so a line of
+      // whitespace they leave something of is one of its lines.
+      { content: '<div>\n  \n- a', items: [], sections: [['html', 0, 12]] },
+      { content: '<div>\n\t\n- a', items: [], sections: [['html', 0, 11]] },
+      { content: '<div>\n\n- a', items: [[7, 10, -2]], sections: [['html', 0, 5], ['list', 7, 10]] },
+      { content: '<a href="x">\n  \n- a', items: [], sections: [['html', 0, 19]] },
+      { content: '   para\n</div>\n\tcode\n\t\t\n* * *x\n#', items: [], sections: [['paragraph', 0, 7], ['html', 8, 32]] },
+      { content: '- <div>\n   \n  - b', items: [[0, 17, -1]], sections: [['list', 0, 17]] },
+      { content: '- <div>\n \n  - b', items: [[0, 7, -1], [12, 15, 0]], sections: [['list', 0, 15]] },
+      { content: '> <div>\n> \n> - b', items: [[13, 16, -2]], sections: [['blockquote', 0, 16]] },
+      { content: '> <div>\n>  \n> - b', items: [], sections: [['blockquote', 0, 17]] },
+      { content: '- a\n> <div>\n> \n> - b', items: [[0, 20, -1], [17, 20, -3]], sections: [['list', 0, 20]] },
+      { content: '- a\n> <div>\n>  \n> - b', items: [[0, 21, -1]], sections: [['list', 0, 21]] },
+      // A tab after a list marker starts an item, and the item's content starts at the tab's stop, while a tab after a
+      // space is content.
+      { content: '-\tx', items: [[0, 3, -1]], sections: [['list', 0, 3]] },
+      { content: '-\t', items: [[0, 2, -1]], sections: [['list', 0, 2]] },
+      { content: '- a\n-\tb', items: [[0, 3, -1], [4, 7, -1]], sections: [['list', 0, 7]] },
+      { content: '1. q\n2.\ty', items: [[0, 4, -1], [5, 9, -1]], sections: [['list', 0, 9]] },
+      { content: '-\tx\n  - y', items: [[0, 3, -1], [4, 9, -1]], sections: [['list', 0, 9]] },
+      { content: '-\tx\n\t- y', items: [[0, 3, -1], [5, 8, 0]], sections: [['list', 0, 8]] },
+      { content: '-\tx\n    y', items: [[0, 9, -1]], sections: [['list', 0, 9]] },
+      { content: '1.\tx\n\t- y', items: [[0, 4, -1], [6, 9, 0]], sections: [['list', 0, 9]] },
+      { content: '- \tx\n  - y', items: [[0, 4, -1], [7, 10, 0]], sections: [['list', 0, 10]] },
+      { content: '-    \tv\n    - y', items: [[0, 7, -1], [8, 15, -1]], sections: [['list', 0, 15]] },
+      { content: '-\t[ ] x', items: [[0, 7, -1]], sections: [['list', 0, 7]] },
+      // A line leaving a blockquote that a list item holds is measured once the item has stripped it.
+      { content: '-    v\n> > - K\n    text', items: [[0, 23, -1], [11, 23, -1]], sections: [['list', 0, 23]] },
+      { content: '-    v\n> - K\n    text', items: [[0, 21, -1], [9, 21, -1]], sections: [['list', 0, 21]] },
+      { content: '-    \tv\n> > - K\n    text', items: [[0, 24, -1], [12, 24, -1]], sections: [['list', 0, 24]] }
+    ])('should read the blocks of $content as Obsidian does', ({ content, items, sections }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(items);
+      expect(cache.sections?.map((section) => [section.type, section.position.start.offset, section.position.end.offset])).toEqual(sections);
+    });
     it('should give every item of a large flat list the root parent', () => {
       const content = `Text\n\n${Array.from({ length: FLAT_LIST_ITEM_COUNT }, (_, index) => `- [ ] item ${String(index)}`).join('\n')}`;
       const cache = parseMarkdownContent(content);

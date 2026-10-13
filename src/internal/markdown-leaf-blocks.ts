@@ -223,7 +223,7 @@ const MAX_LIST_ITEM_CONTENT_GAP = 4;
 const ORDERED_WIDENING_LIMIT = 10;
 // The bullet width is widened when its length is odd.
 const PARITY_DIVISOR = 2;
-const ITEM_REGEX = /^(?<marker>[-*+]|\d+[.)])(?: |$)/;
+const ITEM_REGEX = /^(?<marker>[-*+]|\d+[.)])(?:[ \t]|$)/;
 const PARAGRAPH_INTERRUPTING_MARKER_REGEX = /^(?:[-*+]|1[.)])$/;
 const FENCE_OPEN_REGEX = /^(?<fence>`{3,}|~{3,})(?<info>.*)$/;
 const HEADING_REGEX = /^#{1,6}(?:[ \t]|$)/;
@@ -250,11 +250,32 @@ const CLOSABLE_LEAF_KINDS: ReadonlySet<Leaf['kind']> = new Set<Leaf['kind']>(['c
  * @returns The width, from the marker's column.
  */
 export function getBulletWidth(indentLength: number, marker: string, afterMarker: string): number {
+  const isTab = afterMarker.startsWith('\t');
   const [spaces] = ensureNonNullable(/^ */.exec(afterMarker));
-  const gapLength = spaces.length <= MAX_LIST_ITEM_CONTENT_GAP ? spaces.length : 1;
+  const gapLength = isTab || spaces.length > MAX_LIST_ITEM_CONTENT_GAP ? 1 : spaces.length;
   const isWidened = marker.endsWith('.') && Number.parseInt(marker, 10) < ORDERED_WIDENING_LIMIT
     && (indentLength + marker.length + gapLength) % PARITY_DIVISOR === 1;
-  return marker.length + gapLength + (isWidened ? 1 : 0);
+  const widenedLength = marker.length + (isWidened ? 1 : 0);
+  // A tab after the marker strips to the tab stop past the indent and the widened marker.
+  return isTab ? advanceColumn(indentLength + widenedLength, '\t') - indentLength : widenedLength + gapLength;
+}
+
+/**
+ * Computes the column a list item's content starts at, as `remark-parse` 8 measures it on the marker's line: right past
+ * a tab that follows the marker, past one to four spaces that do, and one column past the marker when more spaces
+ * follow it. A tab after spaces is content, so `- \tx` has its content at the third column. A marker that ends its line
+ * has its content right past it.
+ *
+ * @param markerEndColumn - The visual column right past the marker.
+ * @param afterMarker - The line's text after the marker.
+ * @returns The visual column.
+ */
+export function getItemContentColumn(markerEndColumn: number, afterMarker: string): number {
+  if (afterMarker.startsWith('\t')) {
+    return advanceColumn(markerEndColumn, '\t');
+  }
+  const [spaces] = ensureNonNullable(/^ */.exec(afterMarker));
+  return markerEndColumn + (spaces.length > MAX_LIST_ITEM_CONTENT_GAP ? 1 : spaces.length);
 }
 
 /**
@@ -645,6 +666,38 @@ function isCommentOpener(text: string): boolean {
 }
 
 /**
+ * Checks whether a line of whitespace ends the open HTML block, which only one of the last two kinds does, and only when
+ * the line is empty once its containers have stripped it. `remark-parse` 8 strips each list item's later lines to the
+ * item's removal width, taking whole characters, so a tab it takes only part of goes whole, and a blockquote's lines of
+ * a `>` and the one optional space after it. So `<div>\n  \n- a` is one HTML block.
+ *
+ * @param state - The scan.
+ * @param line - The line, which continues every open container.
+ * @returns Whether it does.
+ */
+function isHtmlBlockEndedBy(state: ScanState, line: string): boolean {
+  const { containers, leaf } = state;
+  if (leaf?.kind !== 'html' || leaf.htmlKind.end !== BLANK_LINE_END_REGEX) {
+    return false;
+  }
+  let rest = line;
+  for (const container of containers) {
+    if (container.kind === 'quote') {
+      rest = rest.replace(/^ *> ?/, '');
+      continue;
+    }
+    let column = 0;
+    let index = 0;
+    while (index < rest.length && column < container.removalWidth && (rest[index] === ' ' || rest[index] === '\t')) {
+      column = advanceColumn(column, rest.charAt(index));
+      index++;
+    }
+    rest = rest.slice(index);
+  }
+  return rest === '';
+}
+
+/**
  * Checks whether the text past a line's containers starts a block that ends a paragraph, and with it any lazy
  * continuation. A `$$` line is not one of them, nor is a `>` line, which opens a blockquote rather than ending anything.
  *
@@ -672,8 +725,13 @@ function isLazyLine(state: ScanState, matchedCount: number, rest: LineRest): boo
   const isLeavingQuote = quoteIndex !== -1;
   // A `$$` is read as a math opener in the text of the containers around the blockquote it would end.
   const isLeavingMathOpener = isLeavingQuote && getMathOpenerLength(state, rest.text, state.containers.slice(0, quoteIndex)) !== undefined;
+  // The list items holding the blockquote gather the line lazily and strip it before the blockquote sees it.
+  const holdingItems = isLeavingQuote
+    ? state.containers.slice(matchedCount, quoteIndex).filter((container): container is ItemContainer => container.kind === 'item')
+    : [];
+  const indent = holdingItems.reduce((left, item) => left - Math.min(item.removalWidth, left), rest.indent);
   return !(isLeavingQuote
-    && (rest.indent >= INDENTED_CODE_COLUMNS || isLeavingMathOpener || canHtmlBlockInterrupt(rest.text)
+    && (indent >= INDENTED_CODE_COLUMNS || isLeavingMathOpener || canHtmlBlockInterrupt(rest.text)
       || isUnderlinedBy(state, state.containers.slice(0, quoteIndex))))
     && !isLazyInterrupter(rest.text);
 }
@@ -945,17 +1003,12 @@ function openHtmlLeaf(state: ScanState, htmlKind: HtmlBlockKind, text: string, l
  */
 function openItem(state: ScanState, line: string, lineNumber: number, cursor: Cursor, marker: ItemMarker): void {
   const markerEndColumn = marker.column + marker.marker.length;
-  // One to four columns of whitespace after the marker belong to it, and anything wider leaves the content one column
-  // past it. Obsidian applies that to an item with nothing after its marker too, while a marker that ends its line has
-  // its content right past it.
+  // One to four spaces after the marker belong to it, and more leave the content one column past it. Obsidian applies
+  // that to an item with nothing after its marker too. A tab after the marker belongs to it whole.
   const markerEnd = marker.index + marker.marker.length;
-  let content: LinePosition = markerEnd === line.length
-    ? { column: markerEndColumn, index: markerEnd }
-    : { column: markerEndColumn + 1, index: markerEnd + 1 };
-  const gap = skipWhitespace(line, content);
-  if (gap.column - markerEndColumn <= MAX_LIST_ITEM_CONTENT_GAP) {
-    content = gap;
-  }
+  const contentColumn = getItemContentColumn(markerEndColumn, line.slice(markerEnd));
+  // Every character between the marker and the content takes one column, a lone tab aside.
+  const content: LinePosition = { column: contentColumn, index: line[markerEnd] === '\t' ? markerEnd + 1 : markerEnd + contentColumn - markerEndColumn };
   const bulletWidth = getBulletWidth(marker.index - cursor.index, marker.marker, line.slice(marker.index + marker.marker.length));
   let removalColumn = marker.column + bulletWidth;
   // The item's later lines are read ahead for their indent when nothing but blockquotes stands around it, whose prefixes
@@ -1156,8 +1209,9 @@ function scanMatchedLine(state: ScanState, line: string, lineNumber: number, cur
   const { leaf } = state;
   const { indent, text } = rest;
   const isBlank = text === '';
-  // An HTML block of the last two kinds ends before an empty line, which is not one of its lines.
-  if (leaf?.kind === 'html' && leaf.htmlKind.end === BLANK_LINE_END_REGEX && isBlank) {
+  // An HTML block of the last two kinds ends before an empty line, which is not one of its lines. A line of whitespace
+  // that its containers do not strip away is one of them.
+  if (isBlank && isHtmlBlockEndedBy(state, line)) {
     state.leaf = undefined;
     state.isAfterBlankLine = true;
     return;
