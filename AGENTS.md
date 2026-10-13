@@ -763,7 +763,11 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     spaces after it. That width is one column wider for `1.` to `9.` followed by a single space, so `1. A\n    - D`
     starts `D` at column 4 where its content column is 3, while `1. A\n    - D\n   - E` starts it at 3. The same column
     decides an indented code block: `1. A\n       - D` is an item, and `1. A\n       - D\n   - K` makes `D` a paragraph
-    line of `A`, because the later `- K`, indented three spaces, lowers it.
+    line of `A`, because the later `- K`, indented three spaces, lowers it. A nested item's lines are measured from
+    where its PARENT's strip leaves them, not from the parent's content column, which differs for a widened marker:
+    in `9. C\n    1. R\n    text\n       - M`, `text` sits at the start of `C`'s stripped text, so it lowers nothing and
+    `M` starts at column 7. Inside a blockquote the later lines are read past their quote prefixes the same way
+    (2026-10-12), so `> 9. C\n>        - M\n>    - K` makes `M` a paragraph line of `C`.
   - **A list that starts on line 0 is rooted at `-1`, not `-0`.** Everywhere else the root parent is still the
     negative of the list's first line.
 
@@ -780,8 +784,13 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **A block after a nested list inside the same item re-roots that nested list at its own first line**, the way a
     list nested in an empty item is rooted. In `- A\n  - B\n\n  text`, `B`'s parent is `-1`, not `0`. A nested list
     that only further lists follow keeps its item as the parent.
-  - **A list section ends at the last line the list holds**, which is content after the last item when the list
-    holds some, rather than at the last item.
+  - **A list section ends at the end of the last line the list holds**, which is content after the last item when the
+    list holds some, rather than at the last item (2026-10-12, 2,600 of 20,000 fuzzed notes differed here before). The
+    end is that line's whole length, trailing whitespace included (`- A` then `x` and two spaces ends at 7), and a
+    whitespace-only line indented to the root item's content is a line the list holds (`- A\n  - B` then a line of two
+    spaces ends at 12, past `B`'s end).
+  - **A nested item of another kind is no sibling**, so an item followed by one after a blank line keeps its last line
+    as its end: in `1. A\n   - K\n\n    1. R`, `K` ends at 11, not at the blank line's start.
 
 - **Lists inside a blockquote or callout are list items too** (2026-10-12, 60 shapes measured on a real Obsidian 1.14.4
   over CDP). The mock used to report no `listItems` for them at all. Now:
@@ -805,7 +814,10 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **A section starts at its line start, indent included, and ends at its last line's end, trailing whitespace
     included.** a quote indented three spaces starts at column 0, and a paragraph line with two trailing spaces ends after them.
   - **A line opening with a tab, or with four spaces, is indented code**, outside a paragraph, which takes it as a
-    continuation. A tab after a space indents nothing, so a line opening with a space and a tab is a paragraph.
+    continuation. A tab after a space indents nothing, so a line opening with a space and a tab is a paragraph. A
+    block's last line holding only its indent belongs to it only when a line break follows (2026-10-12): a `code` line
+    indented four spaces, then a lone tab, ends the block at the end of `code`, and with a line break after the tab at
+    the end of the tab.
   - **A paragraph is interrupted** by a thematic break, an ATX heading, a fence, a comment, a math block, a blockquote and
     an HTML block of the first six CommonMark kinds, so `para\n> q` is two sections. A table and an inline tag such as
     `<span>` are not interruptions.
@@ -909,6 +921,16 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     after a blockquote it ends the quote and opens one at the top level instead, unless that quote sits in an item, which
     then holds the math block. A lazy `>` line likewise opens a blockquote inside the item, which its later `>` lines
     continue, and a line that ends such a quote without an empty line before it stays in the item.
+  - **A `$$` inside a list item opens a math block only when a line break follows it in the text the item gathers**
+    (2026-10-12). Obsidian gathers an item's lines before it reads any block in them and drops trailing empty lines,
+    so `1. G` indented two spaces, then `$$`, then a line of two spaces reads `$$` as a lazy paragraph line and ends
+    `G` at 9. A line the item's strip leaves empty
+    counts as empty (a tab under a two-column strip goes whole, so `+ L\n  - C\n$$\n\t` ends `C` at the `$$`), and a
+    sibling after empty lines leaves one behind, so `- A\n$$\n\n- B` does open one. The same test decides whether a `$$`
+    leaving a blockquote nested in an item ends the quote.
+  - **A tab-led whitespace-only line continues a paragraph** outside a list item, because `remark-parse` 8 reads a tab
+    as four columns of indent and takes the line without looking further: `text` indented one space, then a lone
+    tab, then `9. C` is one paragraph.
   - **An item that ends inside an unclosed block before a sibling ends at the first empty line**, where an item with
     more than one child otherwise ends at its last child: `- A\n  ```\n\n- B` ends `A` at line 2, column 0. A line of
     whitespace inside a fence is a line of the code and extends the item.
@@ -919,11 +941,17 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     indented code block (a `- K` indented three spaces, then a `1. R` indented four, has the one item `K`).
   - **Only a bullet or an ordered marker numbered exactly 1 interrupts a paragraph**, so `text\n2. B` and
     `- A\n  2. B` have no item `B`, while `text\n1. B` does.
-  - Not modeled, and still found by the fuzz (52 of 20,000 generated notes differ, from 274 before): a tab that a
-    container takes only part of (`- A\n\t- D\n\t\n    text` nests `D` and lets it hold `text`); a math block opened
-    lazily in an item whose content ends right after it, which Obsidian reads as a paragraph (`1. G\n$$\n` with `1. G`
-    and the last line indented two spaces ends `G` at the end of `$$`); and the stripping above for an item inside a
-    blockquote, whose later lines are not read ahead.
+  - Not modeled, and still found by the fuzz (13 of 20,000 list-shaped notes, from 52; 84 of 20,000 ordered and
+    tab-indented ones, from 209): **a tab that a container takes only part of on a line that holds text.**
+    `remark-parse` 8 strips a whole tab even when it takes only part of the tab's columns and then measures the rest
+    afresh, so a later column shifts by a different amount on each line: `- A\n\t- D\n\t\n    text` nests `D` and lets
+    it hold `text`. Only a whitespace-only line is measured that way here. Doing it for every line means comparing each
+    line's columns level by level after each strip rather than as absolute visual columns, across both the pre-pass and
+    the list parser, which a tab-indented item followed by space-indented content does not justify (decided 2026-10-12).
+  - Not modeled either: **a line after a blockquote that starts an ordered item not numbered 1.** It cannot interrupt the
+    quote's paragraph, so Obsidian takes it into the quote lazily and reads it there, as a quoted list item after a list
+    or an empty `>` line (`>\n9. C` is one blockquote holding the item) and as paragraph text after a paragraph
+    (`> text\n9. C` has no item). The mock ends the quote and reads the line as a top-level list.
 
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`

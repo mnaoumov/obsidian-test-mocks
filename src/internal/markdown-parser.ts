@@ -220,6 +220,8 @@ interface OpenListItem {
   readonly contentColumn: number;
   // Whether the item's last block is a fenced code block, a comment or a math block that no line has closed yet.
   isInHidingBlock: boolean;
+  // The kind of the item's marker (see `getListMarkerKind`); an item of another kind is not its sibling.
+  readonly kind: string;
   readonly line: number;
   // The lists nested in the item since its last block that is not a list, whose items are parented when the item
   // closes, or re-rooted when a block follows them inside the item.
@@ -869,7 +871,7 @@ function closeListItems(listLines: ListLines, openItems: OpenListItem[], lineSta
         recordListLineIndent(openItems, column);
       }
       // A line of whitespace is a line of the block; an empty one is only when more of the block follows it.
-      if (line !== '') {
+      if (line.trim() !== '' || (line !== '' && column >= owner.contentColumn)) {
         owner.blockEnd = lineEnd;
       }
       if (scan.closerLines.has(lineNumber)) {
@@ -911,15 +913,17 @@ function closeListItems(listLines: ListLines, openItems: OpenListItem[], lineSta
 
 /**
  * Closes the items a new item's marker falls short of. The shallowest of them is the new item's sibling, unless the
- * new item starts a list of its own; the deeper ones end with their nested lists.
+ * new item starts a list of its own, at the top level or, with a marker of another kind, nested in the same item; the
+ * deeper ones end with their nested lists.
  *
  * @param closedItems - The items, deepest first.
- * @param isNewList - Whether the new item starts a list of its own.
+ * @param isNewList - Whether the new item starts a top-level list of its own.
+ * @param kind - The kind of the new item's marker.
  * @param lineStarts - The offset of each line's start.
  */
-function closeListItemsBeforeItem(closedItems: OpenListItem[], isNewList: boolean, lineStarts: number[]): void {
+function closeListItemsBeforeItem(closedItems: OpenListItem[], isNewList: boolean, kind: string, lineStarts: number[]): void {
   for (const closedItem of closedItems) {
-    closeListItem(closedItem, !isNewList && closedItem === closedItems.at(-1), lineStarts);
+    closeListItem(closedItem, !isNewList && closedItem === closedItems.at(-1) && closedItem.kind === kind, lineStarts);
   }
 }
 
@@ -954,7 +958,8 @@ function detachNestedList(item: OpenListItem): void {
 
 /**
  * Walks the lines between a list's latest item and a line, closing the items they end, and extends a depth-0 list's
- * section over the content it holds there.
+ * section over the lines it holds there: to the end of its root item's last value line, trailing whitespace and a
+ * whitespace-only line indented to the root item's content included, as Obsidian ends the list's node.
  *
  * @param content - The note's full text.
  * @param lineStarts - The offset of each line's start.
@@ -976,7 +981,7 @@ function doesListEndBefore(content: string, lineStarts: number[], state: ListSta
   }
   const listLineCount = closeListItems({ ends, firstLine, lines, scan, starts }, state.openItems, lineStarts);
   if (state.depth === 0) {
-    state.groupEnd = Math.max(state.groupEnd, getListContentEnd(lineStarts, firstLine, lines, listLineCount));
+    state.groupEnd = Math.max(state.groupEnd, ensureNonNullable(state.openItems[0]).valueEnd);
   }
   return isCut || listLineCount < lines.length;
 }
@@ -1060,32 +1065,6 @@ function getLines(content: string, lineStarts: number[], firstLine: number, endL
     lines.push(content.slice(ensureNonNullable(lineStarts[line]), getLineEnd(content, lineStarts, line)));
   }
   return lines;
-}
-
-/**
- * Finds where the content a list holds after an item ends: the end of its last non-blank line, trailing whitespace
- * excluded, which is where Obsidian ends the list's section when that content comes last.
- *
- * @param lineStarts - The offset of each line's start.
- * @param firstLine - The line `lines` starts at.
- * @param lines - The lines after the item.
- * @param listLineCount - How many of `lines` belong to the list.
- * @returns The end offset, or `-1` when the list holds no content there.
- */
-function getListContentEnd(
-  lineStarts: number[],
-  firstLine: number,
-  lines: string[],
-  listLineCount: number
-): number {
-  for (let index = listLineCount - 1; index >= 0; index--) {
-    const line = ensureNonNullable(lines[index]);
-    const trimmedLength = line.trimEnd().length;
-    if (trimmedLength > 0) {
-      return ensureNonNullable(lineStarts[firstLine + index]) + trimmedLength;
-    }
-  }
-  return -1;
 }
 
 /**
@@ -1292,7 +1271,7 @@ function parseListItems(
       isNewList = true;
     }
 
-    closeListItemsBeforeItem(closedItems, isNewList, lineStarts);
+    closeListItemsBeforeItem(closedItems, isNewList, kind, lineStarts);
     recordListLine(state.openItems, endOffset);
     recordListLineIndent(state.openItems, markerColumn);
 
@@ -1325,6 +1304,7 @@ function parseListItems(
       containerColumn,
       contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
       isInHidingBlock: scan.hidingOpenerLines.has(currentLine),
+      kind,
       line: currentLine,
       nestedLists: [],
       removalColumn: markerColumn + getBulletWidth(indent.length - startColumn, marker, afterMarker),
@@ -1488,10 +1468,12 @@ function recordListLine(openItems: OpenListItem[], lineEnd: number): void {
  * @param column - The visual column of the line's content, past its quote prefix.
  */
 function recordListLineIndent(openItems: OpenListItem[], column: number): void {
+  let containerStripColumn = 0;
   for (const item of openItems) {
-    if (column > item.containerColumn) {
+    if (column > containerStripColumn) {
       item.removalColumn = Math.min(item.removalColumn, column);
     }
+    containerStripColumn = item.removalColumn;
   }
 }
 

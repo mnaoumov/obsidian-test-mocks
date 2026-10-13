@@ -1103,7 +1103,17 @@ describe('parseMarkdownContent', () => {
       // A line that ends a blockquote nested in an item stays in the item.
       { content: '- A\n>\n$$\n- B', expected: [[0, 8, -1], [9, 12, -1]] },
       { content: '- \n> > - K\n$$\n%% x %%', expected: [[0, 21, -1], [7, 10, -1]] },
-      { content: '+ L\n> > - K\n$$\n  ~~~', expected: [[0, 20, -1], [8, 11, -1]] }
+      { content: '+ L\n> > - K\n$$\n  ~~~', expected: [[0, 20, -1], [8, 11, -1]] },
+      // A `$$` opens a math block only when a line break follows it in the text its list item gathers, which leaves out
+      // trailing empty lines, a line the item's strip leaves empty and a line that ends the item.
+      { content: '  1. G\n$$\n  ', expected: [[0, 9, -1]] },
+      { content: '  1. G\n>   - H\n$$\n  ~~~', expected: [[0, 17, -1], [9, 17, -1]] },
+      { content: '+ L\n  - C\n$$\n\t', expected: [[0, 3, -1], [6, 12, 0]] },
+      { content: '+ L\n  - C\n$$\n\t\t', expected: [[0, 3, -1], [6, 15, 0]] },
+      { content: '- A\n$$\n\n- B', expected: [[0, 7, -1], [8, 11, -1]] },
+      { content: '- A\n  $$\n- B', expected: [[0, 8, -1], [9, 12, -1]] },
+      { content: '- A\n$$\n\nx', expected: [[0, 6, -1]] },
+      { content: '- A\nx $$\n  - C\n  - C\n  $$\n  ', expected: [[0, 8, -1], [11, 14, 0], [17, 25, 0]] }
     ])('should find the items of $content that no block hides, as Obsidian does', ({ content, expected }) => {
       const cache = parseMarkdownContent(content);
 
@@ -1142,7 +1152,14 @@ describe('parseMarkdownContent', () => {
       // A marker of another kind indented too far to start an item ends the list and starts an indented code block.
       { content: '   - K\n    1. R', expected: [[0, 6, -1]] },
       { content: '   - K\n    1. R\n- C', expected: [[0, 6, -1], [16, 19, -2]] },
-      { content: '   - K\n    - R', expected: [[0, 6, -1], [7, 14, -1]] }
+      { content: '   - K\n    - R', expected: [[0, 6, -1], [7, 14, -1]] },
+      // A nested item of another kind after a blank line is no sibling, so the item before it keeps its last line.
+      { content: '1. A\n   - K\n\n    1. R', expected: [[0, 4, -1], [8, 11, 0], [16, 21, 0]] },
+      // A nested item's later lines are measured from where its parent's strip leaves them, not from its parent's content.
+      { content: '9. C\n    1. R\n    text\n       - M', expected: [[0, 4, -1], [9, 22, 0], [30, 33, 1]] },
+      // Inside a blockquote the later lines are read ahead past their quote prefixes too.
+      { content: '> 9. C\n>        - M\n>    - K', expected: [[2, 19, -1], [25, 28, 0]] },
+      { content: '> 1. A\n>     - D\n>    - E', expected: [[2, 6, -1], [12, 16, 0], [22, 25, 0]] }
     ])('should place the items of $content as Obsidian does', ({ content, expected }) => {
       const cache = parseMarkdownContent(content);
 
@@ -1182,6 +1199,29 @@ describe('parseMarkdownContent', () => {
 
       const listSections = cache.sections?.filter((s) => s.type === 'list');
       expect(listSections).toHaveLength(1);
+    });
+
+    // Each row was measured on a real Obsidian 1.14.4 over CDP: every section's [type, start offset, end offset]. A list
+    // ends at the end of the last line it holds, trailing whitespace and a whitespace-only line indented to its root
+    // item's content included. A tab-led whitespace-only line continues a paragraph, and an indented code block's last
+    // line holding only its indent belongs to it only when a line break follows.
+    it.each([
+      { content: '- A\n  ', expected: [['list', 0, 6]] },
+      { content: '- A\n\t', expected: [['list', 0, 5]] },
+      { content: '- A\nx  ', expected: [['list', 0, 7]] },
+      { content: '- A\n  - B\n  ', expected: [['list', 0, 12]] },
+      { content: '- A\n\n  x  \n  ', expected: [['list', 0, 13]] },
+      { content: '- A\n  ```\n  ', expected: [['list', 0, 12]] },
+      { content: '1. A\n   ', expected: [['list', 0, 8]] },
+      { content: '+ L\n  - C\n$$\n\t', expected: [['list', 0, 14]] },
+      { content: ' text\n\t\n9. C', expected: [['paragraph', 0, 12]] },
+      { content: '       - M\n\t', expected: [['code', 0, 10]] },
+      { content: '    code\n\t\n', expected: [['code', 0, 10]] },
+      { content: '    code\n     ', expected: [['code', 0, 14]] }
+    ])('should end each section of $content where Obsidian does', ({ content, expected }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.sections?.map((section) => [section.type, section.position.start.offset, section.position.end.offset])).toEqual(expected);
     });
 
     it('should create blockquote sections', () => {
