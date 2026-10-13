@@ -21,7 +21,10 @@ import type {
   SectionCache
 } from 'obsidian';
 
+import type { FootnoteSource } from './markdown-references.ts';
+
 import { BLOCK_ID_TYPE } from './markdown-gap-blocks.ts';
+import { findInlineNoteTexts } from './markdown-references.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
 /**
@@ -32,6 +35,11 @@ export interface AssignBlockIdsParams {
    * The note's full text.
    */
   readonly content: string;
+
+  /**
+   * The footnotes the note references, which the `element` section Obsidian appends for them holds.
+   */
+  readonly footnoteSources: readonly FootnoteSource[];
 
   /**
    * The note's headings, which hold the text an ATX or setext heading's id is read from.
@@ -66,13 +74,18 @@ const FOOTNOTE_LABEL_REGEX = /^[ \t]*\[\^[^\]]*\]:/;
 const QUOTE_SECTION_TYPES: ReadonlySet<string> = new Set(['blockquote', 'callout']);
 
 /**
+ * The type of the section Obsidian's worker appends to a note that references a footnote: the list of those footnotes.
+ */
+export const FOOTNOTE_LIST_SECTION_TYPE = 'element';
+
+/**
  * Assigns the block ids of a note's sections and list items, and drops its standalone block ids.
  *
  * @param params - The note, its sections, headings and list items.
  * @returns The `blocks` collection: each id, lower-cased, to the section or list item that holds it.
  */
 export function assignBlockIds(params: AssignBlockIdsParams): Record<string, BlockCache> {
-  const { content, headings, listItems, sections } = params;
+  const { content, footnoteSources, headings, listItems, sections } = params;
   const blocks: Record<string, BlockCache> = {};
   const headingsByStart = new Map(headings.map((heading) => [heading.position.start.offset, heading]));
   const kept: SectionCache[] = [];
@@ -84,7 +97,9 @@ export function assignBlockIds(params: AssignBlockIdsParams): Record<string, Blo
       }
       continue;
     }
-    section.id = findSectionBlockId(content, section, headingsByStart.get(section.position.start.offset));
+    section.id = section.type === FOOTNOTE_LIST_SECTION_TYPE
+      ? findFootnoteListBlockId(footnoteSources)
+      : findSectionBlockId(content, section, headingsByStart.get(section.position.start.offset));
     kept.push(section);
   }
   sections.splice(0, sections.length, ...kept);
@@ -112,6 +127,26 @@ export function assignBlockIds(params: AssignBlockIdsParams): Record<string, Blo
   return blocks;
 }
 
+function findFootnoteDefinitionBlockId(text: string): string | undefined {
+  return findLastBlockId(splitIntoBlocks(text.replace(FOOTNOTE_LABEL_REGEX, '').split('\n')));
+}
+
+/**
+ * Finds the id the footnote list Obsidian appends to a note holds: the last one in the footnotes it copies there, in the
+ * order they are first referenced. It is found anywhere in them, so the list takes an id that ends an inline footnote's
+ * text, which the paragraph holding that footnote does not.
+ *
+ * @param footnoteSources - The footnotes the note references.
+ * @returns The id.
+ */
+function findFootnoteListBlockId(footnoteSources: readonly FootnoteSource[]): string | undefined {
+  let lastId: string | undefined;
+  for (const source of footnoteSources) {
+    lastId = (source.isDefinition ? findFootnoteDefinitionBlockId(source.text) : findInlineNoteBlockId(source.text)) ?? lastId;
+  }
+  return lastId;
+}
+
 /**
  * Finds the id at the end of a paragraph's inline text, if any.
  *
@@ -120,6 +155,21 @@ export function assignBlockIds(params: AssignBlockIdsParams): Record<string, Blo
  */
 function findInlineBlockId(text: string): string | undefined {
   return INLINE_BLOCK_ID_REGEX.exec(text)?.groups?.['id'];
+}
+
+/**
+ * Finds the last id an inline footnote holds: the one ending its text, or else the last one in the inline footnotes
+ * nested in it, which Obsidian leaves in place inside the outer one rather than turning into references of their own.
+ *
+ * @param text - What the inline footnote holds.
+ * @returns The id.
+ */
+function findInlineNoteBlockId(text: string): string | undefined {
+  let lastId = findInlineBlockId(text);
+  for (const nestedText of lastId === undefined ? findInlineNoteTexts(text) : []) {
+    lastId = findInlineNoteBlockId(nestedText) ?? lastId;
+  }
+  return lastId;
 }
 
 function findLastBlockId(blocks: readonly string[]): string | undefined {
@@ -171,7 +221,7 @@ function findSectionBlockId(content: string, section: SectionCache, heading: Hea
   const text = content.slice(section.position.start.offset, section.position.end.offset);
   switch (section.type) {
     case 'footnoteDefinition': {
-      return findLastBlockId(splitIntoBlocks(text.replace(FOOTNOTE_LABEL_REGEX, '').split('\n')));
+      return findFootnoteDefinitionBlockId(text);
     }
     case 'heading': {
       // Every heading section has its heading, at the same start.

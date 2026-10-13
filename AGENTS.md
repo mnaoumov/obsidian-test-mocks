@@ -89,6 +89,9 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
   an item, and which a fenced code block, a `%%` comment, a `$$` math block, an HTML block, an indented code block, a
   table or a link reference definition hides. A regular expression cannot answer either, since an unclosed block runs to
   the end of the blockquote or list item around it
+- `markdown-references.ts` — a note's `footnotes`, `footnoteRefs` and `referenceLinks`, read off the top-level
+  definitions the gap scan found and a scan of the inline text for `[^label]` references and `^[…]` inline footnotes,
+  the latter a port of `remark-footnotes` 2's tokenizer, which the worker runs
 - `noop.ts` — `noop()` / `noopAsync()` helpers for otherwise-empty method bodies (see L2)
 - `plugins.ts` — the community-plugin registry behind `App.plugins`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1, L7)
 - `setting-definition-renderer.ts` — renders declarative setting definitions the way Obsidian 1.13 does; drives `SettingTab.renderTab__()` / `refreshDomState()`
@@ -844,8 +847,27 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     indented four columns, and ends at an empty line followed by a line indented less, or at a line that starts another
     block, a bullet or an item numbered 1 among them but no comment and no block id: the worker installed its footnote
     tokenizer before those two existed. An empty first line (`[^1]:`) ends it at once.
-  - Not modeled: the `referenceLinks`, `footnotes` and `footnoteRefs` collections those definitions feed, and the empty
-    `text` and `element` sections the worker appends when two footnote definitions share a label.
+
+- **`referenceLinks`, `footnotes` and `footnoteRefs` are filled** (2026-10-12, read in Obsidian 1.14.4's `worker.js`, which
+  runs `remark-footnotes` 2 with inline notes on, and fuzzed against it). Four habits catch a consumer out:
+  - **A reference counts only when a definition carries its label.** `a[^x]` with no `[^x]:` anywhere is plain text and
+    no `footnoteRefs` entry. Labels match ignoring case, and both entries are keyed by the label lower-cased; a
+    `referenceLinks` entry keeps its label as written, escapes and spaces included, and its `link` is the destination
+    unescaped with its character references decoded (`/u\_x&amp;` reads `/u_x&`). A named reference is decoded through
+    the document, so with no `document` it stays as written.
+  - **An inline footnote `^[text]` is a `footnotes` entry at its TEXT, keyed `[inline<n>`**, where `n` counts the inline
+    footnotes and the definitions first referenced before it in the note, so `a[^1] ^[x]` keys the second `[inline1`. An
+    empty `^[]` is a `footnoteRefs` entry keyed `''` instead. A reference or an inline footnote inside an inline
+    footnote counts for nothing.
+  - **A note that references any footnote gets two more sections, `text` and `element`, both empty**, on the line after
+    its last block, at column 0, and at the offset that block ends at, which is not that line's start. The last block
+    counts even when it is a standalone block id, which is dropped only afterwards. The `element` section is the list of
+    footnotes the worker renders, and it takes the last block id in the footnotes it copies there, an id ending an
+    inline footnote's text included, which the paragraph holding that footnote does not take. So
+    `[^n]: x ^id\n\nt[^n]` gives `blocks.id` the `element` section's position, not the definition's.
+  - Approximated: only top-level definitions are read, so one inside a list item or a blockquote is neither collected
+    nor able to make a reference resolve, and the inline scan knows escapes, code spans and fenced code but no other
+    inline construct.
 
 - **Block ids are assigned, and `blocks` is filled** (2026-10-12, read in Obsidian 1.14.4's `worker.js` and fuzzed
   against it). An id is `^` and a run of letters, digits and `-`, and `blocks` keys each one lower-cased, sections first

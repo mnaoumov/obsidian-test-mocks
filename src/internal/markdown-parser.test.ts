@@ -3,7 +3,8 @@ import type { Pos } from 'obsidian';
 import {
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
 import { parseMarkdownContent } from './markdown-parser.ts';
@@ -31,6 +32,8 @@ const PARAGRAPH_COUNT_3 = 3;
 const FIRST_BLOCK_END_OFFSET = 4;
 const SECOND_BLOCK_START_OFFSET = 6;
 const SECOND_BLOCK_LINE = 2;
+const REPLACEMENT_CHARACTER = String.fromCodePoint(0xFF_FD);
+const LAST_CHARACTER = String.fromCodePoint(0x10_FF_FF);
 
 describe('parseMarkdownContent', () => {
   describe('empty document', () => {
@@ -1526,6 +1529,71 @@ describe('parseMarkdownContent', () => {
         .toEqual(expectedBlocks);
     });
 
+    // Measured the same way: the footnotes, footnote references and link reference definitions, and the `text` and
+    // `element` sections Obsidian's worker appends to a note that references a footnote, with the `element` section's id.
+    it.each([
+      ['a link reference definition', '[a]: http://x \'t\'\n', undefined, undefined, [['a', 'http://x', 0, 17]], [['definition', 0, 0, 17, undefined]], undefined],
+      ['a definition with an angle-bracket destination', '[a]: <u v>\n', undefined, undefined, [['a', 'u v', 0, 10]], [['definition', 0, 0, 10, undefined]], undefined],
+      ['a definition whose angle brackets are empty', '[a]: <>x\n', undefined, undefined, [['a', 'x', 0, 8]], [['definition', 0, 0, 8, undefined]], undefined],
+      ['a definition with an escape and character references', '[A]: /u\\_x\\q&amp;&#65;&#x42;&copy;&#0;&amp\n', undefined, undefined, [['A', String.raw`/u_x\q&AB©${REPLACEMENT_CHARACTER}&amp`, 0, 42]], [['definition', 0, 0, 42, undefined]], undefined],
+      ['a definition with an escaped bracket in its label', '[a\\]b]: /u\n', undefined, undefined, [[String.raw`a\]b`, '/u', 0, 10]], [['definition', 0, 0, 10, undefined]], undefined],
+      ['a definition with spaces in its label', '[ Foo  bar ]: /u\n', undefined, undefined, [[' Foo  bar ', '/u', 0, 16]], [['definition', 0, 0, 16, undefined]], undefined],
+      ['two definitions of one label', '[a]: /u\n[a]: /w\n', undefined, undefined, [['a', '/u', 0, 7], ['a', '/w', 8, 15]], [['definition', 0, 0, 7, undefined], ['definition', 1, 8, 15, undefined]], undefined],
+      ['a footnote definition', '[^Foo]: note\n', [['foo', 0, 12]], undefined, undefined, [['footnoteDefinition', 0, 0, 12, undefined]], undefined],
+      ['a referenced footnote', 'text[^1]\n\n[^1]: note', [['1', 10, 20]], [['1', 4, 8]], undefined, [['paragraph', 0, 0, 8, undefined], ['footnoteDefinition', 2, 10, 20, undefined], ['text', 3, 20, 20, undefined], ['element', 3, 20, 20, undefined]], undefined],
+      ['a reference to a missing footnote', 'a[^x] b[^x]\n', undefined, undefined, undefined, [['paragraph', 0, 0, 11, undefined]], undefined],
+      ['references differing in case', 'a[^n] b[^N]\n\n[^N]: y\n', [['n', 13, 20]], [['n', 1, 5], ['n', 7, 11]], undefined, [['paragraph', 0, 0, 11, undefined], ['footnoteDefinition', 2, 13, 20, undefined], ['text', 3, 20, 20, undefined], ['element', 3, 20, 20, undefined]], undefined],
+      ['two definitions of one referenced label', 't[^n] [^n]\n\n[^n]: x\n[^n]: y', [['n', 12, 19], ['n', 20, 27]], [['n', 1, 5], ['n', 6, 10]], undefined, [['paragraph', 0, 0, 10, undefined], ['footnoteDefinition', 2, 12, 19, undefined], ['footnoteDefinition', 3, 20, 27, undefined], ['text', 4, 27, 27, undefined], ['element', 4, 27, 27, undefined]], undefined],
+      ['an inline footnote', 'x ^[inline note] y', [['[inline0', 4, 15]], undefined, undefined, [['paragraph', 0, 0, 18, undefined], ['text', 1, 18, 18, undefined], ['element', 1, 18, 18, undefined]], undefined],
+      ['an inline footnote with brackets and code', 'x ^[in [b] `]` c] z', [['[inline0', 4, 16]], undefined, undefined, [['paragraph', 0, 0, 19, undefined], ['text', 1, 19, 19, undefined], ['element', 1, 19, 19, undefined]], undefined],
+      ['an empty inline footnote', '^[]', undefined, [['', 0, 3]], undefined, [['paragraph', 0, 0, 3, undefined], ['text', 1, 3, 3, undefined], ['element', 1, 3, 3, undefined]], undefined],
+      ['an unclosed inline footnote', '^[x\n', undefined, undefined, undefined, [['paragraph', 0, 0, 3, undefined]], undefined],
+      ['an inline footnote after a reference', 'a[^1] ^[x]\n\n[^1]: n', [['[inline1', 8, 9], ['1', 12, 19]], [['1', 1, 5]], undefined, [['paragraph', 0, 0, 10, undefined], ['footnoteDefinition', 2, 12, 19, undefined], ['text', 3, 19, 19, undefined], ['element', 3, 19, 19, undefined]], undefined],
+      ['a reference and an inline footnote inside a definition', '[^1]: a[^1] ^[b]', [['1', 0, 16], ['[inline1', 14, 15]], [['1', 7, 11]], undefined, [['footnoteDefinition', 0, 0, 16, undefined], ['text', 1, 16, 16, undefined], ['element', 1, 16, 16, undefined]], undefined],
+      ['a reference inside an inline footnote', 'a ^[b [^c] d]\n\n[^c]: e', [['[inline0', 4, 12], ['c', 15, 22]], undefined, undefined, [['paragraph', 0, 0, 13, undefined], ['footnoteDefinition', 2, 15, 22, undefined], ['text', 3, 22, 22, undefined], ['element', 3, 22, 22, undefined]], undefined],
+      ['an escaped reference and a reference in code', '\\[^1] `[^1]` ``[^1]` [^1]\n\n[^1]: n', [['1', 27, 34]], [['1', 21, 25]], undefined, [['paragraph', 0, 0, 25, undefined], ['footnoteDefinition', 2, 27, 34, undefined], ['text', 3, 34, 34, undefined], ['element', 3, 34, 34, undefined]], undefined],
+      ['an unclosed code span before a reference', '` [^1]\n\n[^1]: n', [['1', 8, 15]], [['1', 2, 6]], undefined, [['paragraph', 0, 0, 6, undefined], ['footnoteDefinition', 2, 8, 15, undefined], ['text', 3, 15, 15, undefined], ['element', 3, 15, 15, undefined]], undefined],
+      ['a reference in a fence', '```\n[^1]\n```\n\n[^1]: n', [['1', 14, 21]], undefined, undefined, [['code', 0, 0, 12, undefined], ['footnoteDefinition', 4, 14, 21, undefined]], undefined],
+      ['a reference in a heading, a quote and a table', '# H[^1]\n\n> q[^1]\n\n| a[^1] | b |\n| - | - |\n\n[^1]: n', [['1', 43, 50]], [['1', 3, 7], ['1', 12, 16], ['1', 21, 25]], undefined, [['heading', 0, 0, 7, undefined], ['blockquote', 2, 9, 16, undefined], ['table', 4, 18, 41, undefined], ['footnoteDefinition', 7, 43, 50, undefined], ['text', 8, 50, 50, undefined], ['element', 8, 50, 50, undefined]], undefined],
+      ['a label with a space', 'a[^b c]\n\n[^b]: x', [['b', 9, 16]], undefined, undefined, [['paragraph', 0, 0, 7, undefined], ['footnoteDefinition', 2, 9, 16, undefined]], undefined],
+      ['an id in a referenced footnote', '[^n]: x ^id\n\nt[^n]', [['n', 0, 11]], [['n', 14, 18]], undefined, [['footnoteDefinition', 0, 0, 11, 'id'], ['paragraph', 2, 13, 18, undefined], ['text', 3, 18, 18, undefined], ['element', 3, 18, 18, 'id']], [['id', 'id', 18, 18]]],
+      ['an id in an inline footnote', 't ^[x ^q]', [['[inline0', 4, 8]], undefined, undefined, [['paragraph', 0, 0, 9, undefined], ['text', 1, 9, 9, undefined], ['element', 1, 9, 9, 'q']], [['q', 'q', 9, 9]]],
+      ['an id in a nested inline footnote', 't ^[a ^[b ^q] c]', [['[inline0', 4, 15]], undefined, undefined, [['paragraph', 0, 0, 16, undefined], ['text', 1, 16, 16, undefined], ['element', 1, 16, 16, 'q']], [['q', 'q', 16, 16]]],
+      ['an id after an inline footnote', 't ^[x] ^id', [['[inline0', 4, 5]], undefined, undefined, [['paragraph', 0, 0, 10, 'id'], ['text', 1, 10, 10, undefined], ['element', 1, 10, 10, undefined]], [['id', 'id', 0, 10]]],
+      ['a standalone id after a referenced footnote', 't[^n]\n\n[^n]: x\n\n^abc', [['n', 7, 14]], [['n', 1, 5]], undefined, [['paragraph', 0, 0, 5, undefined], ['footnoteDefinition', 2, 7, 14, 'abc'], ['text', 5, 20, 20, undefined], ['element', 5, 20, 20, undefined]], [['abc', 'abc', 7, 14]]],
+      ['trailing empty lines after a reference', 't[^n]\n\n[^n]: x\n\n', [['n', 7, 14]], [['n', 1, 5]], undefined, [['paragraph', 0, 0, 5, undefined], ['footnoteDefinition', 2, 7, 14, undefined], ['text', 3, 14, 14, undefined], ['element', 3, 14, 14, undefined]], undefined],
+      ['a reference after frontmatter', '---\na: 1\n---\nt ^[x]', [['[inline0', 17, 18]], undefined, undefined, [['yaml', 0, 0, 12, undefined], ['paragraph', 3, 13, 19, undefined], ['text', 4, 19, 19, undefined], ['element', 4, 19, 19, undefined]], undefined],
+      ['a definition with out-of-range character references', '[a]: /u&#xD800;&#1114112;&#x10FFFF;\n', undefined, undefined, [['a', `/u${REPLACEMENT_CHARACTER}${REPLACEMENT_CHARACTER}${LAST_CHARACTER}`, 0, 35]], [['definition', 0, 0, 35, undefined]], undefined],
+      ['an inline footnote with an escaped bracket', String.raw`x ^[a \] b] y`, [['[inline0', 4, 10]], undefined, undefined, [['paragraph', 0, 0, 13, undefined], ['text', 1, 13, 13, undefined], ['element', 1, 13, 13, undefined]], undefined],
+      ['an inline footnote with code spans of two lengths', 'x ^[a ``b` ]`` c] y', [['[inline0', 4, 16]], undefined, undefined, [['paragraph', 0, 0, 19, undefined], ['text', 1, 19, 19, undefined], ['element', 1, 19, 19, undefined]], undefined],
+      ['an id in the first of two nested inline footnotes', 't ^[a ^[b ^q] ^[c] d]', [['[inline0', 4, 20]], undefined, undefined, [['paragraph', 0, 0, 21, undefined], ['text', 1, 21, 21, undefined], ['element', 1, 21, 21, 'q']], [['q', 'q', 21, 21]]]
+    ])('should collect the footnotes and references of %s as Obsidian does', (
+      _name,
+      content,
+      expectedFootnotes,
+      expectedRefs,
+      expectedReferenceLinks,
+      expectedSections,
+      expectedBlocks
+    ) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.footnotes?.map((f) => [f.id, f.position.start.offset, f.position.end.offset])).toEqual(expectedFootnotes);
+      expect(cache.footnoteRefs?.map((f) => [f.id, f.position.start.offset, f.position.end.offset])).toEqual(expectedRefs);
+      expect(cache.referenceLinks?.map((r) => [r.id, r.link, r.position.start.offset, r.position.end.offset])).toEqual(expectedReferenceLinks);
+      expect(cache.sections?.map((s) => [s.type, s.position.start.line, s.position.start.offset, s.position.end.offset, s.id])).toEqual(expectedSections);
+      expect(cache.blocks && Object.entries(cache.blocks).map(([key, block]) => [key, block.id, block.position.start.offset, block.position.end.offset]))
+        .toEqual(expectedBlocks);
+    });
+
+    it('should leave a named character reference as written when there is no document to decode it', () => {
+      vi.stubGlobal('document', undefined);
+      try {
+        expect(parseMarkdownContent('[a]: /u&copy;&#65;\n').referenceLinks?.map((link) => link.link)).toEqual(['/u&copy;A']);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
     // Measured the same way: the list lines Obsidian reads as something else - a thematic break, which `remark-parse`
     // tries before a list item, a table row, and a line an HTML block hides.
     it.each([
@@ -1897,6 +1965,27 @@ describe('parseMarkdownContent', () => {
         ['heading', 2, 0, 8, 2, 3, 11],
         ['paragraph', 3, 0, 12, 3, 4, 16]
       ]);
+    });
+
+    it('should report the footnotes and references of a CRLF note at their original positions', () => {
+      const cache = parseMarkdownContent('text[^1]\r\n\r\n[^1]: note\r\n[a]: /u\r\n');
+      expect(cache.footnotes?.map((footnote) => [footnote.id, ...toTuple(footnote.position)])).toEqual([['1', 2, 0, 12, 2, 10, 22]]);
+      expect(cache.footnoteRefs?.map((ref) => [ref.id, ...toTuple(ref.position)])).toEqual([['1', 0, 4, 4, 0, 8, 8]]);
+      expect(cache.referenceLinks?.map((link) => [link.id, link.link, ...toTuple(link.position)])).toEqual([['a', '/u', 3, 0, 24, 3, 7, 31]]);
+      expect(cache.sections?.slice(-2).map((section) => [section.type, ...toTuple(section.position)])).toEqual([
+        ['text', 4, 0, 31, 4, 0, 31],
+        ['element', 4, 0, 31, 4, 0, 31]
+      ]);
+    });
+
+    it('should put the footnote list after a standalone id ending a lone-CR note', () => {
+      const cache = parseMarkdownContent('a ^[b\rc]\r^x');
+      expect(cache.footnotes?.map((footnote) => [footnote.id, ...toTuple(footnote.position)])).toEqual([['[inline0', 0, 4, 4, 1, 1, 7]]);
+      expect(cache.sections?.slice(-2).map((section) => [section.type, ...toTuple(section.position)])).toEqual([
+        ['text', 3, 0, 11, 3, 0, 11],
+        ['element', 3, 0, 11, 3, 0, 11]
+      ]);
+      expect(cache.blocks?.['x'] && toTuple(cache.blocks['x'].position)).toEqual([0, 0, 0, 2, 2, 11]);
     });
 
     it('should report nothing for a note holding only blank CRLF lines', () => {
