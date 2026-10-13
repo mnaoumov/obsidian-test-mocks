@@ -983,6 +983,24 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     `itemMarkerIndexes`, and the parser reads each later marker's item off a copy of the line whose characters before
     the marker are spaces, so every column stays where it was.
 
+- **A list marker that ends its line opens an empty list item** (2026-10-12, measured on a real Obsidian 1.14.4 over CDP
+  and fuzzed against its own metadata worker). `remark-parse` 8 wants whitespace, a line break or the end of the note
+  after a marker, so `-\ntext`, `1.\ntext` and a lone `-` are each one item and a `list` section, where the mock used to
+  read a paragraph. That also fixes `---\na: 1\n----\ntext`, whose fourth `-` is such an item. Four habits come with it:
+  - **It interrupts a paragraph as an item with text does**, a bullet or an ordered marker numbered 1 (`a\n*\nb`).
+  - **Its content starts right past the marker**, with no column for the space it lacks, so `-\n - b` nests `b` and
+    `2.\n  - C` nests `C`.
+  - **A lone `-` under one line of text, at no indent, is a setext underline**, because `remark-parse` 8 tries a setext
+    heading before a list: `a\n-` is the heading `a`, and so is a lone `-` under a line that opens a block inside an
+    item or a blockquote, under a lazy line an item holds after a block that is no paragraph, under `[x]: /u` and under
+    `<div>`. A line followed by such an underline also ends a blockquote it would otherwise continue lazily
+    (`> a\nb\n-`). Under two lines of text, or under a lazy line of a paragraph, it is still an item.
+  - **A marker-like run that starts no item counts as indent** when the list decides whether a line stays in its item:
+    `remark-parse` 8 adds the run's width before it finds no whitespace after it. So `-\n\n-x`, `- a\n\n1.x` and
+    `-\n---` are each one item, while `10.\n\n9.x` is an item and a paragraph. It matters only next to an item whose
+    content starts that close, which is mostly an empty one.
+  - Not modeled here: a tab after a marker, which starts an item too, belongs with the other tab gaps.
+
 - **`MetadataCache.getFirstLinkpathDest` ignores case, as Obsidian's link index does** (2026-10-09, `getLinkpathDest`
   in Obsidian 1.14.x's `app.js`, which looks names up lower-cased and compares lower-cased paths). So `[[homepage]]`
   reaches `HomePage.md`, and the link graph records it as resolved. One deliberate departure: an EXACT-case match still
