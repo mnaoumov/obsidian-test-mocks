@@ -26,6 +26,21 @@
 import { ensureNonNullable } from './type-guards.ts';
 
 /**
+ * What a link reference definition names, as {@link readDefinitionParts} reads it.
+ */
+export interface DefinitionParts {
+  /**
+   * The destination, out of its angle brackets, with its escapes and character references still as written.
+   */
+  readonly destination: string;
+
+  /**
+   * The label, as written between the brackets, escapes included.
+   */
+  readonly label: string;
+}
+
+/**
  * A block found in the text.
  */
 export interface GapBlock {
@@ -266,6 +281,26 @@ export function findHtmlBlockKind(text: string): HtmlBlockKind | undefined {
   }
   const firstLine = text.slice(tagStart, findLineEnd(text, tagStart + 1));
   return HTML_BLOCK_KINDS.find((kind) => kind.start.test(firstLine));
+}
+
+/**
+ * Reads the label and the destination of a link reference definition {@link tokenizeDefinition} has found, both as they
+ * are written: the label with its escapes, and the destination out of its angle brackets but not yet unescaped.
+ *
+ * @param text - The definition's text, from its line start.
+ * @returns The label and the destination.
+ */
+export function readDefinitionParts(text: string): DefinitionParts {
+  const labelStart = skipSpacesAndTabs(text, 0) + 1;
+  const labelEnd = readDefinitionLabel(text);
+  const destinationStart = skipWhitespaceAndLineBreaks(text, labelEnd);
+  const destination = text.slice(destinationStart, readDefinitionDestination(text, destinationStart));
+  const angleEnd = destination.startsWith('<') ? destination.indexOf('>') : NOT_FOUND;
+  return {
+    // An empty pair of angle brackets is followed by the run that is the destination itself.
+    destination: angleEnd === NOT_FOUND ? destination : (angleEnd === destination.length - 1 ? destination.slice(1, -1) : destination.slice(angleEnd + 1)),
+    label: text.slice(labelStart, labelEnd - LABEL_CLOSER.length)
+  };
 }
 
 /**

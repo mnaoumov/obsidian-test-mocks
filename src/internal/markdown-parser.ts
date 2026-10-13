@@ -2,7 +2,7 @@
  * @file
  *
  * A small regex-based markdown parser that builds the `CachedMetadata` the `MetadataCache` mock serves: frontmatter,
- * headings, tags, links, embeds, list items and sections.
+ * headings, tags, links, embeds, list items, sections, footnotes and link reference definitions.
  */
 
 import type {
@@ -26,12 +26,16 @@ import {
   isInternalLinkTarget,
   normalizeLinkTarget
 } from './link-target.ts';
-import { assignBlockIds } from './markdown-block-ids.ts';
+import {
+  assignBlockIds,
+  FOOTNOTE_LIST_SECTION_TYPE
+} from './markdown-block-ids.ts';
 import { scanGapBlocks } from './markdown-gap-blocks.ts';
 import {
   getBulletWidth,
   scanLeafBlocks
 } from './markdown-leaf-blocks.ts';
+import { collectReferences } from './markdown-references.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
 /**
@@ -62,6 +66,12 @@ const FRONTMATTER_MARKDOWN_LINK_REGEX = /^(?<open>!?\[)(?<displayText>.*?)(?<sep
 /**
  * A non-breaking space, which Obsidian folds into an ordinary one before it resolves a link target.
  */
+
+// The section Obsidian's worker appends before the footnote list (see `appendFootnoteListSections`).
+const FOOTNOTE_TEXT_SECTION_TYPE = 'text';
+// The two sections Obsidian's worker appends to a note that references a footnote. No block of the note itself has either
+// type.
+const FOOTNOTE_LIST_SECTION_TYPES: ReadonlySet<string> = new Set([FOOTNOTE_LIST_SECTION_TYPE, FOOTNOTE_TEXT_SECTION_TYPE]);
 
 const WIKILINK_CLOSE = ']]';
 
@@ -287,16 +297,29 @@ export function parseMarkdownContent(content: string): CachedMetadata {
     return parseLfContent(content);
   }
 
-  const cache = parseLfContent(content.replaceAll(/\r\n?/g, '\n'));
+  const lfContent = content.replaceAll(/\r\n?/g, '\n');
+  const cache = parseLfContent(lfContent);
   const lineStarts = buildOriginalLineStarts(content);
+  const footnoteListSections = cache.sections?.filter((section) => FOOTNOTE_LIST_SECTION_TYPES.has(section.type)) ?? [];
+  const sections = cache.sections?.filter((section) => !FOOTNOTE_LIST_SECTION_TYPES.has(section.type)) ?? [];
   const positions = [
     ...cache.embeds ?? [],
+    ...cache.footnoteRefs ?? [],
+    ...cache.footnotes ?? [],
     ...cache.headings ?? [],
     ...cache.links ?? [],
     ...cache.listItems ?? [],
-    ...cache.sections ?? [],
+    ...cache.referenceLinks ?? [],
+    ...sections,
     ...cache.tags ?? []
   ].map((entry) => entry.position);
+  // The sections appended for a note's footnotes sit on the line past the last one, at the offset the line before ends at,
+  // which is no line start the original has.
+  for (const { position } of footnoteListSections) {
+    const offset = moveLocToOriginal(lineStarts, offsetToLoc(buildLineStarts(lfContent), position.start.offset)).offset;
+    position.start = { ...position.start, offset };
+    position.end = { ...position.end, offset };
+  }
   if (cache.frontmatterPosition) {
     positions.push(cache.frontmatterPosition);
   }
@@ -340,6 +363,19 @@ function addGapSections(
       });
     }
   }
+}
+
+/**
+ * Appends the two sections Obsidian's worker adds to a note that references a footnote, after it has parsed the note:
+ * a `text` and an `element` section, the latter holding the list of those footnotes. Both are empty, on the line after
+ * the end of the note's last block, at column 0, and at the offset that block ends at - which is NOT that line's start.
+ * The last block counts even when it is a standalone block id, which is dropped only afterwards.
+ *
+ * @param sections - The note's sections, sorted, standalone block ids among them; the two are pushed onto it.
+ */
+function appendFootnoteListSections(sections: SectionCache[]): void {
+  const lastEnd = ensureNonNullable(sections.at(-1)).position.end;
+  sections.push(makeFootnoteListSection(FOOTNOTE_TEXT_SECTION_TYPE, lastEnd), makeFootnoteListSection(FOOTNOTE_LIST_SECTION_TYPE, lastEnd));
 }
 
 /**
@@ -477,6 +513,11 @@ function findFrontmatterClose(content: string): number {
 
 function isInCodeZone(zones: [number, number][], offset: number): boolean {
   return zones.some(([start, end]) => offset >= start && offset < end);
+}
+
+function makeFootnoteListSection(type: string, lastEnd: Loc): SectionCache {
+  const loc = { col: 0, line: lastEnd.line + 1, offset: lastEnd.offset };
+  return { position: { end: { ...loc }, start: loc }, type };
 }
 
 function makePos(lineStarts: number[], startOffset: number, endOffset: number): Pos {
@@ -739,7 +780,26 @@ function parseLfContent(content: string): CachedMetadata {
   }
 
   sections.sort((a, b) => a.position.start.offset - b.position.start.offset);
-  const blocks = assignBlockIds({ content, headings, listItems, sections });
+  const { footnoteRefs, footnotes, footnoteSources, referenceLinks } = collectReferences({
+    codeZones: buildCodeZones(content),
+    content,
+    makePos: (startOffset, endOffset) => makePos(lineStarts, startOffset, endOffset),
+    sections
+  });
+  if (footnotes.length > 0) {
+    cache.footnotes = footnotes;
+  }
+  if (footnoteRefs.length > 0) {
+    cache.footnoteRefs = footnoteRefs;
+  }
+  if (referenceLinks.length > 0) {
+    cache.referenceLinks = referenceLinks;
+  }
+  if (footnoteSources.length > 0) {
+    appendFootnoteListSections(sections);
+  }
+
+  const blocks = assignBlockIds({ content, footnoteSources, headings, listItems, sections });
   if (Object.keys(blocks).length > 0) {
     cache.blocks = blocks;
   }
