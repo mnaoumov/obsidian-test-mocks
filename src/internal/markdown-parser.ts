@@ -55,6 +55,8 @@ interface WikilinkTarget {
  * the target never swallows it. Only `displayText` and `target` are read; the rest carry names because
  * the structure is Obsidian's and this is the only place it is written down.
  */
+const FRONTMATTER_DELIMITER = '---';
+
 const FRONTMATTER_MARKDOWN_LINK_REGEX = /^(?<open>!?\[)(?<displayText>.*?)(?<separator>]\(\s*)(?<targetAndTitle>(?<target><[^>]*?>|[^ "]+?)(?<spacedTitle>\s+(?<title>[^ ]+|"[^"]+"|'[^']+'|\([^']+\)))?)?(?<close>\s*\))$/;
 
 /**
@@ -473,6 +475,10 @@ function parseFrontmatter(
   }
 
   const parsed = parseFrontmatterYaml(info.frontmatter);
+  // Both positions end at the end of the closing `---`, not at the start of the line after it, as Obsidian's metadata
+  // worker reports them. `to` is where that delimiter starts, so the block's end is three characters later. The body
+  // still starts at `contentStart`, past the line break.
+  const endOffset = info.to + FRONTMATTER_DELIMITER.length;
 
   // A block that does not parse to a plain object leaves NO `frontmatter` and NO `frontmatterPosition`
   // behind - not an empty record, which is what a consumer branching on `cache.frontmatter` would read as
@@ -489,7 +495,7 @@ function parseFrontmatter(
   // neither TypeScript nor a `frontmatter['tags']` read objects to it.
   if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
     cache.frontmatter = parsed;
-    cache.frontmatterPosition = makePos(lineStarts, 0, info.contentStart);
+    cache.frontmatterPosition = makePos(lineStarts, 0, endOffset);
 
     // `frontmatterLinks` is the ONE collection that is present even when empty, so it is assigned
     // unconditionally rather than behind the `length > 0` guard the ten collections beside it take.
@@ -507,7 +513,7 @@ function parseFrontmatter(
 
   sections.push({
     id: undefined,
-    position: makePos(lineStarts, 0, info.contentStart),
+    position: makePos(lineStarts, 0, endOffset),
     type: 'yaml'
   });
 
