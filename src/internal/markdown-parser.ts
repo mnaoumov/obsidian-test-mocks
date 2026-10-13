@@ -33,6 +33,7 @@ import {
 import { scanGapBlocks } from './markdown-gap-blocks.ts';
 import {
   getBulletWidth,
+  getMarkerLikeWidth,
   scanLeafBlocks
 } from './markdown-leaf-blocks.ts';
 import { collectReferences } from './markdown-references.ts';
@@ -867,7 +868,7 @@ const MAX_LIST_ITEM_CONTENT_GAP = 4;
 // above.
 const LIST_INTERRUPTING_LINE_REGEX = /^ {0,3}(?:#{1,6}(?:[ \t]|$)|`{3}|~{3}|%%(?!.*%%)|(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$)/;
 
-const LIST_ITEM_REGEX = /^(?<indent>[ \t]*)(?<marker>[-*+]|\d+[.)]) (?:\[(?<task>.)\] )?(?<rest>.*)$/;
+const LIST_ITEM_REGEX = /^(?<indent>[ \t]*)(?<marker>[-*+]|\d+[.)])(?:$| (?:\[(?<task>.)\] )?(?<rest>.*)$)/;
 // A blockquote level: a `>` and the one space after it that belongs to the marker. Any indent may precede the first,
 // which lets a blockquote sit inside a list item; up to three spaces may precede each later one.
 // A line opening a blockquote, which starts a block of its own inside a list item even with no blank line before it.
@@ -890,7 +891,7 @@ function addListItem(params: AddListItemParams): void {
   const indent = ensureNonNullable(match.groups?.['indent']);
   const marker = ensureNonNullable(match.groups?.['marker']);
   const taskChar = match.groups?.['task'];
-  const rest = ensureNonNullable(match.groups?.['rest']);
+  const rest = match.groups?.['rest'] ?? '';
   // Columns count from the end of the quote prefix, which is where the list's container starts.
   const indentColumns = getVisualColumns(indent);
   const markerColumn = ensureNonNullable(indentColumns.at(-1));
@@ -958,7 +959,7 @@ function addListItem(params: AddListItemParams): void {
     childCount: taskChar !== undefined || hasText ? 1 : 0,
     childLines: [],
     containerColumn,
-    contentColumn: getListItemContentColumn(markerColumn + marker.length, taskChar === undefined ? rest : ''),
+    contentColumn: getListItemContentColumn(markerColumn + marker.length, afterMarker, taskChar !== undefined),
     isInHidingBlock: !hasNestedMarker && scan.hidingOpenerLines.has(currentLine),
     kind,
     line: currentLine,
@@ -1065,10 +1066,12 @@ function closeListItems(listLines: ListLines, openItems: OpenListItem[], lineSta
     const isBlockStart = canEndItems || BLOCKQUOTE_LINE_REGEX.test(line) || scan.openerLines.has(lineNumber);
     isAfterBlankLine = false;
     if (canEndItems) {
-      if (column < listContentColumn) {
+      // A marker-like run the line opens with counts as indent here, as `getMarkerLikeWidth` says.
+      const memberColumn = column + getMarkerLikeWidth(line.slice(indent.length));
+      if (memberColumn < listContentColumn) {
         return index;
       }
-      while (ensureNonNullable(openItems.at(-1)).contentColumn > column) {
+      while (ensureNonNullable(openItems.at(-1)).contentColumn > memberColumn) {
         closeListItem(ensureNonNullable(openItems.pop()), false, lineStarts);
       }
       detachNestedList(ensureNonNullable(openItems.at(-1)));
@@ -1253,14 +1256,19 @@ function getLines(content: string, lineStarts: number[], firstLine: number, endL
  * Computes the visual column where a list item's content starts, by CommonMark's rule: one to four columns of
  * whitespace after the marker belong to the marker, and anything wider leaves the content one column past it. Unlike
  * CommonMark, Obsidian applies that rule to an item with nothing after the marker too, rather than always putting its
- * content one column past the marker.
+ * content one column past the marker. A marker that ends its line has its content right past it, with no column for the
+ * space it lacks.
  *
  * @param markerEndColumn - The visual column just past the marker.
- * @param textAfterGap - The line's text after the single space the marker requires.
+ * @param afterMarker - The line's text after the marker.
+ * @param isTask - Whether the item is a task, whose checkbox ends the whitespace that can follow the marker.
  * @returns The content column.
  */
-function getListItemContentColumn(markerEndColumn: number, textAfterGap: string): number {
-  const [extraWhitespace] = ensureNonNullable(/^[ \t]*/.exec(textAfterGap));
+function getListItemContentColumn(markerEndColumn: number, afterMarker: string, isTask: boolean): number {
+  if (afterMarker === '') {
+    return markerEndColumn;
+  }
+  const [extraWhitespace] = ensureNonNullable(/^[ \t]*/.exec(isTask ? '' : afterMarker.slice(1)));
   let column = markerEndColumn + 1;
   for (const char of extraWhitespace) {
     column = advanceColumn(column, char);

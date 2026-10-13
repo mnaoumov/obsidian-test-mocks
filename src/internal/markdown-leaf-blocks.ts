@@ -194,6 +194,16 @@ interface ScanState {
   readonly lines: readonly string[];
   readonly listEndLines: Set<number>;
   readonly openerLines: Set<number>;
+  // The leaf a line opened where a block starts, which the next line can underline as a setext heading, and that line.
+  setextText: SetextText | undefined;
+}
+
+/**
+ * A leaf whose first line a setext underline on the next line can turn into a heading, and that line.
+ */
+interface SetextText {
+  readonly leaf: Leaf;
+  readonly lineNumber: number;
 }
 
 interface SimpleLeaf {
@@ -213,11 +223,13 @@ const MAX_LIST_ITEM_CONTENT_GAP = 4;
 const ORDERED_WIDENING_LIMIT = 10;
 // The bullet width is widened when its length is odd.
 const PARITY_DIVISOR = 2;
-const ITEM_REGEX = /^(?<marker>[-*+]|\d+[.)]) /;
+const ITEM_REGEX = /^(?<marker>[-*+]|\d+[.)])(?: |$)/;
 const PARAGRAPH_INTERRUPTING_MARKER_REGEX = /^(?:[-*+]|1[.)])$/;
 const FENCE_OPEN_REGEX = /^(?<fence>`{3,}|~{3,})(?<info>.*)$/;
 const HEADING_REGEX = /^#{1,6}(?:[ \t]|$)/;
 const THEMATIC_BREAK_REGEX = /^(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$/;
+const SETEXT_UNDERLINE_REGEX = /^(?:=+|-+)$/;
+const MARKER_LIKE_REGEX = /^(?:[-*+]|\d+[.)])(?=[^ \t])/;
 const COMMENT_MARK = '%%';
 const MATH_MIN_LENGTH = 2;
 // How many lines a link reference definition is looked for in: its label line, and the empty lines and the destination and
@@ -246,6 +258,19 @@ export function getBulletWidth(indentLength: number, marker: string, afterMarker
 }
 
 /**
+ * Measures the marker-like run a line's text opens with when it starts no list item: a bullet, or a number with its
+ * delimiter, followed by anything but whitespace, as in `-x`, `---` or `10.x`. `remark-parse` 8 counts that run into the
+ * line's indent before it finds no whitespace after it, and then decides whether the line belongs to the list item above
+ * by that indent, so `-\n\n-x` and `-\n---` are each one item, holding a paragraph and a thematic break.
+ *
+ * @param text - The line's text past its whitespace.
+ * @returns The run's width, or `0` when the text opens with none.
+ */
+export function getMarkerLikeWidth(text: string): number {
+  return MARKER_LIKE_REGEX.exec(text)?.[0].length ?? 0;
+}
+
+/**
  * Scans a note's body for list items and the blocks that hide them.
  *
  * @param lines - The note's lines, without their line breaks.
@@ -267,7 +292,8 @@ export function scanLeafBlocks(lines: readonly string[], firstLine: number): Lea
     lineNumber: firstLine,
     lines,
     listEndLines: new Set(),
-    openerLines: new Set()
+    openerLines: new Set(),
+    setextText: undefined
   };
   for (let lineNumber = firstLine; lineNumber < lines.length; lineNumber++) {
     state.lineNumber = lineNumber;
@@ -318,7 +344,17 @@ function continueLazily(state: ScanState, line: string, lineNumber: number, rest
     state.isAfterBlankLine = line.slice(cursor.index).trim() === '';
     return;
   }
-  state.leaf = { kind: 'paragraph' };
+  // A list item reads the lines it holds lazily as its own, so such a line can underline the line of text before it, and
+  // one after a block that is not a paragraph starts a paragraph the next line can underline.
+  // A list item strips the indent of the lines it holds lazily, and a blockquote keeps it.
+  if ((rest.indent === 0 || state.containers.at(-1)?.kind === 'item') && isUnderline(state, lineNumber, text)) {
+    state.leaf = { kind: 'heading' };
+    return;
+  }
+  if (leaf?.kind === 'paragraph') {
+    return;
+  }
+  openSetextTextLeaf(state, { kind: 'paragraph' }, lineNumber);
 }
 
 function countQuotes(containers: readonly Container[]): number {
@@ -345,13 +381,17 @@ function doesContinueContainer(container: Container, line: string, cursor: Curso
   if (position.index === line.length) {
     return true;
   }
-  if (position.column - cursor.base < container.width) {
+  const indent = position.column - cursor.base;
+  if (indent + getMarkerLikeWidth(line.slice(position.index)) < container.width) {
     return false;
   }
-  container.removalWidth = Math.min(container.removalWidth, position.column - cursor.base);
+  // Only a line indented past the item's container counts towards how far its lines are stripped.
+  if (indent > 0) {
+    container.removalWidth = Math.min(container.removalWidth, indent);
+  }
   const contentBase = cursor.base + container.width;
   const indentBase = cursor.base + container.removalWidth;
-  while (cursor.column < contentBase) {
+  while (cursor.column < contentBase && cursor.index < position.index) {
     cursor.column = advanceColumn(cursor.column, line.charAt(cursor.index));
     cursor.index++;
   }
@@ -371,6 +411,26 @@ function doesContinueContainer(container: Container, line: string, cursor: Curso
  */
 function doesDefinitionOrTableTakeLine(leaf: Leaf | undefined, row: string, lineNumber: number): boolean {
   return leaf?.kind === 'definition' ? lineNumber <= leaf.endLine : leaf?.kind === 'table' && row.includes('|', 1) && row.startsWith('|') === leaf.hasLeadingPipe;
+}
+
+/**
+ * Checks whether the open leaf takes a line that would otherwise start a block: a setext underline, which turns the
+ * leaf into a heading, or a whitespace-only line holding a tab, which a paragraph takes (see
+ * {@link doesParagraphTakeTabLine}). `remark-parse` 8 reads a setext heading before a paragraph and a list, so a line of
+ * `-` under one line of text, at no indent, underlines it, where a lone `-` would otherwise open an empty list item.
+ *
+ * @param state - The scan; its leaf becomes a heading on an underline.
+ * @param row - The line past its containers' prefixes.
+ * @param lineNumber - The line's number.
+ * @param rest - Where the line's text starts.
+ * @returns Whether it does.
+ */
+function doesOpenLeafTakeLine(state: ScanState, row: string, lineNumber: number, rest: LineRest): boolean {
+  if (rest.indent === 0 && isUnderline(state, lineNumber, rest.text)) {
+    state.leaf = { kind: 'heading' };
+    return true;
+  }
+  return doesParagraphTakeTabLine(state, row);
 }
 
 /**
@@ -440,7 +500,7 @@ function findLeastLaterIndent(state: ScanState, containers: readonly Container[]
       isAfterBlankLine = true;
       continue;
     }
-    const isMember = column >= contentColumn || column - baseColumn > INDENTED_CODE_COLUMNS;
+    const isMember = column + getMarkerLikeWidth(text) >= contentColumn || column - baseColumn > INDENTED_CODE_COLUMNS;
     if (!isMember && (isAfterBlankLine || isLazyInterrupter(text))) {
       break;
     }
@@ -612,7 +672,9 @@ function isLazyLine(state: ScanState, matchedCount: number, rest: LineRest): boo
   const isLeavingQuote = quoteIndex !== -1;
   // A `$$` is read as a math opener in the text of the containers around the blockquote it would end.
   const isLeavingMathOpener = isLeavingQuote && getMathOpenerLength(state, rest.text, state.containers.slice(0, quoteIndex)) !== undefined;
-  return !(isLeavingQuote && (rest.indent >= INDENTED_CODE_COLUMNS || isLeavingMathOpener || canHtmlBlockInterrupt(rest.text)))
+  return !(isLeavingQuote
+    && (rest.indent >= INDENTED_CODE_COLUMNS || isLeavingMathOpener || canHtmlBlockInterrupt(rest.text)
+      || isUnderlinedBy(state, state.containers.slice(0, quoteIndex))))
     && !isLazyInterrupter(rest.text);
 }
 
@@ -680,6 +742,40 @@ function isParagraphInterrupter(state: ScanState, text: string): boolean {
   return itemMarker === undefined || THEMATIC_BREAK_REGEX.test(text)
     ? isLazyInterrupter(text) || text.startsWith('>') || isMathOpener(state, text) || canHtmlBlockInterrupt(text)
     : PARAGRAPH_INTERRUPTING_MARKER_REGEX.test(itemMarker);
+}
+
+/**
+ * Checks whether a line's text is a setext underline of the line before it: a run of `-` or of `=` and nothing else,
+ * under the one line of text a paragraph, a link reference definition or a table opened where a block starts.
+ *
+ * @param state - The scan.
+ * @param lineNumber - The line's number.
+ * @param text - The line's text past its containers and whitespace.
+ * @returns Whether it is one.
+ */
+function isUnderline(state: ScanState, lineNumber: number, text: string): boolean {
+  const { leaf, setextText } = state;
+  return leaf !== undefined && setextText?.leaf === leaf && setextText.lineNumber === lineNumber - 1 && SETEXT_UNDERLINE_REGEX.test(text);
+}
+
+/**
+ * Checks whether the line after the current one is a setext underline in the containers given, at no indent past them.
+ * `remark-parse` 8 tries a setext heading on the text after a blockquote's line before taking the line lazily, so a line
+ * followed by one of `-` or `=` ends the blockquote and becomes a heading: `> a\nb\n-` is a blockquote and the heading
+ * `b`, where a lone `-` would otherwise open an empty list item.
+ *
+ * @param state - The scan.
+ * @param containers - The containers the underline has to continue.
+ * @returns Whether it is one.
+ */
+function isUnderlinedBy(state: ScanState, containers: readonly Container[]): boolean {
+  const nextLine = state.lines[state.lineNumber + 1];
+  if (nextLine === undefined) {
+    return false;
+  }
+  const cursor: Cursor = { base: 0, column: 0, indentBase: 0, index: 0 };
+  return matchContainers(containers.map((container) => ({ ...container })), nextLine, cursor) === containers.length
+    && SETEXT_UNDERLINE_REGEX.test(nextLine.slice(cursor.index));
 }
 
 /**
@@ -850,8 +946,12 @@ function openHtmlLeaf(state: ScanState, htmlKind: HtmlBlockKind, text: string, l
 function openItem(state: ScanState, line: string, lineNumber: number, cursor: Cursor, marker: ItemMarker): void {
   const markerEndColumn = marker.column + marker.marker.length;
   // One to four columns of whitespace after the marker belong to it, and anything wider leaves the content one column
-  // past it. Obsidian applies that to an item with nothing after its marker too.
-  let content: LinePosition = { column: markerEndColumn + 1, index: marker.index + marker.marker.length + 1 };
+  // past it. Obsidian applies that to an item with nothing after its marker too, while a marker that ends its line has
+  // its content right past it.
+  const markerEnd = marker.index + marker.marker.length;
+  let content: LinePosition = markerEnd === line.length
+    ? { column: markerEndColumn, index: markerEnd }
+    : { column: markerEndColumn + 1, index: markerEnd + 1 };
   const gap = skipWhitespace(line, content);
   if (gap.column - markerEndColumn <= MAX_LIST_ITEM_CONTENT_GAP) {
     content = gap;
@@ -914,7 +1014,8 @@ function openLeaf(state: ScanState, line: string, text: string, lineNumber: numb
     return;
   }
   const htmlKind = findHtmlBlockKind(text);
-  if (htmlKind) {
+  // `remark-parse` 8 tries a setext heading before an HTML block, so `<div>\n-` is a heading.
+  if (htmlKind && !isUnderlinedBy(state, state.containers)) {
     openHtmlLeaf(state, htmlKind, text, lineNumber);
     return;
   }
@@ -926,16 +1027,16 @@ function openLeaf(state: ScanState, line: string, text: string, lineNumber: numb
     const definition = tokenizeDefinition(definitionLines.join('\n'));
     if (definition) {
       const lineCount = definitionLines.join('\n').slice(0, definition.length).split('\n').length;
-      state.leaf = { endLine: lineNumber + lineCount - 1, kind: 'definition' };
+      openSetextTextLeaf(state, { endLine: lineNumber + lineCount - 1, kind: 'definition' }, lineNumber);
       return;
     }
   }
   const nextLine = state.lines[lineNumber + 1];
   if (state.containers.length === 0 && nextLine !== undefined && tokenizeTable(`${line}\n${nextLine}`)) {
-    state.leaf = { hasLeadingPipe: line.startsWith('|'), kind: 'table' };
+    openSetextTextLeaf(state, { hasLeadingPipe: line.startsWith('|'), kind: 'table' }, lineNumber);
     return;
   }
-  state.leaf = { kind: 'paragraph' };
+  openSetextTextLeaf(state, { kind: 'paragraph' }, lineNumber);
 }
 
 /**
@@ -954,6 +1055,19 @@ function openQuote(line: string, cursor: Cursor, quote: LinePosition): void {
   }
   cursor.base = cursor.column;
   cursor.indentBase = cursor.column;
+}
+
+/**
+ * Opens a leaf whose first line a setext underline on the next line can turn into a heading: a paragraph, a link
+ * reference definition or a table, which `remark-parse` 8 tries only after a setext heading.
+ *
+ * @param state - The scan.
+ * @param leaf - The leaf.
+ * @param lineNumber - The line that opens it.
+ */
+function openSetextTextLeaf(state: ScanState, leaf: Leaf, lineNumber: number): void {
+  state.leaf = leaf;
+  state.setextText = { leaf, lineNumber };
 }
 
 /**
@@ -1054,7 +1168,7 @@ function scanMatchedLine(state: ScanState, line: string, lineNumber: number, cur
     state.isAfterBlankLine = isBlank && state.containers.at(-1)?.kind !== 'quote';
     return;
   }
-  if (doesParagraphTakeTabLine(state, line.slice(cursor.index))) {
+  if (doesOpenLeafTakeLine(state, line.slice(cursor.index), lineNumber, rest)) {
     state.isAfterBlankLine = false;
     return;
   }
@@ -1101,6 +1215,7 @@ function takeHiddenLine(state: ScanState, leaf: ClosableLeaf, lineNumber: number
     return;
   }
 
-  state.leaf = undefined;
+  // The text after a comment's closing `%%` starts a paragraph, which a later line can only continue or interrupt.
+  state.leaf = leaf.kind === 'comment' && text.slice(text.indexOf(COMMENT_MARK) + COMMENT_MARK.length).trim() !== '' ? { kind: 'paragraph' } : undefined;
   state.closerLines.add(lineNumber);
 }

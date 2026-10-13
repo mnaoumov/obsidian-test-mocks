@@ -1210,6 +1210,56 @@ describe('parseMarkdownContent', () => {
 
       expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(expected);
     });
+
+    // Each row was measured on a real Obsidian 1.14.4 over CDP: every item's [start offset, end offset, parent], and every
+    // section's [type, start offset, end offset]. A marker that ends its line opens an empty item.
+    it.each([
+      { content: '-\ntext', items: [[0, 6, -1]], sections: [['list', 0, 6]] },
+      { content: '*\ntext', items: [[0, 6, -1]], sections: [['list', 0, 6]] },
+      { content: '1.\ntext', items: [[0, 7, -1]], sections: [['list', 0, 7]] },
+      { content: '-', items: [[0, 1, -1]], sections: [['list', 0, 1]] },
+      { content: '1.', items: [[0, 2, -1]], sections: [['list', 0, 2]] },
+      { content: 'a\n\n-\ntext', items: [[3, 9, -2]], sections: [['paragraph', 0, 1], ['list', 3, 9]] },
+      { content: '-\n- b', items: [[0, 1, -1], [2, 5, -1]], sections: [['list', 0, 5]] },
+      { content: '-\n-', items: [[0, 1, -1], [2, 3, -1]], sections: [['list', 0, 3]] },
+      { content: '- a\n-\n- c', items: [[0, 3, -1], [4, 5, -1], [6, 9, -1]], sections: [['list', 0, 9]] },
+      { content: '- a\n-', items: [[0, 3, -1], [4, 5, -1]], sections: [['list', 0, 5]] },
+      { content: '> -\n> text', items: [[2, 10, -1]], sections: [['blockquote', 0, 10]] },
+      { content: '---\na: 1\n----\ntext', items: [[12, 18, -2]], sections: [['yaml', 0, 12], ['list', 12, 18]] },
+      // It interrupts a paragraph as an item with text does: a bullet, or an ordered marker numbered 1.
+      { content: 'a\n*\nb', items: [[2, 5, -1]], sections: [['paragraph', 0, 1], ['list', 2, 5]] },
+      { content: 'a\n1.\nb', items: [[2, 6, -1]], sections: [['paragraph', 0, 1], ['list', 2, 6]] },
+      { content: 'a\n2.\nb', items: [], sections: [['paragraph', 0, 6]] },
+      // Its content starts right past the marker, with no column for the space it lacks.
+      { content: '-\n - b', items: [[0, 6, -1], [3, 6, -1]], sections: [['list', 0, 6]] },
+      { content: '-\n  - b\n  - c', items: [[0, 13, -1], [3, 7, -1], [9, 13, -1]], sections: [['list', 0, 13]] },
+      { content: '2.\n  - C', items: [[0, 8, -1], [5, 8, -1]], sections: [['list', 0, 8]] },
+      { content: '10.\n  - b', items: [[0, 3, -1], [4, 9, -1]], sections: [['list', 0, 3], ['list', 4, 9]] },
+      // A lone `-` under one line of text, at no indent, is a setext underline instead, even under a line that would open
+      // a link reference definition or an HTML block, and under a line that leaves a blockquote.
+      { content: 'a\n-', items: [], sections: [['heading', 0, 3]] },
+      { content: 'a\n- ', items: [[2, 4, -1]], sections: [['paragraph', 0, 1], ['list', 2, 4]] },
+      { content: '- a\n  -', items: [[0, 7, -1]], sections: [['list', 0, 7]] },
+      { content: '> a\n> -', items: [], sections: [['blockquote', 0, 7]] },
+      { content: '[x]: /u\n-', items: [], sections: [['heading', 0, 9]] },
+      { content: '<div>\n-\n- a', items: [[8, 11, -2]], sections: [['heading', 0, 7], ['list', 8, 11]] },
+      { content: '> a\nb\n-', items: [], sections: [['blockquote', 0, 3], ['heading', 4, 7]] },
+      { content: '- a\n--\nb\n  -', items: [[0, 12, -1]], sections: [['list', 0, 12]] },
+      { content: '- a\n  # h\nc\n  -', items: [[0, 15, -1]], sections: [['list', 0, 15]] },
+      // A marker-like run that starts no item counts as indent when the list decides whether the line stays in the item.
+      { content: '-\n\n-x', items: [[0, 5, -1]], sections: [['list', 0, 5]] },
+      { content: '- a\n\n1.x', items: [[0, 8, -1]], sections: [['list', 0, 8]] },
+      { content: '-\n---', items: [[0, 5, -1]], sections: [['list', 0, 5]] },
+      { content: '1.\n\n -x', items: [[0, 7, -1]], sections: [['list', 0, 7]] },
+      { content: '10.\n\n9.x', items: [[0, 3, -1]], sections: [['list', 0, 3], ['paragraph', 5, 8]] },
+      // The text after a comment's closing `%%` starts a paragraph, which `2.` cannot interrupt.
+      { content: '  %% x\n  %% x\n2.', items: [], sections: [['comment', 0, 11], ['paragraph', 11, 16]] }
+    ])('should read the bare list markers of $content as Obsidian does', ({ content, items, sections }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(items);
+      expect(cache.sections?.map((section) => [section.type, section.position.start.offset, section.position.end.offset])).toEqual(sections);
+    });
     it('should give every item of a large flat list the root parent', () => {
       const content = `Text\n\n${Array.from({ length: FLAT_LIST_ITEM_COUNT }, (_, index) => `- [ ] item ${String(index)}`).join('\n')}`;
       const cache = parseMarkdownContent(content);
