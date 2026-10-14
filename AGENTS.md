@@ -80,6 +80,9 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `markdown-block-ids.ts` — the block ids of a note's sections and list items, and its `blocks` collection, assigned
   after parsing the way Obsidian's worker assigns them: an inline `^id` ending a paragraph's or a heading's text, and a
   standalone `^id` block given to the section before it and then dropped
+- `markdown-inline-block-ids.ts` — which inline `^id`s a run of inline text holds: a port of `remark-parse` 8's inline
+  tokenizer loop and the tokenizers Obsidian's worker runs in it, since the worker reads an id wherever a token
+  boundary falls before its `^` and it runs to the end of the content being tokenized
 - `markdown-gap-blocks.ts` — the top-level blocks between the sections the parser found first (lists, frontmatter):
   paragraphs, blockquotes and callouts, fenced and indented code, comments, math, HTML, tables, thematic breaks, every
   heading, link reference definitions, footnote definitions and standalone block ids. Each tokenizer is a port of the one
@@ -871,10 +874,18 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 
 - **Block ids are assigned, and `blocks` is filled** (2026-10-12, read in Obsidian 1.14.4's `worker.js` and fuzzed
   against it). An id is `^` and a run of letters, digits and `-`, and `blocks` keys each one lower-cased, sections first
-  and list items after them, each entry sharing its section's or item's `position`. Four habits catch a consumer out:
-  - **Inline, the id must END the text** of a paragraph or a heading, with the `^` starting it or following whitespace:
-    `para ^abc` and `para\n^abc` take `abc`, while `a ^x\nb`, `para^abc`, and `para ^abc` followed by trailing spaces take nothing. A heading
-    keeps the id in its `heading` text (`# H ^id` reads `H ^id`).
+  and list items after them, each entry sharing its section's or item's `position`. Five habits catch a consumer out:
+  - **Inline, the id must END the text** of a paragraph or a heading, with the `^` at a token boundary: starting the
+    text, following whitespace, or right after any other inline token (2026-10-13). So `para ^abc` and `para\n^abc` take
+    `abc`, and so do `a\*^abc` (an escape), ``a`c`^abc`` (a code span), `a*b*^abc`, `a[[w]]^abc`, `a #t^abc` and
+    `x@y.z^abc`, while `a ^x\nb`, `para^abc`, `a*^abc`, `a\q^abc` (no escape) and `para ^abc` followed by trailing spaces
+    take nothing. A heading keeps the id in its `heading` text (`# H ^id` reads `H ^id`).
+  - **An id can also end the CONTENT of an inline token**, since emphasis, strong, a `~~` deletion, a highlight, a `%%`
+    comment and a link's text are each tokenized on their own: `*a ^x* b` gives the paragraph `x`. A `comment` section
+    takes the id ending what it holds, as does a comment block inside a quote, an item or a footnote definition, which
+    interrupts the paragraph before it. An inline footnote's text is still the footnote list's, not the paragraph's.
+    `src/internal/markdown-inline-block-ids.ts` ports the worker's inline tokenizer loop to decide all of this; a link's
+    destination, an HTML tag, an autolink and a bare URL are approximated there, since only where they end matters.
   - **A standalone id goes to the top-level section before it, whatever that is** - a code block, a definition, a list,
     even the frontmatter's `yaml` section - and leaves no section of its own. It needs the end of the note or an empty
     line after it, so `^abc\n- a` is a paragraph `^abc`, which takes `abc` inline. A note that opens with one keeps no
@@ -883,8 +894,8 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     ending a cell. **A list item takes the FIRST** among its own blocks, the lists nested in it left out, while the list
     section takes none but a standalone id after it. An item in a quoted list takes none at all: only the blockquote
     does.
-  - Approximated: the mock reads ids off the text rather than off a parsed tree, so a `^id` ending an unclosed fence
-    inside a blockquote or an item counts here and not in Obsidian.
+  - Approximated: the mock reads ids off the text rather than off a parsed tree, so a `^id` ending an unclosed fence,
+    or an HTML block, inside a blockquote or an item counts here and not in Obsidian.
 
 - **A callout gets a `callout` section, not a `blockquote` one** (2026-10-12, measured on a real Obsidian 1.14.4 over
   CDP and read in its `worker.js`). Obsidian's blockquote tokenizer tests the block's FIRST line only: past the `>` and

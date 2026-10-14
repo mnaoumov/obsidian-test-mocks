@@ -4,7 +4,8 @@
  * Block ids, assigned the way Obsidian's metadata worker assigns them once it has parsed a note. An id is `^` and a run
  * of letters, digits and `-`, read in two places:
  *
- * - Inline, at the end of a paragraph's or a heading's text, where the `^` starts that text or follows whitespace. Trailing
+ * - Inline, at the end of a paragraph's or a heading's text, or of the content of an inline token in it, where the `^`
+ *   starts that text, follows whitespace, or follows another inline token (see `markdown-inline-block-ids.ts`). Trailing
  *   whitespace after the id spoils it.
  * - Standalone, as a block of its own (see `markdown-gap-blocks.ts`). Its id goes to the top-level section before it,
  *   whatever that section is, and the block itself is dropped, so a note opening with one keeps no trace of it.
@@ -24,6 +25,7 @@ import type {
 import type { FootnoteSource } from './markdown-references.ts';
 
 import { BLOCK_ID_TYPE } from './markdown-gap-blocks.ts';
+import { findInlineBlockIds } from './markdown-inline-block-ids.ts';
 import { findInlineNoteTexts } from './markdown-references.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
@@ -59,17 +61,20 @@ export interface AssignBlockIdsParams {
 }
 
 /**
- * Consecutive lines of one block, or of one blockquote.
+ * Consecutive lines of one block, of one blockquote, or of one comment block.
  */
 interface LineGroup {
-  readonly isQuote: boolean;
+  isOpenComment: boolean;
+  readonly kind: 'comment' | 'quote' | 'text';
   readonly lines: string[];
 }
 
-const INLINE_BLOCK_ID_REGEX = /(?:^|\s)\^(?<id>[a-zA-Z0-9-]+)$/;
 const QUOTE_PREFIX_REGEX = /^(?:[ \t]*> ?)+/;
 const LIST_MARKER_REGEX = /^[ \t]*(?:[-*+]|\d+[.)])(?:[ \t]+\[.\](?=[ \t]|$))?/;
 const FOOTNOTE_LABEL_REGEX = /^[ \t]*\[\^[^\]]*\]:/;
+const COMMENT_MARKER = '%%';
+// A line opening a comment block: spaces, `%%`, and no other `%` on the line, which would make it inline.
+const COMMENT_OPENER_REGEX = /^ *%%[^%\n]*(?:\n|$)/;
 // The sections whose text holds inline content, which an id can end.
 const QUOTE_SECTION_TYPES: ReadonlySet<string> = new Set(['blockquote', 'callout']);
 
@@ -127,6 +132,24 @@ export function assignBlockIds(params: AssignBlockIdsParams): Record<string, Blo
   return blocks;
 }
 
+/**
+ * Finds the id a block holds: the last one in its inline content, which for a comment block is what the comment holds.
+ *
+ * @param block - The block's lines, joined with `\n`.
+ * @returns The ids, in document order.
+ */
+function findBlockIds(block: string): string[] {
+  return findInlineBlockIds(COMMENT_OPENER_REGEX.test(block) ? getCommentText(block) : block);
+}
+
+/**
+ * Finds the id a footnote definition holds: the last one in its blocks.
+ *
+ * @param text - The definition's text, its label included, and the line break after it when the note goes on. The
+ *   worker's definition then holds that line break, and so does a comment block the definition leaves unclosed, which
+ *   no id can end then.
+ * @returns The id.
+ */
 function findFootnoteDefinitionBlockId(text: string): string | undefined {
   return findLastBlockId(splitIntoBlocks(text.replace(FOOTNOTE_LABEL_REGEX, '').split('\n')));
 }
@@ -148,13 +171,14 @@ function findFootnoteListBlockId(footnoteSources: readonly FootnoteSource[]): st
 }
 
 /**
- * Finds the id at the end of a paragraph's inline text, if any.
+ * Finds the id a paragraph's inline text holds: the last one, in a paragraph that holds more than one through its inline
+ * tokens.
  *
  * @param text - The paragraph's text, without its trailing line breaks.
  * @returns The id.
  */
 function findInlineBlockId(text: string): string | undefined {
-  return INLINE_BLOCK_ID_REGEX.exec(text)?.groups?.['id'];
+  return findInlineBlockIds(text).at(-1);
 }
 
 /**
@@ -175,7 +199,7 @@ function findInlineNoteBlockId(text: string): string | undefined {
 function findLastBlockId(blocks: readonly string[]): string | undefined {
   let lastId: string | undefined;
   for (const block of blocks) {
-    lastId = findInlineBlockId(block) ?? lastId;
+    lastId = findBlockIds(block).at(-1) ?? lastId;
   }
   return lastId;
 }
@@ -201,7 +225,7 @@ function findListItemBlockId(content: string, item: ListItemCache, listItems: re
     ownLines.push(index === 0 ? line.replace(LIST_MARKER_REGEX, '') : line);
   }
   for (const block of splitIntoBlocks(ownLines)) {
-    const id = findInlineBlockId(block);
+    const [id] = findBlockIds(block);
     if (id !== undefined) {
       return id;
     }
@@ -220,8 +244,11 @@ function findListItemBlockId(content: string, item: ListItemCache, listItems: re
 function findSectionBlockId(content: string, section: SectionCache, heading: HeadingCache | undefined): string | undefined {
   const text = content.slice(section.position.start.offset, section.position.end.offset);
   switch (section.type) {
+    case 'comment': {
+      return findInlineBlockId(getCommentText(text));
+    }
     case 'footnoteDefinition': {
-      return findFootnoteDefinitionBlockId(text);
+      return findFootnoteDefinitionBlockId(content.length > section.position.end.offset ? `${text}\n` : text);
     }
     case 'heading': {
       // Every heading section has its heading, at the same start.
@@ -237,6 +264,19 @@ function findSectionBlockId(content: string, section: SectionCache, heading: Hea
       return QUOTE_SECTION_TYPES.has(section.type) ? findLastBlockId(splitIntoBlocks(text.split('\n'))) : undefined;
     }
   }
+}
+
+/**
+ * Finds what a comment block holds, which the worker tokenizes as inline content: the text past its opening `%%`, up to
+ * its closing `%%`, or to its end when it has none.
+ *
+ * @param text - The comment section's text.
+ * @returns What it holds.
+ */
+function getCommentText(text: string): string {
+  const contentStart = text.indexOf(COMMENT_MARKER) + COMMENT_MARKER.length;
+  const close = text.indexOf(COMMENT_MARKER, contentStart);
+  return text.slice(contentStart, close === -1 ? text.length : close);
 }
 
 /**
@@ -264,16 +304,22 @@ function splitIntoBlocks(lines: readonly string[]): string[] {
   const groups: LineGroup[] = [];
   let current: LineGroup | undefined;
   for (const line of lines) {
+    if (current?.isOpenComment) {
+      current.lines.push(line);
+      current.isOpenComment = !line.includes(COMMENT_MARKER);
+      continue;
+    }
     if (line.trim() === '') {
       current = undefined;
       continue;
     }
     const isQuoteLine = QUOTE_PREFIX_REGEX.test(line);
-    if (!current || (isQuoteLine && !current.isQuote)) {
-      current = { isQuote: isQuoteLine, lines: [] };
+    const isCommentOpener = !isQuoteLine && COMMENT_OPENER_REGEX.test(line);
+    if (!current || isCommentOpener || (isQuoteLine && current.kind !== 'quote')) {
+      current = { isOpenComment: isCommentOpener, kind: isCommentOpener ? 'comment' : (isQuoteLine ? 'quote' : 'text'), lines: [] };
       groups.push(current);
     }
     current.lines.push(line);
   }
-  return groups.flatMap((group) => group.isQuote ? splitIntoBlocks(group.lines.map((line) => line.replace(QUOTE_PREFIX_REGEX, ''))) : [group.lines.join('\n')]);
+  return groups.flatMap((group) => group.kind === 'quote' ? splitIntoBlocks(group.lines.map((line) => line.replace(QUOTE_PREFIX_REGEX, ''))) : [group.lines.join('\n')]);
 }
