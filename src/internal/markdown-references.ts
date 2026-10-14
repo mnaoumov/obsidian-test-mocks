@@ -13,19 +13,23 @@
  *   counts the inline footnotes and the definitions first referenced before it. An empty one, `^[]`, is a `footnoteRefs`
  *   entry keyed `''` instead, at the whole of it.
  *
- * Approximated: only the definitions that are top-level sections are read, so one inside a list item or a blockquote is
- * neither collected nor able to make a reference resolve; and references are found by a scan of the inline text of the
- * sections that hold any, which knows escapes, code spans and fenced code but none of the other inline constructs.
+ * A definition counts wherever it is, a top-level section or a block inside a blockquote, a callout or a list item (see
+ * `markdown-container-definitions.ts`).
+ *
+ * Approximated: references are found by a scan of the inline text of the sections that hold any, which knows escapes,
+ * code spans and fenced code but none of the other inline constructs.
  */
 
 import type {
   FootnoteCache,
   FootnoteRefCache,
+  ListItemCache,
   Pos,
   ReferenceLinkCache,
   SectionCache
 } from 'obsidian';
 
+import { findContainerDefinitions } from './markdown-container-definitions.ts';
 import { readDefinitionParts } from './markdown-gap-blocks.ts';
 import { ensureNonNullable } from './type-guards.ts';
 
@@ -42,6 +46,11 @@ export interface CollectReferencesParams {
    * The note's full text.
    */
   readonly content: string;
+
+  /**
+   * The note's list items, at every depth, which a definition can sit in.
+   */
+  readonly listItems: readonly ListItemCache[];
 
   /**
    * Builds a position from two offsets.
@@ -97,6 +106,17 @@ export interface NoteReferences {
 }
 
 /**
+ * A definition the note holds, at the top level or inside a container.
+ */
+interface FoundDefinition {
+  readonly end: number;
+  readonly start: number;
+  // Its text, with the prefixes of the containers holding it stripped from each line.
+  readonly text: string;
+  readonly type: string;
+}
+
+/**
  * The state of one scan of the note's inline text.
  */
 interface ScanState {
@@ -147,7 +167,7 @@ const INLINE_SECTION_TYPES: ReadonlySet<string> = new Set([
  * @returns The three collections, and the footnotes the note references.
  */
 export function collectReferences(params: CollectReferencesParams): NoteReferences {
-  const { codeZones, content, makePos, sections } = params;
+  const { codeZones, content, listItems, makePos, sections } = params;
   const referenceLinks: ReferenceLinkCache[] = [];
   const definitions = new Map<string, string>();
   const state: ScanState = {
@@ -159,30 +179,47 @@ export function collectReferences(params: CollectReferencesParams): NoteReferenc
     referencedLabels: new Set()
   };
 
-  for (const section of sections) {
-    const text = content.slice(section.position.start.offset, section.position.end.offset);
-    if (section.type === 'definition') {
+  const topLevelDefinitions: FoundDefinition[] = sections.filter((section) => section.type === 'definition' || section.type === 'footnoteDefinition').map(
+    (section) => ({
+      end: section.position.end.offset,
+      start: section.position.start.offset,
+      text: content.slice(section.position.start.offset, section.position.end.offset),
+      type: section.type
+    })
+  );
+  const containerDefinitions = findContainerDefinitions({ content, listItems, sections });
+  const allDefinitions = [...topLevelDefinitions, ...containerDefinitions].sort((a, b) => a.start - b.start);
+
+  for (const { end, start, text, type } of allDefinitions) {
+    const position = makePos(start, end);
+    if (type === 'definition') {
       const { destination, label } = readDefinitionParts(text);
       // Obsidian's worker skips a definition whose destination comes out empty, which no definition the gap scan
       // accepts does: an empty pair of angle brackets is a definition only with a run after it, which is the destination.
       const link = decodeCharacterReferences(destination.replaceAll(ESCAPE_REGEX, '$<char>'));
-      referenceLinks.push({ id: label, link, position: section.position });
-    } else if (section.type === 'footnoteDefinition') {
+      referenceLinks.push({ id: label, link, position });
+    } else {
       const id = ensureNonNullable(FOOTNOTE_DEFINITION_LABEL_REGEX.exec(text)?.groups?.['label']).toLowerCase();
       // A later definition of a label replaces an earlier one as what a reference to it shows. The worker's definition
       // holds the line break after it when the note goes on.
-      definitions.set(id, content.length > section.position.end.offset ? `${text}\n` : text);
-      state.footnotes.push({ footnote: { id, position: section.position }, nodeStart: section.position.start.offset });
+      definitions.set(id, content.length > end ? `${text}\n` : text);
+      state.footnotes.push({ footnote: { id, position }, nodeStart: start });
     }
   }
 
+  // A definition inside a container sits in the text of the section holding it, which is scanned whole: its label is no
+  // reference, and a link reference definition holds no inline text at all.
+  const skippedZones = [
+    ...codeZones,
+    ...containerDefinitions.map(({ end, labelEnd, start, type }): [number, number] => [start, type === 'definition' ? end : labelEnd])
+  ];
   for (const section of sections) {
     if (!INLINE_SECTION_TYPES.has(section.type)) {
       continue;
     }
     const { end, start } = section.position;
     const labelLength = section.type === 'footnoteDefinition' ? ensureNonNullable(FOOTNOTE_DEFINITION_LABEL_REGEX.exec(content.slice(start.offset))?.[0]).length : 0;
-    scanInlineText(content, start.offset + labelLength, end.offset, codeZones, state);
+    scanInlineText(content, start.offset + labelLength, end.offset, skippedZones, state);
   }
 
   return {

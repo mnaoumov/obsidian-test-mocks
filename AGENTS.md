@@ -80,6 +80,9 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 - `markdown-block-ids.ts` — the block ids of a note's sections and list items, and its `blocks` collection, assigned
   after parsing the way Obsidian's worker assigns them: an inline `^id` ending a paragraph's or a heading's text, and a
   standalone `^id` block given to the section before it and then dropped
+- `markdown-container-definitions.ts` — the link reference and footnote definitions inside a note's blockquotes,
+  callouts, list items and footnote definitions: each container's lines with its prefix stripped, run through the
+  top-level block scan, so `collectReferences` sees a nested definition as Obsidian's worker does
 - `markdown-inline-block-ids.ts` — which inline `^id`s a run of inline text holds: a port of `remark-parse` 8's inline
   tokenizer loop and the tokenizers Obsidian's worker runs in it, since the worker reads an id wherever a token
   boundary falls before its `^` and it runs to the end of the content being tokenized
@@ -868,9 +871,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     footnotes the worker renders, and it takes the last block id in the footnotes it copies there, an id ending an
     inline footnote's text included, which the paragraph holding that footnote does not take. So
     `[^n]: x ^id\n\nt[^n]` gives `blocks.id` the `element` section's position, not the definition's.
-  - Approximated: only top-level definitions are read, so one inside a list item or a blockquote is neither collected
-    nor able to make a reference resolve, and the inline scan knows escapes, code spans and fenced code but no other
-    inline construct.
+  - **A definition inside a blockquote, a callout, a list item or a footnote definition counts** (2026-10-13), at any
+    depth, as it does in the worker, which walks the whole tree: `- [a]: /u\n> [^1]: z\n\nq[^1]` has a reference link at
+    2, a footnote at 12, just past the quote prefix, and a resolved reference. Each container's lines are read with its prefix stripped,
+    a callout's header line left out, and run through the same block scan as the top level, so a definition still
+    cannot interrupt a paragraph there (`> q\n> [a]: /u` has none). An item's later lines lose the least indent among
+    them up to its marker's width, which is one column wider for a widened ordered marker (`1. x\n\n    [a]: /u` puts it
+    at 10), and an item's checkbox is no part of its text (`- [ ] [a]: /u`).
+  - Approximated: a list inside a footnote definition is not one the parser finds, so a definition in its items is
+    missed, and the inline scan knows escapes, code spans and fenced code but no other inline construct.
 
 - **Block ids are assigned, and `blocks` is filled** (2026-10-12, read in Obsidian 1.14.4's `worker.js` and fuzzed
   against it). An id is `^` and a run of letters, digits and `-`, and `blocks` keys each one lower-cased, sections first
