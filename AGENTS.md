@@ -962,7 +962,10 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **A lazy `$$` line opens a math block inside the item it continues**, so `- A\n$$\n  1. G` has the one item `A`;
     after a blockquote it ends the quote and opens one at the top level instead, unless that quote sits in an item, which
     then holds the math block. A lazy `>` line likewise opens a blockquote inside the item, which its later `>` lines
-    continue, and a line that ends such a quote without an empty line before it stays in the item.
+    continue, and a line that ends such a quote without an empty line before it stays in the item. An item that quote
+    opens with nothing after its marker holds a lazy line after it (`+\n> - \na` ends the quoted item at 8), and a line
+    that closes the outer item closes the quote and its item with it, so in `1. G` indented two spaces, then `> - a`,
+    then `-` indented four spaces, the quoted item ends at 12, before the indented code (2026-10-13).
   - **A `$$` inside a list item opens a math block only when a line break follows it in the text the item gathers**
     (2026-10-12). Obsidian gathers an item's lines before it reads any block in them and drops trailing empty lines,
     so `1. G` indented two spaces, then `$$`, then a line of two spaces reads `$$` as a lazy paragraph line and ends
