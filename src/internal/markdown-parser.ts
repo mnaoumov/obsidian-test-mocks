@@ -785,6 +785,7 @@ function parseLfContent(content: string): CachedMetadata {
   const { footnoteRefs, footnotes, footnoteSources, referenceLinks } = collectReferences({
     codeZones: buildCodeZones(content),
     content,
+    listItems,
     makePos: (startOffset, endOffset) => makePos(lineStarts, startOffset, endOffset),
     sections
   });
