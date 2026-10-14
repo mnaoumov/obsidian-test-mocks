@@ -31,7 +31,8 @@ import { getRootFolder } from './helpers/root.ts';
 const typeScriptFiles = [
   'src/**/*.ts',
   'scripts/**/*.ts',
-  'astro.config.ts'
+  'astro.config.ts',
+  'vitest.config.ts'
 ];
 
 const testFiles = [
