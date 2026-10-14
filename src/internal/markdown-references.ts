@@ -59,8 +59,8 @@ export interface CollectReferencesParams {
  */
 export interface FootnoteSource {
   /**
-   * Whether it is a footnote definition, whose text is the whole definition, label included; otherwise it is an inline
-   * footnote, whose text is what it holds.
+   * Whether it is a footnote definition, whose text is the whole definition, label included, and the line break after
+   * it when the note goes on; otherwise it is an inline footnote, whose text is what it holds.
    */
   readonly isDefinition: boolean;
 
@@ -169,8 +169,9 @@ export function collectReferences(params: CollectReferencesParams): NoteReferenc
       referenceLinks.push({ id: label, link, position: section.position });
     } else if (section.type === 'footnoteDefinition') {
       const id = ensureNonNullable(FOOTNOTE_DEFINITION_LABEL_REGEX.exec(text)?.groups?.['label']).toLowerCase();
-      // A later definition of a label replaces an earlier one as what a reference to it shows.
-      definitions.set(id, text);
+      // A later definition of a label replaces an earlier one as what a reference to it shows. The worker's definition
+      // holds the line break after it when the note goes on.
+      definitions.set(id, content.length > section.position.end.offset ? `${text}\n` : text);
       state.footnotes.push({ footnote: { id, position: section.position }, nodeStart: section.position.start.offset });
     }
   }
@@ -194,63 +195,6 @@ export function collectReferences(params: CollectReferencesParams): NoteReferenc
 }
 
 /**
- * Finds the inline footnotes in inline text, the ones nested in another left out.
- *
- * @param text - The text.
- * @returns What each inline footnote holds, in document order.
- */
-export function findInlineNoteTexts(text: string): string[] {
-  const texts: string[] = [];
-  let index = 0;
-  while (index < text.length) {
-    const close = text.startsWith(INLINE_NOTE_OPENER, index) ? findInlineNoteClose(text, index + INLINE_NOTE_OPENER.length, text.length) : -1;
-    if (close === -1) {
-      index = skipInlineCharacter(text, index, text.length);
-    } else {
-      texts.push(text.slice(index + INLINE_NOTE_OPENER.length, close));
-      index = close + 1;
-    }
-  }
-  return texts;
-}
-
-/**
- * Decodes the character references in a destination: a decimal or hexadecimal one, and a named one the document knows.
- * One without its closing `;` stays as written, as it does in a destination in Obsidian.
- *
- * @param text - The text.
- * @returns The text, decoded.
- */
-function decodeCharacterReferences(text: string): string {
-  return text.replaceAll(CHARACTER_REFERENCE_REGEX, (reference) => {
-    if (!reference.startsWith('&#')) {
-      return decodeNamedReference(reference);
-    }
-    const isHex = /^&#x/i.test(reference);
-    const codePoint = isHex ? Number.parseInt(reference.slice('&#x'.length, -1), HEX_RADIX) : Number(reference.slice('&#'.length, -1));
-    const isValid = codePoint !== 0 && codePoint <= MAX_CODE_POINT && (codePoint < SURROGATE_START || codePoint > SURROGATE_END);
-    return isValid ? String.fromCodePoint(codePoint) : REPLACEMENT_CHARACTER;
-  });
-}
-
-/**
- * Decodes a named character reference through the document, which knows every name HTML does; the same list the worker
- * decodes from. Without a document, the reference stays as written.
- *
- * @param reference - The reference, `&` and `;` included.
- * @returns What it stands for.
- */
-function decodeNamedReference(reference: string): string {
-  if (typeof document === 'undefined') {
-    return reference;
-  }
-  const textarea = document.createElement('textarea');
-  // A `textarea` holds raw text, and the reference is one `&name;` match, so nothing in it can become markup.
-  textarea.innerHTML = reference;
-  return textarea.value;
-}
-
-/**
  * Finds where an inline footnote closes, a port of the worker's tokenizer: the `]` that balances the opening `[`, with a
  * `\` escaping the character after it and the brackets inside a code span ignored.
  *
@@ -259,7 +203,7 @@ function decodeNamedReference(reference: string): string {
  * @param end - The offset the inline text ends at.
  * @returns The offset of the closing `]`, or `-1` when there is none.
  */
-function findInlineNoteClose(content: string, contentStart: number, end: number): number {
+export function findInlineNoteClose(content: string, contentStart: number, end: number): number {
   let index = contentStart;
   let depth = 0;
   let codeRunLength: number | undefined;
@@ -307,6 +251,27 @@ function findInlineNoteClose(content: string, contentStart: number, end: number)
 }
 
 /**
+ * Finds the inline footnotes in inline text, the ones nested in another left out.
+ *
+ * @param text - The text.
+ * @returns What each inline footnote holds, in document order.
+ */
+export function findInlineNoteTexts(text: string): string[] {
+  const texts: string[] = [];
+  let index = 0;
+  while (index < text.length) {
+    const close = text.startsWith(INLINE_NOTE_OPENER, index) ? findInlineNoteClose(text, index + INLINE_NOTE_OPENER.length, text.length) : -1;
+    if (close === -1) {
+      index = skipInlineCharacter(text, index, text.length);
+    } else {
+      texts.push(text.slice(index + INLINE_NOTE_OPENER.length, close));
+      index = close + 1;
+    }
+  }
+  return texts;
+}
+
+/**
  * Finds where a footnote reference's label ends: a non-empty run holding no space, tab or line break, and a `]`.
  *
  * @param content - The note's full text.
@@ -314,7 +279,7 @@ function findInlineNoteClose(content: string, contentStart: number, end: number)
  * @param end - The offset the inline text ends at.
  * @returns The offset of the closing `]`, or `-1` when there is none.
  */
-function findReferenceLabelEnd(content: string, labelStart: number, end: number): number {
+export function findReferenceLabelEnd(content: string, labelStart: number, end: number): number {
   let index = labelStart;
   while (index < end && content[index] !== ']') {
     if ([' ', '\t', '\n'].includes(content.charAt(index))) {
@@ -325,16 +290,60 @@ function findReferenceLabelEnd(content: string, labelStart: number, end: number)
   return index === labelStart || index === end ? -1 : index;
 }
 
-function isInCodeZone(codeZones: readonly (readonly [number, number])[], offset: number): boolean {
-  return codeZones.some(([start, end]) => offset >= start && offset < end);
-}
-
-function measureBacktickRun(content: string, start: number, end: number): number {
+/**
+ * Measures a run of backticks.
+ *
+ * @param content - The text.
+ * @param start - The offset the run starts at.
+ * @param end - The offset the inline text ends at.
+ * @returns How many backticks the run holds, `0` when `start` holds none.
+ */
+export function measureBacktickRun(content: string, start: number, end: number): number {
   let index = start;
   while (index < end && content[index] === '`') {
     index++;
   }
   return index - start;
+}
+
+/**
+ * Decodes the character references in a destination: a decimal or hexadecimal one, and a named one the document knows.
+ * One without its closing `;` stays as written, as it does in a destination in Obsidian.
+ *
+ * @param text - The text.
+ * @returns The text, decoded.
+ */
+function decodeCharacterReferences(text: string): string {
+  return text.replaceAll(CHARACTER_REFERENCE_REGEX, (reference) => {
+    if (!reference.startsWith('&#')) {
+      return decodeNamedReference(reference);
+    }
+    const isHex = /^&#x/i.test(reference);
+    const codePoint = isHex ? Number.parseInt(reference.slice('&#x'.length, -1), HEX_RADIX) : Number(reference.slice('&#'.length, -1));
+    const isValid = codePoint !== 0 && codePoint <= MAX_CODE_POINT && (codePoint < SURROGATE_START || codePoint > SURROGATE_END);
+    return isValid ? String.fromCodePoint(codePoint) : REPLACEMENT_CHARACTER;
+  });
+}
+
+/**
+ * Decodes a named character reference through the document, which knows every name HTML does; the same list the worker
+ * decodes from. Without a document, the reference stays as written.
+ *
+ * @param reference - The reference, `&` and `;` included.
+ * @returns What it stands for.
+ */
+function decodeNamedReference(reference: string): string {
+  if (typeof document === 'undefined') {
+    return reference;
+  }
+  const textarea = document.createElement('textarea');
+  // A `textarea` holds raw text, and the reference is one `&name;` match, so nothing in it can become markup.
+  textarea.innerHTML = reference;
+  return textarea.value;
+}
+
+function isInCodeZone(codeZones: readonly (readonly [number, number])[], offset: number): boolean {
+  return codeZones.some(([start, end]) => offset >= start && offset < end);
 }
 
 /**
