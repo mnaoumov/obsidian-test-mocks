@@ -361,8 +361,11 @@ function continueLazily(state: ScanState, line: string, lineNumber: number, rest
     state.containers.push({ isLazy: true, kind: 'quote' });
     const cursor: Cursor = { base: 0, column: 0, indentBase: 0, index: 0 };
     openQuote(line, cursor, rest);
+    // The line is blank when the quote holds nothing, not when an item it opens does: `> - ` holds an empty item, and the
+    // next line continues that item lazily.
+    const isBlank = line.slice(cursor.index).trim() === '';
     openBlocks(state, line, lineNumber, cursor);
-    state.isAfterBlankLine = line.slice(cursor.index).trim() === '';
+    state.isAfterBlankLine = isBlank;
     return;
   }
   // A list item reads the lines it holds lazily as its own, so such a line can underline the line of text before it, and
@@ -832,8 +835,16 @@ function isUnderlinedBy(state: ScanState, containers: readonly Container[]): boo
     return false;
   }
   const cursor: Cursor = { base: 0, column: 0, indentBase: 0, index: 0 };
-  return matchContainers(containers.map((container) => ({ ...container })), nextLine, cursor) === containers.length
-    && SETEXT_UNDERLINE_REGEX.test(nextLine.slice(cursor.index));
+  if (matchContainers(containers.map((container) => ({ ...container })), nextLine, cursor) !== containers.length) {
+    return false;
+  }
+  // A list item strips its later lines to its removal column, which can stand past its content: `2. z\n>-\na\n    -` has
+  // the underline `-` once the item strips four columns.
+  while (cursor.column < cursor.indentBase && (nextLine[cursor.index] === ' ' || nextLine[cursor.index] === '\t')) {
+    cursor.column = advanceColumn(cursor.column, nextLine.charAt(cursor.index));
+    cursor.index++;
+  }
+  return SETEXT_UNDERLINE_REGEX.test(nextLine.slice(cursor.index));
 }
 
 /**
@@ -1184,10 +1195,12 @@ function scanLine(state: ScanState, line: string, lineNumber: number): void {
   }
 
   // The list parser already ends a list on a blank line, after one, and on a block that interrupts. What it cannot see is
-  // a line that leaves a blockquote for another reason, an indent or a `$$`.
+  // a line that leaves a blockquote for another reason, an indent or a `$$`, or that closes the list item the blockquote
+  // sits in, as a marker indented too far to start an item does: `  1. G\n> - a\n    -` ends the quote and its item
+  // before the indented code.
   const closedContainer = containers[matchedCount];
   const isAfterListItem = closedContainer?.kind === 'item';
-  if (!isBlank && !isAfterBlankLine && !isAfterListItem) {
+  if (!isBlank && !isAfterBlankLine && countQuotes(containers.slice(matchedCount)) > 0) {
     state.breakLines.set(lineNumber, countQuotes(containers.slice(0, matchedCount)));
   }
   containers.length = matchedCount;

@@ -1772,6 +1772,24 @@ describe('parseMarkdownContent', () => {
       expect(cache.sections?.map((s) => [s.type, s.position.start.offset, s.position.end.offset])).toEqual(expectedSections);
       expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent])).toEqual(expectedItems);
     });
+    // Measured on a real Obsidian 1.14.4 over CDP: a blockquote a list item opens on a lazy line ends its own item where
+    // Obsidian's worker does. An empty item holds the lazy line after it, and a line that closes the outer item closes
+    // the quote and its item too.
+    it.each([
+      ['an empty quoted item before a lazy line', '+\n> - \na', [['list', 0, 8]], [[0, 8, -1], [4, 8, -1]]],
+      ['a bare quoted marker before a lazy line', '+\n>-\na', [['list', 0, 6]], [[0, 6, -1], [3, 6, -1]]],
+      ['an empty quoted item in an item with text', '- x\n> -\na', [['list', 0, 9]], [[0, 9, -1], [6, 9, -1]]],
+      ['an indented marker closing the outer item', '  1. G\n> - a\n    -', [['list', 0, 12], ['code', 13, 18]], [[0, 12, -1], [9, 12, -1]]],
+      ['an indented marker after a bare quoted marker', '  1. G\n>-\n    -', [['list', 0, 9], ['code', 10, 15]], [[0, 9, -1], [8, 9, -1]]],
+      ['an indented item closing the outer item', '  1. G\n> - a\n    - b', [['list', 0, 12], ['code', 13, 20]], [[0, 12, -1], [9, 12, -1]]],
+      ['a lazy line the outer item\'s strip underlines', '2. z\n>-\na\n    -', [['list', 0, 15]], [[0, 15, -1], [6, 7, -1]]],
+      ['a lazy line underlined past a tab the strip takes', '2. z\n>-\na\n   \t-', [['list', 0, 15]], [[0, 15, -1], [6, 7, -1]]]
+    ])('should end the item in a lazily opened blockquote for %s as Obsidian does', (_name, content, expectedSections, expectedItems) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.sections?.map((s) => [s.type, s.position.start.offset, s.position.end.offset])).toEqual(expectedSections);
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent])).toEqual(expectedItems);
+    });
     it('should create code sections for fenced code blocks in gaps', () => {
       const content = '# Heading\n\n```\ncode\n```';
       const cache = parseMarkdownContent(content);
