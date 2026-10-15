@@ -16,7 +16,9 @@ no Electron, no real Obsidian.
 npm install --save-dev obsidian-test-mocks
 ```
 
-Peer dependency: `obsidian`.
+Peer dependencies: `obsidian`, plus `@codemirror/state`, `@codemirror/view` and `moment`, which `obsidian`
+already brings into the tree. They are peers so the mocks share your project's one CodeMirror copy rather
+than nesting a second one, whose facets, state fields and `instanceof` checks would not match yours.
 
 ## Entry points
 

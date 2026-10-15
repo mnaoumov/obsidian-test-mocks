@@ -14,7 +14,7 @@ Comprehensive test mocks for the [Obsidian](https://obsidian.md/) plugin API. Pr
 npm install --save-dev obsidian-test-mocks
 ```
 
-Peer dependencies: `obsidian`
+Peer dependencies: `obsidian`, plus `@codemirror/state`, `@codemirror/view` and `moment`, which `obsidian` already brings into the tree. They are peers so the mocks share your project's one CodeMirror copy rather than nesting a second one.
 
 ## Entry Points
 
