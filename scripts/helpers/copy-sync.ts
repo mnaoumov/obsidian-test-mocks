@@ -166,7 +166,8 @@ export const DIVERGENCE_REASONS: Readonly<Record<string, string>> = {
   'excluded-dir-segments': 'Divergence 4. `EXCLUDED_DIR_SEGMENTS` names this package\'s own private trees.',
   'local-strictness-rewrites': 'Divergence 7. Rules this repo enables that `obsidian-dev-utils` turns off force local rewrites, so a byte-identical copy would be lint-red here.',
   'mock-only-suffix': 'Divergence 3. The `__` suffix that marks a mock-only member has to survive slug generation as `-mock`, or two members collapse onto one route and one page overwrites the other.',
-  'own-favicon-mark': 'Divergence 5. This package has a favicon of its own where `obsidian-dev-utils` has no mark and no logo asset, so prose about what the site renders beside a title differs.'
+  'own-favicon-mark': 'Divergence 5. This package has a favicon of its own where `obsidian-dev-utils` has no mark and no logo asset, so prose about what the site renders beside a title differs.',
+  'single-package-source': 'Divergence 11. `obsidian-dev-utils` documents a multi-package workspace and walks every `packages/*/src`, prefixing each namespace with its package folder; this package has one `src`, so the generator walks that alone, its header names the `jiti` entry this repo runs it with, and the Pages cache key hashes `src/**/*.ts`.'
 };
 
 /**

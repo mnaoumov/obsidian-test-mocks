@@ -1,8 +1,16 @@
 {
   "files": {
     ".github/workflows/build-pages.yml": {
-      "hunks": [],
-      "reasons": []
+      "hunks": [
+        {
+          "added": 1,
+          "digest": "5fffac572233",
+          "removed": 1
+        }
+      ],
+      "reasons": [
+        "single-package-source"
+      ]
     },
     "astro.config.ts": {
       "hunks": [
@@ -103,8 +111,46 @@
       "reasons": []
     },
     "scripts/docs-gen/generate-api-docs.ts": {
-      "hunks": [],
-      "reasons": []
+      "hunks": [
+        {
+          "added": 3,
+          "digest": "f21c6698977e",
+          "removed": 5
+        },
+        {
+          "added": 1,
+          "digest": "31eb735538ba",
+          "removed": 1
+        },
+        {
+          "added": 0,
+          "digest": "6282a286bb36",
+          "removed": 1
+        },
+        {
+          "added": 1,
+          "digest": "260e2087456c",
+          "removed": 4
+        },
+        {
+          "added": 0,
+          "digest": "a87b27a32e13",
+          "removed": 15
+        },
+        {
+          "added": 3,
+          "digest": "5dbda9693920",
+          "removed": 14
+        },
+        {
+          "added": 1,
+          "digest": "c407f60c5059",
+          "removed": 2
+        }
+      ],
+      "reasons": [
+        "single-package-source"
+      ]
     },
     "scripts/docs-gen/generate-og-images.ts": {
       "hunks": [
@@ -218,9 +264,9 @@
     "scripts/docs-gen/helpers/api-doc-page-generation.ts": {
       "hunks": [
         {
-          "added": 2,
-          "digest": "cb5d88c5c1eb",
-          "removed": 1
+          "added": 3,
+          "digest": "b3197c970551",
+          "removed": 2
         }
       ],
       "reasons": [
@@ -252,7 +298,7 @@
         },
         {
           "added": 8,
-          "digest": "9486dcce3d9a",
+          "digest": "75258190ba34",
           "removed": 2
         }
       ],
@@ -270,7 +316,7 @@
         },
         {
           "added": 12,
-          "digest": "0dfb6a4ae889",
+          "digest": "a1e1aeb0137a",
           "removed": 3
         },
         {
@@ -280,7 +326,7 @@
         },
         {
           "added": 1,
-          "digest": "f32feb928cfd",
+          "digest": "426b4f9c6dac",
           "removed": 1
         },
         {
