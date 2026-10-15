@@ -63,7 +63,7 @@ const JSON_INDENT = 2;
 const API_INDEX_INTRO =
   'The complete API reference for `obsidian-test-mocks`, generated from the library\'s TSDoc. '
   + 'The `obsidian` modules are the mocks themselves, imported by name from `obsidian-test-mocks/obsidian`; '
-  + 'the `globals` and `obsidian-typings` modules are installed as a side effect of importing a setup entry point.';
+  + 'the `globals` modules are installed as a side effect of importing a setup entry point.';
 
 /**
 Append backlinks to overview pages and write all files. Keyed by qualified `${namespace}#${name}`.

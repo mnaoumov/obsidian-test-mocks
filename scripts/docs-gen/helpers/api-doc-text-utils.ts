@@ -31,7 +31,7 @@ const MOCK_ONLY_ROUTE_SUFFIX = '-mock';
 interface EntryPoint {
   /**
    * Whether the entry point is imported for its side effect rather than for a named binding — true for
-   * the global augmentations and the obsidian-typings bridges, which install themselves on import.
+   * the global augmentations, which install themselves on import.
    */
   readonly isSideEffectOnly: boolean;
 
@@ -177,8 +177,6 @@ export function getDisplayName(name: string, info: TypeInfo): string {
  * - `globals/**` → nothing is imported by name. These are the prototype/global augmentations Obsidian
  *   installs on DOM and JS builtins; a test gets them by importing the setup entry point for its
  *   runner, which installs them onto `globalThis` as a side effect.
- * - `obsidian-typings/**` → likewise a side-effect entry point: the bridges are applied by importing
- *   `obsidian-test-mocks/obsidian-typings/setup` (or its runner-specific variants).
  *
  * Interfaces / type aliases / enums are imported with `import type`; classes / functions /
  * variables with a value `import`.
@@ -316,10 +314,6 @@ export function truncateSignature(signature: string): string {
  * entry points, not one subpath per module.
  */
 function getEntryPoint(namespace: string): EntryPoint {
-  if (namespace.startsWith('obsidian-typings/')) {
-    return { isSideEffectOnly: true, subpath: 'obsidian-test-mocks/obsidian-typings/setup' };
-  }
-
   return namespace.startsWith('globals/') ? { isSideEffectOnly: true, subpath: 'obsidian-test-mocks/setup' } : { isSideEffectOnly: false, subpath: 'obsidian-test-mocks/obsidian' };
 }
 

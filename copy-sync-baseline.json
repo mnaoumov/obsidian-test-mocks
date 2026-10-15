@@ -265,7 +265,7 @@
       "hunks": [
         {
           "added": 3,
-          "digest": "b3197c970551",
+          "digest": "623ebafb74db",
           "removed": 2
         }
       ],
@@ -297,8 +297,8 @@
           "removed": 0
         },
         {
-          "added": 8,
-          "digest": "75258190ba34",
+          "added": 6,
+          "digest": "1a60beab28d0",
           "removed": 2
         }
       ],
@@ -311,12 +311,12 @@
       "hunks": [
         {
           "added": 34,
-          "digest": "4dc2057fcecd",
+          "digest": "61fb2f4c77a5",
           "removed": 0
         },
         {
-          "added": 12,
-          "digest": "a1e1aeb0137a",
+          "added": 10,
+          "digest": "d02a6da63f20",
           "removed": 3
         },
         {
@@ -330,8 +330,8 @@
           "removed": 1
         },
         {
-          "added": 14,
-          "digest": "9025eb0c4015",
+          "added": 10,
+          "digest": "bce0c2544272",
           "removed": 0
         },
         {

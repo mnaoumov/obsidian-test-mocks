@@ -73,10 +73,8 @@ describe('api-doc text utilities', () => {
     expect(getImportStatement(createTypeInfo({ kind: 'function', name: 'bravo', namespace: 'obsidian/functions/bravo' }))).toBe('import { bravo } from \'obsidian-test-mocks/obsidian\';');
   });
 
-  it('maps side-effect namespaces onto their setup entry points', () => {
+  it('maps the globals namespace onto the setup entry point', () => {
     expect(getImportStatement(createTypeInfo({ kind: 'function', name: 'createDiv', namespace: 'globals/functions/createDiv' }))).toBe('import \'obsidian-test-mocks/setup\';');
-    expect(getImportStatement(createTypeInfo({ kind: 'function', name: 'bridgeVault', namespace: 'obsidian-typings/bridges/vault-bridge' })))
-      .toBe('import \'obsidian-test-mocks/obsidian-typings/setup\';');
   });
 
   it('normalizes type and description text for generated pages', () => {
