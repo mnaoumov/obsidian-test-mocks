@@ -1,7 +1,6 @@
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
 import { rm } from 'node:fs/promises';
 
-import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
-
-exitIfScriptDisabled();
-
-await rm('dist', { force: true, recursive: true });
+await wrapCliTask(async () => {
+  await rm('dist', { force: true, recursive: true });
+});

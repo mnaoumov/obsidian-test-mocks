@@ -13,15 +13,15 @@
  * What this asserts is the SHAPE of each file's diff against upstream, recorded in
  * `copy-sync-baseline.json` - see `scripts/helpers/copy-sync.ts` for why shape rather than identity, for
  * what the baseline holds, and for how a binary file is compared instead. Most of the roster is
- * byte-identical after the recorded transforms, and for those files this is exactly as strong as
- * `check:vendored-eslint-rules`.
+ * byte-identical after the recorded transforms, and for those files this is exactly as strong as an
+ * identity check.
  *
- * Three things it does the way its sibling does, for the same reasons:
+ * Three things it does on purpose:
  *
  * - **The upstream list comes from upstream.** A file added there is not invisible to this check. The
  *   listing is one `git/trees?recursive=1` call rather than a directory walk of the contents API, because
- *   the API is not recursive and this roster spans five areas - and because the rate limit it shares with
- *   `check:vendored-eslint-rules` is 60 requests an hour per address unauthenticated. One call covers every
+ *   the API is not recursive and this roster spans five areas - and because the rate limit is
+ *   60 requests an hour per address unauthenticated. One call covers every
  *   area. `GITHUB_TOKEN` is used when there is one.
  * - **The sources are read from `raw.githubusercontent.com`.** The published npm package ships `dist/`
  *   only, and reading a sibling checkout would make this pass only on a machine that happens to have one.
@@ -38,7 +38,7 @@
  * On a clean checkout the two sources agree, so CI is unaffected.
  *
  * Offline, or anywhere the fetch is unwelcome, this is turned off the way every script here is:
- * `CHECK_COPY_SYNC=0`, via {@link exitIfScriptDisabled}. That is an explicit opt-out rather than a silent
+ * `CHECK_COPY_SYNC=0`, which `wrapCliTask` honours. That is an explicit opt-out rather than a silent
  * skip, so a network failure is still reported as a failure.
  *
  * Re-recording the baseline is `npm run check:copy-sync -- --update`, which rewrites the shapes and KEEPS
@@ -46,6 +46,15 @@
  * fails, so accepting a divergence remains an act of writing down what it is.
  */
 
+import {
+  CliTaskResult,
+  wrapCliTask
+} from '@mnaoumov/typescript-dev-toolkit/cli-utils';
+import {
+  execFromRoot,
+  getRootFolder
+} from '@mnaoumov/typescript-dev-toolkit/root';
+import { toPosixPath } from '@mnaoumov/typescript-lib/path';
 import { Buffer } from 'node:buffer';
 import { existsSync } from 'node:fs';
 import {
@@ -83,13 +92,7 @@ import {
   TRANSFORM_ARMS,
   validateBaselineEntry
 } from './helpers/copy-sync.ts';
-import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
 import { readIndexContent } from './helpers/git-content.ts';
-import {
-  execFromRoot,
-  getRootFolder,
-  toPosixPath
-} from './helpers/root.ts';
 
 /**
  * The checked-in record this gate compares against.
@@ -138,8 +141,6 @@ const UPSTREAM_RAW_BASE_URL = 'https://raw.githubusercontent.com/mnaoumov/obsidi
 const UPSTREAM_TREE_URL = 'https://api.github.com/repos/mnaoumov/obsidian-dev-utils/git/trees/main?recursive=1';
 
 const failures: string[] = [];
-
-exitIfScriptDisabled();
 
 /**
  * Every file this repo tracks in a copy-sync area, repo-relative.
@@ -538,4 +539,9 @@ async function writeBaseline(root: string, baseline: Baseline, measured: Readonl
   await writeFile(join(root, BASELINE_FILE_NAME), `${JSON.stringify(baseline, null, JSON_INDENT)}\n`);
 }
 
-await main();
+// `wrapCliTask` ends the process with `process.exit(0)` on success, which overrides the `process.exitCode = 1`
+// that `main` sets on a finding, so the code is handed back to it as the task's result.
+await wrapCliTask(async () => {
+  await main();
+  return CliTaskResult.FromExitCode(Number(process.exitCode ?? 0));
+});

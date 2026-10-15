@@ -5,6 +5,13 @@ import type {
   UndefinedOnPartialDeep
 } from 'type-fest';
 
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
+import { getPackageManagerRunCommand } from '@mnaoumov/typescript-dev-toolkit/package-manager';
+import {
+  execFromRoot,
+  getRootFolder
+} from '@mnaoumov/typescript-dev-toolkit/root';
+import { toPosixPath } from '@mnaoumov/typescript-lib/path';
 import { existsSync } from 'node:fs';
 import {
   readFile,
@@ -25,16 +32,7 @@ import {
   assertNonNullable,
   ensureNonNullable
 } from '../src/internal/type-guards.ts';
-import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
 import { parseNpmPackFilename } from './helpers/npm-pack.ts';
-import { getPackageManagerRunCommand } from './helpers/package-manager.ts';
-import {
-  execFromRoot,
-  getRootFolder,
-  toPosixPath
-} from './helpers/root.ts';
-
-exitIfScriptDisabled();
 
 interface ParsedArguments {
   readonly shouldEditChangelog: boolean;
@@ -138,7 +136,7 @@ async function getReleaseNotes(newVersion: string): Promise<string> {
 }
 
 function getVersionUpdateType(versionUpdateType: string): VersionUpdateType {
-  const versionUpdateTypeEnum = versionUpdateType as VersionUpdateType;
+  const versionUpdateTypeEnum = Object.values(VersionUpdateType).find((value) => value === versionUpdateType);
   switch (versionUpdateTypeEnum) {
     case VersionUpdateType.Major:
     case VersionUpdateType.Minor:
@@ -331,7 +329,7 @@ function validate(versionUpdateType: string): void {
   }
 }
 
-await main();
+await wrapCliTask(main);
 
 interface EditJsonOptions {
   readonly shouldSkipIfMissing?: boolean;

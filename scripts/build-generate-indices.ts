@@ -1,3 +1,4 @@
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
 import {
   readdir,
   readFile,
@@ -5,10 +6,6 @@ import {
   writeFile
 } from 'node:fs/promises';
 import { join } from 'node:path';
-
-import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
-
-exitIfScriptDisabled();
 
 const EXPORT_PATTERN = /^export\s+(?:(?:abstract\s+)?class|(?:async\s+)?function|const|enum|interface|let|type|var)\s+(?<name>\w+)/gm;
 
@@ -211,4 +208,4 @@ function toNamespaceId(fileName: string): string {
     .replace('.ts', '').replaceAll(/[.-]/g, '_');
 }
 
-await main();
+await wrapCliTask(main);

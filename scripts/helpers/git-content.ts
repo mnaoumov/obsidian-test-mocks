@@ -3,14 +3,14 @@
  *
  * Reading a tracked file as it is about to be COMMITTED, rather than as it sits in the working tree.
  *
- * Both copy-sync gates - `check:copy-sync` and `check:vendored-eslint-rules` - assert something about the
- * bytes of a file that is going to be committed, and both run from `nano-staged` alongside `lint:fix` and
- * `format`, which rewrite staged files in place. **nano-staged builds one task group per pattern and runs
- * the groups with `Promise.all`** (measured against nano-staged 1.0.2, 2026-09-19), so no arrangement of
- * keys makes a gate follow the fixer: sequencing exists within a single key's command list and nowhere
- * else. A gate reading the working tree therefore races the fixer, and which bytes it sees is a coin toss.
+ * The copy-sync gate, `check:copy-sync`, asserts something about the bytes of a file that is going to be
+ * committed, and runs from `nano-staged` alongside `lint:fix` and `format`, which rewrite staged files in
+ * place. **nano-staged builds one task group per pattern and runs the groups with `Promise.all`** (measured
+ * against nano-staged 1.0.2, 2026-09-19), so no arrangement of keys makes the gate follow the fixer:
+ * sequencing exists within a single key's command list and nowhere else. A gate reading the working tree
+ * therefore races the fixer, and which bytes it sees is a coin toss.
  *
- * Reading the index instead makes the ordering irrelevant rather than enforced. It also makes the gates
+ * Reading the index instead makes the ordering irrelevant rather than enforced. It also makes the gate
  * answer the question they are actually asked when a developer runs one by hand mid-edit: the subject is
  * what will be committed, not whatever the editor happens to be holding.
  *

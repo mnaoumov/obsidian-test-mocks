@@ -339,16 +339,8 @@
       "reasons": []
     },
     "scripts/docs-gen/helpers/link-check.ts": {
-      "hunks": [
-        {
-          "added": 1,
-          "digest": "eef8a9c21dfc",
-          "removed": 1
-        }
-      ],
-      "reasons": [
-        "helpers-re-pointed"
-      ]
+      "hunks": [],
+      "reasons": []
     },
     "scripts/docs-gen/helpers/og-image-page.test.ts": {
       "hunks": [],
@@ -375,32 +367,16 @@
       "reasons": []
     },
     "scripts/docs-gen/helpers/satteri-plugins/satteri-github-alerts.test.ts": {
-      "hunks": [
-        {
-          "added": 1,
-          "digest": "ce4405d84495",
-          "removed": 1
-        }
-      ],
-      "reasons": [
-        "helpers-re-pointed"
-      ]
+      "hunks": [],
+      "reasons": []
     },
     "scripts/docs-gen/helpers/satteri-plugins/satteri-github-alerts.ts": {
       "hunks": [],
       "reasons": []
     },
     "scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.test.ts": {
-      "hunks": [
-        {
-          "added": 1,
-          "digest": "ce4405d84495",
-          "removed": 1
-        }
-      ],
-      "reasons": [
-        "helpers-re-pointed"
-      ]
+      "hunks": [],
+      "reasons": []
     },
     "scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.ts": {
       "hunks": [],

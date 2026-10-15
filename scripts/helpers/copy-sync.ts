@@ -5,11 +5,10 @@
  *
  * The gate itself lives in `scripts/check-copy-sync.ts`; everything here is what it decides WITH.
  *
- * ## Why this gate is weaker than `check:vendored-eslint-rules`, and what it can still assert
+ * ## Why this gate records shapes rather than asserting identity, and what it can still assert
  *
- * `scripts/helpers/eslint-rules/` is byte-identical to `obsidian-dev-utils`' after two mechanical
- * transforms, so that gate asserts identity and reports every difference. The copy-sync areas cannot be
- * held to that: their divergences are semantic - barrel entry points, `-mock` route slugs,
+ * A copy that is byte-identical to upstream after a few mechanical transforms can be gated on identity,
+ * reporting every difference. The copy-sync areas cannot be held to that: their divergences are semantic - barrel entry points, `-mock` route slugs,
  * `EXCLUDED_DIR_SEGMENTS` - and no transform expresses them. Answering "did upstream
  * change anything here that this copy has not taken?" therefore meant hand-diffing every file and
  * classifying every hunk, which is what it cost the last time it was asked.
@@ -165,7 +164,6 @@ export const DIVERGENCE_REASONS: Readonly<Record<string, string>> = {
   'api-surface-tables': 'The per-package data tables in `api-doc-constants.ts`: `GENERIC_TYPE_PARAMS` and `TS_GLOBAL_TYPES` list the identifiers and external types THIS package\'s API surface actually uses, so they differ by construction.',
   'barrel-entry-points': 'Divergence 2. This package publishes barrel entry points, so a namespace does not map onto an import subpath the way `obsidian-dev-utils`\' does.',
   'excluded-dir-segments': 'Divergence 4. `EXCLUDED_DIR_SEGMENTS` names this package\'s own private trees.',
-  'helpers-re-pointed': 'Anything the copy needed from upstream\'s own `src/` was re-pointed at this repo\'s equivalent: `src/script-utils/*` at `scripts/helpers/*` (`execFromRoot`, `assertNever`), and `castTo` from `src/object-utils.ts` at `src/internal/castTo.ts`.',
   'local-strictness-rewrites': 'Divergence 7. Rules this repo enables that `obsidian-dev-utils` turns off force local rewrites, so a byte-identical copy would be lint-red here.',
   'mock-only-suffix': 'Divergence 3. The `__` suffix that marks a mock-only member has to survive slug generation as `-mock`, or two members collapse onto one route and one page overwrites the other.',
   'own-favicon-mark': 'Divergence 5. This package has a favicon of its own where `obsidian-dev-utils` has no mark and no logo asset, so prose about what the site renders beside a title differs.'

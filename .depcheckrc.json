@@ -17,7 +17,7 @@
     "dprint - run as a CLI by the format scripts, configured by dprint.json.",
     "husky - installed by scripts/prepare.ts; the hooks in .husky/ are its output.",
     "jest-environment-jsdom - selected by the `@jest-environment jsdom` docblock in the jest test files, which depcheck does not parse.",
-    "linkinator - run as a CLI, named as a string by the markdownlint helper.",
+    "linkinator - run as a CLI, named as a string by the markdownlint lint in @mnaoumov/typescript-dev-toolkit.",
     "markdownlint-cli2 - run as a CLI by the lint:md scripts, configured by .markdownlint-cli2.mjs.",
     "nano-staged - .husky/pre-commit runs it; configured by scripts/nano-staged-config.ts.",
     "obsidian-typings - never imported anywhere: scripts/helpers/obsidian-typings-surface.ts resolves the bare specifier through",

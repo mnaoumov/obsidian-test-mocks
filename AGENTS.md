@@ -121,7 +121,7 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 The declarations we author are still fully validated. `scripts/build-compile.ts` (run by `build:compile`) does two passes:
 
 1. `tsc --build --force` — the normal compile, with `skipLibCheck: true`.
-2. An in-memory re-check via `checkProjectTypes()` (`scripts/helpers/check-project-types.ts`) with `skipLibCheck: false`, reporting **only** diagnostics whose source file is under the project root and outside `node_modules`. It prints `Ignored N diagnostic(s) outside the validated set.` — when upstream is fixed and `N` reaches `0`, the workaround is no longer doing anything and `skipLibCheck` can go back to `false`.
+2. An in-memory re-check via `checkProjectTypes()` (from `@mnaoumov/typescript-dev-toolkit/check-project-types`) with `skipLibCheck: false`, reporting **only** diagnostics whose source file is under the project root and outside `node_modules`. It prints `Ignored N diagnostic(s) outside the validated set.` — when upstream is fixed and `N` reaches `0`, the workaround is no longer doing anything and `skipLibCheck` can go back to `false`.
 
 ## Testing
 
@@ -193,62 +193,19 @@ Two rules are scoped off where they cannot be satisfied, both for the same reaso
 - `unicorn/consistent-boolean-name` is off for non-test `src/obsidian/**` and `src/globals/**`. Every boolean there is Obsidian's (`requireApiVersion`, `Array.prototype.contains`, `Object.each`, `MarkdownRenderer.supportWorker`, the `_center` / `_system` / `resetTimer` parameters).
 - `unicorn/name-replacements` stays on everywhere; sites naming an Obsidian member (`EventRef`'s `ctx` / `e` / `fn`, `Vault.configDir`, `Keymap.isModEvent`, `ViewState.eState`) carry an inline disable rather than being renamed.
 
-A third is scoped off for an unrelated reason: `unicorn/no-useless-recursion` is off for `scripts/helpers/eslint-rules/no-async-callback-to-unsafe-return.ts`, where it fires on the tail call that follows a type alias. That one is a file-scoped override rather than an inline disable **on purpose** — see the shared-copy rule below.
-
 Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rather than the rule's default `function_` / `arguments_`, so a trailing underscore never reads as the `__` mock-member suffix.
 
 `import-x/no-nodejs-modules` is off for `scripts/` and friends (build tooling reads from disk) and for `testFiles` — a test runs under vitest in Node and is never part of the published library, so the ban has nothing to protect there. The test exemption is ported from `obsidian-dev-utils`' `getNodeBuiltinsConfigs`, which scopes the same rule off for `context.testFiles`; only the `import-x` half comes across, because its twin `obsidianmd/no-nodejs-modules` arrives with the plugin-directory rules this package does not register. It is what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory without an inline waiver at each import.
 
-`linterOptions.reportUnusedDisableDirectives` is set to `'error'` repo-wide. ESLint's default is `'warn'`, which would let a waiver that has stopped silencing anything sit in the tree — still naming a rule as the reason for the code beneath it, untruthfully. Every rule here is an error; the directives claiming to suppress them are held to the same bar. `npm run lint` now also passes `--max-warnings 0` (`scripts/helpers/eslint.ts`, taken from `typescript-template` 2026-09-24), so a warning from any source fails the run rather than exiting 0; `'error'` here still matters, because it names the directive as the failure instead of a bare warning count.
+`linterOptions.reportUnusedDisableDirectives` is set to `'error'` repo-wide. ESLint's default is `'warn'`, which would let a waiver that has stopped silencing anything sit in the tree — still naming a rule as the reason for the code beneath it, untruthfully. Every rule here is an error; the directives claiming to suppress them are held to the same bar. `npm run lint` also passes `--max-warnings 0` (the `lint` from `@mnaoumov/typescript-dev-toolkit/linters/eslint`), so a warning from any source fails the run rather than exiting 0; `'error'` here still matters, because it names the directive as the failure instead of a bare warning count.
 
-**`scripts/helpers/eslint.ts` classifies ESLint's exit rather than letting `execFromRoot` throw on it.** Only exit `1` is evidence about the source; `2` is a rule that threw or a broken config (a `Rule: "…"` line names the former — the `Oops! Something went wrong!` banner does not, ESLint prints it for a mistyped path too), and on Windows a child that dies with `3221225477` (`0xC0000005`) prints nothing at all. A lint failure that reads as a crash is therefore not a defect in the source to go looking for.
+**`npm run lint` no longer classifies ESLint's exit** (2026-10-15). The local `scripts/helpers/eslint.ts` it used to run told exit `1` (lint findings, evidence about the source) from exit `2` (a rule that threw, or a broken config) and from a Windows child that dies with `3221225477` (`0xC0000005`) printing nothing. The toolkit's `lint` lets `execFromRoot` throw on any non-zero exit, so a crash and a finding now read the same. Until the toolkit exports that classification, read the output before assuming a lint failure is a defect in the source.
 
-Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint-rules/` (this project has no runtime dependency on it). Their tests run as part of `npm test` and need `tsconfig.eslint-test.json` for the type-aware ones.
+**The in-house ESLint rules come from `@mnaoumov/typescript-dev-toolkit`** (2026-10-15), as its `inHouseEslintPlugin`, registered under `IN_HOUSE_ESLINT_PLUGIN_NAME` (still `obsidian-dev-utils`, so every rule id and disable comment keeps its name). The vendored copies under `scripts/helpers/eslint-rules/`, their tests, `tsconfig.eslint-test.json` and the `check:vendored-eslint-rules` gate that held them byte-identical to upstream are gone. So are the vendored helpers the scripts ran on: `scripts/` imports `execFromRoot`, `resolveToolCommand`, `wrapCliTask`, `checkProjectTypes` and the lint and format runners from `@mnaoumov/typescript-dev-toolkit`, and `assertNever`, `ensureNonNullable`, `castTo` and `toPosixPath` from `@mnaoumov/typescript-lib`. Both are devDependencies only: `src/` still imports neither, so the published package keeps no runtime dependency on them.
 
-**`obsidian-dev-utils`' `packages/typescript-dev-toolkit/src/linters/eslint-rules/` (`src/script-utils/linters/eslint-rules/` until its 2026-10-14 workspace split) is the upstream — this repo is a consumer, not the canonical copy.** An earlier version of this paragraph claimed the sources were byte-identical across the consumers with this repo holding the original. Neither half was true: a fix is written upstream, each consumer vendors a different *subset*, and every consumer rewrites one import. So the rule that actually holds is narrower, and mechanically checkable:
+**Every entry script runs through `wrapCliTask`**, which honours the per-script off switch (`LINT_MD=0 npm run lint:md`) the way the old `exitIfScriptDisabled` did. It ends the process with `process.exit(0)` on success, which **overrides a `process.exitCode = 1` set inside the task**. A script that reports failure that way has to hand the code back as the task's result: `scripts/check-copy-sync.ts` returns `CliTaskResult.FromExitCode(...)` for exactly this reason.
 
-**Every shared source here is byte-identical to its upstream file after exactly two deltas, applied on the way in.**
-
-1. **The library-helper imports.** Upstream imports its helpers from `@mnaoumov/typescript-lib/<module>`, a package this repo does not depend on; here each becomes `../<module>.ts` (`../type-guards.ts`, `../object-utils.ts`), moved into the relative import group where `perfectionist/sort-imports` puts it. `scripts/helpers/object-utils.ts` exists only to carry the one `castTo` the vendored `ts-estree-node.ts` needs. Nothing else in these files imports outside their own directory, so this is the whole of the path rewrite.
-2. **An `eslint-disable` naming a plugin the consumer does not install is stripped**, and re-expressed as a file-scoped override in `scripts/eslint-config.ts`. Upstream's `no-async-callback-to-unsafe-return.ts` carries an inline `unicorn/no-useless-recursion` disable; ESLint fails the *entire* run with *"Definition for rule was not found"* on an unresolvable rule reference, so a copy that reaches a consumer without `eslint-plugin-unicorn` cannot carry it. Nor can a consumer that installs the plugin but turns that rule off for the file: the directive then suppresses nothing, `reportUnusedDisableDirectives` reports it, and `lint:fix` deletes it — rewriting the copy by a different route. The `unicorn/no-useless-recursion` entry above is that override, which puts this repo in the second case. Rules every consumer has (`no-bitwise`, `@typescript-eslint/*`, `import-x/*`) are fine inline.
-
-`obsidian-dev-utils-plugin.ts` sits outside the rule by construction: its `rules` map names exactly the subset this repo vendors, so it differs in every consumer and is maintained by hand rather than synced.
-
-**So a sync is a transform, not a merge** — take the upstream file whole, apply the two deltas, and let `git diff` be the check. Anything it then shows is drift.
-
-**The `eslint-plugin-unicorn` ban is a condition, not a headcount.** A consumer cannot carry the directive when it does not install the plugin, OR installs it and leaves the rule off for the vendored file — which is not all of them, and the set moves. So there are three columns, not two. Measured 2026-09-24 across the ten consumers in the table below:
-
-| column | consumers | the inline directive |
-| --- | --- | --- |
-| does not install the plugin | `generator-obsidian-plugin`, `paperio2`, `secret-hitler-companion`, `debuggable-eval`, `taocp-solutions` | unresolvable: ESLint fails the whole run |
-| installs it, leaves the rule off for the file | this repo, `obsidian-integration-testing`, `obsidian-typings-crawler` | unused: `lint:fix` deletes it |
-| installs it and keeps the rule on | `obsidian-typings`, `typescript-template` | carried — no strip arm, the copy takes upstream's bytes whole |
-
-The 2026-09-15 measurement had `obsidian-typings-crawler` and `typescript-template` in the first column; both have since installed the plugin, and landed in different columns. Check before assuming, and keep the directive out of this repo's copy while it sits in the second column.
-
-**The two deltas are now a gate rather than a recipe: `npm run check:vendored-eslint-rules`** (`scripts/check-vendored-eslint-rules.ts`, added 2026-09-19). Each delta is an entry in its `TRANSFORM_ARMS` carrying the reason it exists, and the check asserts the result is byte-identical. Record a new deliberate divergence by adding an arm, never by editing a copy and explaining it in a comment: the arm is what the next run enforces, and a comment is what let these files age apart in the first place. It reads upstream from `raw.githubusercontent.com` — the published package ships `dist/` only, so the sources are not in the tarball, and a sibling checkout would make the check pass only on a machine that has one — and `nano-staged` runs it on any commit that stages a vendored file. **It reads this repo's side out of the git INDEX, not off disk**, which is what makes it independent of when it runs: it cannot be made to follow `lint:fix` and `format` — nano-staged runs one task group per pattern with `Promise.all`, so its key races them rather than following them (measured against 1.0.2, 2026-09-19) — so reading the staged blob makes that ordering irrelevant instead of enforced. It is also the answer a developer running the gate by hand mid-edit actually wants. `check:copy-sync` does the same, for the same reason; the shared read is `scripts/helpers/git-content.ts`. A vendored copy that is untracked has no staged blob and is read from disk, and the failure message says which side it read. `CHECK_VENDORED_ESLINT_RULES=0` turns it off where there is no network.
-
-**It finds the copies by NAME, not by walking a known directory, and that is the part this table kept getting wrong.** Every roster written here has been short, twice over: it named three consumers when there were five, then five when there are ten. A walk of one directory per repo reports an unlisted tree as *absent* rather than as *drifted*, which is indistinguishable from not having one.
-
-The consumers, re-enumerated 2026-09-19 by walking `F:\dev\projects` and `E:\Dev\Work` for any file named after an upstream rule source — **eleven trees across ten repos**:
-
-| consumer | tree | gated |
-| --- | --- | --- |
-| this repo | `scripts/helpers/eslint-rules/` (6 rules, incl. `prefer-noop-async`, plus the `ts-estree-node` helper) | yes |
-| `obsidian-integration-testing` | `scripts/helpers/eslint-rules/` (5) | yes |
-| `obsidian-typings-crawler` | `scripts/helpers/eslint-rules/` (5) | yes |
-| `obsidian-typings` | `scripts/helpers/eslint-rules/` (5) | yes |
-| `obsidian-typings` | `workflow-scripts/helpers/eslint-rules/` (2) | yes — same check, one walk |
-| `generator-obsidian-plugin` | `scripts/helpers/eslint-rules/` (2) | yes |
-| `typescript-template` | `scripts/helpers/eslint-rules/` (6) | not yet |
-| `paperio2` | `ts/scripts/helpers/eslint-rules/` (6) | not yet |
-| `secret-hitler-companion` | `scripts/helpers/eslint-rules/` (6) | not yet |
-| `debuggable-eval` | `scripts/helpers/eslint-rules/` (2) | not yet |
-| `taocp-solutions` | `scripts/helpers/eslint-rules/` (2) | not yet |
-
-The five not yet gated are `typescript-template` and its descendants, which sit outside this workspace; the check reaches them through that template rather than one repo at a time.
-
-`obsidian-typings` was the outlier in every earlier version of this table — a different directory name, a `local-plugin.ts`, and a `no-used-underscore-params.ts` that was an ancestor of upstream's `no-used-underscore-variables`. It converged in 2026-09: both of its trees now use upstream's names, and both are gated.
+What stays in `scripts/helpers/` is what no package exports: `copy-sync.ts` and `git-content.ts` (the copy-sync gate and its read of the git index), `npm-pack.ts` (the release script's tarball-name parse), `obsidian-typings-surface.ts` (the conformance tests' typings inventory), `markdown-lint-targets.ts`, and the `eslint-plugin-modules-newlines` type declaration. `markdown-lint-targets.ts` exists because the toolkit's markdown `lint` hands every tracked `*.md` file to `linkinator`, and the guides under `docs/` link to each other base-absolutely (`/obsidian-test-mocks/guides/...`), which resolves only against the built site: so `lint:md` and `lint:md:fix`, given no paths, pass every tracked markdown file outside `docs/` instead, and the guides are link-checked by `docs:build`.
 
 ## Releasing
 
@@ -315,12 +272,10 @@ Five areas were copied from `obsidian-dev-utils` and should be kept in copy-sync
 `scripts/docs-gen/`, `docs/src/`, `astro.config.ts`, `docs/tsconfig.json` and
 `.github/workflows/build-pages.yml`.
 This package cannot simply depend on `obsidian-dev-utils`: that library lists `obsidian-test-mocks` in its own devDependencies, so the
-edge would be a cycle. Anything the copy needed from its `src/script-utils/*` was re-pointed at this
-repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`).
+edge would be a cycle. The helpers the copy needs come from the same `@mnaoumov/typescript-lib` and
+`@mnaoumov/typescript-dev-toolkit` modules upstream imports them from, so those imports are not a divergence.
 
-**This is not quite the arrangement `scripts/helpers/eslint-rules/` has.** That tree is byte-identical to
-upstream after two mechanical transforms, which is what lets `check:vendored-eslint-rules` assert it. Most
-of this one cannot be: the divergences below are semantic, a transform cannot express them, and — measured
+**Most of this copy cannot be asserted byte-identical to upstream after a few mechanical transforms**: the divergences below are semantic, a transform cannot express them, and — measured
 2026-09-19 — taking an upstream file whole can now land lint-RED here. So a docs-gen sync is a
 read-and-merge, and the list below is what it is merged against.
 
@@ -340,7 +295,7 @@ Six things to know before touching a copied file:
 - **Divergence 1 is two transforms, not baseline entries.** The name is the whole of it, so the gate applies
   `obsidian-dev-utils` → `obsidian-test-mocks` and `Obsidian Dev Utils` → `Obsidian Test Mocks` to
   upstream's text first. That is what leaves most of the roster byte-identical, and for those files this
-  gate is exactly as strong as the rule-source one: the baseline says "no hunks", so any drift at all is
+  gate is exactly as strong as an identity check: the baseline says "no hunks", so any drift at all is
   reported. Resist adding a third arm to make a diff smaller — an arm that rewrites meaning hides the drift
   it was meant to expose.
 - **Every differing file names its reason**, from the closed vocabulary in `DIVERGENCE_REASONS`, which is
@@ -362,8 +317,9 @@ Six things to know before touching a copied file:
   fails. The sniff is content, not an extension list, so a new binary cannot arrive unnoticed.
 
 It reads upstream from `raw.githubusercontent.com` and lists it with one `git/trees?recursive=1` call — one
-call for all five areas — for the same reasons `check:vendored-eslint-rules` does, and shares that call's
-unauthenticated rate limit; `GITHUB_TOKEN` is used when there is one. This repo's side is listed with
+call for all five areas — because the published package ships `dist/` only and a sibling checkout would make
+the gate pass only on a machine that has one, and because the unauthenticated rate limit is 60 calls an hour;
+`GITHUB_TOKEN` is used when there is one. This repo's side is listed with
 `git ls-files` rather than a directory walk, because `docs/src` holds gitignored build output
 (`generated-sidebar.json`, `content/docs/api/`) that a walk reports as paired with nothing upstream.
 `nano-staged` runs it on any commit that stages a file in an area — two keys, and the brace in
@@ -379,8 +335,7 @@ exists within one key's command list and nowhere else; key order carries no mean
 perfectionist sorts it to. So the ordering is made irrelevant rather than enforced: the gate measures the
 staged blob, which is the same bytes whether the fixer has run or not, and which is also what a developer
 running the gate by hand mid-edit is asking about. The diff is therefore taken between two scratch files
-rather than between a scratch file and the working tree, and the failure message names both. The same is
-true of `check:vendored-eslint-rules`, which shares the read.
+rather than between a scratch file and the working tree, and the failure message names both.
 
 **`docs/tsconfig.json` joined the roster on 2026-09-19, once the hunk that kept it out was settled.** It
 included `".astro/types.d.ts"` where upstream includes `"../.astro/types.d.ts"`, and upstream is right:
@@ -392,7 +347,7 @@ upstream's path makes the file byte-identical, so it sits in the gate's identica
 divergence reason. `docs/public/favicon.svg` is the one copied file still outside the roster, as the second
 copy of a file that must never be synced.
 
-Keep new divergence to the eight places this package genuinely differs (the list runs to ten; 6 and 10
+Keep new divergence to the seven places this package genuinely differs (the list runs to ten; 6, 8 and 10
 are retired and keep their numbers):
 
 1. **`BASE_PATH` / site title / repo URLs** — mechanical renames, all of them the name, and all of them
@@ -439,11 +394,10 @@ are retired and keep their numbers):
    why `astro.config.ts` carries an inline waiver upstream does not need. Expect more of these as the two
    configs move: when a sync makes lint red, check this class before assuming drift.
    Baseline reason: `local-strictness-rewrites`.
-8. **Helper imports re-pointed** — anything the copy needed from upstream's `src/script-utils/*` now
-   resolves to this repo's `scripts/helpers/*` (`execFromRoot`, `assertNever`), and the Sätteri plugin's
-   test takes `castTo` from `src/internal/castTo.ts` where upstream's takes it from `src/object-utils.ts`.
-   Stated above as prose since the copy was taken; it is in the list because the gate needs a name for it.
-   Baseline reason: `helpers-re-pointed`.
+8. **Retired 2026-10-15: the re-pointed helper imports.** `link-check.ts` took `assertNever` from this
+   repo's vendored `scripts/helpers/type-guards.ts`, and the two Sätteri plugin tests took `castTo` from
+   `src/internal/castTo.ts`. All three now import from `@mnaoumov/typescript-lib`, as upstream's do, so they
+   are byte-identical and the `helpers-re-pointed` reason is gone.
 9. **The `api-doc-constants.ts` data tables** — `GENERIC_TYPE_PARAMS` and `TS_GLOBAL_TYPES` enumerate the
    identifiers and external types *this* package's API surface actually uses, so they differ by
    construction: the CodeMirror and Turndown entries are ours, and upstream's hook/owner/suspect
