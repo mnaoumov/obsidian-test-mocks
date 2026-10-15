@@ -205,7 +205,7 @@ Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rath
 
 **Every entry script runs through `wrapCliTask`**, which honours the per-script off switch (`LINT_MD=0 npm run lint:md`) the way the old `exitIfScriptDisabled` did. A task that returns nothing exits with the `process.exitCode` it left (since `@mnaoumov/typescript-dev-toolkit` 1.3.0), so a plain `process.exitCode = 1; return;` fails the script, which is how `scripts/check-copy-sync.ts` reports its findings. Before 1.3.0 it called `process.exit(0)` and overrode that code.
 
-What stays in `scripts/helpers/` is what no package exports: `copy-sync.ts` and `git-content.ts` (the copy-sync gate and its read of the git index), `npm-pack.ts` (the release script's tarball-name parse), `obsidian-typings-surface.ts` (the conformance tests' typings inventory), `markdown-lint-targets.ts`, and the `eslint-plugin-modules-newlines` type declaration. `markdown-lint-targets.ts` exists because the toolkit's markdown `lint` hands every tracked `*.md` file to `linkinator`, and the guides under `docs/` link to each other base-absolutely (`/obsidian-test-mocks/guides/...`), which resolves only against the built site: so `lint:md` and `lint:md:fix`, given no paths, pass every tracked markdown file outside `docs/` instead, and the guides are link-checked by `docs:build`.
+What stays in `scripts/helpers/` is what no package exports: `copy-sync.ts` (the copy-sync gate's pure half; its read of the git index is the toolkit's `readIndexContent`, from `@mnaoumov/typescript-dev-toolkit/git`), `npm-pack.ts` (the release script's tarball-name parse), `obsidian-typings-surface.ts` (the conformance tests' typings inventory), `markdown-lint-targets.ts`, and the `eslint-plugin-modules-newlines` type declaration. `markdown-lint-targets.ts` exists because the toolkit's markdown `lint` hands every tracked `*.md` file to `linkinator`, and the guides under `docs/` link to each other base-absolutely (`/obsidian-test-mocks/guides/...`), which resolves only against the built site: so `lint:md` and `lint:md:fix`, given no paths, pass every tracked markdown file outside `docs/` instead, and the guides are link-checked by `docs:build`.
 
 ## Releasing
 
@@ -326,8 +326,8 @@ the gate pass only on a machine that has one, and because the unauthenticated ra
 `{docs/src,scripts/docs-gen}/**` has to sit before the `/**` or nano-staged's matcher quietly stops treating
 it as a globstar. `CHECK_COPY_SYNC=0` turns it off where there is no network.
 
-**This repo's side is READ from the index too, not just listed from it** (`scripts/helpers/git-content.ts`,
-2026-09-19). It would ideally run AFTER `lint:fix` — ESLint covers `scripts/docs-gen`, so `lint:fix` is the
+**This repo's side is READ from the index too, not just listed from it** (`readIndexContent` from
+`@mnaoumov/typescript-dev-toolkit/git`, 2026-09-19; the local copy left on 2026-10-15). It would ideally run AFTER `lint:fix` — ESLint covers `scripts/docs-gen`, so `lint:fix` is the
 one step here that can rewrite a staged file in it, and a shape measured before it ran is a shape nobody
 commits — and it cannot be made to: **nano-staged runs one task group per pattern with `Promise.all`**,
 measured against 1.0.2 on 2026-09-19, so a separate key races `lint:fix` instead of following it. Sequencing

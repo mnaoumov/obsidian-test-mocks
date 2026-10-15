@@ -31,7 +31,7 @@ const tasks: Record<string, string[]> = {
    * per pattern and runs the groups with `Promise.all`** (measured against nano-staged 1.0.2, 2026-09-19), so
    * this group RACES `lint:fix` rather than following it; sequencing exists within a single key's command list
    * and nowhere else. So the ordering is made IRRELEVANT instead: the gate reads its subject out of the git index
-   * rather than off disk (`scripts/helpers/git-content.ts`), which is the same bytes whether `lint:fix` has run
+   * rather than off disk (`readIndexContent` from `@mnaoumov/typescript-dev-toolkit/git`), which is the same bytes whether `lint:fix` has run
    * or not.
    *
    * Neither entry takes filenames: the glob only decides whether the check runs, so an ordinary commit
