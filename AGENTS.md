@@ -205,11 +205,11 @@ Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rath
 
 Custom rules are vendored from `obsidian-dev-utils` into `scripts/helpers/eslint-rules/` (this project has no runtime dependency on it). Their tests run as part of `npm test` and need `tsconfig.eslint-test.json` for the type-aware ones.
 
-**`obsidian-dev-utils`' `src/script-utils/linters/eslint-rules/` is the upstream — this repo is a consumer, not the canonical copy.** An earlier version of this paragraph claimed the sources were byte-identical across the consumers with this repo holding the original. Neither half was true: a fix is written upstream, each consumer vendors a different *subset*, and every consumer rewrites one import. So the rule that actually holds is narrower, and mechanically checkable:
+**`obsidian-dev-utils`' `packages/typescript-dev-toolkit/src/linters/eslint-rules/` (`src/script-utils/linters/eslint-rules/` until its 2026-10-14 workspace split) is the upstream — this repo is a consumer, not the canonical copy.** An earlier version of this paragraph claimed the sources were byte-identical across the consumers with this repo holding the original. Neither half was true: a fix is written upstream, each consumer vendors a different *subset*, and every consumer rewrites one import. So the rule that actually holds is narrower, and mechanically checkable:
 
 **Every shared source here is byte-identical to its upstream file after exactly two deltas, applied on the way in.**
 
-1. **The `type-guards.ts` import path.** Upstream sits three directories deeper and spells it `../../../type-guards.ts`; here it is `../type-guards.ts`. Nothing else in these files imports outside their own directory, so this is the whole of the path rewrite.
+1. **The library-helper imports.** Upstream imports its helpers from `@mnaoumov/typescript-lib/<module>`, a package this repo does not depend on; here each becomes `../<module>.ts` (`../type-guards.ts`, `../object-utils.ts`), moved into the relative import group where `perfectionist/sort-imports` puts it. `scripts/helpers/object-utils.ts` exists only to carry the one `castTo` the vendored `ts-estree-node.ts` needs. Nothing else in these files imports outside their own directory, so this is the whole of the path rewrite.
 2. **An `eslint-disable` naming a plugin the consumer does not install is stripped**, and re-expressed as a file-scoped override in `scripts/eslint-config.ts`. Upstream's `no-async-callback-to-unsafe-return.ts` carries an inline `unicorn/no-useless-recursion` disable; ESLint fails the *entire* run with *"Definition for rule was not found"* on an unresolvable rule reference, so a copy that reaches a consumer without `eslint-plugin-unicorn` cannot carry it. Nor can a consumer that installs the plugin but turns that rule off for the file: the directive then suppresses nothing, `reportUnusedDisableDirectives` reports it, and `lint:fix` deletes it — rewriting the copy by a different route. The `unicorn/no-useless-recursion` entry above is that override, which puts this repo in the second case. Rules every consumer has (`no-bitwise`, `@typescript-eslint/*`, `import-x/*`) are fine inline.
 
 `obsidian-dev-utils-plugin.ts` sits outside the rule by construction: its `rules` map names exactly the subset this repo vendors, so it differs in every consumer and is maintained by hand rather than synced.
@@ -234,7 +234,7 @@ The consumers, re-enumerated 2026-09-19 by walking `F:\dev\projects` and `E:\Dev
 
 | consumer | tree | gated |
 | --- | --- | --- |
-| this repo | `scripts/helpers/eslint-rules/` (6 rules, incl. `prefer-noop-async`) | yes |
+| this repo | `scripts/helpers/eslint-rules/` (6 rules, incl. `prefer-noop-async`, plus the `ts-estree-node` helper) | yes |
 | `obsidian-integration-testing` | `scripts/helpers/eslint-rules/` (5) | yes |
 | `obsidian-typings-crawler` | `scripts/helpers/eslint-rules/` (5) | yes |
 | `obsidian-typings` | `scripts/helpers/eslint-rules/` (5) | yes |
