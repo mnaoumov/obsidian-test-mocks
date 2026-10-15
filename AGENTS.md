@@ -356,8 +356,9 @@ are retired and keep their numbers):
    The second arm appears in no file under `scripts/docs-gen`, so it moves no shape there.
 2. **`getImportStatement()` (`api-doc-text-utils.ts`)** — this package publishes BARREL entry points, so a
    namespace does not map to a subpath the way `obsidian-dev-utils`' does. `obsidian/**` becomes a named import from
-   `obsidian-test-mocks/obsidian`; `globals/**` and `obsidian-typings/**` are side-effect imports of the
-   matching setup entry point, because nothing there is imported by name.
+   `obsidian-test-mocks/obsidian`; `globals/**` is a side-effect import of the setup entry point, because
+   nothing there is imported by name. `src/obsidian-typings/` holds only the deprecated no-op setup entry
+   points, which the generator's file filter skips, so it has no mapping.
    Baseline reason: `barrel-entry-points`, which also covers the `API_INDEX_INTRO` prose in
    `api-doc-page-generation.ts` that explains the arrangement to a reader.
 3. **Member slugs (`splitMockOnlySuffix` in the same file)** — slug generation strips `_`, so `create__`
