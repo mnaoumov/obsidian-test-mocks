@@ -32,7 +32,7 @@
  * **This repo's side is also READ from the index, not from the working tree** ({@link readIndexContent}).
  * The subject of this gate is what is about to be committed, and `lint:fix` and `format` rewrite a staged
  * file in place - which is one of the ways these copies drift. nano-staged cannot be made to run this after
- * them (it runs its per-pattern task groups with `Promise.all`; see `scripts/helpers/git-content.ts`), so
+ * them (it runs its per-pattern task groups with `Promise.all`; see `@mnaoumov/typescript-dev-toolkit/git`), so
  * reading the index makes that ordering irrelevant rather than trying to enforce it. It also means a
  * developer running this by hand over a half-edited tree is answered about the commit they are preparing.
  * On a clean checkout the two sources agree, so CI is unaffected.
@@ -47,6 +47,7 @@
  */
 
 import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
+import { readIndexContent } from '@mnaoumov/typescript-dev-toolkit/git';
 import {
   execFromRoot,
   getRootFolder
@@ -89,7 +90,6 @@ import {
   TRANSFORM_ARMS,
   validateBaselineEntry
 } from './helpers/copy-sync.ts';
-import { readIndexContent } from './helpers/git-content.ts';
 
 /**
  * The checked-in record this gate compares against.
