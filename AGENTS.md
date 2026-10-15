@@ -285,7 +285,7 @@ read-and-merge, and the list below is what it is merged against.
 each upstream file's hunk count and each hunk's added/removed line counts plus a digest of its changed
 lines, and fails when a file's shape moves — which it does whether upstream edited the file or this repo
 did. Line numbers are deliberately not part of a shape, so one real edit is not reported as a dozen.
-**49 files, 36 of them identical** after the recorded transforms, measured 2026-09-29.
+**49 files, 37 of them identical** after the recorded transforms (the two TTFs by hash), measured 2026-10-15.
 
 Six things to know before touching a copied file:
 
@@ -347,7 +347,7 @@ upstream's path makes the file byte-identical, so it sits in the gate's identica
 divergence reason. `docs/public/favicon.svg` is the one copied file still outside the roster, as the second
 copy of a file that must never be synced.
 
-Keep new divergence to the seven places this package genuinely differs (the list runs to ten; 6, 8 and 10
+Keep new divergence to the eight places this package genuinely differs (the list runs to eleven; 6, 8 and 10
 are retired and keep their numbers):
 
 1. **`BASE_PATH` / site title / repo URLs** — mechanical renames, all of them the name, and all of them
@@ -407,6 +407,14 @@ are retired and keep their numbers):
     the Inter TTFs both repos vendor under `scripts/docs-gen/assets/fonts` and the favicon this repo
     draws onto a card. Upstream has since taken this repo's wording, so the file is byte-identical and
     the `vendored-og-assets` reason is gone. The two TTFs are still gated as a digest pair.
+11. **The single `src` walk (`generate-api-docs.ts`, `build-pages.yml`)** — added 2026-10-15, when
+    `obsidian-dev-utils` became a multi-package workspace: its generator now walks every `packages/*/src` and
+    prefixes each namespace with the package folder, and its Pages cache key hashes `packages/*/src/**/*.ts`.
+    This package has one `src`, so the generator keeps the single-root walk (and the `jiti` run line in its
+    header), and the cache key hashes `src/**/*.ts`. Upstream's docs site may be split per package
+    (`obsidian-dev-utils`' own plan), which would put its generator back on a single `src`; re-check this one
+    at that sync.
+    Baseline reason: `single-package-source`.
 
 ### Type-checking and linting gaps (the same ones `obsidian-dev-utils` has)
 
