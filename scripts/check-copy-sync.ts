@@ -46,10 +46,7 @@
  * fails, so accepting a divergence remains an act of writing down what it is.
  */
 
-import {
-  CliTaskResult,
-  wrapCliTask
-} from '@mnaoumov/typescript-dev-toolkit/cli-utils';
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
 import {
   execFromRoot,
   getRootFolder
@@ -539,9 +536,4 @@ async function writeBaseline(root: string, baseline: Baseline, measured: Readonl
   await writeFile(join(root, BASELINE_FILE_NAME), `${JSON.stringify(baseline, null, JSON_INDENT)}\n`);
 }
 
-// `wrapCliTask` ends the process with `process.exit(0)` on success, which overrides the `process.exitCode = 1`
-// that `main` sets on a finding, so the code is handed back to it as the task's result.
-await wrapCliTask(async () => {
-  await main();
-  return CliTaskResult.FromExitCode(Number(process.exitCode ?? 0));
-});
+await wrapCliTask(main);
