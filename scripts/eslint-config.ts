@@ -3,6 +3,11 @@ import type { Linter } from 'eslint';
 import commentsConfigs from '@eslint-community/eslint-plugin-eslint-comments/configs';
 import { includeIgnoreFile } from '@eslint/config-helpers';
 import eslint from '@eslint/js';
+import {
+  IN_HOUSE_ESLINT_PLUGIN_NAME,
+  inHouseEslintPlugin
+} from '@mnaoumov/typescript-dev-toolkit/linters/eslint-rules/in-house-plugin';
+import { getRootFolder } from '@mnaoumov/typescript-dev-toolkit/root';
 // eslint-disable-next-line import-x/no-rename-default -- The default export name `plugin` is too confusing.
 import stylistic from '@stylistic/eslint-plugin';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
@@ -19,9 +24,6 @@ import { defineConfig } from 'eslint/config';
 import { join } from 'node:path/posix';
 // eslint-disable-next-line import-x/no-rename-default -- The default export name `_default` is too confusing.
 import tseslint from 'typescript-eslint';
-
-import { obsidianDevUtilsPlugin } from './helpers/eslint-rules/obsidian-dev-utils-plugin.ts';
-import { getRootFolder } from './helpers/root.ts';
 
 // The `docs/src/**/*.ts` modules are deliberately absent (and ignored outright below): they resolve
 // `astro:content` and `import.meta.env` through the types Astro generates into the gitignored `.astro/` at
@@ -369,12 +371,6 @@ function getEslintConfigs(): Linter.Config[] {
       }
     },
     {
-      files: ['scripts/helpers/@types/markdownlint-cli2-config-schema.d.ts'],
-      rules: {
-        'no-restricted-syntax': 'off'
-      }
-    },
-    {
       files: ['**/*.test.ts', 'scripts/eslint-config.ts'],
       rules: {
         'no-magic-numbers': 'off'
@@ -622,7 +618,7 @@ function getLocalPluginConfigs(): Linter.Config[] {
   return defineConfig([{
     files: typeScriptFiles,
     plugins: {
-      'obsidian-dev-utils': obsidianDevUtilsPlugin
+      [IN_HOUSE_ESLINT_PLUGIN_NAME]: inHouseEslintPlugin
     },
     rules: {
       'obsidian-dev-utils/no-async-callback-to-unsafe-return': 'error',
@@ -1077,32 +1073,6 @@ function getUnicornConfigs(): Linter.Config[] {
          * `STATE.app` and make each file read worse, since the fixture is reset per test by design.
          */
         'unicorn/no-top-level-assignment-in-function': 'off'
-      }
-    },
-    {
-      /*
-       * A generated declaration file, reproduced from `markdownlint-cli2`'s own JSON schema. Its union member
-       * order and its type names both come from the generator, so neither is ours to change: renaming a type
-       * here would just be undone the next time the schema is regenerated.
-       */
-      files: ['scripts/helpers/@types/markdownlint-cli2-config-schema.d.ts'],
-      rules: {
-        'unicorn/name-replacements': 'off',
-        'unicorn/prefer-type-literal-last': 'off'
-      }
-    },
-    {
-      /*
-       * The rule fires on the tail call that follows a type alias. That function recurses in two places — there,
-       * and above, fanning out over the members of a union — so turning the tail call into a loop would leave it
-       * half recursive and half iterative over the same tree. The suppression lives here rather than on the line
-       * itself because the file is shared byte-for-byte with sibling projects that do not install this plugin,
-       * where a disable directive naming one of its rules is an unresolvable rule reference and fails their lint
-       * outright.
-       */
-      files: ['scripts/helpers/eslint-rules/no-async-callback-to-unsafe-return.ts'],
-      rules: {
-        'unicorn/no-useless-recursion': 'off'
       }
     },
     {

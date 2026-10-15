@@ -1,3 +1,6 @@
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
+import { resolveToolCommand } from '@mnaoumov/typescript-dev-toolkit/package-manager';
+import { execFromRoot } from '@mnaoumov/typescript-dev-toolkit/root';
 import {
   mkdirSync,
   readdirSync,
@@ -12,12 +15,6 @@ import {
   dirname,
   join
 } from 'node:path';
-
-import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
-import { resolveToolCommand } from './helpers/package-manager.ts';
-import { execFromRoot } from './helpers/root.ts';
-
-exitIfScriptDisabled();
 
 const ESM_DIR = 'dist/lib/esm';
 const CJS_DIR = 'dist/lib/cjs';
@@ -71,4 +68,4 @@ function toForwardSlash(p: string): string {
   return p.replaceAll('\\', '/');
 }
 
-await main();
+await wrapCliTask(main);

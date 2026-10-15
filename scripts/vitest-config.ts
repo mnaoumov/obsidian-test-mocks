@@ -2,8 +2,7 @@ import { defineConfig } from 'vitest/config';
 
 const SHARED_EXCLUDE = ['node_modules', 'dist', 'docs/dist', 'src/jest'];
 
-// Every test under `scripts/` -- the vendored docs generator, the custom ESLint rules, and the script
-// helpers. Deliberately the whole tree rather than `scripts/docs-gen/**`, which is what it used to be:
+// Every test under `scripts/` -- the vendored docs generator and the script helpers. Deliberately the whole tree rather than `scripts/docs-gen/**`, which is what it used to be:
 // That narrower glob left `scripts/helpers/**/*.test.ts` collected by the jsdom project below, where
 // mocking a node builtin does not work. A `vi.mock('node:fs')` with no factory is a silent no-op there --
 // not even the test file's own import is replaced -- so a suite written against it reads the real disk

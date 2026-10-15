@@ -29,6 +29,8 @@
  * case pins that distinction, which the prose around `isMissingPath` is entirely about.
  */
 
+import { getRootFolder } from '@mnaoumov/typescript-dev-toolkit/root';
+import { toPosixPath } from '@mnaoumov/typescript-lib/path';
 import { Buffer } from 'node:buffer';
 import { spawnSync } from 'node:child_process';
 import {
@@ -52,10 +54,6 @@ import {
 } from 'vitest';
 
 import { readIndexContent } from './git-content.ts';
-import {
-  getRootFolder,
-  toPosixPath
-} from './root.ts';
 
 /**
  * The fields this reads out of the staged `package.json`, which is only enough to prove it is that file.

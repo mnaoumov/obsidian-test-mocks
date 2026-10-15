@@ -11,6 +11,7 @@
  * {@link ./docs-gen/helpers/unrendered-alerts.ts}), since nothing else notices when the conversion stops.
  */
 
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
 import {
   readdir,
   readFile
@@ -35,9 +36,6 @@ import {
   collectUnrenderedAlerts,
   formatUnrenderedAlerts
 } from './docs-gen/helpers/unrendered-alerts.ts';
-import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
-
-exitIfScriptDisabled();
 
 const DOCS_OUTPUT_PATH = resolve('docs/dist').replaceAll('\\', '/');
 const SITE_BASE_URL = 'https://mnaoumov.dev/obsidian-test-mocks/';
@@ -50,7 +48,7 @@ const HTML_FILE_EXTENSION = '.html';
 // resolve, and its body links (nav, logo) are identical to every real page we already validate.
 const FALLBACK_PAGE_RELATIVE_PATH = '404.html';
 
-await main();
+await wrapCliTask(main);
 
 function createFileSystem(allFiles: Set<string>, pages: DocumentationPage[]): LinkCheckFileSystem {
   const htmlByRelativePath = new Map(pages.map((page) => [page.relativePath, page.html]));

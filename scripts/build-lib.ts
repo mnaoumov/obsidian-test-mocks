@@ -1,5 +1,6 @@
 import type { Plugin } from 'esbuild';
 
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
 import { build } from 'esbuild';
 import {
   readdirSync,
@@ -7,10 +8,6 @@ import {
 } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-
-import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
-
-exitIfScriptDisabled();
 
 function getEntryPoints(directory: string): string[] {
   const entries: string[] = [];
@@ -73,4 +70,4 @@ function rewriteExtensionsPlugin(extension: string): Plugin {
   };
 }
 
-await main();
+await wrapCliTask(main);

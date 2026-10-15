@@ -1,10 +1,11 @@
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
+import { lint } from '@mnaoumov/typescript-dev-toolkit/linters/markdownlint';
 import process from 'node:process';
 
-import { exitIfScriptDisabled } from './helpers/env-toggle.ts';
-import { lint } from './helpers/markdownlint.ts';
+import { getMarkdownLintTargets } from './helpers/markdown-lint-targets.ts';
 
-exitIfScriptDisabled();
+await wrapCliTask(async () => {
+  const [, , ...paths] = process.argv;
 
-const [, , ...paths] = process.argv;
-
-await lint({ paths, shouldFix: false });
+  await lint({ paths: await getMarkdownLintTargets(paths), shouldFix: false });
+});
