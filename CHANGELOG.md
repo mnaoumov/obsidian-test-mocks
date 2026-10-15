@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## 7.2.2
+
+- fix(deps): merge making CodeMirror and moment peers that follow obsidian
+- fix(scripts): merge reading vendored eslint rules from typescript-dev-toolkit
+- fix(eslint): merge linting vitest.config.ts
+- fix(metadata-cache): merge ending an item in a lazily opened blockquote
+- fix(metadata-cache): merge reading definitions inside containers
+- fix(metadata-cache): merge reading an inline block id after any inline token
+- fix(metadata-cache): merge reading tab list markers and whitespace lines in HTML blocks
+- fix(metadata-cache): merge reading a list marker that ends its line as an empty item
+- feat(metadata-cache): merge filling footnotes, footnoteRefs and referenceLinks
+- fix(metadata-cache): merge reading stacked list markers and ordered items after a quote
+- fix(metadata-cache): merge ending lists, math blocks and quoted items as Obsidian's worker does
+- fix(metadata-cache): merge closing the frontmatter block as Obsidian's worker does
+- fix(metadata-cache): merge reading headings, definitions, block ids and list lines as Obsidian's worker does
+- fix(metadata-cache): merge parenting, stripping and closing list items as Obsidian's worker does
+- fix(metadata-cache): merge ending the frontmatter block at its closing delimiter
+- fix(metadata-cache): merge reading the blocks between sections as Obsidian's worker does
+- fix(metadata-cache): merge hiding list items inside code blocks, comments and math blocks
+- Merge branch 'T2866': parse CRLF and lone-CR notes as Obsidian does
+- Merge branch 'T2863': type callout blocks as callout sections
+- fix(metadata-cache): merge list item ends measured against Obsidian
+- fix(metadata-cache): merge list items inside blockquotes
+- fix(metadata-cache): merge list grouping by intervening content
+
 ## 7.2.1
 
 - fix(metadata-cache): merge list items starting at their container's content column
