@@ -234,7 +234,10 @@ Two npm-12 facts about this path, both measured on npm 12.0.2 / Node 26.5.0 and 
   emitted an array of results, npm 12 emits an object keyed by package name. Both are valid JSON, so the
   old `JSON.parse(output) as [NpmPackResult]` cast parsed happily and then read `undefined.filename`,
   crashing `publishGitHubRelease` AFTER the bump, commit, tag and push had already reached the remote.
-  `scripts/helpers/npm-pack.ts` now reads both shapes and throws naming the raw output otherwise.
+  `scripts/helpers/npm-pack.ts` now reads both shapes and throws naming the raw output otherwise. It also
+  skips whatever the `prepare` script prints above the JSON, which reaches the same stdout: a debug line
+  from that script is what stopped the 7.2.3 release at this step (2026-10-17), and the GitHub release was
+  then created by hand from the tarball the run had already packed.
 - **The unattended form works here.** `npm run version -- <type> --no-changelog-editing` forwards both
   arguments to `scripts/version.ts` intact; `obsidian-dev-utils` sees npm claim `--no-*` as its own config
   and fail with `EUNKNOWNCONFIG`, but that does not reproduce in this repo. Without the flag,
