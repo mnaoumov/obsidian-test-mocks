@@ -1020,6 +1020,13 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   wins over a case-folded one, where Obsidian has no case preference at all — the mock already ignores `sourcePath`, so
   it never reproduced Obsidian's candidate order, and exact-first keeps every earlier answer unchanged.
 
+- **`normalizePath` is a port of Obsidian's own, and the root is `/`** (2026-10-16, `Fl` in Obsidian 1.14.x's
+  `app.js`). It collapses every run of `\` and `/` to one `/`, strips the leading and trailing ones, answers `/` for a
+  path left empty (so `normalizePath('')` and `normalizePath('/')` are both `/`), turns a no-break space (U+00A0) or a
+  narrow no-break space (U+202F) into a plain space, and puts the result in NFC. The mock used to answer `''` for the
+  root and do neither of the last two, so a consumer could not unit-test a decomposed (NFD) name and had to add
+  `|| '/'` after the call.
+
 - **`getFrontMatterInfo` is a port of Obsidian's own, and its `frontmatter` ends WITH the newline** (2026-09-24, `hg`
   in Obsidian 1.14.x's `app.js`). `to` is the index of the closing `---` itself, so `[from, to)` is exactly the region
   to replace, and splicing in `stringifyYaml()` output leaves no blank line before the delimiter. The mock used to stop
