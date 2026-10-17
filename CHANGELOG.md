@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 7.2.3
+
+- fix(normalizePath): port Obsidian's root, NFC and no-break-space handling
+- chore(scripts): merge passing linkCheckExcludeGlobs to the markdown lint
+- chore(scripts): merge importing readIndexContent from typescript-dev-toolkit
+- chore(scripts): merge letting wrapCliTask carry check:copy-sync's exit code
+- chore(docs-gen): merge dropping the obsidian-typings bridge mapping
+- chore(docs-gen): merge recording the single-src walk as a copy-sync divergence
+- chore: merge the switch to the published @mnaoumov packages
+
 ## 7.2.2
 
 - fix(deps): merge making CodeMirror and moment peers that follow obsidian
