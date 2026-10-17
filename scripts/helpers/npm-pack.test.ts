@@ -46,6 +46,21 @@ describe('parseNpmPackFilename', () => {
     expect(parseNpmPackFilename(NPM_12_OUTPUT)).toBe('obsidian-test-mocks-4.2.1.tgz');
   });
 
+  it('skips a prepare-script line printed above the JSON', () => {
+    const rawOutput = `  typescript-lib:Exec Executing command: node_modules/.bin/husky.cmd +0ms\n${NPM_12_OUTPUT}`;
+    expect(parseNpmPackFilename(rawOutput)).toBe('obsidian-test-mocks-4.2.1.tgz');
+  });
+
+  it('skips noise above the npm <= 11 array shape, with CRLF line breaks', () => {
+    const rawOutput = `> prepare\r\n${NPM_11_OUTPUT}`;
+    expect(parseNpmPackFilename(rawOutput)).toBe('obsidian-test-mocks-4.2.1.tgz');
+  });
+
+  it('throws naming the raw output when the text after the noise is not JSON either', () => {
+    const rawOutput = 'noise\n{ not json';
+    expect(() => parseNpmPackFilename(rawOutput)).toThrow(rawOutput);
+  });
+
   it('throws naming the raw output when it is not JSON', () => {
     const rawOutput = 'npm ERR! code ENOENT';
     expect(() => parseNpmPackFilename(rawOutput)).toThrow(rawOutput);

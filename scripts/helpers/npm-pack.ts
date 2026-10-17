@@ -23,9 +23,12 @@
  * and fixed in lockstep in the sibling copies in `obsidian-integration-testing` and `obsidian-dev-utils`.
  * So this module validates instead of asserting, and every failure names the raw output it could not read.
  *
- * No noise-stripping is needed here, unlike the sibling copy in `obsidian-dev-utils`: `execFromRoot`
- * accumulates the child's `stdout` and `stderr` separately and returns `stdout` alone, and npm writes its
- * `npm notice run ... prepare` lines to `stderr` -- so the string reaching this module is pure JSON.
+ * The JSON is not always the whole of stdout. `execFromRoot` returns the child's `stdout` alone, and npm
+ * writes its own `npm notice run ... prepare` lines to `stderr`, but `npm pack` runs the `prepare` script
+ * first and that script's output lands in the same `stdout`: on 2026-10-17 the 7.2.3 release died here,
+ * after the tag was pushed, because a `typescript-lib:Exec Executing command: .../husky.cmd` line sat
+ * above the JSON. So when the whole output does not parse, the JSON is read from the first line that
+ * opens with `{` or `[`.
  */
 
 import { castTo } from '../../src/internal/castTo.ts';
@@ -45,10 +48,8 @@ interface NpmPackResult {
  * alone.
  */
 export function parseNpmPackFilename(rawOutput: string): string {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(rawOutput);
-  } catch {
+  const parsed = parseJsonSkippingLeadingNoise(rawOutput);
+  if (parsed === undefined) {
     throw new Error(`Could not parse 'npm pack --json' output as JSON:\n${rawOutput}`);
   }
 
@@ -65,4 +66,23 @@ export function parseNpmPackFilename(rawOutput: string): string {
   }
 
   return filename;
+}
+
+function parseJsonSkippingLeadingNoise(rawOutput: string): unknown {
+  const lines = rawOutput.split(/\r?\n/);
+  const candidates = [rawOutput];
+  const jsonStartIndex = lines.findIndex((line) => line.startsWith('{') || line.startsWith('['));
+  if (jsonStartIndex > 0) {
+    candidates.push(lines.slice(jsonStartIndex).join('\n'));
+  }
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      // Try the next candidate.
+    }
+  }
+
+  return undefined;
 }
