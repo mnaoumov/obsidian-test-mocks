@@ -113,6 +113,15 @@ describe('Menu', () => {
     });
   });
 
+  describe('onHistoryBack', () => {
+    it('should hide the menu, calling the onHide callback', () => {
+      const menu = Menu.create2__();
+      const callback = vi.fn();
+      menu.onHide(callback);
+      menu.onHistoryBack();
+      expect(callback).toHaveBeenCalledOnce();
+    });
+  });
   describe('hide', () => {
     it('should return this', () => {
       const menu = Menu.create2__();

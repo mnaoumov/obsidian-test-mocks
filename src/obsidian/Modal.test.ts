@@ -80,6 +80,14 @@ describe('Modal', () => {
     });
   });
 
+  describe('onHistoryBack', () => {
+    it('should close the modal', () => {
+      const modal = Modal.create__(app);
+      const spy = vi.spyOn(modal, 'onClose');
+      modal.onHistoryBack();
+      expect(spy).toHaveBeenCalledOnce();
+    });
+  });
   describe('open / close', () => {
     it('should call onOpen when opened', () => {
       const modal = Modal.create__(app);

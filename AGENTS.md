@@ -1286,6 +1286,20 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   dismissed" — a consumer that dropped the duration of a notice meant to stay could not catch it. Only `undefined`
   takes the default; an explicit `0` is still recorded as `0`.
 
+- **The mocks track `obsidian` 1.14.4** (2026-10-18, read in that version's `obsidian.d.ts` and `app.js`). Most of
+  the declaration file's growth over 1.13.1 is documentation. What changed for a consumer:
+  - **`TExternalFile` is new**, a `TFile` for a file outside the vault. As in Obsidian, its `path` is the filesystem
+    path behind a `file:` prefix and `getRealPath()` strips it. Obsidian creates these itself, so a test builds one
+    with `TExternalFile.create2__(vault, realPath)`, which does not add it to the vault. The watcher and the user
+    list Obsidian keeps on it are not modeled.
+  - **`Menu`, `Modal` and `PopoverSuggest` implement `onHistoryBack`**, the back gesture's handler: the menu hides,
+    and the other two close, as in the app. Their subclasses inherit it.
+  - **`DocumentFragment.prototype.find` answers `null` when nothing matches**, as the new declaration says, where the
+    mock used to throw. `HTMLElement.prototype.find` is still declared non-nullable and still throws.
+  - `SecretComponent.onChange`'s callback takes `string | null`, and `BasesView.createFileForView`'s frontmatter
+    processor is also given the new file. `Side` gained `primary` and `secondary`, but `Workspace.ensureSideLeaf`
+    still tests for `'left'` only, as Obsidian's does, so either one gets the right sidebar.
+
 - **`Keymap.isModifier` / `Keymap.isModEvent` read the event.** They were unconditional `false` stubs
   until 2026-07-27, which made every modifier-branching behavior untestable without a spy — and let a
   test that forgot the spy silently exercise only the no-modifier path while looking green. Both now
