@@ -166,7 +166,7 @@ export class App {
    * @returns The new app.
    * @throws Error when a folder entry has non-empty content.
    */
-  // eslint-disable-next-line obsidian-dev-utils/params-options-name-match -- The rule derives `AppCreateConfigured__Options` from the method name, which the core `camelcase` rule then rejects for its embedded `__`. `AppCreateConfiguredOptions` carries the same owner prefix and optional-bag suffix without the collision.
+  // eslint-disable-next-line typescript-dev-toolkit/params-options-name-match -- The rule derives `AppCreateConfigured__Options` from the method name, which the core `camelcase` rule then rejects for its embedded `__`. `AppCreateConfiguredOptions` carries the same owner prefix and optional-bag suffix without the collision.
   public static createConfigured__(options: AppCreateConfiguredOptions = {}): App {
     let adapter: DataAdapterOriginal;
     if (options.adapter) {
