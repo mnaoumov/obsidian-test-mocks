@@ -20,9 +20,9 @@ describe('DocumentFragment.prototype extensions', () => {
       expect(result).toBe(div);
     });
 
-    it('should throw when no element matches', () => {
+    it('should return null when no element matches', () => {
       const frag = document.createDocumentFragment();
-      expect(() => find.call(frag, '.nonexistent')).toThrow();
+      expect(find.call(frag, '.nonexistent')).toBeNull();
     });
   });
 

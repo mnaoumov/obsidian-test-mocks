@@ -141,6 +141,14 @@ export class Modal {
   }
 
   /**
+   * Handles the history-back action (the back gesture or the mobile back button) while the modal is the topmost
+   * history handler. As in Obsidian, it closes the modal.
+   */
+  public onHistoryBack(): void {
+    this.close();
+  }
+
+  /**
    * Called when the modal opens; subclasses override it to render content. A no-op by default.
    */
   public onOpen(): void {

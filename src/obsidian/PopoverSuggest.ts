@@ -88,6 +88,14 @@ export abstract class PopoverSuggest<T> {
   }
 
   /**
+   * Handles the history-back action (the back gesture or the mobile back button) while the popover is the topmost
+   * history handler. As in Obsidian, it closes the popover.
+   */
+  public onHistoryBack(): void {
+    this.close();
+  }
+
+  /**
    * Opens the popover. The mock only sets {@link PopoverSuggest.isOpen}.
    */
   public open(): void {

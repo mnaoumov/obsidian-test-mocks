@@ -179,6 +179,14 @@ export class Menu extends Component {
   }
 
   /**
+   * Handles the history-back action (the back gesture or the mobile back button) while the menu is the topmost
+   * history handler. As in Obsidian, it hides the menu.
+   */
+  public onHistoryBack(): void {
+    this.hide();
+  }
+
+  /**
    * Makes the menu reserve no space for item icons. A no-op in the mock.
    *
    * @returns This menu, for chaining.

@@ -7,4 +7,4 @@
 /**
  * The API version of the app, which follows the desktop app's release cycle.
  */
-export const apiVersion = '1.13.1';
+export const apiVersion = '1.14.4';

@@ -22,7 +22,7 @@ export class SecretComponent extends BaseComponent {
   /**
    * The callback registered with {@link SecretComponent.onChange}, if any.
    */
-  public changeCallback?: (value: string) => unknown;
+  public changeCallback?: (value: null | string) => unknown;
 
   /**
    * Creates the secret control.
@@ -81,10 +81,11 @@ export class SecretComponent extends BaseComponent {
   /**
    * Registers the callback run when the selected secret changes, replacing any previous one.
    *
-   * @param callback - The callback, given the new secret id.
+   * @param callback - The callback, given the new secret id, or
+ull when the secret is cleared.
    * @returns This component, for chaining.
    */
-  public onChange(callback: (value: string) => unknown): this {
+  public onChange(callback: (value: null | string) => unknown): this {
     this.changeCallback = callback;
     return this;
   }

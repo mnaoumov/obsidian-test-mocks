@@ -60,6 +60,15 @@ describe('PopoverSuggest', () => {
     });
   });
 
+  describe('onHistoryBack', () => {
+    it('should close the popover', () => {
+      const app = App.createConfigured__();
+      const suggest = new ConcretePopoverSuggest(app);
+      suggest.open();
+      suggest.onHistoryBack();
+      expect(suggest.isOpen).toBe(false);
+    });
+  });
   describe('asOriginalType__', () => {
     it('should return the same instance typed as the original', () => {
       const app = App.createConfigured__();

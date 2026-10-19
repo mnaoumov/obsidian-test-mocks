@@ -14,19 +14,19 @@
       "section": "devDependencies",
       "why": "The version this repo's own tests run against: obsidian's peerDependencies names it exactly, so a different one would not install beside the obsidian devDependency. Consumers get the package through the caret peer (^6.5.0, the pin of obsidian 1.12.3, the bottom of the obsidian peer range), which shares their one copy - an exact runtime dependency here put a second CodeMirror state instance under the mocks for every consumer on a newer obsidian, so facets, StateFields and instanceof checks stopped matching.",
       "check": "node -e \"process.stdout.write(require('obsidian/package.json').peerDependencies['@codemirror/state'])\"",
-      "expect": "6.5.0"
+      "expect": "6.7.6"
     },
     "@codemirror/view": {
       "section": "devDependencies",
       "why": "Same as @codemirror/state - obsidian peer-pins it exactly, this is the version the tests run against, and consumers reach it through the caret peer so the view layer runs against their own CodeMirror instance.",
       "check": "node -e \"process.stdout.write(require('obsidian/package.json').peerDependencies['@codemirror/view'])\"",
-      "expect": "6.38.6"
+      "expect": "6.43.13"
     },
     "moment": {
       "section": "devDependencies",
       "why": "Must match the copy Obsidian bundles and re-exports as `moment`: obsidian's own dependencies name this exact version, and a different one would type against an API the runtime does not have. Consumers reach it through the caret peer (^2.29.4), which obsidian's own moment dependency satisfies - an exact runtime dependency here nested a second, advisory-affected moment 2.29.4 under the mocks for every consumer on obsidian 1.14.",
       "check": "node -e \"process.stdout.write(require('obsidian/package.json').dependencies.moment)\"",
-      "expect": "2.29.4"
+      "expect": "2.31.0"
     },
     "js-yaml": {
       "section": "overrides",
@@ -75,7 +75,7 @@
       "section": "devDependencies",
       "why": "These mocks reproduce one specific Obsidian API surface, so the type definitions they are written against are pinned rather than floated. The check records the newest published obsidian release: when it moves, the mocks should be re-examined against the new API rather than silently drifting.",
       "check": "npm view obsidian version",
-      "expect": "1.13.1"
+      "expect": "1.14.4"
     },
     "typescript": {
       "section": "devDependencies",

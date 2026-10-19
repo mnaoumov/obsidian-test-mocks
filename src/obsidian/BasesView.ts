@@ -6,7 +6,8 @@
 
 import type {
   BasesPropertyId as BasesPropertyIdOriginal,
-  BasesView as BasesViewOriginal
+  BasesView as BasesViewOriginal,
+  TFile as TFileOriginal
 } from 'obsidian';
 
 import type { QueryController } from './QueryController.ts';
@@ -105,9 +106,13 @@ export abstract class BasesView extends Component {
    * mock: no menu is shown and no file is created.
    *
    * @param _baseFileName - The file name to suggest for the new note.
-   * @param _frontmatterProcessor - A function that modifies the new note's frontmatter.
+   * @param _frontmatterProcessor - A function that modifies the new note's frontmatter, given that frontmatter and the
+   * new note.
    */
-  public async createFileForView(_baseFileName?: string, _frontmatterProcessor?: (frontmatter: unknown) => void): Promise<void> {
+  public async createFileForView(
+    _baseFileName?: string,
+    _frontmatterProcessor?: (frontmatter: unknown, file: TFileOriginal) => void
+  ): Promise<void> {
     await noopAsync();
   }
 
