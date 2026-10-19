@@ -38,9 +38,8 @@
     "EUNKNOWNCONFIG",
     "fflate",
     "frontmatter",
-    "GHSA",
-    "hrqm",
     "Jsdocs",
+    "katex",
     "Keymap",
     "linecap",
     "linejoin",
@@ -72,6 +71,7 @@
     "prepatch",
     "Promisable",
     "renderable",
+    "rescanning",
     "resvg",
     "satteri",
     "Sätteri",
@@ -95,6 +95,9 @@
     "wikilinks",
     "xlink",
     "xmpp"
+  ],
+  "ignoreRegExpList": [
+    "GHSA(?:-[0-9a-z]{4}){3}"
   ],
   "ignoreWords": [],
   "import": [],

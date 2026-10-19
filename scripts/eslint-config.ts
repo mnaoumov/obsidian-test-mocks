@@ -621,12 +621,15 @@ function getLocalPluginConfigs(): Linter.Config[] {
       [IN_HOUSE_ESLINT_PLUGIN_NAME]: inHouseEslintPlugin
     },
     rules: {
-      'obsidian-dev-utils/no-async-callback-to-unsafe-return': 'error',
-      'obsidian-dev-utils/no-unused-params-members': 'error',
-      'obsidian-dev-utils/no-used-underscore-variables': 'error',
-      'obsidian-dev-utils/params-options-name-match': 'error',
-      'obsidian-dev-utils/prefer-noop-async': 'error',
-      'obsidian-dev-utils/readonly-params-options-result-members': 'error'
+      'typescript-dev-toolkit/no-async-callback-to-unsafe-return': 'error',
+      'typescript-dev-toolkit/no-unresolved-jsdoc-link': 'error',
+      'typescript-dev-toolkit/no-unused-params-members': 'error',
+      'typescript-dev-toolkit/no-used-underscore-variables': 'error',
+      'typescript-dev-toolkit/params-options-name-match': 'error',
+      'typescript-dev-toolkit/prefer-logical-operator-over-ternary': 'error',
+      'typescript-dev-toolkit/prefer-noop-async': 'error',
+      'typescript-dev-toolkit/readonly-params-options-result-members': 'error',
+      'typescript-dev-toolkit/require-method-template': 'error'
     }
   }]);
 }
@@ -652,6 +655,7 @@ function getStylisticConfigs(): Linter.Config[] {
       ],
       files: typeScriptFiles,
       rules: {
+        '@stylistic/arrow-parens': ['error', 'always'],
         '@stylistic/generator-star-spacing': 'off',
         '@stylistic/indent': 'off',
         '@stylistic/indent-binary-ops': 'off',
@@ -893,7 +897,7 @@ function getUnicornConfigs(): Linter.Config[] {
              * `DomElementInfo`), and `ref` matches Obsidian's `EventRef`.
              *
              * `params` is the parameter-bag convention enforced by
-             * `obsidian-dev-utils/params-options-name-match`, which requires bag types to be named
+             * `typescript-dev-toolkit/params-options-name-match`, which requires bag types to be named
              * `<Owner>Params` / `<Owner>Options`; expanding it to `Parameters` would put the two rules in direct
              * contradiction. `doc`, `docs`, `env`, `dist`, `lib`, `src`, `util` and `utils` are the clearer
              * spelling here — and `src` additionally corrupts code, since the fixer renames enum members while
@@ -1015,6 +1019,12 @@ function getUnicornConfigs(): Linter.Config[] {
         'unicorn/prefer-global-this': 'off',
         // `Iterator#toArray` and the iterator helpers are ES2025. See the ES2022 floor note above.
         'unicorn/prefer-iterator-to-array': 'off',
+        /*
+         * Replaced by `typescript-dev-toolkit/prefer-logical-operator-over-ternary`, which reports the same and
+         * also fixes a boolean literal branch in TypeScript. Unicorn withholds that fix there, while
+         * `unicorn/prefer-ternary` keeps producing the shape, so `lint:fix` left an error it had just created.
+         */
+        'unicorn/prefer-logical-operator-over-ternary': 'off',
         /*
          * The suggested replacement is `Math.trunc(Number(x))`, which is longer than `parseInt(x, 10)` and not
          * the same function: `parseInt` stops at the first character that cannot be part of the number, so

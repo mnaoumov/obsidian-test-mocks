@@ -14,7 +14,7 @@ import { noop } from '../../internal/noop.ts';
  *
  * @param _options - The request's URL, method, data, headers and callbacks. Ignored by the mock.
  */
-// eslint-disable-next-line obsidian-dev-utils/params-options-name-match -- `AjaxOptions` is Obsidian's own name for this shape, shared by the global `ajax` and `ajaxPromise`. Renaming it per-function would break the 1:1 mapping to the API being mocked, and the two functions want different prefixes for the same type.
+// eslint-disable-next-line typescript-dev-toolkit/params-options-name-match -- `AjaxOptions` is Obsidian's own name for this shape, shared by the global `ajax` and `ajaxPromise`. Renaming it per-function would break the 1:1 mapping to the API being mocked, and the two functions want different prefixes for the same type.
 export function ajax(_options: AjaxOptions): void {
   noop();
 }
