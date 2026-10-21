@@ -21,8 +21,7 @@
     "docs/dist",
     "**/node_modules",
     "**/*-lock.json",
-    "**/*.md",
-    "scripts/docs-gen"
+    "**/*.md"
   ],
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.93.3.wasm",

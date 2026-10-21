@@ -152,7 +152,7 @@
     "@eslint/config-helpers": "^0.7.0",
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.5.2",
-    "@mnaoumov/typescript-dev-toolkit": "^3.7.2",
+    "@mnaoumov/typescript-dev-toolkit": "^3.8.0",
     "@mnaoumov/typescript-lib": "^1.5.0",
     "@resvg/resvg-js": "^2.6.2",
     "@stylistic/eslint-plugin": "^5.10.0",

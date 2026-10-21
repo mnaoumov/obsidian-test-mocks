@@ -2,13 +2,12 @@ import { defineConfig } from 'vitest/config';
 
 const SHARED_EXCLUDE = ['node_modules', 'dist', 'docs/dist', 'src/jest'];
 
-// Every test under `scripts/` -- the vendored docs generator and the script helpers. Deliberately the whole tree rather than `scripts/docs-gen/**`, which is what it used to be:
-// That narrower glob left `scripts/helpers/**/*.test.ts` collected by the jsdom project below, where
+// Every test under `scripts/`. Deliberately the whole tree rather than `scripts/docs-gen/**`, which is what it used to be
+// when the docs generator lived there: that narrower glob left `scripts/helpers/**/*.test.ts` collected by the jsdom project below, where
 // mocking a node builtin does not work. A `vi.mock('node:fs')` with no factory is a silent no-op there --
 // not even the test file's own import is replaced -- so a suite written against it reads the real disk
 // and passes only where the real answer happens to match. See AGENTS.md, "The two Vitest projects".
 const SCRIPTS_TEST_FILES = 'scripts/**/*.test.ts';
-const DOCS_SITE_TEST_FILES = 'docs/src/**/*.test.ts';
 
 const BIG_TIMEOUT_IN_MILLISECONDS = 30_000;
 
@@ -19,8 +18,7 @@ const BIG_TIMEOUT_IN_MILLISECONDS = 30_000;
 // for the same reason, after its release gate went flaky on exactly this. The budget covers two costs a
 // per-suite number cannot see: v8 coverage instrumentation, which `npm run test:coverage` -- the release
 // gate, via `npm run version` -- runs `src/**` under, and the CPU contention of a busy machine. Suites that
-// are genuinely slow in their own right -- rendering an OG image to a bitmap with satori + resvg, building
-// A ts-morph Project -- sit comfortably inside it. It is a ceiling rather than a floor, so the fast suites
+// are genuinely slow in their own right sit comfortably inside it. It is a ceiling rather than a floor, so the fast suites
 // sharing it cost nothing.
 const SHARED_TEST_DEFAULTS = { testTimeout: BIG_TIMEOUT_IN_MILLISECONDS };
 
@@ -45,14 +43,13 @@ export const config = defineConfig({
     globals: false,
     projects: [
       {
-        // The scripts tree and the documentation site are plain Node tooling: they must NOT run under
-        // jsdom, and must not load the Obsidian mocks (the docs generator reads this repo's own sources
-        // with ts-morph, so a global `obsidian` mock would only get in the way).
+        // The scripts tree is plain Node tooling: it must NOT run under jsdom, and must not load the Obsidian
+        // mocks.
         test: {
           ...SHARED_TEST_DEFAULTS,
           environment: 'node',
           exclude: [...SHARED_EXCLUDE],
-          include: [SCRIPTS_TEST_FILES, DOCS_SITE_TEST_FILES],
+          include: [SCRIPTS_TEST_FILES],
           name: 'unit-tests:scripts',
           setupFiles: []
         }

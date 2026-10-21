@@ -32,7 +32,7 @@ docs/src/generated-sidebar.json
 docs/public/og
 
 # Generated barrels (scripts/build-generate-indices.ts). Anchored under `src/` so it cannot swallow an
-# authored `index.ts` elsewhere — `docs/src/components/api/index.ts` is one.
+# authored `index.ts` elsewhere.
 /src/**/index.ts
 /src/globals/setup.ts
 

@@ -67,7 +67,7 @@
     },
     "satori": {
       "section": "devDependencies",
-      "why": "@mnaoumov/typescript-dev-toolkit declares satori as a peer at ^0.33.5, which for a 0.x version admits 0.33.x only, while the caret sweep floats this repo's own range to the newest satori (0.62.0 on 2026-10-18). npm refuses to resolve an optional peer present at a version its range excludes, so a floated satori makes the whole sweep UNRESOLVABLE. The OG-image generator under scripts/docs-gen reaches satori directly and through the toolkit's docs-site helpers, so both have to use the one version. The check records the toolkit's peer range: when it moves, move this pin with it.",
+      "why": "@mnaoumov/typescript-dev-toolkit declares satori as a peer at ^0.33.5, which for a 0.x version admits 0.33.x only, while the caret sweep floats this repo's own range to the newest satori (0.62.0 on 2026-10-18). npm refuses to resolve an optional peer present at a version its range excludes, so a floated satori makes the whole sweep UNRESOLVABLE. The toolkit's docs-site export renders the OG images with it, so it has to be a version that peer range admits. The check records the toolkit's peer range: when it moves, move this pin with it.",
       "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@mnaoumov/typescript-dev-toolkit/package.json','utf8')).peerDependencies.satori)\"",
       "expect": "^0.33.5"
     },
