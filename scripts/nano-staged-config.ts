@@ -22,35 +22,6 @@ const PACKAGE_MANAGER_RUN_COMMAND = getPackageManagerRunCommand().join(' ');
 const NANO_STAGED_ENV_VARIABLE = 'NANO_STAGED';
 
 const tasks: Record<string, string[]> = {
-  /*
-   * The three single files this repo keeps in copy-sync with `obsidian-dev-utils` — the rest of the roster
-   * is the two trees in the entry below, and `scripts/helpers/copy-sync.ts` holds all five as
-   * `COPY_SYNC_PATHS`.
-   *
-   * The gate does not have to run after `lint:fix`, and cannot be made to. **nano-staged builds one task group
-   * per pattern and runs the groups with `Promise.all`** (measured against nano-staged 1.0.2, 2026-09-19), so
-   * this group RACES `lint:fix` rather than following it; sequencing exists within a single key's command list
-   * and nowhere else. So the ordering is made IRRELEVANT instead: the gate reads its subject out of the git index
-   * rather than off disk (`readIndexContent` from `@mnaoumov/typescript-dev-toolkit/git`), which is the same bytes whether `lint:fix` has run
-   * or not.
-   *
-   * Neither entry takes filenames: the glob only decides whether the check runs, so an ordinary commit
-   * touching no copied file fetches nothing. A commit that stages files matching both entries runs the
-   * check twice, which costs one extra tree call of the hourly 60 and is the price of nano-staged's
-   * matcher — see the entry below.
-   */
-  '{.github/workflows/build-pages.yml,astro.config.ts,docs/tsconfig.json}': [
-    `${PACKAGE_MANAGER_RUN_COMMAND} check:copy-sync --`
-  ],
-  /*
-   * The two copy-sync trees, in one key. The brace has to sit BEFORE the `/**`: nano-staged treats `**` as
-   * a globstar only when it is bounded by a `/` or the end of the pattern, so inside a brace group — as in
-   * `{docs/src/**,scripts/docs-gen/**}` — it degrades to a single-segment wildcard and silently stops
-   * matching `scripts/docs-gen/helpers/*`, which is most of the tree.
-   */
-  '{docs/src,scripts/docs-gen}/**': [
-    `${PACKAGE_MANAGER_RUN_COMMAND} check:copy-sync --`
-  ],
   '*': [
     `${PACKAGE_MANAGER_RUN_COMMAND} spellcheck --`
   ],

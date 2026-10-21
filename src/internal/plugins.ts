@@ -55,7 +55,7 @@ export class Plugins extends Events {
    * {@link registerPlugin__} from the instance's own {@link Plugin.manifest} — which is where Obsidian
    * takes it from too. A stand-in that carries no manifest registers the instance alone and leaves this
    * record untouched, so a test that needs the plugin's NAME rather than its instance — as
-   * `obsidian-dev-utils`' resource lock does, reading `app.plugins.manifests[id]?.name` — assigns one
+   * `@mnaoumov/obsidian-lib`'s resource lock does, reading `app.plugins.manifests[id]?.name` — assigns one
    * here directly.
    */
   public manifests: Record<string, PluginManifestOriginal> = {};

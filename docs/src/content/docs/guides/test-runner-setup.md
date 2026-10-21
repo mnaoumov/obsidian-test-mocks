@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     server: {
       deps: {
-        inline: ['@obsidian-typings', 'obsidian-dev-utils']
+        inline: ['@obsidian-typings', '@mnaoumov/obsidian-lib']
       }
     },
     setupFiles: ['obsidian-test-mocks/vitest-setup']
@@ -29,7 +29,7 @@ export default defineConfig({
 ```
 
 > [!NOTE]
-> The `server.deps.inline` setting tells Vitest to bundle `@obsidian-typings` and `obsidian-dev-utils`
+> The `server.deps.inline` setting tells Vitest to bundle `@obsidian-typings` and `@mnaoumov/obsidian-lib`
 > into the test transform pipeline instead of treating them as external Node.js imports. Without this,
 > Vitest may fail to resolve these transitive dependencies at runtime. Add any other packages that cause
 > `Cannot find module` errors during test setup to this list.
