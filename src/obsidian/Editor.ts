@@ -91,7 +91,7 @@ export abstract class Editor {
    * directions: a change or selection made through the mock is dispatched into it, and a transaction
    * dispatched into it is applied to the mock as one change, undone in one step, carrying the selection CodeMirror
    * ended up with. So `cm.state.doc.toString()` and {@link Editor.getValue} never disagree, and library
-   * code that reconfigures the view through it — `obsidian-dev-utils`' resource lock appends a
+   * code that reconfigures the view through it — `@mnaoumov/obsidian-lib`'s resource lock appends a
    * `Compartment` and reconfigures it to `EditorState.readOnly` — runs against the real thing.
    *
    * What it is NOT is a rendered editor: the view is detached, nothing measures or paints, and it

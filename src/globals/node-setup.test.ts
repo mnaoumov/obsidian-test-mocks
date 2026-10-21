@@ -49,7 +49,7 @@ describe('Node.prototype', () => {
   it('should expose win as the MAIN window for a document node that has a view of its own', () => {
     // `win` reads `this.doc.defaultView`, so it inherits the global-document fallback asserted above.
     // A pop-out document therefore resolves to the MAIN window, not to its own.
-    // That is real Obsidian's behavior, and it is why `obsidian-dev-utils` offers
+    // That is real Obsidian's behavior, and it is why `@mnaoumov/typescript-lib` offers
     // `getDocumentWindow(doc)` for code that needs a document's own window.
     const popoutDocument = document.implementation.createHTMLDocument();
     const popoutWindow = castTo<Window>({});

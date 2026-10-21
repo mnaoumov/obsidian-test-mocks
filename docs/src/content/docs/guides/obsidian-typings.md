@@ -110,7 +110,7 @@ const app = App.createConfigured__();
 app.plugins.getPlugin('notebook-navigator'); // null
 ```
 
-This matters because library code reads the registry on your behalf. `obsidian-dev-utils`, for
+This matters because library code reads the registry on your behalf. `@mnaoumov/obsidian-lib`, for
 instance, looks for Notebook Navigator's optional menu API on layout ready, so a plugin whose own
 code never mentions `app.plugins` still touches it through what it inherits.
 
@@ -129,7 +129,7 @@ enable/disable lifecycle, installing, updates and deprecation checks throw, as b
 
 `app.plugins.manifests` follows the same registrations: a registered instance that carries its own
 `manifest` (every `Plugin` mock does) is filed under its id, and unregistering drops it. A bare
-stand-in files nothing, so a test that needs the plugin's *name* — `obsidian-dev-utils`' resource
+stand-in files nothing, so a test that needs the plugin's *name* — `@mnaoumov/obsidian-lib`'s resource
 lock reads `app.plugins.manifests[id]?.name` to say who holds a lock — assigns the entry directly:
 
 ```typescript
@@ -142,7 +142,7 @@ app.plugins.manifests['notebook-navigator'] = manifest;
 editor in both directions. An edit, selection, undo or `resetState__()` made through the editor is
 dispatched into the view, and a transaction dispatched into the view is applied back to the editor as
 one change, undone in one step, carrying the selection CodeMirror landed on. So `editor.cm.state.doc.toString()`
-and `editor.getValue()` always agree, and library code that reconfigures the view — `obsidian-dev-utils`
+and `editor.getValue()` always agree, and library code that reconfigures the view — `@mnaoumov/obsidian-lib`
 makes a locked editor read-only by appending a `Compartment` and reconfiguring it to
 `EditorState.readOnly` — runs against the real thing rather than failing on an unmocked `cm`.
 

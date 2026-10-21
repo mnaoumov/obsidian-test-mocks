@@ -42,8 +42,8 @@ const testFiles = [
   'scripts/**/*.test.ts'
 ];
 
-// The published library. The jsdoc/tsdoc rules are scoped to it (minus its tests), the way
-// `obsidian-dev-utils` scopes them to its `sourceFiles`: build scripts are not part of the documented surface.
+// The published library. The jsdoc/tsdoc rules are scoped to it (minus its tests), the way the shared config in
+// `@mnaoumov/typescript-dev-toolkit` scopes its source rules to `sourceFiles`: build scripts are not part of the documented surface.
 const sourceFiles = [
   'src/**/*.ts'
 ];
@@ -361,8 +361,8 @@ function getEslintConfigs(): Linter.Config[] {
       /*
        * The build, lint, docs and version scripts are CLI entry points whose output IS their interface, so
        * printing to stdout is what they are for. Kept as a deliberate local override rather than drift: the
-       * shared config in `obsidian-dev-utils` leaves the rule on everywhere, because nothing in that package
-       * prints. The sibling override below turns off `unicorn/no-process-exit` over the same files for the
+       * shared config in `@mnaoumov/typescript-dev-toolkit` allows only `console.warn` and `console.error`
+       * everywhere. The sibling override below turns off `unicorn/no-process-exit` over the same files for the
        * same reason.
        */
       files: ['scripts/**/*.ts'],
@@ -457,10 +457,7 @@ function getImportXConfigs(): Linter.Config[] {
        * what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory off
        * disk without an inline waiver at each import.
        *
-       * Ported from `obsidian-dev-utils`' shared config, whose `getNodeBuiltinsConfigs` exempts
-       * `context.testFiles` the same way. Only the `import-x` half comes across: the twin
-       * `obsidianmd/no-nodejs-modules` there arrives with the plugin-directory rules, which this package
-       * does not register.
+       * The shared config in `@mnaoumov/typescript-dev-toolkit` exempts `context.testFiles` the same way.
        */
       files: testFiles,
       rules: {
@@ -471,7 +468,7 @@ function getImportXConfigs(): Linter.Config[] {
 }
 
 /**
- * Require TSDoc on every exported member of the published library, with the rule set `obsidian-dev-utils` uses.
+ * Require TSDoc on every exported member of the published library, with a full `eslint-plugin-jsdoc` / `eslint-plugin-tsdoc` rule set.
  *
  * Kept deliberately, not as drift: this package once left jsdoc/tsdoc out on the grounds that its surface mirrors
  * Obsidian's API name for name, so Obsidian's own docs describe it. That is not a reason to skip docs — a consumer

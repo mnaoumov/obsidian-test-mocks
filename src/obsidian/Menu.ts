@@ -209,7 +209,7 @@ export class Menu extends Component {
    * Records a section's submenu configuration.
    *
    * Obsidian keys these by section name and renders the section as a submenu; the mock only has to
-   * remember what was asked for, which is what callers such as `obsidian-dev-utils`'
+   * remember what was asked for, which is what callers such as `@mnaoumov/obsidian-lib`'s
    * `AbstractFileCommandHandler` assert on. Read the recorded configs back through
    * `sectionSubmenus__`.
    *

@@ -45,7 +45,7 @@ const DEFAULT_PREID = 'beta';
  * Skips the interactive changelog review, so a release can run unattended.
  *
  * `updateChangelog` otherwise opens the changelog in an editor and waits for it to close, which no
- * scripted release can satisfy. Named after the flag `obsidian-dev-utils`' release script already takes.
+ * scripted release can satisfy. Named after the flag the `@mnaoumov/typescript-dev-toolkit/version` release takes.
  */
 const NO_CHANGELOG_EDITING_FLAG = '--no-changelog-editing';
 

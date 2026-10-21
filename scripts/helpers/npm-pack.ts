@@ -20,7 +20,7 @@
  * `undefined`, and `publishGitHubRelease` died with `Cannot read properties of undefined (reading
  * 'filename')` at the SECOND-TO-LAST step of a release -- after the bump, changelog, commit, tag and
  * `git push --follow-tags` had all already landed on the remote -- measured on npm 12.0.2 / Node 26.5.0,
- * and fixed in lockstep in the sibling copies in `obsidian-integration-testing` and `obsidian-dev-utils`.
+ * and fixed in lockstep in the sibling copy in `obsidian-integration-testing`.
  * So this module validates instead of asserting, and every failure names the raw output it could not read.
  *
  * The JSON is not always the whole of stdout. `execFromRoot` returns the child's `stdout` alone, and npm

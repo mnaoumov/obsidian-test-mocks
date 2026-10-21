@@ -182,13 +182,13 @@ wrong one by accident. `npm test` is a bare `vitest run`, which runs every proje
 
 ### Linting
 
-The ESLint config (`scripts/eslint-config.ts`) is a hand copy of the shared config in `@mnaoumov/typescript-dev-toolkit` (`linters/eslint-config`), which took over from `obsidian-dev-utils`' strict config when that package retired on 2026-10-17. It leaves out what is specific to a plugin shipping into the Obsidian renderer (`eslint-plugin-n`'s Node-16 floor, `eslint-plugin-obsidianmd`). It runs `eslint-plugin-unicorn`'s `recommended` on top of the tseslint/stylistic/import-x/perfectionist stack.
+The ESLint config (`scripts/eslint-config.ts`) is a hand copy of the shared config in `@mnaoumov/typescript-dev-toolkit` (`linters/eslint-config`). It leaves out what is specific to a plugin shipping into the Obsidian renderer (`eslint-plugin-n`'s Node-16 floor, `eslint-plugin-obsidianmd`). It runs `eslint-plugin-unicorn`'s `recommended` on top of the tseslint/stylistic/import-x/perfectionist stack.
 
 **`eslint-plugin-unicorn` is pinned at the toolkit's own major** (76 on 2026-10-18, recorded in `pinned-versions.json`). The toolkit builds the shared config on that major, and floating this copy ahead of it adds rules the shared config has never seen. Unicorn 78's `no-asterisk-prefix-in-documentation-comments` alone reported 2,456 findings against the `/** ... */` style every TSDoc block uses. Take a new unicorn major when the toolkit does, and take its rules the way the shared config does.
 
-**The copy is checked against the shared config, and every deliberate difference is recorded in `eslint-config-divergences.json`.** A hand copy drifts: `obsidian-dev-utils` refined `@typescript-eslint/no-floating-promises`, `no-restricted-syntax` and `capitalized-comments` over eighteen months, and one of those fixes reached one of the four copies. The dependency sweep (`update-npm-deps.ps1`) resolves this package's config with ESLint's own `calculateConfigForFile` at `scripts/commit.ts`, resolves the shared config from the toolkit version installed here, and fails on any difference this file does not account for. So refresh the file AFTER a toolkit upgrade, since that changes what is compared. The comparison is **directional**: only "the shared config enables or refines something this copy does not" is a finding. A rule enabled here and off there is printed as information and never fails, because this copy is then the stricter one and the shared config's reasons for its own relaxations are measurements about the trees it serves. Since toolkit 3.0 that includes most `@stylistic` layout rules, which the shared config leaves to dprint and this copy still enables. Only rules one of the two configs **names in its source** are compared, because ESLint merges each rule's `meta.defaultOptions` into the resolved options and two different ESLint patch versions therefore disagree about rules neither config has ever mentioned. The correspondence runs both ways, so an entry describing a divergence that no longer exists fails too — which is what stops the file ageing the way the comments at the call sites did.
+**The copy is checked against the shared config, and every deliberate difference is recorded in `eslint-config-divergences.json`.** A hand copy drifts: the shared config's predecessor refined `@typescript-eslint/no-floating-promises`, `no-restricted-syntax` and `capitalized-comments` over eighteen months, and one of those fixes reached one of the four copies. The dependency sweep (`update-npm-deps.ps1`) resolves this package's config with ESLint's own `calculateConfigForFile` at `scripts/commit.ts`, resolves the shared config from the toolkit version installed here, and fails on any difference this file does not account for. So refresh the file AFTER a toolkit upgrade, since that changes what is compared. The comparison is **directional**: only "the shared config enables or refines something this copy does not" is a finding. A rule enabled here and off there is printed as information and never fails, because this copy is then the stricter one and the shared config's reasons for its own relaxations are measurements about the trees it serves. Since toolkit 3.0 that includes most `@stylistic` layout rules, which the shared config leaves to dprint and this copy still enables. Only rules one of the two configs **names in its source** are compared, because ESLint merges each rule's `meta.defaultOptions` into the resolved options and two different ESLint patch versions therefore disagree about rules neither config has ever mentioned. The correspondence runs both ways, so an entry describing a divergence that no longer exists fails too — which is what stops the file ageing the way the comments at the call sites did.
 
-It loads `eslint-plugin-jsdoc` and `eslint-plugin-tsdoc` with the same rule set as `obsidian-dev-utils`, scoped to non-test `src/**`: every exported function, class, interface, type alias, enum, and every non-private method and property of an exported class needs a TSDoc description, and every source file an `@file` overview. Mirroring Obsidian's API name for name is NOT a reason to skip one — a consumer reads these declarations, and what a mock tracks, no-ops or adds (`__` helpers) is exactly what Obsidian's own docs cannot say. `jsdoc/no-blank-blocks` runs without its fixer, so an empty placeholder block is reported rather than accepted; write a real description.
+It loads `eslint-plugin-jsdoc` and `eslint-plugin-tsdoc`, which the shared config does not, scoped to non-test `src/**`: every exported function, class, interface, type alias, enum, and every non-private method and property of an exported class needs a TSDoc description, and every source file an `@file` overview. Mirroring Obsidian's API name for name is NOT a reason to skip one — a consumer reads these declarations, and what a mock tracks, no-ops or adds (`__` helpers) is exactly what Obsidian's own docs cannot say. `jsdoc/no-blank-blocks` runs without its fixer, so an empty placeholder block is reported rather than accepted; write a real description.
 
 Two rules are scoped off where they cannot be satisfied, both for the same reason — the mock surface answers to Obsidian's names, not ours:
 
@@ -197,7 +197,7 @@ Two rules are scoped off where they cannot be satisfied, both for the same reaso
 
 Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rather than the rule's default `function_` / `arguments_`, so a trailing underscore never reads as the `__` mock-member suffix.
 
-`import-x/no-nodejs-modules` is off for `scripts/` and friends (build tooling reads from disk) and for `testFiles` — a test runs under vitest in Node and is never part of the published library, so the ban has nothing to protect there. The test exemption is ported from `obsidian-dev-utils`' `getNodeBuiltinsConfigs`, which scopes the same rule off for `context.testFiles`; only the `import-x` half comes across, because its twin `obsidianmd/no-nodejs-modules` arrives with the plugin-directory rules this package does not register. It is what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory without an inline waiver at each import.
+`import-x/no-nodejs-modules` is off for `scripts/` and friends (build tooling reads from disk) and for `testFiles` — a test runs under vitest in Node and is never part of the published library, so the ban has nothing to protect there. The shared config in `@mnaoumov/typescript-dev-toolkit` scopes the same rule off for `context.testFiles`. It is what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory without an inline waiver at each import.
 
 `linterOptions.reportUnusedDisableDirectives` is set to `'error'` repo-wide. ESLint's default is `'warn'`, which would let a waiver that has stopped silencing anything sit in the tree — still naming a rule as the reason for the code beneath it, untruthfully. Every rule here is an error; the directives claiming to suppress them are held to the same bar. `npm run lint` also passes `--max-warnings 0` (the `lint` from `@mnaoumov/typescript-dev-toolkit/linters/eslint`), so a warning from any source fails the run rather than exiting 0; `'error'` here still matters, because it names the directive as the failure instead of a bare warning count.
 
@@ -205,9 +205,9 @@ Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rath
 
 **The in-house ESLint rules come from `@mnaoumov/typescript-dev-toolkit`** (2026-10-15), as its `inHouseEslintPlugin`, registered under `IN_HOUSE_ESLINT_PLUGIN_NAME`. That name has been `typescript-dev-toolkit` since toolkit 2.0.0, so every rule id and disable comment reads `typescript-dev-toolkit/<rule>`. On 2026-10-18 the copy took the three in-house rules the shared config enables and it did not: `no-unresolved-jsdoc-link`, `prefer-logical-operator-over-ternary` (which replaces unicorn's rule of that name, now off) and `require-method-template`. The vendored copies under `scripts/helpers/eslint-rules/`, their tests, `tsconfig.eslint-test.json` and the `check:vendored-eslint-rules` gate that held them byte-identical to upstream are gone. So are the vendored helpers the scripts ran on: `scripts/` imports `execFromRoot`, `resolveToolCommand`, `wrapCliTask`, `checkProjectTypes` and the lint and format runners from `@mnaoumov/typescript-dev-toolkit`, and `assertNever`, `ensureNonNullable`, `castTo` and `toPosixPath` from `@mnaoumov/typescript-lib`. Both are devDependencies only: `src/` still imports neither, so the published package keeps no runtime dependency on them.
 
-**Every entry script runs through `wrapCliTask`**, which honours the per-script off switch (`LINT_MD=0 npm run lint:md`) the way the old `exitIfScriptDisabled` did. A task that returns nothing exits with the `process.exitCode` it left (since `@mnaoumov/typescript-dev-toolkit` 1.3.0), so a plain `process.exitCode = 1; return;` fails the script, which is how `scripts/check-copy-sync.ts` reports its findings. Before 1.3.0 it called `process.exit(0)` and overrode that code.
+**Every entry script runs through `wrapCliTask`**, which honours the per-script off switch (`LINT_MD=0 npm run lint:md`) the way the old `exitIfScriptDisabled` did. A task that returns nothing exits with the `process.exitCode` it left (since `@mnaoumov/typescript-dev-toolkit` 1.3.0), so a plain `process.exitCode = 1; return;` fails the script. Before 1.3.0 it called `process.exit(0)` and overrode that code.
 
-What stays in `scripts/helpers/` is what no package exports: `copy-sync.ts` (the copy-sync gate's pure half; its read of the git index is the toolkit's `readIndexContent`, from `@mnaoumov/typescript-dev-toolkit/git`), `npm-pack.ts` (the release script's tarball-name parse), `obsidian-typings-surface.ts` (the conformance tests' typings inventory), and the `eslint-plugin-modules-newlines` type declaration. `lint:md` and `lint:md:fix` pass the toolkit's markdown `lint` `linkCheckExcludeGlobs: ['docs/**']`, because the guides under `docs/` link to each other base-absolutely (`/obsidian-test-mocks/guides/...`), which resolves only against the built site: `linkinator` skips them, and they are link-checked by `docs:build` instead (`markdownlint-cli2` already ignores `docs/**` through its own config).
+What stays in `scripts/helpers/` is what no package exports: `npm-pack.ts` (the release script's tarball-name parse), `obsidian-typings-surface.ts` (the conformance tests' typings inventory), and the `eslint-plugin-modules-newlines` type declaration. `lint:md` and `lint:md:fix` pass the toolkit's markdown `lint` `linkCheckExcludeGlobs: ['docs/**']`, because the guides under `docs/` link to each other base-absolutely (`/obsidian-test-mocks/guides/...`), which resolves only against the built site: `linkinator` skips them, and they are link-checked by `docs:build` instead (`markdownlint-cli2` already ignores `docs/**` through its own config).
 
 ## Releasing
 
@@ -241,8 +241,7 @@ Two npm-12 facts about this path, both measured on npm 12.0.2 / Node 26.5.0 and 
   from that script is what stopped the 7.2.3 release at this step (2026-10-17), and the GitHub release was
   then created by hand from the tarball the run had already packed.
 - **The unattended form works here.** `npm run version -- <type> --no-changelog-editing` forwards both
-  arguments to `scripts/version.ts` intact; `obsidian-dev-utils` sees npm claim `--no-*` as its own config
-  and fail with `EUNKNOWNCONFIG`, but that does not reproduce in this repo. Without the flag,
+  arguments to `scripts/version.ts` intact; npm does not claim `--no-*` as its own config here, so there is no `EUNKNOWNCONFIG`. Without the flag,
   `updateChangelog` opens `code -w CHANGELOG.md` and blocks until the editor closes.
 
 ## Documentation site
@@ -268,167 +267,65 @@ mdast plugin**, `scripts/docs-gen/helpers/satteri-plugins/satteri-github-alerts.
 `0.42` registers its asides as an unnamed factory, so it returned in silence and every alert shipped as a plain
 blockquote opening with a literal `[!NOTE]`. `scripts/docs-link-check.ts`, the last step of `docs:build`, now fails
 on any page whose blockquote still opens with an alert marker (`scripts/docs-gen/helpers/unrendered-alerts.ts`).
-Both helpers are copies of `obsidian-dev-utils`' and sit inside the copy-sync roster; the guard's call site in
-`docs-link-check.ts` does not, since that script is this repo's own.
+Both helpers belong to this repo's fork of the pipeline (below); the guard's call site in `docs-link-check.ts` is
+this repo's own script.
 
-### The pipeline is a COPY of `obsidian-dev-utils`'
+### The pipeline is this repo's own fork
 
-Five areas were copied from `obsidian-dev-utils` and should be kept in copy-sync with it:
-`scripts/docs-gen/`, `docs/src/`, `astro.config.ts`, `docs/tsconfig.json` and
-`.github/workflows/build-pages.yml`.
-This package cannot simply depend on `obsidian-dev-utils`: that library lists `obsidian-test-mocks` in its own devDependencies, so the
-edge would be a cycle. The helpers the copy needs come from the same `@mnaoumov/typescript-lib` and
-`@mnaoumov/typescript-dev-toolkit` modules upstream imports them from, so those imports are not a divergence.
+Five areas were copied from the last docs pipeline of the retired `obsidian-dev-utils`: `scripts/docs-gen/`,
+`docs/src/`, `astro.config.ts`, `docs/tsconfig.json` and `.github/workflows/build-pages.yml`. Nothing upstream pairs
+with them any more. The successor, `@mnaoumov/typescript-dev-toolkit/docs-site`, is not those files moved: it is a
+config-driven library (`defineDocsSiteConfig`, its modules under `src/docs-site/`, its components and fonts under
+`assets/docs-site/`) that `@mnaoumov/obsidian-lib` consumes through a short `astro.config.ts` and a
+`scripts/docs-site-config.ts`. So the copy is maintained here alone.
 
-**Most of this copy cannot be asserted byte-identical to upstream after a few mechanical transforms**: the divergences below are semantic, a transform cannot express them, and — measured
-2026-09-19 — taking an upstream file whole can now land lint-RED here. So a docs-gen sync is a
-read-and-merge, and the list below is what it is merged against.
+**The copy-sync gate is gone** (2026-10-21). `npm run check:copy-sync` compared each of these files with its
+upstream counterpart on `obsidian-dev-utils`' `main`, which since that repo's retirement holds only README, LICENSE
+and CHANGELOG, so it compared against nothing. Retargeting it file by file at the toolkit was measured and refused:
+most files have no counterpart there, and the ones that share a name import other modules and read a settings object,
+so a recorded shape would have been the whole file. The way forward is to replace the fork with the toolkit's export.
 
-**But the merge is now gated, per file, by the SHAPE of its diff: `npm run check:copy-sync`**
-(`scripts/check-copy-sync.ts` with its pure half in `scripts/helpers/copy-sync.ts`, added 2026-09-19 over
-`scripts/docs-gen` and widened to the whole roster the same day). It records, in `copy-sync-baseline.json`,
-each upstream file's hunk count and each hunk's added/removed line counts plus a digest of its changed
-lines, and fails when a file's shape moves — which it does whether upstream edited the file or this repo
-did. Line numbers are deliberately not part of a shape, so one real edit is not reported as a dozen.
-**49 files, 37 of them identical** after the recorded transforms (the two TTFs by hash), measured 2026-10-15.
+The places this fork differs from what the toolkit would generate are what that move needs a setting or a hook for,
+so they are kept here as its checklist:
 
-Six things to know before touching a copied file:
-
-- **`COPY_SYNC_PATHS` is the roster, and the five-area list above is its prose half** — keep the two in
-  step. A path there covers itself or anything under it, which is why three single files sit beside two trees
-  with no separate notion of a file; both sides keep the same spelling.
-- **Divergence 1 is two transforms, not baseline entries.** The name is the whole of it, so the gate applies
-  `obsidian-dev-utils` → `obsidian-test-mocks` and `Obsidian Dev Utils` → `Obsidian Test Mocks` to
-  upstream's text first. That is what leaves most of the roster byte-identical, and for those files this
-  gate is exactly as strong as an identity check: the baseline says "no hunks", so any drift at all is
-  reported. Resist adding a third arm to make a diff smaller — an arm that rewrites meaning hides the drift
-  it was meant to expose.
-- **Every differing file names its reason**, from the closed vocabulary in `DIVERGENCE_REASONS`, which is
-  this list. A file whose divergence is recorded with no reason FAILS the gate; so does a reason that no
-  longer applies. Re-record with `npm run check:copy-sync -- --update`, which keeps the reasons
-  and rewrites only the shapes — it is not a way to make the gate green.
-- **A file kept under a different name from upstream's is PAIRED in `UPSTREAM_TO_LOCAL_RENAMES`**, not
-  treated as a file of ours. Unpaired, an upstream fix to it would be invisible here forever. The map is
-  empty today: its one pair was the Sätteri port, which upstream took under this repo's name.
-- **Two paths inside an area are never compared**, and are filtered out of BOTH listings so neither is
-  reported as unpaired either (`NEVER_COMPARED_PATHS`): `docs/src/assets/favicon.svg`, divergence 5 below;
-  and `docs/src/content/`, which is not a copy of anything — the guides and `index.mdx` are this package's
-  own prose and `content/docs/api` is generated. The exclusion is drawn at the path boundary, so
-  `docs/src/content.config.ts` beside it IS compared.
-- **A binary file is compared by hash, with both sides recorded.** The two Inter TTFs under
-  `scripts/docs-gen/assets/fonts` have no hunks to shape, and `git diff` answers a binary pair with
-  "Binary files differ" and no `@@` at all — which a hunk parser reads as *identical*, the one wrong
-  answer. A file whose bytes hold a NUL is therefore recorded as a digest PAIR, and a change to either side
-  fails. The sniff is content, not an extension list, so a new binary cannot arrive unnoticed.
-
-It reads upstream from `raw.githubusercontent.com` and lists it with one `git/trees?recursive=1` call — one
-call for all five areas — because the published package ships `dist/` only and a sibling checkout would make
-the gate pass only on a machine that has one, and because the unauthenticated rate limit is 60 calls an hour;
-`GITHUB_TOKEN` is used when there is one. This repo's side is listed with
-`git ls-files` rather than a directory walk, because `docs/src` holds gitignored build output
-(`generated-sidebar.json`, `content/docs/api/`) that a walk reports as paired with nothing upstream.
-`nano-staged` runs it on any commit that stages a file in an area — two keys, and the brace in
-`{docs/src,scripts/docs-gen}/**` has to sit before the `/**` or nano-staged's matcher quietly stops treating
-it as a globstar. `CHECK_COPY_SYNC=0` turns it off where there is no network.
-
-**This repo's side is READ from the index too, not just listed from it** (`readIndexContent` from
-`@mnaoumov/typescript-dev-toolkit/git`, 2026-09-19; the local copy left on 2026-10-15). It would ideally run AFTER `lint:fix` — ESLint covers `scripts/docs-gen`, so `lint:fix` is the
-one step here that can rewrite a staged file in it, and a shape measured before it ran is a shape nobody
-commits — and it cannot be made to: **nano-staged runs one task group per pattern with `Promise.all`**,
-measured against 1.0.2 on 2026-09-19, so a separate key races `lint:fix` instead of following it. Sequencing
-exists within one key's command list and nowhere else; key order carries no meaning and is only what
-perfectionist sorts it to. So the ordering is made irrelevant rather than enforced: the gate measures the
-staged blob, which is the same bytes whether the fixer has run or not, and which is also what a developer
-running the gate by hand mid-edit is asking about. The diff is therefore taken between two scratch files
-rather than between a scratch file and the working tree, and the failure message names both.
-
-**`docs/tsconfig.json` joined the roster on 2026-09-19, once the hunk that kept it out was settled.** It
-included `".astro/types.d.ts"` where upstream includes `"../.astro/types.d.ts"`, and upstream is right:
-`astro sync` in this checkout writes `.astro/types.d.ts` at the REPO ROOT and creates no `docs/.astro` at
-all, because `astro.config.ts` sits at the root and `srcDir: './docs/src'` moves the sources, not the
-project root. So this copy included a file that has never existed — and a `tsconfig` `include` entry
-matching nothing is not an error, which is why nothing reported it for as long as it stood. Taking
-upstream's path makes the file byte-identical, so it sits in the gate's identical half and carries no
-divergence reason. `docs/public/favicon.svg` is the one copied file still outside the roster, as the second
-copy of a file that must never be synced.
-
-Keep new divergence to the eight places this package genuinely differs (the list runs to eleven; 6, 8 and 10
-are retired and keep their numbers):
-
-1. **`BASE_PATH` / site title / repo URLs** — mechanical renames, all of them the name, and all of them
-   applied by the gate's two transform arms rather than recorded as divergence: the package name, and the
-   display title (`Obsidian Dev Utils` → `Obsidian Test Mocks`) that `astro.config.ts` names the site with.
-   The second arm appears in no file under `scripts/docs-gen`, so it moves no shape there.
-2. **`getImportStatement()` (`api-doc-text-utils.ts`)** — this package publishes BARREL entry points, so a
-   namespace does not map to a subpath the way `obsidian-dev-utils`' does. `obsidian/**` becomes a named import from
+1. **`getImportStatement()` (`api-doc-text-utils.ts`)** — this package publishes BARREL entry points, so a
+   namespace does not map to an import subpath. `obsidian/**` becomes a named import from
    `obsidian-test-mocks/obsidian`; `globals/**` is a side-effect import of the setup entry point, because
    nothing there is imported by name. `src/obsidian-typings/` holds only the deprecated no-op setup entry
-   points, which the generator's file filter skips, so it has no mapping.
-   Baseline reason: `barrel-entry-points`, which also covers the `API_INDEX_INTRO` prose in
-   `api-doc-page-generation.ts` that explains the arrangement to a reader.
-3. **Member slugs (`splitMockOnlySuffix` in the same file)** — slug generation strips `_`, so `create__`
+   points, which the generator's file filter skips, so it has no mapping. The `API_INDEX_INTRO` prose in
+   `api-doc-page-generation.ts` explains the arrangement to a reader.
+2. **Member slugs (`splitMockOnlySuffix` in the same file)** — slug generation strips `_`, so `create__`
    and `create` (and `onClick__` / `onClick`) collapsed onto ONE route and one page silently overwrote
-   the other. Mock-only members therefore get a `-mock` route suffix. `obsidian-dev-utils` has no `__` convention and so
-   has no equivalent.
-   Baseline reason: `mock-only-suffix`, which also covers the `api-doc-type-merging.ts` header naming the
-   `__` convention where upstream names its official-vs-unofficial one.
-4. **`EXCLUDED_DIR_SEGMENTS` (`api-doc-source-processing.ts`)** — `internal`, `jest`, `test-helpers`.
-   Baseline reason: `excluded-dir-segments`.
-5. **The favicon** (`docs/public/favicon.svg`, byte-identical copy in `docs/src/assets/favicon.svg`) —
-   this package's own mark, NOT `obsidian-dev-utils`' laptop-and-Matrix-rain one: the Obsidian gem with a dashed copy of itself
-   behind it (the mock) and a green check (the passing test). It is the only file under
-   `docs/src/assets/` that must never be re-synced from `obsidian-dev-utils`. It feeds three places at once — Starlight's
-   `favicon` option, the hero image in `docs/src/content/docs/index.mdx`, and every OG card (rasterized
-   by `loadLogoDataUri()` from the `docs/public` copy) — so the two copies must stay identical.
-   No baseline entry: `docs/src/assets/favicon.svg` is in `NEVER_COMPARED_PATHS` and `docs/public/` is
-   outside the roster. Its CONSEQUENCE is recorded, though — `own-favicon-mark` on
-   `docs/src/components/SiteTitle.astro`, whose prose says the site's only mark is the favicon beside the
-   title where upstream's says it has no logo at all.
-6. **Retired 2026-09-24: the Sätteri processor.** This repo moved the absolute→relative link rewrite
-   from remark onto Sätteri first, and upstream then took that port whole — the same processor in
-   `astro.config.ts` and the same `scripts/docs-gen/helpers/satteri-plugins/satteri-relative-links.*`
-   files, with `remark-plugins/remark-relative-links.*` deleted. Nothing diverges there now, so the
-   `satteri-processor` reason and the `UPSTREAM_TO_LOCAL_RENAMES` pair it needed are both gone. The number
-   stays so the reasons that cite 5 and 7 keep pointing at the right item.
-7. **Rules this repo enables that `obsidian-dev-utils` turns off force local rewrites.** The config
-   comparison behind `eslint-config-divergences.json` prints twelve such rules as information, because
-   this copy is the stricter one there and needs no entry to be stricter. For the *copy-sync* trees that
-   is not free: a file byte-identical to upstream is lint-red here. Two measured instances, 2026-09-19 —
-   `unicorn/no-declarations-before-early-exit` (error here, off upstream) is why `generate-og-images.ts`
-   declares `fontsDirectory` / `outputDirectory` / `manifestPath` / `faviconPath` at their use sites where
-   upstream hoists all four above the first early return; and `import-x/no-default-export` (likewise) is
-   why `astro.config.ts` carries an inline waiver upstream does not need. Expect more of these as the two
-   configs move: when a sync makes lint red, check this class before assuming drift.
-   Baseline reason: `local-strictness-rewrites`.
-8. **Retired 2026-10-15: the re-pointed helper imports.** `link-check.ts` took `assertNever` from this
-   repo's vendored `scripts/helpers/type-guards.ts`, and the two Sätteri plugin tests took `castTo` from
-   `src/internal/castTo.ts`. All three now import from `@mnaoumov/typescript-lib`, as upstream's do, so they
-   are byte-identical and the `helpers-re-pointed` reason is gone.
-9. **The `api-doc-constants.ts` data tables** — `GENERIC_TYPE_PARAMS` and `TS_GLOBAL_TYPES` enumerate the
-   identifiers and external types *this* package's API surface actually uses, so they differ by
-   construction: the CodeMirror and Turndown entries are ours, and upstream's hook/owner/suspect
-   identifiers are not. Eleven of the gate's hunks are this one file.
-   Baseline reason: `api-surface-tables`.
-10. **Retired 2026-09-24: the vendored OG assets.** `og-image.ts` differed in two prose-only hunks, about
-    the Inter TTFs both repos vendor under `scripts/docs-gen/assets/fonts` and the favicon this repo
-    draws onto a card. Upstream has since taken this repo's wording, so the file is byte-identical and
-    the `vendored-og-assets` reason is gone. The two TTFs are still gated as a digest pair.
-11. **The single `src` walk (`generate-api-docs.ts`, `build-pages.yml`)** — added 2026-10-15, when
-    `obsidian-dev-utils` became a multi-package workspace: its generator now walks every `packages/*/src` and
-    prefixes each namespace with the package folder, and its Pages cache key hashes `packages/*/src/**/*.ts`.
-    This package has one `src`, so the generator keeps the single-root walk (and the `jiti` run line in its
-    header), and the cache key hashes `src/**/*.ts`. Upstream's docs site may be split per package
-    (`obsidian-dev-utils`' own plan), which would put its generator back on a single `src`; re-check this one
-    at that sync.
-    Baseline reason: `single-package-source`.
+   the other. Mock-only members therefore get a `-mock` route suffix. The `api-doc-type-merging.ts` header
+   names the `__` convention for the same reason.
+3. **`EXCLUDED_DIR_SEGMENTS` (`api-doc-source-processing.ts`)** — `internal`, `jest`, `test-helpers`.
+4. **The favicon** (`docs/public/favicon.svg`, byte-identical copy in `docs/src/assets/favicon.svg`) —
+   this package's own mark: the Obsidian gem with a dashed copy of itself behind it (the mock) and a green
+   check (the passing test). It feeds three places at once — Starlight's `favicon` option, the hero image in
+   `docs/src/content/docs/index.mdx`, and every OG card (rasterized by `loadLogoDataUri()` from the
+   `docs/public` copy) — so the two copies must stay identical. `docs/src/components/SiteTitle.astro` says the
+   site's only mark is that favicon beside the title.
+5. **Rules this repo enables that the shared ESLint config turns off force local rewrites.** The config
+   comparison behind `eslint-config-divergences.json` prints such rules as information, because this copy is
+   the stricter one there. `unicorn/no-declarations-before-early-exit` is why `generate-og-images.ts`
+   declares `fontsDirectory` / `outputDirectory` / `manifestPath` / `faviconPath` at their use sites, and
+   `import-x/no-default-export` is why `astro.config.ts` carries an inline waiver.
+6. **The `api-doc-constants.ts` data tables** — `GENERIC_TYPE_PARAMS` and `TS_GLOBAL_TYPES` enumerate the
+   identifiers and external types *this* package's API surface actually uses (the CodeMirror and Turndown
+   entries among them).
 
-### Type-checking and linting gaps (the same ones `obsidian-dev-utils` has)
+`docs/tsconfig.json` includes `"../.astro/types.d.ts"`, not `".astro/types.d.ts"`: `astro sync` in this checkout
+writes `.astro/types.d.ts` at the REPO ROOT and creates no `docs/.astro` at all, because `astro.config.ts` sits at
+the root and `srcDir: './docs/src'` moves the sources, not the project root. A `tsconfig` `include` entry matching
+nothing is not an error, so the wrong path once stood unreported.
+
+### Type-checking and linting gaps
 
 `scripts/docs-gen/**` is EXCLUDED from the root `tsconfig.json` (it needs `moduleResolution: bundler`
 for the Astro/Starlight ESM packages, so it carries its own `scripts/docs-gen/tsconfig.json`), and
 `astro.config.ts` is carved out into `tsconfig.astro.json` for the same reason. Neither is part of
-`build:compile`, exactly as in `obsidian-dev-utils` — so `tsc -p scripts/docs-gen/tsconfig.json` currently
-reports pre-existing `exactOptionalPropertyTypes` violations in the copied code. ESLint DOES cover both
+`build:compile` — so `tsc -p scripts/docs-gen/tsconfig.json` currently reports pre-existing
+`exactOptionalPropertyTypes` violations in the copied code. ESLint DOES cover both
 (`projectService` resolves each file's nearest tsconfig; `astro.config.ts` is pinned to
 `tsconfig.astro.json` by an override that must come AFTER `getTseslintConfigs()`).
 
@@ -437,8 +334,8 @@ through types Astro generates into the gitignored `.astro/` at the REPO ROOT (th
 the root, whatever `srcDir` says), so linting them before a build reports
 every Astro import as an unresolved `any`. `docs/tsconfig.json` and the Astro build validate them
 instead. `docs/**` is likewise out of markdownlint's scope (Starlight's frontmatter-driven conventions,
-plus the generated API markdown), and `scripts/docs-gen` is out of dprint's and cspell's — keeping the
-copy byte-comparable to the `obsidian-dev-utils` one.
+plus the generated API markdown), and `scripts/docs-gen` is out of dprint's and cspell's, a leftover of keeping
+the copy byte-comparable to its upstream that the move onto the toolkit's export retires with the tree.
 
 ### `js-yaml` must stay on 4.x
 
@@ -643,7 +540,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     to surface the gap.
 
 - **Attachment-path resolution is modeled end to end** (added 2026-07-28) — anything calling
-  `obsidian-dev-utils`' `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`
+  `@mnaoumov/obsidian-lib`'s `getAttachmentFilePath` / `getAttachmentFolderPath` / `isAtProperAttachmentPath`
   against the mocks used to die on a strict-proxy read, forcing every consumer to hand-seed the surface.
   All four are obsidian-typings internals rather than `obsidian.d.ts` members, so per L4 they live on the
   mocks under their real, un-suffixed names:
@@ -653,7 +550,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     the bag mirrors Obsidian's full defaults. A key earns a default here when some mock READS it; the three above
     are read by attachment-path resolution, `Workspace.createLeafInTabGroup` and `FileManager.trashFile`.
   - **`Vault.getAvailablePath(basePath, extension)`** — Obsidian's de-duplicator (plain name, then a
-    `" 1"` / `" 2"` suffix, …). Note `obsidian-dev-utils`' own `getAvailablePath(app, path)` helper DELEGATES to this
+    `" 1"` / `" 2"` suffix, …). Note `@mnaoumov/obsidian-lib`'s own `getAvailablePath(app, path)` helper DELEGATES to this
     member, so a consumer cannot seed it by calling that helper — it would recurse until the stack blows.
   - **`Vault.getAvailablePathForAttachments(fileName, extension, file)`** — the real resolution, not a
     throwing placeholder. `/` → vault root, `./` (and `.`) → the note's own folder, `./sub` → a
@@ -667,9 +564,9 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 
 - **`app.plugins.getPlugin(id)` answers `null`** (added 2026-09-01) — a mock vault genuinely has no
   community plugins installed, so that is the truth about it rather than a placeholder. This matters
-  beyond tidiness: `obsidian-dev-utils` reads the registry from INHERITED code (its Notebook Navigator
+  beyond tidiness: `@mnaoumov/obsidian-lib` reads the registry from INHERITED code (its Notebook Navigator
   menu registrar on layout ready, plus `canvas.ts`, `folder-note.ts` and
-  `rename-delete-handler-component.ts`), so while `App.plugins` was unmocked a single `obsidian-dev-utils` bump broke the
+  `rename-delete-handler-component.ts`), so while `App.plugins` was unmocked a single bump of its predecessor broke the
   same `plugin.test.ts` in roughly 28 repos at once. Every one of them hand-assigned
   `app.plugins = strictProxy({ getPlugin: () => null })`; they no longer need to.
   - **`app.plugins.registerPlugin__(id, plugin)`** seeds one, and `unregisterPlugin__(id)` removes it.
@@ -679,14 +576,14 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **`app.plugins.manifests` is kept in step too** (2026-09-23): `registerPlugin__` files the instance's own
     `manifest` when it carries one (read past the strict proxy, so a `strictProxy` stand-in without one does not
     throw), and `unregisterPlugin__` drops it. A stand-in with no manifest files nothing; assign the entry directly.
-    `obsidian-dev-utils`' resource lock reads `manifests[id]?.name`, which is what made 6.0.0's real leaf views
+    `@mnaoumov/obsidian-lib`'s resource lock reads `manifests[id]?.name`, which is what made 6.0.0's real leaf views
     reach it.
 - **`Editor.cm` is a real, lazily built CodeMirror 6 `EditorView`, synced both ways** (2026-09-23). Every mutation
   of the mock's buffer or selection (`dispatchChanges`, undo/redo, `setCursor` / `setSelection(s)`,
   `resetState__`) is written into the view, and an `updateListener` reads a transaction dispatched INTO the view
   back through `dispatchChanges`, so it is one undo step and takes CodeMirror's selection. `isSyncingCodeMirror`
   stops either direction echoing. An effect-only transaction (the `Compartment` + `EditorState.readOnly` shape
-  `obsidian-dev-utils`' `toggleEditorReadOnly` dispatches) leaves the buffer alone. The view is detached and
+  `@mnaoumov/obsidian-lib`'s `toggleEditorReadOnly` dispatches) leaves the buffer alone. The view is detached and
   unpainted: only its `state` is honest.
   - Only that honest core is modeled. The enable/disable lifecycle, installing, updates and deprecation
     stay unmocked and throw, per L2.
@@ -704,7 +601,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   cache position (links, embeds, headings, tags, list items, sections, frontmatter) with an
   **exclusive** end offset (`start + length`), matching Obsidian, so
   `content.slice(start.offset, end.offset)` reconstructs a reference's `original` exactly. This is what
-  lets `obsidian-dev-utils`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
+  lets `@mnaoumov/obsidian-lib`'s `editLinks` write path (`applyFileChanges` → `validateChanges`) match the
   sliced source against `reference.original`.
 
 - **A note with CRLF or lone-CR line breaks parses as its LF form does** (2026-10-12, measured with Obsidian 1.14.4's
@@ -1210,7 +1107,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **Every leaf carries Obsidian's tab header** (2026-09-24, `GO` in Obsidian 1.14.x's `app.js`). The constructor builds
   `tabHeaderEl` (`workspace-tab-header tappable`, draggable) holding one `workspace-tab-header-inner` div whose
   children are, in order, `tabHeaderInnerIconEl`, `tabHeaderInnerTitleEl`, `tabHeaderStatusContainerEl` and
-  `tabHeaderCloseEl` (`lucide-x`, tooltip `Close`, recorded as `data-icon` / `aria-label`). `obsidian-dev-utils`' lock
+  `tabHeaderCloseEl` (`lucide-x`, tooltip `Close`, recorded as `data-icon` / `aria-label`). `@mnaoumov/obsidian-lib`'s lock
   indicators append to `tabHeaderStatusContainerEl` on every open Markdown leaf, which is what made the strict proxy
   throw there. Not modelled: `updateHeader` (so the icon and title stay empty, and `tabHeaderStatusPinEl` /
   `tabHeaderStatusLinkEl`, which it creates lazily, stay unmocked), the header's listeners (close click, drag, context
@@ -1321,7 +1218,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   `n(Node.prototype, "win", function () { return this.doc.defaultView || window })`. A `Document` is the one
   node whose `ownerDocument` is `null`, so `someDocument.doc` is the main document and `someDocument.win` the
   main window **even for a pop-out** — in real Obsidian as much as here. This looks like a mock bug and is
-  not one: `obsidian-dev-utils`' `getDocumentWindow(doc)` exists precisely to work around it, so
+  not one: `@mnaoumov/typescript-lib`'s `getDocumentWindow(doc)` exists precisely to work around it, so
   pop-out-aware consumers must use that rather than reading `doc.win`. "Correcting" the fallback to
   `?? this` would make the mock *more* correct than Obsidian and therefore lie — a pop-out unit test would
   pass here while the real code resolved the main window. `node-setup.test.ts` pins both halves with a
@@ -1415,7 +1312,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   live on the mock under those real names.
   `bgEl` matters because it is the element Obsidian registers modal dismissal on — every "the user clicked
   outside the dialog" behavior is about it, and a strict-proxy read of it used to throw, which is what
-  forced `obsidian-dev-utils`' modal-wrapper tests to hand-build the missing sibling.
+  forced `@mnaoumov/obsidian-lib`'s modal-wrapper tests to hand-build the missing sibling.
   **`titleEl` MOVED** from a direct `modalEl` child into `headerEl`: `modalEl.contains(titleEl)` still
   holds, `titleEl.parentElement === modalEl` no longer does.
   **Not modeled, deliberately:** the close button (`modal-header-button mod-raised clickable-icon`) and the
@@ -1423,7 +1320,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   and adding a listener would change what existing consumer tests observe.
 
 - **`SuggestModal`'s instruction bar is modeled**, so consumers can drive the real
-  `SuggestModalCommandBuilder` (`obsidian-dev-utils` `obsidian/modals/suggest-modal-command-builder`)
+  `SuggestModalCommandBuilder` (`@mnaoumov/obsidian-lib/modals/suggest-modal-command-builder`)
   instead of hand-rolling a fake. `instructionsEl` is an obsidian-typings-only internal (not in
   `obsidian.d.ts`), so per L4 the mock declares it under that real name: a real
   `createDiv('prompt-instructions')` container created in the constructor. `setInstructions(instructions)` renders faithfully to real Obsidian:

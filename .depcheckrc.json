@@ -9,7 +9,7 @@
     "ignored in this file.",
     "",
     "@commitlint/cli - .husky/commit-msg runs it as the `commitlint` binary.",
-    "@commitlint/config-conventional - extended by name (a string in the commitlint config's `extends`), never imported - either directly, or through obsidian-dev-utils' script-utils/commitlint-config, which extends it without declaring it.",
+    "@commitlint/config-conventional - extended by name (a string in the commitlint config's `extends`), never imported (scripts/commitlint-config.ts).",
     "@vitest/runner - declared only to hold the transitive runner at a fixed version - nothing imports it. See pinned-versions.json.",
     "better-typescript-lib - has no import anywhere by design: it supplies the @typescript/lib-* aliases that tsconfig.json's `libReplacement: true` resolves.",
     "cspell - run as a CLI by scripts/spellcheck.ts, configured by cspell.json.",
