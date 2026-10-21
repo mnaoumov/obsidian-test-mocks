@@ -28,13 +28,17 @@
     "  `declare module 'obsidian'` augmentation activates globally), and 5.0.0 deleted the bridge layer that held the last real",
     "  import - so there is nothing left for depcheck to see. Removing it would break `npm run build:generate:typings-surface`",
     "  and src/obsidian/obsidian-typings-conformance.test.ts.",
-    "typedoc-plugin-mdn-links - never imported; scripts/docs-gen/helpers/api-doc-link-rendering.ts reads",
-    "  node_modules/typedoc-plugin-mdn-links/data/web-api.json at runtime for the MDN Web API link map."
+    "@astrojs/markdown-satteri, @resvg/resvg-js, astro, satori, satteri, ts-morph, typedoc-plugin-mdn-links - optional peer",
+    "  dependencies of @mnaoumov/typescript-dev-toolkit's docs-site export, which scripts/docs-*.ts and astro.config.ts run:",
+    "  the toolkit imports them (and reads typedoc-plugin-mdn-links' data/web-api.json from disk), this repo does not."
   ],
   "ignores": [
+    "@astrojs/markdown-satteri",
     "@commitlint/cli",
     "@commitlint/config-conventional",
+    "@resvg/resvg-js",
     "@vitest/runner",
+    "astro",
     "better-typescript-lib",
     "cspell",
     "czg",
@@ -46,6 +50,9 @@
     "markdownlint-cli2",
     "nano-staged",
     "obsidian-typings",
+    "satori",
+    "satteri",
+    "ts-morph",
     "typedoc-plugin-mdn-links"
   ]
 }

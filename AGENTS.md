@@ -33,7 +33,7 @@
 - `src/internal/` — shared implementation details NOT exported from the package
 - `docs/` — the Astro + Starlight documentation site (`docs/src` is its `srcDir`; `docs/dist` the build
   output; `docs/public` its static assets). See [Documentation site](#documentation-site).
-- `scripts/docs-gen/` — the ts-morph API-reference generator and the satori OG-image generator that feed it
+- `scripts/docs-site-config.ts` — the documentation site's configuration for `@mnaoumov/typescript-dev-toolkit/docs-site`
 
 ### Key Design Decisions
 
@@ -255,87 +255,46 @@ from a tag). It has two halves:
   the top-level `README.md` stays a concise overview + navigation, and everything longer lives here.
   This package is a library, not a plugin, so `docs/` is the correct destination (the demo-vault carve-out in
   the plugin README skeleton does not apply).
-- **API reference** — GENERATED from this repo's own TSDoc by `scripts/docs-gen/generate-api-docs.ts`
-  (ts-morph) into `docs/src/content/docs/api/`, plus `docs/src/generated-sidebar.json` which
-  `astro.config.ts` reads. Both are gitignored; so are `docs/public/og` (per-page Open Graph cards
-  rendered by satori + resvg) and `docs/dist`. Never hand-edit anything under `docs/src/content/docs/api`.
+- **API reference** — GENERATED from this repo's own TSDoc by `@mnaoumov/typescript-dev-toolkit/docs-site` (ts-morph)
+  into `docs/src/content/docs/api/`, plus `docs/src/generated-sidebar.json`. Both are gitignored; so are
+  `docs/public/og` (per-page Open Graph cards rendered by satori + resvg) and `docs/dist`. Never hand-edit anything
+  under `docs/src/content/docs/api`.
 
-**GitHub alerts (`> [!NOTE]` and the other four types) become Starlight asides through the site's own Sätteri
-mdast plugin**, `scripts/docs-gen/helpers/satteri-plugins/satteri-github-alerts.ts`, registered first in
-`astro.config.ts`'s `mdastPlugins`, NOT through `starlight-github-alerts`, which left the dependencies on
-2026-09-29. That plugin (`0.4.0`) splices itself in front of an mdast plugin NAMED `starlight-asides`, and Starlight
-`0.42` registers its asides as an unnamed factory, so it returned in silence and every alert shipped as a plain
-blockquote opening with a literal `[!NOTE]`. `scripts/docs-link-check.ts`, the last step of `docs:build`, now fails
-on any page whose blockquote still opens with an alert marker (`scripts/docs-gen/helpers/unrendered-alerts.ts`).
-Both helpers belong to this repo's fork of the pipeline (below); the guard's call site in `docs-link-check.ts` is
-this repo's own script.
+### The pipeline is the toolkit's
 
-### The pipeline is this repo's own fork
+The site is the toolkit's `docs-site` export, as in `@mnaoumov/obsidian-lib` (2026-10-21). `scripts/docs-site-config.ts`
+describes it once, and both `astro.config.ts` (`defineDocsSiteConfig`) and `scripts/docs-{build,dev,preview}.ts`
+(`buildDocsSite` / `devDocsSite` / `previewDocsSite`) import it. The toolkit supplies the Astro config, the API page
+components, the site title, the stylesheet, the route middleware, the Sätteri GitHub-alert and relative-link plugins,
+the OG cards, and the link check that fails on a broken link or on a GitHub alert left as a plain blockquote. What
+stays here is content: `docs/src/content/`, `docs/src/content.config.ts`, and the favicon.
 
-Five areas were copied from the last docs pipeline of the retired `obsidian-dev-utils`: `scripts/docs-gen/`,
-`docs/src/`, `astro.config.ts`, `docs/tsconfig.json` and `.github/workflows/build-pages.yml`. Nothing upstream pairs
-with them any more. The successor, `@mnaoumov/typescript-dev-toolkit/docs-site`, is not those files moved: it is a
-config-driven library (`defineDocsSiteConfig`, its modules under `src/docs-site/`, its components and fonts under
-`assets/docs-site/`) that `@mnaoumov/obsidian-lib` consumes through a short `astro.config.ts` and a
-`scripts/docs-site-config.ts`. So the copy is maintained here alone.
+This repo kept its own fork of the retired `obsidian-dev-utils` pipeline until then, because the toolkit had no
+setting for where this package's surface differs. Toolkit 3.8.0 added them, and `scripts/docs-site-config.ts` passes:
 
-**The copy-sync gate is gone** (2026-10-21). `npm run check:copy-sync` compared each of these files with its
-upstream counterpart on `obsidian-dev-utils`' `main`, which since that repo's retirement holds only README, LICENSE
-and CHANGELOG, so it compared against nothing. Retargeting it file by file at the toolkit was measured and refused:
-most files have no counterpart there, and the ones that share a name import other modules and read a settings object,
-so a recorded shape would have been the whole file. The way forward is to replace the fork with the toolkit's export.
+1. **`importStatement`** — this package publishes BARREL entry points, so a namespace does not map to an import
+   subpath. `obsidian/**` becomes a named import from `obsidian-test-mocks/obsidian`; `globals/**` is a side-effect
+   import of `obsidian-test-mocks/setup`, because nothing there is imported by name. `src/obsidian-typings/` holds
+   only the deprecated no-op setup entry points, which the generator skips.
+2. **`memberRouteSegment`** — a mock-only member keeps the `-mock` route it always had (`create__` at
+   `create-mock/`). The toolkit's own slug no longer collapses `create__` onto `create`, so this is about keeping
+   published URLs, not about collisions.
+3. **`excludedDirectories`** — `internal` and `jest`, on top of the toolkit's `@types`, `styles` and `test-helpers`.
+4. **`externalTypeLinks`** — the CodeMirror, Moment and Turndown types this surface names, which the toolkit's
+   generic table does not carry.
 
-The places this fork differs from what the toolkit would generate are what that move needs a setting or a hook for,
-so they are kept here as its checklist:
+The fork's index-page prose explaining the barrel arrangement has no toolkit setting yet, so the generated API index
+still says each module is its own import subpath, which is false here; each page's import statement is right.
 
-1. **`getImportStatement()` (`api-doc-text-utils.ts`)** — this package publishes BARREL entry points, so a
-   namespace does not map to an import subpath. `obsidian/**` becomes a named import from
-   `obsidian-test-mocks/obsidian`; `globals/**` is a side-effect import of the setup entry point, because
-   nothing there is imported by name. `src/obsidian-typings/` holds only the deprecated no-op setup entry
-   points, which the generator's file filter skips, so it has no mapping. The `API_INDEX_INTRO` prose in
-   `api-doc-page-generation.ts` explains the arrangement to a reader.
-2. **Member slugs (`splitMockOnlySuffix` in the same file)** — slug generation strips `_`, so `create__`
-   and `create` (and `onClick__` / `onClick`) collapsed onto ONE route and one page silently overwrote
-   the other. Mock-only members therefore get a `-mock` route suffix. The `api-doc-type-merging.ts` header
-   names the `__` convention for the same reason.
-3. **`EXCLUDED_DIR_SEGMENTS` (`api-doc-source-processing.ts`)** — `internal`, `jest`, `test-helpers`.
-4. **The favicon** (`docs/public/favicon.svg`, byte-identical copy in `docs/src/assets/favicon.svg`) —
-   this package's own mark: the Obsidian gem with a dashed copy of itself behind it (the mock) and a green
-   check (the passing test). It feeds three places at once — Starlight's `favicon` option, the hero image in
-   `docs/src/content/docs/index.mdx`, and every OG card (rasterized by `loadLogoDataUri()` from the
-   `docs/public` copy) — so the two copies must stay identical. `docs/src/components/SiteTitle.astro` says the
-   site's only mark is that favicon beside the title.
-5. **Rules this repo enables that the shared ESLint config turns off force local rewrites.** The config
-   comparison behind `eslint-config-divergences.json` prints such rules as information, because this copy is
-   the stricter one there. `unicorn/no-declarations-before-early-exit` is why `generate-og-images.ts`
-   declares `fontsDirectory` / `outputDirectory` / `manifestPath` / `faviconPath` at their use sites, and
-   `import-x/no-default-export` is why `astro.config.ts` carries an inline waiver.
-6. **The `api-doc-constants.ts` data tables** — `GENERIC_TYPE_PARAMS` and `TS_GLOBAL_TYPES` enumerate the
-   identifiers and external types *this* package's API surface actually uses (the CodeMirror and Turndown
-   entries among them).
+**The favicon** (`docs/public/favicon.svg`, byte-identical copy in `docs/src/assets/favicon.svg`) is this package's
+own mark: the Obsidian gem with a dashed copy of itself behind it (the mock) and a green check (the passing test). The
+toolkit reads the `docs/public` copy as the site logo and the OG cards' mark; the `docs/src/assets` copy is the hero
+image of `docs/src/content/docs/index.mdx`. Keep the two identical.
 
-`docs/tsconfig.json` includes `"../.astro/types.d.ts"`, not `".astro/types.d.ts"`: `astro sync` in this checkout
-writes `.astro/types.d.ts` at the REPO ROOT and creates no `docs/.astro` at all, because `astro.config.ts` sits at
-the root and `srcDir: './docs/src'` moves the sources, not the project root. A `tsconfig` `include` entry matching
-nothing is not an error, so the wrong path once stood unreported.
-
-### Type-checking and linting gaps
-
-`scripts/docs-gen/**` is EXCLUDED from the root `tsconfig.json` (it needs `moduleResolution: bundler`
-for the Astro/Starlight ESM packages, so it carries its own `scripts/docs-gen/tsconfig.json`), and
-`astro.config.ts` is carved out into `tsconfig.astro.json` for the same reason. Neither is part of
-`build:compile` — so `tsc -p scripts/docs-gen/tsconfig.json` currently reports pre-existing
-`exactOptionalPropertyTypes` violations in the copied code. ESLint DOES cover both
-(`projectService` resolves each file's nearest tsconfig; `astro.config.ts` is pinned to
-`tsconfig.astro.json` by an override that must come AFTER `getTseslintConfigs()`).
-
-`docs/src/**/*.ts` is ignored by ESLint: those modules resolve `astro:content` and `import.meta.env`
-through types Astro generates into the gitignored `.astro/` at the REPO ROOT (the Astro project root is
-the root, whatever `srcDir` says), so linting them before a build reports
-every Astro import as an unresolved `any`. `docs/tsconfig.json` and the Astro build validate them
-instead. `docs/**` is likewise out of markdownlint's scope (Starlight's frontmatter-driven conventions,
-plus the generated API markdown), and `scripts/docs-gen` is out of dprint's and cspell's, a leftover of keeping
-the copy byte-comparable to its upstream that the move onto the toolkit's export retires with the tree.
+`docs/src/**/*.ts` is ignored by ESLint: those modules resolve `astro:content` through types Astro generates into the
+gitignored `.astro/` at the REPO ROOT (the Astro project root is the root, whatever `srcDir` says), so linting them
+before a build reports every Astro import as an unresolved `any`. The Astro build validates them instead. `docs/**` is
+likewise out of markdownlint's scope (Starlight's frontmatter-driven conventions, plus the generated API markdown).
 
 ### `js-yaml` must stay on 4.x
 
@@ -350,8 +309,8 @@ sweep, so a backport landing on that tag is the only signal that this one has fa
 
 ### Testing
 
-The docs generator and the docs site are tested by the `unit-tests:scripts` project, alongside the rest
-of `scripts/**` — see [The two Vitest projects](#the-two-vitest-projects--where-a-test-file-runs-depends-on-where-it-lives).
+The docs pipeline is tested in `@mnaoumov/typescript-dev-toolkit`. Here, `npm run docs:build` is the check: it fails
+on a broken link or an unrendered GitHub alert.
 
 ## Consuming notes
 

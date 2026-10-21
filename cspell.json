@@ -4,11 +4,8 @@
     ".husky",
     "coverage",
     "dist",
-    "docs/src/components",
     "docs/src/content/docs/api",
-    "docs/src/styles",
     "patches",
-    "scripts/docs-gen",
     "scripts/obsidian-typings-unimplemented.json",
     "src/internal/html-sanitizer-allowlists.ts",
     "tsconfig.tsbuildinfo"
