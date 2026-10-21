@@ -282,9 +282,8 @@ setting for where this package's surface differs. Toolkit 3.8.0 added them, and 
 3. **`excludedDirectories`** — `internal` and `jest`, on top of the toolkit's `@types`, `styles` and `test-helpers`.
 4. **`externalTypeLinks`** — the CodeMirror, Moment and Turndown types this surface names, which the toolkit's
    generic table does not carry.
-
-The fork's index-page prose explaining the barrel arrangement has no toolkit setting yet, so the generated API index
-still says each module is its own import subpath, which is false here; each page's import statement is right.
+5. **`apiIndexIntro`** (toolkit 3.10.0) — the API index's opening prose, explaining the barrel arrangement in place of
+   the generated intro.
 
 **The favicon** (`docs/public/favicon.svg`, byte-identical copy in `docs/src/assets/favicon.svg`) is this package's
 own mark: the Obsidian gem with a dashed copy of itself behind it (the mock) and a green check (the passing test). The
