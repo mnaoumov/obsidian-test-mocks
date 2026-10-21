@@ -38,7 +38,7 @@
 ## 7.2.1
 
 - fix(metadata-cache): merge list items starting at their container's content column
-- perf(metadata-cache): merge linear-time list parent lookup (re #3 - [BUG] Quadratic parent lookup when parsing flat lists)
+- perf(metadata-cache): merge linear-time list parent lookup (re #3 - \[BUG\] Quadratic parent lookup when parsing flat lists)
 
 ## 7.2.0
 
