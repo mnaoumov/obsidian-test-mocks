@@ -30,6 +30,8 @@ const EXTERNAL_TYPE_LINKS = new Map<string, string>([
 // Cspell:enable
 
 export const DOCS_SITE_CONFIG: DocsSiteConfig = {
+  apiIndexIntro: 'The `obsidian` modules are the mocks themselves, imported by name from `obsidian-test-mocks/obsidian`; '
+    + 'the `globals` modules are installed as a side effect of importing a setup entry point.',
   excludedDirectories: ['internal', 'jest'],
   externalTypeLinks: EXTERNAL_TYPE_LINKS,
   importStatement: getImportStatement,
