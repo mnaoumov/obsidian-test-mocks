@@ -922,9 +922,10 @@ describe('parseMarkdownContent', () => {
     });
     // Rows from Obsidian 1.14.4's own metadata worker: every item as [start offset, end offset, parent], and every
     // section as [type, start offset, end offset]. A line holding several markers starts an item at each, nested in the
-    // one before it. An ordered item not numbered 1 cannot interrupt a blockquote, so a line starting one is taken into
-    // the quote lazily and read there: as an item after an item, a heading or an empty `>` line, as paragraph text after
-    // a paragraph, and as a line of a fence.
+    // one before it, and a `>` between two of them puts the later one in a blockquote of its own, which starts just past
+    // that `>` and the one space after it. An ordered item not numbered 1 cannot interrupt a blockquote, so a line
+    // starting one is taken into the quote lazily and read there: as an item after an item, a heading or an empty `>`
+    // line, as paragraph text after a paragraph, and as a line of a fence.
     it.each([
       { content: '- - x', items: [[0, 5, -1], [2, 5, -1]], sections: [['list', 0, 5]] },
       { content: '- - x\n', items: [[0, 5, -1], [2, 5, -1]], sections: [['list', 0, 5]] },
@@ -936,6 +937,15 @@ describe('parseMarkdownContent', () => {
       { content: '> - - x', items: [[2, 7, -1], [4, 7, -1]], sections: [['blockquote', 0, 7]] },
       { content: '- - - x', items: [[0, 7, -1], [2, 7, -1], [4, 7, -1]], sections: [['list', 0, 7]] },
       { content: '- - [ ] x', items: [[0, 9, -1], [2, 9, -1]], sections: [['list', 0, 9]] },
+      { content: '- > 1. first', items: [[0, 12, -1], [4, 12, -1]], sections: [['list', 0, 12]] },
+      { content: '- > - a\n- b', items: [[0, 7, -1], [4, 7, -1], [8, 11, -1]], sections: [['list', 0, 11]] },
+      { content: '- > - a\n  > - b', items: [[0, 15, -1], [4, 7, -1], [12, 15, -1]], sections: [['list', 0, 15]] },
+      { content: '1. > 1. x', items: [[0, 9, -1], [5, 9, -1]], sections: [['list', 0, 9]] },
+      { content: '- > > 1. x', items: [[0, 10, -1], [6, 10, -1]], sections: [['list', 0, 10]] },
+      { content: '> - > 1. x', items: [[2, 10, -1], [6, 10, -1]], sections: [['blockquote', 0, 10]] },
+      { content: '> 1.   > 1. x', items: [[2, 13, -1], [9, 13, -1]], sections: [['blockquote', 0, 13]] },
+      { content: '1. >1. - x', items: [[0, 10, -1], [4, 10, -1], [7, 10, -1]], sections: [['list', 0, 10]] },
+      { content: '>* * x', items: [[1, 6, -1], [3, 6, -1]], sections: [['blockquote', 0, 6]] },
       { content: '> - q\n2. y', items: [[2, 5, -1], [6, 10, -1]], sections: [['blockquote', 0, 10]] },
       { content: '> - q\n2) y', items: [[2, 5, -1], [6, 10, -1]], sections: [['blockquote', 0, 10]] },
       { content: '> q\n2. y', items: [], sections: [['blockquote', 0, 8]] },
