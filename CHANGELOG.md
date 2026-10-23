@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 7.3.0
+
+- fix(metadata-cache): stop throwing on a tab between quote levels
+- fix: re #4
+- docs(changelog): escape the issue-title tags so markdownlint and cspell pass
+- docs(changelog): name the issue each released entry resolved
+- chore(docs): explain the barrel entry points on the API index
+- chore(docs): build the site with typescript-dev-toolkit's docs-site export
+- chore: retire the copy-sync gate and drop obsidian-dev-utils mentions
+- feat: track obsidian 1.14.4 and mock its new API surface
+- chore(deps): sweep dependencies onto typescript-dev-toolkit 3.7
+- fix(scripts): merge skipping prepare-script output above the npm pack JSON
+
 ## 7.2.3
 
 - fix(normalizePath): port Obsidian's root, NFC and no-break-space handling
