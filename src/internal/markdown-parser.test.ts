@@ -972,6 +972,32 @@ describe('parseMarkdownContent', () => {
       expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(items);
       expect(cache.sections?.map((section) => [section.type, section.position.start.offset, section.position.end.offset])).toEqual(sections);
     });
+    // Each row was measured with Obsidian 1.14.4's own metadata worker. A tab straight after a `>`, or after its optional
+    // space, is four columns of indent, so it opens an indented code block rather than an item or a nested blockquote,
+    // while a tab after two spaces leaves the `>` a nested level. A later marker on an item's own line keeps its start
+    // when a later line lowers the item's strip, and a `>` past the line's quote prefix opens a blockquote inside the item
+    // the line continues.
+    it.each([
+      { content: '>\t- a', items: [], sections: [['blockquote', 0, 5]] },
+      { content: '>\t> - a', items: [], sections: [['blockquote', 0, 7]] },
+      { content: '> \t> * x', items: [], sections: [['blockquote', 0, 8]] },
+      { content: '>  \t> * x', items: [[6, 9, -1]], sections: [['blockquote', 0, 9]] },
+      { content: '>\t> 1.  ', items: [], sections: [['blockquote', 0, 8]] },
+      { content: '> - a\n>\t- b', items: [[2, 5, -1], [8, 11, 0]], sections: [['blockquote', 0, 11]] },
+      { content: '>\n>\t> - b', items: [], sections: [['blockquote', 0, 9]] },
+      { content: '>  \t>  2) x', items: [[6, 11, -1]], sections: [['blockquote', 0, 11]] },
+      { content: '\n1. - \n >', items: [[1, 9, -1], [4, 9, -1]], sections: [['list', 1, 9]] },
+      { content: '1. - x\n y', items: [[0, 9, -1], [3, 9, -1]], sections: [['list', 0, 9]] },
+      { content: '1.  1. - [ ] \n x1. ', items: [[0, 19, -1], [4, 19, -1], [7, 19, -1]], sections: [['list', 0, 19]] },
+      { content: '\n* \n2) - \n [a]: /u', items: [[1, 3, -1], [4, 18, -2], [7, 18, -2]], sections: [['list', 1, 3], ['list', 4, 18]] },
+      { content: '>1. a\n>\t>1. b', items: [[1, 13, -1], [9, 13, -1]], sections: [['blockquote', 0, 13]] },
+      { content: '>1. * \n>\t>1. \t>', items: [[1, 15, -1], [4, 15, -1], [10, 15, -1]], sections: [['blockquote', 0, 15]] }
+    ])('should read $content with a tab in its quote prefix, or a lazy line under several markers, as Obsidian does', ({ content, items, sections }) => {
+      const cache = parseMarkdownContent(content);
+
+      expect(cache.listItems?.map((item) => [item.position.start.offset, item.position.end.offset, item.parent]) ?? []).toEqual(items);
+      expect(cache.sections?.map((section) => [section.type, section.position.start.offset, section.position.end.offset])).toEqual(sections);
+    });
     // Each row was measured on a real Obsidian 1.14.4: every item's [start offset, end offset]. An item with more than
     // one child ends where its last child that is not a list ends; any other item ends at its last value line, or, when
     // a sibling follows it after blank lines, at the start of the first of them.
