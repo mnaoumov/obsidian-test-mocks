@@ -230,6 +230,8 @@ const HEADING_REGEX = /^#{1,6}(?:[ \t]|$)/;
 const THEMATIC_BREAK_REGEX = /^(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$/;
 const SETEXT_UNDERLINE_REGEX = /^(?:=+|-+)$/;
 const MARKER_LIKE_REGEX = /^(?:[-*+]|\d+[.)])(?=[^ \t])/;
+// A text ending in a blockquote's `>` and the one optional space it takes.
+const QUOTE_MARKER_END_REGEX = />$|> $/;
 const COMMENT_MARK = '%%';
 const MATH_MIN_LENGTH = 2;
 // How many lines a link reference definition is looked for in: its label line, and the empty lines and the destination and
@@ -292,6 +294,28 @@ export function getMarkerLikeWidth(text: string): number {
 }
 
 /**
+ * Checks whether the whitespace before a `>` inside a line's quote prefix indents it four or more columns past the
+ * quote level before it, which makes it the start of an indented code block rather than a nested blockquote. The
+ * columns are measured as the scan measures them, so a tab straight after a `>`, or after its optional space, is four.
+ *
+ * @param line - The line.
+ * @param levelEnd - The index just past the quote level before it.
+ * @param markerIndex - The index of the `>`.
+ * @returns Whether the `>` opens no nested blockquote.
+ */
+export function isNestedQuoteMarkerIndented(line: string, levelEnd: number, markerIndex: number): boolean {
+  let levelEndColumn = 0;
+  for (let index = 0; index < levelEnd; index++) {
+    levelEndColumn = advanceLineColumn(line, index, levelEndColumn);
+  }
+  let column = levelEndColumn;
+  for (let index = levelEnd; index < markerIndex; index++) {
+    column = advanceLineColumn(line, index, column);
+  }
+  return column - levelEndColumn >= INDENTED_CODE_COLUMNS;
+}
+
+/**
  * Scans a note's body for list items and the blocks that hide them.
  *
  * @param lines - The note's lines, without their line breaks.
@@ -325,6 +349,22 @@ export function scanLeafBlocks(lines: readonly string[], firstLine: number): Lea
 
 function advanceColumn(column: number, char: string): number {
   return char === '\t' ? column + TAB_WIDTH - (column % TAB_WIDTH) : column + 1;
+}
+
+/**
+ * Advances a column past one whitespace character of a line, where the line's prefix ends. A tab straight after a
+ * blockquote's `>`, or after the one optional space it takes, is four columns wherever it sits: `remark-parse` 8, which
+ * Obsidian's metadata worker runs, reads the quote's content as text of its own, which that tab starts. So `>\t- a`
+ * opens an indented code block rather than an item, and `>\t> - a` no nested blockquote.
+ *
+ * @param line - The line.
+ * @param index - The index of the character.
+ * @param column - The column it starts at.
+ * @returns The column past it.
+ */
+function advanceLineColumn(line: string, index: number, column: number): number {
+  const isTabAfterQuoteMarker = line[index] === '\t' && QUOTE_MARKER_END_REGEX.test(line.slice(0, index));
+  return isTabAfterQuoteMarker ? column + TAB_WIDTH : advanceColumn(column, line.charAt(index));
 }
 
 /**
@@ -416,7 +456,7 @@ function doesContinueContainer(container: Container, line: string, cursor: Curso
   const contentBase = cursor.base + container.width;
   const indentBase = cursor.base + container.removalWidth;
   while (cursor.column < contentBase && cursor.index < position.index) {
-    cursor.column = advanceColumn(cursor.column, line.charAt(cursor.index));
+    cursor.column = advanceLineColumn(line, cursor.index, cursor.column);
     cursor.index++;
   }
   cursor.base = contentBase;
@@ -926,7 +966,6 @@ function matchLazyQuotes(state: ScanState, line: string, cursor: Cursor, matched
  * marker of another kind ends the list instead.
  */
 function openBlocks(state: ScanState, line: string, lineNumber: number, cursor: Cursor, closedItemKind?: string): void {
-  let isAfterQuote = false;
   let siblingItemKind = closedItemKind;
   for (;; siblingItemKind = undefined) {
     const position = skipWhitespace(line, cursor);
@@ -948,19 +987,15 @@ function openBlocks(state: ScanState, line: string, lineNumber: number, cursor: 
     if (text.startsWith('>')) {
       state.containers.push({ isLazy: false, kind: 'quote' });
       openQuote(line, cursor, position);
-      isAfterQuote = true;
       continue;
     }
-    // Measured on Obsidian 1.14.4: a tab straight after a quote marker, or after its optional space, never starts a list
-    // item.
     // `remark-parse` tries a thematic break before a list item, so `* * *` and `- - -` are breaks.
-    const itemMatch = (isAfterQuote && line[cursor.index] === '\t') || THEMATIC_BREAK_REGEX.test(text) ? null : ITEM_REGEX.exec(text);
+    const itemMatch = THEMATIC_BREAK_REGEX.test(text) ? null : ITEM_REGEX.exec(text);
     if (!itemMatch) {
       openLeaf(state, line, text, lineNumber);
       return;
     }
     openItem(state, line, lineNumber, cursor, { ...position, marker: ensureNonNullable(itemMatch.groups?.['marker']) });
-    isAfterQuote = false;
   }
 }
 
@@ -1261,7 +1296,7 @@ function scanMatchedLine(state: ScanState, line: string, lineNumber: number, cur
 function skipWhitespace(line: string, start: LinePosition): LinePosition {
   let { column, index } = start;
   while (line[index] === ' ' || line[index] === '\t') {
-    column = advanceColumn(column, line.charAt(index));
+    column = advanceLineColumn(line, index, column);
     index++;
   }
   return { column, index };

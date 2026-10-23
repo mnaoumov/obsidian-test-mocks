@@ -637,6 +637,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   - **A quoted list has no `list` section.** The blockquote's own section is the only one Obsidian reports.
   - **A tab right after a `>`, or after its optional space, starts no item**, as measured: `>\t- A` and `> \t- A` give
     none, while `>  \t- A` gives one. A fenced block inside a quote is a code zone, so it holds no items, tags or links.
+  - **That tab is four columns of indent wherever it sits** (2026-10-23, fuzzed against Obsidian 1.14.4's own metadata
+    worker): `remark-parse` 8 reads the quote's content as text of its own, which the tab starts. So it opens an
+    indented code block, and a `>` after it is no nested quote either: `>\t> - a` is one blockquote with no item, while
+    `>  \t> * x` nests a quote holding an item. It counts as four columns for a list item the line continues too, so
+    `> - a\n>\t- b` nests `b`. The pre-pass (`advanceLineColumn`) and the parser's quote prefix (`getQuoteLevelEnds`,
+    through `isNestedQuoteMarkerIndented`) measure it the same way, since a disagreement between the two is a crash.
+  - **A `>` past a line's quote prefix, before its first marker, opens a blockquote inside the item the line
+    continues** (2026-10-23): in `>1. a\n>\t>1. b` the tab makes the second `>` no level of the line's prefix, and `b`
+    is the root of a list one quote level down, starting just past it.
 
 - **The blocks around the lists are read by Obsidian's own block grammar** (2026-10-12, read in Obsidian
   1.14.4's `worker.js` and fuzzed against it: 15,000 notes with no list item and no frontmatter agree). That worker is
@@ -827,7 +836,10 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     item holding a nested item (`[0, 5, -1]` and `[2, 5, -1]`, the outer item holding nothing but the nested list), and
     `- - - x` three. `* * *` and `- - -` alone are still thematic breaks. The pre-pass records every marker's index in
     `itemMarkerIndexes`, and the parser reads each later marker's item off a copy of the line whose characters before
-    the marker are spaces, so every column stays where it was.
+    the marker are spaces, so every column stays where it was. A later line that lowers the outer item's strip does not
+    move such a nested item (2026-10-23): the item's own line is never stripped, so `1. - x\n y` starts the `-` at 3.
+    The mock used to start it one column past the outer item's start, where the definition scan then found no marker
+    and threw, leaving the note without a cache.
   - **A `>` between two markers on a line puts the later item in a blockquote** (2026-10-23, measured with Obsidian
     1.14.4's own metadata worker). In `- > 1. first` the `1.` item starts at column 4, just past the `>` and its one
     optional space, and is the root of a list of its own (`-1`) one quote level down. Such a `>` begins the content
