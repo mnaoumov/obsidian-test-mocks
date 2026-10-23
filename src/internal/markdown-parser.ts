@@ -90,9 +90,12 @@ interface AddListItemParams {
   readonly hasNestedMarker: boolean;
   // The collection the item is pushed onto.
   readonly items: ListItemCache[];
+  // Where the marker sits, when it is not the line's first one.
+  readonly laterMarker: LaterListMarker | undefined;
   // The number of blockquote levels the line continues lazily, if it does (see `LeafBlockScan.lazyQuoteLines`).
   readonly lazyQuoteDepth: number | undefined;
-  // The item's line, with everything before the marker past the quote prefix turned into spaces for a later marker.
+  // The item's line, with everything before the marker past the quote prefix but a `>` turned into spaces for a later
+  // marker.
   readonly line: string;
   // The offset the line starts at.
   readonly lineStart: number;
@@ -163,6 +166,16 @@ interface GetListStateParams {
   readonly scan: LeafBlockScan;
   readonly sections: SectionCache[];
   readonly states: Map<number, ListState>;
+}
+
+/**
+ * A list marker after the first one on its line.
+ */
+interface LaterListMarker {
+  // The number of `>` levels before the marker: the line's own, and one per `>` between its first marker and this one.
+  readonly depth: number;
+  // The offset just past the last of those levels.
+  readonly prefixLength: number;
 }
 
 /**
@@ -884,8 +897,8 @@ const NESTED_QUOTE_LEVEL_REGEX = /^ {0,3}> ?/;
  * lazily continued blockquote depth, the collections, the pre-pass and the lists open at each depth.
  */
 function addListItem(params: AddListItemParams): void {
-  const { content, currentLine, hasNestedMarker, items, lazyQuoteDepth, line, lineStart, lineStarts, scan, sections, states } = params;
-  const itemLine = matchListItemLine(line, lazyQuoteDepth);
+  const { content, currentLine, hasNestedMarker, items, laterMarker, lazyQuoteDepth, line, lineStart, lineStarts, scan, sections, states } = params;
+  const itemLine = matchListItemLine(line, lazyQuoteDepth, laterMarker);
   const { match, prefixLength } = itemLine;
   const state = getListState({ content, depth: itemLine.depth, endLine: currentLine, lineStarts, scan, sections, states });
 
@@ -1231,6 +1244,29 @@ function getContainerLines(params: GetContainerLinesParams): ContainerLines {
   return { isCut: false, lines };
 }
 
+/**
+ * Finds the blockquote levels a later marker on a line sits in past the line's own quote prefix: one per `>` between
+ * the two, each taking one optional space after it. Such a `>` starts the content of the item before it, so no indent
+ * limit applies to it, unlike a `>` of the line's own prefix.
+ *
+ * @param line - The line, as it is in the note.
+ * @param prefixLength - The length of the line's own quote prefix.
+ * @param markerIndex - The index of the later marker.
+ * @returns The offset just past each level, outermost first.
+ */
+function getLaterMarkerQuoteLevelEnds(line: string, prefixLength: number, markerIndex: number): number[] {
+  const levelEnds: number[] = [];
+  for (let index = prefixLength; index < markerIndex; index++) {
+    if (line[index] !== '>') {
+      continue;
+    }
+
+    const levelEnd = index + 1;
+    levelEnds.push(levelEnd + (line[levelEnd] === ' ' && levelEnd < markerIndex ? 1 : 0));
+  }
+  return levelEnds;
+}
+
 function getLineEnd(content: string, lineStarts: number[], line: number): number {
   const nextLineStart = lineStarts[line + 1];
   return nextLineStart === undefined ? content.length : nextLineStart - 1;
@@ -1372,7 +1408,7 @@ function getVisualColumns(whitespace: string): number[] {
  * @returns The line, with the same length.
  */
 function maskLineBeforeMarker(line: string, prefixLength: number, markerIndex: number): string {
-  const masked = line.slice(prefixLength, markerIndex).replaceAll(/[^\t]/g, ' ');
+  const masked = line.slice(prefixLength, markerIndex).replaceAll(/[^\t>]/g, ' ');
   return line.slice(0, prefixLength) + masked + line.slice(markerIndex);
 }
 
@@ -1382,13 +1418,22 @@ function maskLineBeforeMarker(line: string, prefixLength: number, markerIndex: n
  * @param line - The line.
  * @param lazyQuoteDepth - The number of blockquote levels the line continues lazily, if it does, which it sits in
  * whatever its own prefix holds.
+ * @param laterMarker - The quote levels before the marker, for a marker after the line's first one, which the line,
+ * masked before the marker, can no longer tell.
  * @returns The match, the number of quote levels, and the length of the quote prefix.
  */
-function matchListItemLine(line: string, lazyQuoteDepth: number | undefined): ListItemLine {
-  const levelEnds = getQuoteLevelEnds(line);
-  const prefixLength = levelEnds.at(-1) ?? 0;
+function matchListItemLine(line: string, lazyQuoteDepth: number | undefined, laterMarker?: LaterListMarker): ListItemLine {
+  let depth: number;
+  let prefixLength: number;
+  if (laterMarker) {
+    ({ depth, prefixLength } = laterMarker);
+  } else {
+    const levelEnds = getQuoteLevelEnds(line);
+    depth = lazyQuoteDepth ?? levelEnds.length;
+    prefixLength = levelEnds.at(-1) ?? 0;
+  }
   const match = ensureNonNullable(LIST_ITEM_REGEX.exec(line.slice(prefixLength)));
-  return { depth: lazyQuoteDepth ?? levelEnds.length, match, prefixLength };
+  return { depth, match, prefixLength };
 }
 
 function parseListItems(
@@ -1414,13 +1459,17 @@ function parseListItems(
     const lineStart = ensureNonNullable(lineStarts[currentLine]);
     const rawLine = content.slice(lineStart, getLineEnd(content, lineStarts, currentLine));
     const lazyQuoteDepth = scan.lazyQuoteLines.get(currentLine);
-    const { prefixLength: rawPrefixLength } = matchListItemLine(rawLine, lazyQuoteDepth);
+    const { depth: rawDepth, prefixLength: rawPrefixLength } = matchListItemLine(rawLine, lazyQuoteDepth);
     // A line holding several markers starts an item at each, nested in the one before it, and each is read as if the
-    // line held nothing before its marker.
+    // line held nothing before its marker but the blockquotes it sits in.
     for (const [markerNumber, markerIndex] of markerIndexes.entries()) {
       const line = markerNumber === 0 ? rawLine : maskLineBeforeMarker(rawLine, rawPrefixLength, markerIndex);
       const hasNestedMarker = markerNumber < markerIndexes.length - 1;
-      addListItem({ content, currentLine, hasNestedMarker, items, lazyQuoteDepth, line, lineStart, lineStarts, scan, sections, states });
+      const quoteLevelEnds = getLaterMarkerQuoteLevelEnds(rawLine, rawPrefixLength, markerIndex);
+      const laterMarker = markerNumber === 0
+        ? undefined
+        : { depth: rawDepth + quoteLevelEnds.length, prefixLength: quoteLevelEnds.at(-1) ?? rawPrefixLength };
+      addListItem({ content, currentLine, hasNestedMarker, items, laterMarker, lazyQuoteDepth, line, lineStart, lineStarts, scan, sections, states });
     }
   }
 

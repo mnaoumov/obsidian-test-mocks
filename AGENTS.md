@@ -828,6 +828,15 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     `- - - x` three. `* * *` and `- - -` alone are still thematic breaks. The pre-pass records every marker's index in
     `itemMarkerIndexes`, and the parser reads each later marker's item off a copy of the line whose characters before
     the marker are spaces, so every column stays where it was.
+  - **A `>` between two markers on a line puts the later item in a blockquote** (2026-10-23, measured with Obsidian
+    1.14.4's own metadata worker). In `- > 1. first` the `1.` item starts at column 4, just past the `>` and its one
+    optional space, and is the root of a list of its own (`-1`) one quote level down. Such a `>` begins the content
+    of the item before it, so any indent may precede it (`> 1.   > 1. x` nests a quote too), and a marker right after
+    it takes no space (`1. >1. - x` starts the `1.` at column 4). The depth and the prefix come from the raw line,
+    because the masked copy has lost the character after each `>`. Masking the `>` away along with everything else
+    used to start that item at the outer item's content column, on the `>` itself, and the definition scan
+    (`markdown-container-definitions.ts`) then found no marker there and threw, which left the whole note without a
+    cache.
 
 - **A list marker that ends its line opens an empty list item** (2026-10-12, measured on a real Obsidian 1.14.4 over CDP
   and fuzzed against its own metadata worker). `remark-parse` 8 wants whitespace, a line break or the end of the note
