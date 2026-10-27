@@ -341,7 +341,7 @@ interface EditPackageJsonOptions {
 }
 
 interface PackageLockJson extends Partial<PackageJson> {
-  packages?: Record<string, PackageJson>;
+  readonly packages?: Record<string, PackageJson>;
 }
 
 interface UpdateChangelogOptions {

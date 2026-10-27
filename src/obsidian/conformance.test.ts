@@ -103,10 +103,10 @@ const VALUE_FLAG_LIST = [
 ];
 
 interface ConformanceContext {
-  checker: TypeChecker;
-  mockExports: Map<string, TsSymbol>;
-  obsidianExports: Map<string, TsSymbol>;
-  obsidianSourceFile: SourceFile;
+  readonly checker: TypeChecker;
+  readonly mockExports: Map<string, TsSymbol>;
+  readonly obsidianExports: Map<string, TsSymbol>;
+  readonly obsidianSourceFile: SourceFile;
 }
 
 const { checker, mockExports, obsidianExports, obsidianSourceFile } = build();

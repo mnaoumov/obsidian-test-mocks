@@ -12,13 +12,13 @@ import {
 } from './delegated-event-registry.ts';
 
 interface EventsHolder {
-  _EVENTS?: Record<string, unknown[]>;
+  readonly _EVENTS?: Record<string, unknown[]>;
 }
 
 interface Tree {
-  button: HTMLElement;
-  icon: HTMLElement;
-  root: HTMLElement;
+  readonly button: HTMLElement;
+  readonly icon: HTMLElement;
+  readonly root: HTMLElement;
 }
 
 function click(target: EventTarget): Event {

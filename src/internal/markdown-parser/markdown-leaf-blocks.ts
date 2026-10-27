@@ -101,12 +101,16 @@ type Container = ItemContainer | QuoteContainer;
 
 interface Cursor {
   // The column the innermost matched container's content starts at, which the next container's prefix is measured from.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   base: number;
   // The visual column of `line[index]`.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   column: number;
   // The column an indented code block is measured from: the column Obsidian strips the innermost matched list item's
   // lines to, which can stand before its content, and `base` otherwise.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   indentBase: number;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   index: number;
 }
 
@@ -135,6 +139,7 @@ interface ItemContainer {
   readonly markerKind: string;
   // How many columns past its container's content Obsidian strips the item's later lines to: the least indent of those
   // lines so far, and at most the width of its marker (see `getBulletWidth`).
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   removalWidth: number;
   // How many columns past its container's content the item's own content starts.
   readonly width: number;
@@ -181,20 +186,25 @@ interface ScanState {
   readonly contentLines: Set<number>;
   readonly hidingOpenerLines: Set<number>;
   // Whether the line before the current one was blank past its containers.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   isAfterBlankLine: boolean;
   // Whether the line before the current one was blank, containers' prefixes included.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   isAfterEmptyLine: boolean;
   readonly itemMarkerIndexes: Map<number, number[]>;
   readonly lazyQuoteLines: Map<number, number>;
   // The leaf block open in the innermost container, if any.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   leaf: Leaf | undefined;
   // The number of the line being scanned.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   lineNumber: number;
   // The note's lines, which an opening list item reads ahead in.
   readonly lines: readonly string[];
   readonly listEndLines: Set<number>;
   readonly openerLines: Set<number>;
   // The leaf a line opened where a block starts, which the next line can underline as a setext heading, and that line.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   setextText: SetextText | undefined;
 }
 

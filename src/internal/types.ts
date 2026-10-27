@@ -13,8 +13,8 @@ import type {
  * Every file and folder path in an in-memory filesystem, as `InMemoryAdapter.listAll__` returns them.
  */
 export interface AdapterListing {
-  files: string[];
-  folders: string[];
+  readonly files: string[];
+  readonly folders: string[];
 }
 
 /**
@@ -37,8 +37,8 @@ export interface AjaxOptions {
  * A scroll position, as `Editor.getScrollInfo` returns it.
  */
 export interface CoordsLeftTop {
-  left: number;
-  top: number;
+  readonly left: number;
+  readonly top: number;
 }
 
 /**
@@ -47,10 +47,10 @@ export interface CoordsLeftTop {
  * `addEventListener`.
  */
 export interface EventListenerInfo {
-  callback: EventListener;
-  listener: unknown;
-  options?: AddEventListenerOptions | boolean | undefined;
-  selector: string;
+  readonly callback: EventListener;
+  readonly listener: unknown;
+  readonly options?: AddEventListenerOptions | boolean | undefined;
+  readonly selector: string;
 }
 
 /* eslint-disable unicorn/name-replacements -- `ctx` / `e` / `fn` are the member names on Obsidian's own `EventRef`, which `offref` and every consumer read by name. */
@@ -59,10 +59,10 @@ export interface EventListenerInfo {
  * the owning `Events`, the event name, the callback and its `this` context.
  */
 export interface EventsEntry {
-  ctx: unknown;
-  e: Events;
-  fn: (...data: unknown[]) => unknown;
-  name: string;
+  readonly ctx: unknown;
+  readonly e: Events;
+  readonly fn: (...data: unknown[]) => unknown;
+  readonly name: string;
   /* eslint-enable unicorn/name-replacements -- Restores the rule after the `EventRef` shape. */
 }
 
@@ -71,9 +71,9 @@ export interface EventsEntry {
  * file's modification time and size when it was indexed.
  */
 export interface FileCacheEntry {
-  hash: string;
-  mtime: number;
-  size: number;
+  readonly hash: string;
+  readonly mtime: number;
+  readonly size: number;
 }
 
 /**
@@ -89,8 +89,8 @@ export type MaybeReturn<T> = T | void;
  * heading or block reference.
  */
 export interface ParsedLinktext {
-  path: string;
-  subpath: string;
+  readonly path: string;
+  readonly subpath: string;
 }
 
 /**
@@ -98,10 +98,10 @@ export interface ParsedLinktext {
  * prepend there.
  */
 export interface SvgElementInfo {
-  attr?: Record<string, boolean | null | number | string>;
-  cls?: string | string[];
-  parent?: Node;
-  prepend?: boolean;
+  readonly attr?: Record<string, boolean | null | number | string>;
+  readonly cls?: string | string[];
+  readonly parent?: Node;
+  readonly prepend?: boolean;
 }
 
 /**
@@ -119,14 +119,16 @@ export interface ViewStateResultInternal extends ViewStateResultOriginal {
    * Set by a view that cannot show what it was given — a file view with no file — to make the leaf go back to its
    * empty view.
    */
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Views and leaves set this flag on the shared result while restoring state.
   close?: boolean;
   /**
    * A callback the leaf runs once the state change has settled.
    */
-  done?: () => void;
+  readonly done?: () => void;
   /**
    * Set by a view whose state change alters the layout, which makes the leaf ask the workspace to update it.
    */
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Views and leaves set this flag on the shared result while restoring state.
   layout?: boolean;
 }
 

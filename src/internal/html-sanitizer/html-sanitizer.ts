@@ -109,8 +109,8 @@ const LEADING_WHITESPACE_REG_EXP = /^[\r\n\t ]+/;
 const MARKUP_REG_EXP = /<[/\w]/;
 
 interface ParentInfo {
-  namespaceURI: null | string;
-  tagName: string;
+  readonly namespaceURI: null | string;
+  readonly tagName: string;
 }
 
 /**

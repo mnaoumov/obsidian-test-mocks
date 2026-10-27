@@ -7,10 +7,15 @@
 import type { RequestUrlParam as RequestUrlParameterOriginal } from 'obsidian';
 
 interface RequestUrlResponse {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- requestUrl installs this response field on the promise before returning it.
   arrayBuffer: ArrayBuffer;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- requestUrl installs this response field on the promise before returning it.
   headers: Record<string, string>;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- requestUrl installs this response field on the promise before returning it.
   json: unknown;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- requestUrl installs this response field on the promise before returning it.
   status: number;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- requestUrl installs this response field on the promise before returning it.
   text: string;
 }
 

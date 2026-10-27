@@ -184,6 +184,11 @@ wrong one by accident. `npm test` is a bare `vitest run`, which runs every proje
 
 ### Linting
 
+`typescript-dev-toolkit/readonly-interface-members` (toolkit 4.0+) requires readonly interface properties.
+Fields reassigned by the parser, DOM setup or shared result updates carry an explained property-level
+`eslint-disable-next-line`; preserve that mutable state instead of changing runtime behavior for the rule.
+Readonly properties do not make their arrays or collections immutable.
+
 The ESLint config (`scripts/eslint-config.ts`) is a hand copy of the shared config in `@mnaoumov/typescript-dev-toolkit` (`linters/eslint-config`). It leaves out what is specific to a plugin shipping into the Obsidian renderer (`eslint-plugin-n`'s Node-16 floor, `eslint-plugin-obsidianmd`). It runs `eslint-plugin-unicorn`'s `recommended` on top of the tseslint/stylistic/import-x/perfectionist stack.
 
 **`eslint-plugin-unicorn` is pinned at the toolkit's own major** (76 on 2026-10-18, recorded in `pinned-versions.json`). The toolkit builds the shared config on that major, and floating this copy ahead of it adds rules the shared config has never seen. Unicorn 78's `no-asterisk-prefix-in-documentation-comments` alone reported 2,456 findings against the `/** ... */` style every TSDoc block uses. Take a new unicorn major when the toolkit does, and take its rules the way the shared config does.

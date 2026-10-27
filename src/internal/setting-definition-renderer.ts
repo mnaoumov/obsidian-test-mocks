@@ -40,10 +40,10 @@ import { castTo } from './castTo.ts';
  * rows rendered inside it.
  */
 export interface RenderedSettingGroup {
-  children: RenderedSettingRow[];
-  definition: SettingDefinitionGroupOriginal;
-  groupEl: HTMLElement;
-  settingGroup: SettingGroup;
+  readonly children: RenderedSettingRow[];
+  readonly definition: SettingDefinitionGroupOriginal;
+  readonly groupEl: HTMLElement;
+  readonly settingGroup: SettingGroup;
 }
 
 /**
@@ -51,17 +51,19 @@ export interface RenderedSettingGroup {
  * `visible` predicate last evaluated to `true`, and the cleanup its `render` callback returned, if any.
  */
 export interface RenderedSettingRow {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Rendering installs the cleanup callback after the row is created.
   cleanup: (() => void) | null;
-  definition: SettingGroupItemOriginal;
+  readonly definition: SettingGroupItemOriginal;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Refreshing DOM state recomputes the row visibility.
   isVisible: boolean;
-  setting: Setting;
-  settingEl: HTMLElement;
+  readonly setting: Setting;
+  readonly settingEl: HTMLElement;
 }
 
 type SettingRowAction = (el: HTMLElement, index: number) => void;
 
 interface SettingRowDisabled {
-  disabled?: (() => boolean) | boolean;
+  readonly disabled?: (() => boolean) | boolean;
 }
 
 /**

@@ -33,7 +33,9 @@ const WORD_CHAR_REG_EXP = /[\p{Alphabetic}\p{Number}_]/u;
 
 interface ChangeSection {
   // The length of new text replacing this section, or `-1` when the section is unchanged.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- addSection coalesces adjacent changes by updating their lengths.
   insertLength: number;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- addSection coalesces adjacent changes by updating their lengths.
   length: number;
 }
 
