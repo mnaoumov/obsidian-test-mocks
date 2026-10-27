@@ -5,9 +5,9 @@ import {
   vi
 } from 'vitest';
 
-import { castTo } from './castTo.ts';
+import { castTo } from '../castTo.ts';
+import { ensureNonNullable } from '../type-guards.ts';
 import { sanitizeHtml } from './html-sanitizer.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 function toHtml(html: string): string {
   const wrapper = document.createElement('div');

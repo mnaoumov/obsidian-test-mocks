@@ -13,6 +13,7 @@
  * fire because neither element is allowed.
  */
 
+import { ensureNonNullable } from '../type-guards.ts';
 import {
   HTML_ATTRIBUTES,
   HTML_TAGS,
@@ -25,7 +26,6 @@ import {
   SVG_TAGS,
   XML_ATTRIBUTES
 } from './html-sanitizer-allowlists.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 const MATH_ML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML';

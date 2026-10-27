@@ -10,7 +10,7 @@ import type { RenderContext } from './RenderContext.ts';
 
 import { isNumber } from '../globals/Number.ts';
 // eslint-disable-next-line import-x/no-cycle -- The shared conversion constructs this class, exactly as Obsidian's own does.
-import { lazyEvaluate } from '../internal/lazy-evaluator.ts';
+import { lazyEvaluate } from '../internal/bases-values/lazy-evaluator.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';

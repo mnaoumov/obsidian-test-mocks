@@ -6,8 +6,8 @@
  * package's public surface.
  */
 
-import type { MarkdownEditView } from '../obsidian/MarkdownEditView.ts';
-import type { MarkdownPreviewView } from '../obsidian/MarkdownPreviewView.ts';
+import type { MarkdownEditView } from '../../obsidian/MarkdownEditView.ts';
+import type { MarkdownPreviewView } from '../../obsidian/MarkdownPreviewView.ts';
 
 /**
  * A mode a `MarkdownView` can be showing: its edit mode or its reading mode.

@@ -24,10 +24,10 @@ import type {
 
 import type { FootnoteSource } from './markdown-references.ts';
 
+import { ensureNonNullable } from '../type-guards.ts';
 import { BLOCK_ID_TYPE } from './markdown-gap-blocks.ts';
 import { findInlineBlockIds } from './markdown-inline-block-ids.ts';
 import { findInlineNoteTexts } from './markdown-references.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * What {@link assignBlockIds} needs.

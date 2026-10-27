@@ -29,9 +29,9 @@ import type {
   SectionCache
 } from 'obsidian';
 
+import { ensureNonNullable } from '../type-guards.ts';
 import { findContainerDefinitions } from './markdown-container-definitions.ts';
 import { readDefinitionParts } from './markdown-gap-blocks.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * What {@link collectReferences} needs.

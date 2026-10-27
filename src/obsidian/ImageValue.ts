@@ -8,7 +8,7 @@ import type { ImageValue as ImageValueOriginal } from 'obsidian';
 
 import type { RenderContext } from './RenderContext.ts';
 
-import { isInternalLinkTarget } from '../internal/link-target.ts';
+import { isInternalLinkTarget } from '../internal/markdown-parser/link-target.ts';
 import { noop } from '../internal/noop.ts';
 import {
   IMAGE_EXTENSIONS,

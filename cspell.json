@@ -7,7 +7,7 @@
     "docs/src/content/docs/api",
     "patches",
     "scripts/obsidian-typings-unimplemented.json",
-    "src/internal/html-sanitizer-allowlists.ts",
+    "src/internal/html-sanitizer/html-sanitizer-allowlists.ts",
     "tsconfig.tsbuildinfo"
   ],
   "dictionaryDefinitions": [],

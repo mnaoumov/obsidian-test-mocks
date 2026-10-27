@@ -4,11 +4,11 @@
  * Mock of Obsidian's empty view — the "New tab" page a leaf shows until something replaces it.
  */
 
-import type { WorkspaceLeaf } from '../obsidian/WorkspaceLeaf.ts';
+import type { WorkspaceLeaf } from '../../obsidian/WorkspaceLeaf.ts';
 
-import { ItemView } from '../obsidian/ItemView.ts';
-import { noop } from './noop.ts';
-import { strictProxy } from './strict-proxy.ts';
+import { ItemView } from '../../obsidian/ItemView.ts';
+import { noop } from '../noop.ts';
+import { strictProxy } from '../strict-proxy.ts';
 import { EMPTY_VIEW_TYPE } from './workspace-layout.ts';
 
 /**

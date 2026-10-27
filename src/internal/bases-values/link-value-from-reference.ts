@@ -12,10 +12,10 @@
 
 import type { Reference as ReferenceOriginal } from 'obsidian';
 
-import type { App } from '../obsidian/App.ts';
+import type { App } from '../../obsidian/App.ts';
 
-import { LinkValue } from '../obsidian/LinkValue.ts';
-import { StringValue } from '../obsidian/StringValue.ts';
+import { LinkValue } from '../../obsidian/LinkValue.ts';
+import { StringValue } from '../../obsidian/StringValue.ts';
 
 /**
  * Wraps a cached link, embed or frontmatter-link reference as a `LinkValue`, as Obsidian's

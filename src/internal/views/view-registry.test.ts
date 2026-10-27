@@ -7,10 +7,10 @@ import {
   vi
 } from 'vitest';
 
-import { App } from '../obsidian/App.ts';
-import { MarkdownView } from '../obsidian/MarkdownView.ts';
-import { WorkspaceLeaf } from '../obsidian/WorkspaceLeaf.ts';
-import { castTo } from './castTo.ts';
+import { App } from '../../obsidian/App.ts';
+import { MarkdownView } from '../../obsidian/MarkdownView.ts';
+import { WorkspaceLeaf } from '../../obsidian/WorkspaceLeaf.ts';
+import { castTo } from '../castTo.ts';
 import { ViewRegistry } from './view-registry.ts';
 
 const CANVAS_EXTENSIONS = ['canvas'];

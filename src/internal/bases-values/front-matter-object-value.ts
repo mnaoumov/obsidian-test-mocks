@@ -15,16 +15,16 @@
  * its top level.
  */
 
-import type { App } from '../obsidian/App.ts';
-import type { TFile } from '../obsidian/TFile.ts';
-import type { Value } from '../obsidian/Value.ts';
+import type { App } from '../../obsidian/App.ts';
+import type { TFile } from '../../obsidian/TFile.ts';
+import type { Value } from '../../obsidian/Value.ts';
 
-import { DateValue } from '../obsidian/DateValue.ts';
-import { LinkValue } from '../obsidian/LinkValue.ts';
-import { ListValue } from '../obsidian/ListValue.ts';
-import { ObjectValue } from '../obsidian/ObjectValue.ts';
-import { UrlValue } from '../obsidian/UrlValue.ts';
-import { castTo } from './castTo.ts';
+import { DateValue } from '../../obsidian/DateValue.ts';
+import { LinkValue } from '../../obsidian/LinkValue.ts';
+import { ListValue } from '../../obsidian/ListValue.ts';
+import { ObjectValue } from '../../obsidian/ObjectValue.ts';
+import { UrlValue } from '../../obsidian/UrlValue.ts';
+import { castTo } from '../castTo.ts';
 import { lazyEvaluate } from './lazy-evaluator.ts';
 import { TagsListValue } from './tags-list-value.ts';
 

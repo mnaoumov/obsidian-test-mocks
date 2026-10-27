@@ -12,12 +12,12 @@ import type { RenderContext } from './RenderContext.ts';
 import type { TFile } from './TFile.ts';
 import type { Value } from './Value.ts';
 
-import { markFileValue } from '../internal/file-value-registry.ts';
-import { createFrontMatterObjectValue } from '../internal/front-matter-object-value.ts';
-import { linkValueFromReference } from '../internal/link-value-from-reference.ts';
+import { markFileValue } from '../internal/bases-values/file-value-registry.ts';
+import { createFrontMatterObjectValue } from '../internal/bases-values/front-matter-object-value.ts';
+import { linkValueFromReference } from '../internal/bases-values/link-value-from-reference.ts';
+import { TagsListValue } from '../internal/bases-values/tags-list-value.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { TagsListValue } from '../internal/tags-list-value.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { DateValue } from './DateValue.ts';
 import { parseFrontMatterTags } from './functions/parseFrontMatterTags.ts';

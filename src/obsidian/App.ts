@@ -16,12 +16,12 @@ import {
   decodeUriSafely,
   isInternalLinkTarget,
   normalizeLinkTarget
-} from '../internal/link-target.ts';
+} from '../internal/markdown-parser/link-target.ts';
 import { noop } from '../internal/noop.ts';
 import { Plugins } from '../internal/plugins.ts';
 import { toDesktopResourcePath } from '../internal/resource-path.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { ViewRegistry } from '../internal/view-registry.ts';
+import { ViewRegistry } from '../internal/views/view-registry.ts';
 import { FileManager } from './FileManager.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { Keymap } from './Keymap.ts';

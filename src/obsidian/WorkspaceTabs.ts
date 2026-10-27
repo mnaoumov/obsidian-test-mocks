@@ -15,7 +15,7 @@ import type { WorkspaceItem } from './WorkspaceItem.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
-import { createParentPlaceholder } from '../internal/workspace-layout.ts';
+import { createParentPlaceholder } from '../internal/views/workspace-layout.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
 
 /**

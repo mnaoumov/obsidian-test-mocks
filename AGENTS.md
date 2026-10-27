@@ -67,47 +67,49 @@ L11. **Track every new `obsidian` release.** Whenever a new `obsidian` package i
 
 ### Internal Modules
 
+Paths are relative to `src/internal/`. Four subjects have a folder of their own: `markdown-parser/` (the port of Obsidian's metadata worker behind `MetadataCache`), `views/` (the leaf and view machinery: the empty and unknown views, the view registry, the layout registry, the Markdown view's modes), `bases-values/` (the Bases `Value` helpers Obsidian keeps off its exported classes) and `html-sanitizer/`. Everything shared across subjects stays at the top.
+
 - `castTo.ts` — `castTo<T>()` utility for unsafe type bridging
 - `delegated-event-registry.ts` — the delegated `on` / `off` shared by `Document.prototype` and `HTMLElement.prototype`: registrations live on the target's own `_EVENTS` record, under the name `obsidian-typings` declares, and events are filtered through `matchParent` as Obsidian does
-- `empty-view.ts` — Obsidian's empty view, the "New tab" page every `WorkspaceLeaf` is born holding as `_empty`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1)
-- `file-value-registry.ts` — the `WeakSet` that lets `LinkValue.looseEquals` recognize a `FileValue` without importing it. Obsidian decides that branch with an `instanceof`; the mock cannot, because `FileValue` already imports `LinkValue` to build one per backlink, so the reverse import would close a cycle through `front-matter-object-value.ts` and `link-value-from-reference.ts` as well. Same reasoning, same shape as `workspace-layout.ts`
-- `front-matter-object-value.ts` — the `ObjectValue` behind `FileValue.getProps`, with the evaluator that reads a frontmatter string as a wikilink, a URL or a date and reinstalls itself on every nested list and object. Obsidian spells it `ObjectValue.fromFrontMatter`, a static NEITHER `obsidian.d.ts` NOR `obsidian-typings` declares, so L1 keeps it off the exported class and L4 forbids the `__` suffix that would claim Obsidian lacks it — the same reasoning that puts `lazy-evaluator.ts` here
-- `html-sanitizer.ts` — the sanitizer behind `sanitizeHTMLToDom`: a port of the DOMPurify 3.0.1 passes Obsidian runs, with Obsidian's config and its two load-time hooks. `html-sanitizer-allowlists.ts` holds DOMPurify's default allowlists, copied from Obsidian's `app.js` (and excluded from cspell)
+- `views/empty-view.ts` — Obsidian's empty view, the "New tab" page every `WorkspaceLeaf` is born holding as `_empty`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1)
+- `bases-values/file-value-registry.ts` — the `WeakSet` that lets `LinkValue.looseEquals` recognize a `FileValue` without importing it. Obsidian decides that branch with an `instanceof`; the mock cannot, because `FileValue` already imports `LinkValue` to build one per backlink, so the reverse import would close a cycle through `front-matter-object-value.ts` and `link-value-from-reference.ts` as well. Same reasoning, same shape as `workspace-layout.ts`
+- `bases-values/front-matter-object-value.ts` — the `ObjectValue` behind `FileValue.getProps`, with the evaluator that reads a frontmatter string as a wikilink, a URL or a date and reinstalls itself on every nested list and object. Obsidian spells it `ObjectValue.fromFrontMatter`, a static NEITHER `obsidian.d.ts` NOR `obsidian-typings` declares, so L1 keeps it off the exported class and L4 forbids the `__` suffix that would claim Obsidian lacks it — the same reasoning that puts `lazy-evaluator.ts` here
+- `html-sanitizer/html-sanitizer.ts` — the sanitizer behind `sanitizeHTMLToDom`: a port of the DOMPurify 3.0.1 passes Obsidian runs, with Obsidian's config and its two load-time hooks. `html-sanitizer-allowlists.ts` holds DOMPurify's default allowlists, copied from Obsidian's `app.js` (and excluded from cspell)
 - `icon-registry.ts` — shared `Map<string, string>` for icon storage (addIcon, removeIcon, getIcon, etc.). It starts empty: Obsidian's Lucide set and its own glyphs are deliberately not bundled, so their ids resolve to nothing
 - `in-memory-adapter.ts` — in-memory filesystem base class for `FileSystemAdapter` and `CapacitorAdapter`
-- `lazy-evaluator.ts` — the conversion behind `ListValue.lazyEvaluator` and `ObjectValue.lazyEvaluator`: a raw element or property wrapped into a `Value`. Obsidian has ONE such function and installs it on both classes, so it lives here rather than in either of them; it has to construct the classes that call it, which is the one import cycle it carries a waiver for
-- `link-value-from-reference.ts` — a cached link, embed or frontmatter-link reference wrapped as a `LinkValue`, behind `FileValue.getLinks` and `getEmbeds`. Obsidian spells it `LinkValue.fromReference`, undeclared in the same way `front-matter-object-value.ts` describes
-- `markdown-block-ids.ts` — the block ids of a note's sections and list items, and its `blocks` collection, assigned
+- `bases-values/lazy-evaluator.ts` — the conversion behind `ListValue.lazyEvaluator` and `ObjectValue.lazyEvaluator`: a raw element or property wrapped into a `Value`. Obsidian has ONE such function and installs it on both classes, so it lives here rather than in either of them; it has to construct the classes that call it, which is the one import cycle it carries a waiver for
+- `bases-values/link-value-from-reference.ts` — a cached link, embed or frontmatter-link reference wrapped as a `LinkValue`, behind `FileValue.getLinks` and `getEmbeds`. Obsidian spells it `LinkValue.fromReference`, undeclared in the same way `front-matter-object-value.ts` describes
+- `markdown-parser/markdown-block-ids.ts` — the block ids of a note's sections and list items, and its `blocks` collection, assigned
   after parsing the way Obsidian's worker assigns them: an inline `^id` ending a paragraph's or a heading's text, and a
   standalone `^id` block given to the section before it and then dropped
-- `markdown-container-definitions.ts` — the link reference and footnote definitions inside a note's blockquotes,
+- `markdown-parser/markdown-container-definitions.ts` — the link reference and footnote definitions inside a note's blockquotes,
   callouts, list items and footnote definitions: each container's lines with its prefix stripped, run through the
   top-level block scan, so `collectReferences` sees a nested definition as Obsidian's worker does
-- `markdown-inline-block-ids.ts` — which inline `^id`s a run of inline text holds: a port of `remark-parse` 8's inline
+- `markdown-parser/markdown-inline-block-ids.ts` — which inline `^id`s a run of inline text holds: a port of `remark-parse` 8's inline
   tokenizer loop and the tokenizers Obsidian's worker runs in it, since the worker reads an id wherever a token
   boundary falls before its `^` and it runs to the end of the content being tokenized
-- `markdown-gap-blocks.ts` — the top-level blocks between the sections the parser found first (lists, frontmatter):
+- `markdown-parser/markdown-gap-blocks.ts` — the top-level blocks between the sections the parser found first (lists, frontmatter):
   paragraphs, blockquotes and callouts, fenced and indented code, comments, math, HTML, tables, thematic breaks, every
   heading, link reference definitions, footnote definitions and standalone block ids. Each tokenizer is a port of the one
   Obsidian's metadata worker runs, which is `remark-parse` 8 (`commonmark` and `gfm` on) plus Obsidian's own comment,
   math, footnote and block-id tokenizers, so a quirk there is a quirk here on purpose
-- `markdown-leaf-blocks.ts` — the container-aware pre-pass behind `parseMarkdownContent`'s list items: which lines start
+- `markdown-parser/markdown-leaf-blocks.ts` — the container-aware pre-pass behind `parseMarkdownContent`'s list items: which lines start
   an item, and which a fenced code block, a `%%` comment, a `$$` math block, an HTML block, an indented code block, a
   table or a link reference definition hides. A regular expression cannot answer either, since an unclosed block runs to
   the end of the blockquote or list item around it
-- `markdown-references.ts` — a note's `footnotes`, `footnoteRefs` and `referenceLinks`, read off the top-level
+- `markdown-parser/markdown-references.ts` — a note's `footnotes`, `footnoteRefs` and `referenceLinks`, read off the top-level
   definitions the gap scan found and a scan of the inline text for `[^label]` references and `^[…]` inline footnotes,
   the latter a port of `remark-footnotes` 2's tokenizer, which the worker runs
 - `noop.ts` — `noop()` / `noopAsync()` helpers for otherwise-empty method bodies (see L2)
 - `plugins.ts` — the community-plugin registry behind `App.plugins`; an `obsidian-typings` interface with no `obsidian.d.ts` class, so it lives here rather than in `src/obsidian/` (L1, L7)
 - `setting-definition-renderer.ts` — renders declarative setting definitions the way Obsidian 1.13 does; drives `SettingTab.renderTab__()` / `refreshDomState()`
 - `strict-proxy.ts` — `strictProxy()` mock wrapper that throws on unmocked property access (see L9)
-- `tags-list-value.ts` — the `ListValue` subclass behind `FileValue.getTags` and a frontmatter `tags` property: the `lucide-tags` icon and an `includes` built on `TagValue.tagMatches`, so a list holding `#parent/child` contains `#parent`. Anonymous in the shipped bundle and declared in NEITHER `obsidian.d.ts` NOR `obsidian-typings`, which both type those accessors as a plain `ListValue` — the same pair of reasons that puts `front-matter-object-value.ts` here
+- `bases-values/tags-list-value.ts` — the `ListValue` subclass behind `FileValue.getTags` and a frontmatter `tags` property: the `lucide-tags` icon and an `includes` built on `TagValue.tagMatches`, so a list holding `#parent/child` contains `#parent`. Anonymous in the shipped bundle and declared in NEITHER `obsidian.d.ts` NOR `obsidian-typings`, which both type those accessors as a plain `ListValue` — the same pair of reasons that puts `front-matter-object-value.ts` here
 - `types.ts` — inlined type shapes (from obsidian-typings) to avoid augmentation side effects
 - `type-guards.ts` — `assert()`, `ensureNonNullable()`, and similar guards
-- `unknown-view.ts` — Obsidian's unknown view, what a leaf shows for a view type nothing registered a creator for; it extends `EmptyView`, as in Obsidian, and lives here for the same reason
-- `view-registry.ts` — the registry behind `App.viewRegistry`: which creator builds a view of a type, and which view type a file extension opens in. `WorkspaceLeaf.setViewState` and `openFile` read it, and it is an `obsidian-typings` interface with no `obsidian.d.ts` class (L1, L7)
-- `workspace-layout.ts` — the registry the workspace layout tree walks with: the parent placeholder an unattached `WorkspaceItem` holds, and which items are `WorkspaceContainer`s. It exists because both checks are needed in `WorkspaceItem`, below which both classes sit, so an `instanceof` there would be an import cycle
+- `views/unknown-view.ts` — Obsidian's unknown view, what a leaf shows for a view type nothing registered a creator for; it extends `EmptyView`, as in Obsidian, and lives here for the same reason
+- `views/view-registry.ts` — the registry behind `App.viewRegistry`: which creator builds a view of a type, and which view type a file extension opens in. `WorkspaceLeaf.setViewState` and `openFile` read it, and it is an `obsidian-typings` interface with no `obsidian.d.ts` class (L1, L7)
+- `views/workspace-layout.ts` — the registry the workspace layout tree walks with: the parent placeholder an unattached `WorkspaceItem` holds, and which items are `WorkspaceContainer`s. It exists because both checks are needed in `WorkspaceItem`, below which both classes sit, so an `instanceof` there would be an import cycle
 
 ## TypeScript
 
@@ -555,7 +557,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   Every path above was confirmed against a real Obsidian 1.13.4 over CDP; `Vault.test.ts` asserts that
   table verbatim.
 
-- **Reference `position.end.offset` is exclusive.** `src/internal/markdown-parser.ts` reports every
+- **Reference `position.end.offset` is exclusive.** `src/internal/markdown-parser/markdown-parser.ts` reports every
   cache position (links, embeds, headings, tags, list items, sections, frontmatter) with an
   **exclusive** end offset (`start + length`), matching Obsidian, so
   `content.slice(start.offset, end.offset)` reconstructs a reference's `original` exactly. This is what
@@ -650,7 +652,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **The blocks around the lists are read by Obsidian's own block grammar** (2026-10-12, read in Obsidian
   1.14.4's `worker.js` and fuzzed against it: 15,000 notes with no list item and no frontmatter agree). That worker is
   `remark-parse` 8 with `commonmark` and `gfm` on and two block tokenizers of Obsidian's own, and
-  `src/internal/markdown-gap-blocks.ts` ports each tokenizer it runs. The mock used to split a gap at blank lines and
+  `src/internal/markdown-parser/markdown-gap-blocks.ts` ports each tokenizer it runs. The mock used to split a gap at blank lines and
   trim each part, which lost the indent, missed every block that interrupts a paragraph, and typed only four kinds. Now:
   - **A section starts at its line start, indent included, and ends at its last line's end, trailing whitespace
     included.** a quote indented three spaces starts at column 0, and a paragraph line with two trailing spaces ends after them.
@@ -725,7 +727,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     comment and a link's text are each tokenized on their own: `*a ^x* b` gives the paragraph `x`. A `comment` section
     takes the id ending what it holds, as does a comment block inside a quote, an item or a footnote definition, which
     interrupts the paragraph before it. An inline footnote's text is still the footnote list's, not the paragraph's.
-    `src/internal/markdown-inline-block-ids.ts` ports the worker's inline tokenizer loop to decide all of this; a link's
+    `src/internal/markdown-parser/markdown-inline-block-ids.ts` ports the worker's inline tokenizer loop to decide all of this; a link's
     destination, an HTML tag, an autolink and a bare URL are approximated there, since only where they end matters.
   - **A standalone id goes to the top-level section before it, whatever that is** - a code block, a definition, a list,
     even the frontmatter's `yaml` section - and leaves no section of its own. It needs the end of the note or an empty
@@ -768,7 +770,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 
 - **No list item is found inside a block that hides it** (2026-10-12, measured on a real Obsidian 1.14.4 over CDP,
   fuzzed against its own metadata worker). Those blocks are a fenced code block, a `%%` comment, a `$$` math block,
-  an HTML block and an indented code block, and `src/internal/markdown-leaf-blocks.ts` finds them, container by
+  an HTML block and an indented code block, and `src/internal/markdown-parser/markdown-leaf-blocks.ts` finds them, container by
   container, before the list parser runs. Several of their habits are not CommonMark's:
   - **An HTML block hides items like a fence** (2026-10-12): one of the first five kinds up to the line holding its end
     marker (`<!-- c\n- a\n-->\n- b` has the one item `b`), and one of the last two up to the next empty line. A lazy
@@ -949,7 +951,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 - **A frontmatter block that is not well-formed YAML does NOT throw** (2026-09-18, read in Obsidian
   1.14.2's `app.js`). Obsidian's frontmatter parse wraps its `parseYaml` in a `try` and answers `null`,
   so invalid YAML lands in exactly the branch a non-object block takes and the note still gets a cache —
-  body, headings, links and the `yaml` section included. `src/internal/markdown-parser.ts` mirrors that in
+  body, headings, links and the `yaml` section included. `src/internal/markdown-parser/markdown-parser.ts` mirrors that in
   `parseFrontmatterYaml`, and the branch it falls into is the no-frontmatter one described below.
   Before the guard it called `parseYaml` unguarded, which broke both entry points at once:
   `MetadataCache.computeMetadataAsync` — public API that never rejects there — rejected with the
@@ -1135,7 +1137,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   Setting text identical to what is already there dispatches nothing at all and records no undo step. Both also
   mirror Obsidian's `cmInit`: an editor that has never been given a state of its own is RESET by the first call
   whatever `clear` says, so the `false` path only diffs after a `setViewData(_, true)` / `set(_, true)` / `clear()`.
-  The shared implementation is `src/internal/markdown-editor-set.ts`; `Editor.setValue` is untouched and still
+  The shared implementation is `src/internal/views/markdown-editor-set.ts`; `Editor.setValue` is untouched and still
   replaces the whole document, because that is what Obsidian's own `setValue` does.
 
 - **`Editor.exec` answers to CodeMirror, and its two line commands now say so** (2026-09-17, read in Obsidian
@@ -1483,7 +1485,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
     starts EMPTY by design, so both the id and the `question-mark-glyph` fallback answer `null` and nothing is
     appended unless a test called `addIcon` first. Register the fallback and every unknown icon renders it,
     exactly as in the app.
-  - Three helpers moved out of `src/internal/markdown-parser.ts` into `src/internal/link-target.ts` on the way
+  - Three helpers moved out of `src/internal/markdown-parser/markdown-parser.ts` into `src/internal/markdown-parser/link-target.ts` on the way
     (`isInternalLinkTarget`, `normalizeLinkTarget`, `decodeUriSafely`), because `App.fixFileLinks` and
     `ImageValue.renderTo` became their second and third callers; `src/internal/resource-path.ts` holds the
     image-extension list and the desktop `file:///` rewrite for the same reason.
@@ -1525,7 +1527,7 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
 
 - **A tag list is a `ListValue` SUBCLASS, and that is what makes `contains` answer for a parent tag**
   (2026-09-17, `rK` / `oK` / `aK` in Obsidian 1.14.2's `app.js`). `FileValue.getTags` and a frontmatter
-  `tags` property both answer `src/internal/tags-list-value.ts`'s `TagsListValue`, not a plain list: it
+  `tags` property both answer `src/internal/bases-values/tags-list-value.ts`'s `TagsListValue`, not a plain list: it
   carries the `lucide-tags` icon where a list carries `lucide-list`, it wraps its elements EAGERLY where the
   base list converts one only when something reads it, and its `includes` tests each element with
   `TagValue.tagMatches` instead of `Value.looseEquals`. So a note tagged `#parent/child` satisfies

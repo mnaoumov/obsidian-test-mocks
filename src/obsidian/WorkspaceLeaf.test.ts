@@ -11,13 +11,13 @@ import {
   vi
 } from 'vitest';
 
-import { EmptyView } from '../internal/empty-view.ts';
 import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
-import { UnknownView } from '../internal/unknown-view.ts';
+import { EmptyView } from '../internal/views/empty-view.ts';
+import { UnknownView } from '../internal/views/unknown-view.ts';
 import { App } from './App.ts';
 import { ItemView } from './ItemView.ts';
 import { MarkdownView } from './MarkdownView.ts';

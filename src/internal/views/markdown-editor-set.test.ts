@@ -6,7 +6,7 @@ import {
   it
 } from 'vitest';
 
-import { Editor } from '../obsidian/Editor.ts';
+import { Editor } from '../../obsidian/Editor.ts';
 import { setMarkdownEditorText } from './markdown-editor-set.ts';
 
 class ConcreteEditor extends Editor {}

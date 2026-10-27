@@ -20,7 +20,8 @@ import type {
 
 import type { LeafBlockScan } from './markdown-leaf-blocks.ts';
 
-import { parseYaml } from '../obsidian/functions/parseYaml.ts';
+import { parseYaml } from '../../obsidian/functions/parseYaml.ts';
+import { ensureNonNullable } from '../type-guards.ts';
 import {
   decodeUriSafely,
   isInternalLinkTarget,
@@ -39,7 +40,6 @@ import {
   scanLeafBlocks
 } from './markdown-leaf-blocks.ts';
 import { collectReferences } from './markdown-references.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * A wikilink's inner text split as Obsidian splits it.
