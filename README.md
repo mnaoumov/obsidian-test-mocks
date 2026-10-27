@@ -80,7 +80,7 @@ library's TSDoc — is published at
 
 ## My other Obsidian resources
 
-[See my other Obsidian resources](https://github.com/mnaoumov/obsidian-resources).
+[My other Obsidian resources](https://github.com/mnaoumov/obsidian-resources)
 
 ## License
 
