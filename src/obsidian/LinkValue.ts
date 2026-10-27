@@ -10,7 +10,7 @@ import type { App } from './App.ts';
 import type { RenderContext } from './RenderContext.ts';
 import type { TFile } from './TFile.ts';
 
-import { isFileValue } from '../internal/file-value-registry.ts';
+import { isFileValue } from '../internal/bases-values/file-value-registry.ts';
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { getLinkpath } from './functions/getLinkpath.ts';

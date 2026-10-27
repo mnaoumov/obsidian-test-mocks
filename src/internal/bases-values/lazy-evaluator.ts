@@ -9,16 +9,16 @@
  * classes that call it, which is why the import cycle below cannot be broken.
  */
 
-import type { Value } from '../obsidian/Value.ts';
+import type { Value } from '../../obsidian/Value.ts';
 
 /* eslint-disable import-x/no-cycle -- The conversion constructs the value classes that call it, exactly as Obsidian's own does. */
-import { BooleanValue } from '../obsidian/BooleanValue.ts';
-import { DateValue } from '../obsidian/DateValue.ts';
-import { ListValue } from '../obsidian/ListValue.ts';
-import { NullValue } from '../obsidian/NullValue.ts';
-import { NumberValue } from '../obsidian/NumberValue.ts';
-import { ObjectValue } from '../obsidian/ObjectValue.ts';
-import { StringValue } from '../obsidian/StringValue.ts';
+import { BooleanValue } from '../../obsidian/BooleanValue.ts';
+import { DateValue } from '../../obsidian/DateValue.ts';
+import { ListValue } from '../../obsidian/ListValue.ts';
+import { NullValue } from '../../obsidian/NullValue.ts';
+import { NumberValue } from '../../obsidian/NumberValue.ts';
+import { ObjectValue } from '../../obsidian/ObjectValue.ts';
+import { StringValue } from '../../obsidian/StringValue.ts';
 /* eslint-enable import-x/no-cycle -- The conversion constructs the value classes that call it, exactly as Obsidian's own does. */
 
 /**

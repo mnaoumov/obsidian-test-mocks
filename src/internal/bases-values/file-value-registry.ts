@@ -9,10 +9,10 @@
  * instead keeps the test in one place, exactly as `workspace-layout.ts` does for the layout tree.
  */
 
-import type { FileValue } from '../obsidian/FileValue.ts';
-import type { Value } from '../obsidian/Value.ts';
+import type { FileValue } from '../../obsidian/FileValue.ts';
+import type { Value } from '../../obsidian/Value.ts';
 
-import { bypassStrictProxy } from './strict-proxy.ts';
+import { bypassStrictProxy } from '../strict-proxy.ts';
 
 const fileValues = new WeakSet();
 

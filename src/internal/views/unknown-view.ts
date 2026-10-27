@@ -6,11 +6,11 @@
 
 import type { IconName as IconNameOriginal } from 'obsidian';
 
-import type { WorkspaceLeaf } from '../obsidian/WorkspaceLeaf.ts';
+import type { WorkspaceLeaf } from '../../obsidian/WorkspaceLeaf.ts';
 
+import { noop } from '../noop.ts';
+import { strictProxy } from '../strict-proxy.ts';
 import { EmptyView } from './empty-view.ts';
-import { noop } from './noop.ts';
-import { strictProxy } from './strict-proxy.ts';
 
 /**
  * The icon Obsidian's unknown view carries.

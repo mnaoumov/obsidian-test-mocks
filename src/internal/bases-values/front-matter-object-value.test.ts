@@ -4,20 +4,20 @@ import {
   it
 } from 'vitest';
 
-import type { Value } from '../obsidian/Value.ts';
+import type { Value } from '../../obsidian/Value.ts';
 
-import { App } from '../obsidian/App.ts';
-import { DateValue } from '../obsidian/DateValue.ts';
-import { LinkValue } from '../obsidian/LinkValue.ts';
-import { ListValue } from '../obsidian/ListValue.ts';
-import { NumberValue } from '../obsidian/NumberValue.ts';
-import { ObjectValue } from '../obsidian/ObjectValue.ts';
-import { StringValue } from '../obsidian/StringValue.ts';
-import { TagValue } from '../obsidian/TagValue.ts';
-import { UrlValue } from '../obsidian/UrlValue.ts';
+import { App } from '../../obsidian/App.ts';
+import { DateValue } from '../../obsidian/DateValue.ts';
+import { LinkValue } from '../../obsidian/LinkValue.ts';
+import { ListValue } from '../../obsidian/ListValue.ts';
+import { NumberValue } from '../../obsidian/NumberValue.ts';
+import { ObjectValue } from '../../obsidian/ObjectValue.ts';
+import { StringValue } from '../../obsidian/StringValue.ts';
+import { TagValue } from '../../obsidian/TagValue.ts';
+import { UrlValue } from '../../obsidian/UrlValue.ts';
+import { ensureNonNullable } from '../type-guards.ts';
 import { createFrontMatterObjectValue } from './front-matter-object-value.ts';
 import { TagsListValue } from './tags-list-value.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 describe('createFrontMatterObjectValue', () => {
   function createObjectValue(frontMatter: Record<string, unknown>): ObjectValue {

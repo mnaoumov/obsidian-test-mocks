@@ -12,7 +12,7 @@ import {
   ensureGenericObject,
   ensureNonNullable
 } from '../internal/type-guards.ts';
-import { ViewRegistry } from '../internal/view-registry.ts';
+import { ViewRegistry } from '../internal/views/view-registry.ts';
 import { App } from './App.ts';
 import { FileSystemAdapter } from './FileSystemAdapter.ts';
 import { RenderContext } from './RenderContext.ts';

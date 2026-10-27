@@ -23,7 +23,7 @@
  * List items are not read here.
  */
 
-import { ensureNonNullable } from './type-guards.ts';
+import { ensureNonNullable } from '../type-guards.ts';
 
 /**
  * What a link reference definition names, as {@link readDefinitionParts} reads it.

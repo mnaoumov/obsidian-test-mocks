@@ -15,7 +15,7 @@
 import {
   bypassStrictProxy,
   strictProxy
-} from './strict-proxy.ts';
+} from '../strict-proxy.ts';
 
 /**
  * The view type Obsidian reports for a leaf showing its empty view — the "New tab" page. A mock leaf holds `null`

@@ -12,13 +12,13 @@
  * `link-value-from-reference.ts` give, and this file sits beside them for it.
  */
 
-import type { Value } from '../obsidian/Value.ts';
+import type { Value } from '../../obsidian/Value.ts';
 
-import { ListValue } from '../obsidian/ListValue.ts';
-import { TagValue } from '../obsidian/TagValue.ts';
-import { castTo } from './castTo.ts';
-import { noop } from './noop.ts';
-import { strictProxy } from './strict-proxy.ts';
+import { ListValue } from '../../obsidian/ListValue.ts';
+import { TagValue } from '../../obsidian/TagValue.ts';
+import { castTo } from '../castTo.ts';
+import { noop } from '../noop.ts';
+import { strictProxy } from '../strict-proxy.ts';
 
 /**
  * A list of tags, as Obsidian builds one for `file.tags` and for a frontmatter `tags` property.

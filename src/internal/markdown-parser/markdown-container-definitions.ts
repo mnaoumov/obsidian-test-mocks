@@ -28,12 +28,12 @@ import type {
   SectionCache
 } from 'obsidian';
 
+import { ensureNonNullable } from '../type-guards.ts';
 import { scanGapBlocks } from './markdown-gap-blocks.ts';
 import {
   getBulletWidth,
   getItemContentColumn
 } from './markdown-leaf-blocks.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * A definition found inside a container.

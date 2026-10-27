@@ -19,17 +19,17 @@ import type { ViewStateResultInternal } from '../internal/types.ts';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
-import { EmptyView } from '../internal/empty-view.ts';
 import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { UnknownView } from '../internal/unknown-view.ts';
+import { EmptyView } from '../internal/views/empty-view.ts';
+import { UnknownView } from '../internal/views/unknown-view.ts';
 import {
   createParentPlaceholder,
   EMPTY_VIEW_TYPE
-} from '../internal/workspace-layout.ts';
+} from '../internal/views/workspace-layout.ts';
 import { FileView } from './FileView.ts';
 import { View } from './View.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';

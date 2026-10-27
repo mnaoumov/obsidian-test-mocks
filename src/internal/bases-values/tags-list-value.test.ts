@@ -5,10 +5,10 @@ import {
   vi
 } from 'vitest';
 
-import { ListValue } from '../obsidian/ListValue.ts';
-import { NumberValue } from '../obsidian/NumberValue.ts';
-import { StringValue } from '../obsidian/StringValue.ts';
-import { TagValue } from '../obsidian/TagValue.ts';
+import { ListValue } from '../../obsidian/ListValue.ts';
+import { NumberValue } from '../../obsidian/NumberValue.ts';
+import { StringValue } from '../../obsidian/StringValue.ts';
+import { TagValue } from '../../obsidian/TagValue.ts';
 import { TagsListValue } from './tags-list-value.ts';
 
 describe('TagsListValue', () => {

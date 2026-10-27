@@ -7,8 +7,8 @@ import {
   vi
 } from 'vitest';
 
+import { ensureNonNullable } from '../type-guards.ts';
 import { parseMarkdownContent } from './markdown-parser.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 const HEADING_COUNT_ALL = 6;
 const HEADING_LEVEL_2 = 2;

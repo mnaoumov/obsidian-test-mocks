@@ -6,13 +6,13 @@
 
 import type { ViewCreator as ViewCreatorOriginal } from 'obsidian';
 
-import type { WorkspaceLeaf } from '../obsidian/WorkspaceLeaf.ts';
+import type { WorkspaceLeaf } from '../../obsidian/WorkspaceLeaf.ts';
 
-import { Events } from '../obsidian/Events.ts';
-import { MarkdownView } from '../obsidian/MarkdownView.ts';
-import { castTo } from './castTo.ts';
-import { noop } from './noop.ts';
-import { strictProxy } from './strict-proxy.ts';
+import { Events } from '../../obsidian/Events.ts';
+import { MarkdownView } from '../../obsidian/MarkdownView.ts';
+import { castTo } from '../castTo.ts';
+import { noop } from '../noop.ts';
+import { strictProxy } from '../strict-proxy.ts';
 
 /**
  * The file extensions Obsidian registers the Markdown view for.

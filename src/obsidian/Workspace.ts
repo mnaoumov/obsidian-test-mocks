@@ -27,14 +27,14 @@ import type { TFile } from './TFile.ts';
 import type { WorkspaceItem } from './WorkspaceItem.ts';
 
 import { castTo } from '../internal/castTo.ts';
-import { EmptyView } from '../internal/empty-view.ts';
 import {
   noop,
   noopAsync
 } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
-import { isParentPlaceholder } from '../internal/workspace-layout.ts';
+import { EmptyView } from '../internal/views/empty-view.ts';
+import { isParentPlaceholder } from '../internal/views/workspace-layout.ts';
 import { Events } from './Events.ts';
 import { debounce } from './functions/debounce.ts';
 import { WorkspaceFloating } from './WorkspaceFloating.ts';

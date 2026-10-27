@@ -4,7 +4,7 @@
  * Mock of Obsidian's `sanitizeHTMLToDom`.
  */
 
-import { sanitizeHtml } from '../../internal/html-sanitizer.ts';
+import { sanitizeHtml } from '../../internal/html-sanitizer/html-sanitizer.ts';
 
 /**
  * Parses HTML into a document fragment, stripping unsafe content, as Obsidian does. Obsidian runs DOMPurify with

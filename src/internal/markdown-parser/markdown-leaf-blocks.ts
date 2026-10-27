@@ -29,6 +29,7 @@
 
 import type { HtmlBlockKind } from './markdown-gap-blocks.ts';
 
+import { ensureNonNullable } from '../type-guards.ts';
 import {
   BLANK_LINE_END_REGEX,
   canHtmlBlockInterrupt,
@@ -36,7 +37,6 @@ import {
   tokenizeDefinition,
   tokenizeTable
 } from './markdown-gap-blocks.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * What the pre-pass found, by line number in the note.

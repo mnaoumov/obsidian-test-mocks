@@ -7,9 +7,9 @@
 
 import type { EditorPosition as EditorPositionOriginal } from 'obsidian';
 
-import type { Editor } from '../obsidian/Editor.ts';
+import type { Editor } from '../../obsidian/Editor.ts';
 
-import { ensureNonNullable } from './type-guards.ts';
+import { ensureNonNullable } from '../type-guards.ts';
 
 interface CommonEnds {
   // The number of characters the two lines share at their ends, counted after `start`.

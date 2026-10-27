@@ -13,7 +13,7 @@ import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
-import { markContainer } from '../internal/workspace-layout.ts';
+import { markContainer } from '../internal/views/workspace-layout.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 
 /**

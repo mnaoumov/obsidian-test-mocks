@@ -12,7 +12,7 @@ import type {
 import type {
   MarkdownViewMode,
   MarkdownViewModes
-} from '../internal/markdown-view-modes.ts';
+} from '../internal/views/markdown-view-modes.ts';
 import type { Editor } from './Editor.ts';
 import type { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 

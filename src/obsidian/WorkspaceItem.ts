@@ -19,7 +19,7 @@ import {
   createParentPlaceholder,
   isContainer,
   isParentPlaceholder
-} from '../internal/workspace-layout.ts';
+} from '../internal/views/workspace-layout.ts';
 import { Events } from './Events.ts';
 
 /**

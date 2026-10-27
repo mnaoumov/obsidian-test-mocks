@@ -18,7 +18,7 @@ import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 import type { Vault } from './Vault.ts';
 
-import { parseMarkdownContent } from '../internal/markdown-parser.ts';
+import { parseMarkdownContent } from '../internal/markdown-parser/markdown-parser.ts';
 import {
   noop,
   noopAsync

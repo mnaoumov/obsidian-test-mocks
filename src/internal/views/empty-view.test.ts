@@ -5,9 +5,9 @@ import {
   vi
 } from 'vitest';
 
-import { App } from '../obsidian/App.ts';
-import { ItemView } from '../obsidian/ItemView.ts';
-import { WorkspaceLeaf } from '../obsidian/WorkspaceLeaf.ts';
+import { App } from '../../obsidian/App.ts';
+import { ItemView } from '../../obsidian/ItemView.ts';
+import { WorkspaceLeaf } from '../../obsidian/WorkspaceLeaf.ts';
 import { EmptyView } from './empty-view.ts';
 
 describe('EmptyView', () => {

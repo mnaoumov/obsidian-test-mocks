@@ -14,12 +14,12 @@
  * here is where they end are approximated: an HTML tag, an autolink, a bare URL, a link's destination.
  */
 
+import { ensureNonNullable } from '../type-guards.ts';
 import {
   findInlineNoteClose,
   findReferenceLabelEnd,
   measureBacktickRun
 } from './markdown-references.ts';
-import { ensureNonNullable } from './type-guards.ts';
 
 /**
  * Where a bracketed run closes.

@@ -5,7 +5,7 @@ import {
   vi
 } from 'vitest';
 
-import { TagsListValue } from '../internal/tags-list-value.ts';
+import { TagsListValue } from '../internal/bases-values/tags-list-value.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
 import { DateValue } from './DateValue.ts';
