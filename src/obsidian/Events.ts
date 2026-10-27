@@ -144,11 +144,11 @@ export class Events {
    * handler throws does not propagate: it is rethrown from a `setTimeout(0)`, so the remaining handlers still run
    * and the error surfaces as an uncaught exception.
    *
-   * @param event - The ref returned by {@link Events.on}.
+   * @param $event - The ref returned by {@link Events.on}.
    * @param $arguments - The arguments passed to the handler.
    */
-  public tryTrigger(event: EventRefOriginal, $arguments: unknown[]): void {
-    const entry = event as EventsEntry;
+  public tryTrigger($event: EventRefOriginal, $arguments: unknown[]): void {
+    const entry = $event as EventsEntry;
     try {
       entry.fn.apply(entry.ctx, $arguments);
     } catch (error) {

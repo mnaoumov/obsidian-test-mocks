@@ -594,6 +594,7 @@ function getLocalPluginConfigs(): Linter.Config[] {
     },
     rules: {
       'typescript-dev-toolkit/no-async-callback-to-unsafe-return': 'error',
+      'typescript-dev-toolkit/no-keyword-identifiers': 'error',
       'typescript-dev-toolkit/no-unresolved-jsdoc-link': 'error',
       'typescript-dev-toolkit/no-unused-params-members': 'error',
       'typescript-dev-toolkit/no-used-underscore-variables': 'error',

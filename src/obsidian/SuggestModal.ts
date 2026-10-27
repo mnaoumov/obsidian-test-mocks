@@ -121,9 +121,9 @@ export abstract class SuggestModal<T> extends Modal {
    * Called when the user chooses a suggestion.
    *
    * @param item - The chosen item.
-   * @param event - The mouse or keyboard event that chose it.
+   * @param $event - The mouse or keyboard event that chose it.
    */
-  public abstract onChooseSuggestion(item: T, event: KeyboardEvent | MouseEvent): void;
+  public abstract onChooseSuggestion(item: T, $event: KeyboardEvent | MouseEvent): void;
 
   /**
    * Called when a query yields no suggestions. A no-op in the mock.
@@ -153,10 +153,10 @@ export abstract class SuggestModal<T> extends Modal {
    * Chooses a suggestion: calls {@link SuggestModal.onChooseSuggestion}, then closes the modal.
    *
    * @param value - The chosen item.
-   * @param event - The mouse or keyboard event that chose it.
+   * @param $event - The mouse or keyboard event that chose it.
    */
-  public selectSuggestion(value: T, event: KeyboardEvent | MouseEvent): void {
-    this.onChooseSuggestion(value, event);
+  public selectSuggestion(value: T, $event: KeyboardEvent | MouseEvent): void {
+    this.onChooseSuggestion(value, $event);
     this.close();
   }
 

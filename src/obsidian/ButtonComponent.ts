@@ -26,7 +26,7 @@ export class ButtonComponent extends BaseComponent {
    * The `<button>` element the component renders.
    */
   public buttonEl: HTMLButtonElement;
-  private clickHandler?: (event: MouseEvent) => unknown;
+  private clickHandler?: ($event: MouseEvent) => unknown;
 
   /**
    * Creates a button inside a container, with the click listener Obsidian attaches.
@@ -37,8 +37,8 @@ export class ButtonComponent extends BaseComponent {
     super();
     this.buttonEl = containerEl.createEl('button');
     const self = strictProxy(this);
-    this.buttonEl.addEventListener('click', (event) => {
-      self.simulateClick__(event);
+    this.buttonEl.addEventListener('click', ($event) => {
+      self.simulateClick__($event);
     });
     self.constructor2__(containerEl);
     return self;
@@ -91,7 +91,7 @@ export class ButtonComponent extends BaseComponent {
    * @param callback - The click handler.
    * @returns This button, for chaining.
    */
-  public onClick(callback: (event: MouseEvent) => unknown): this {
+  public onClick(callback: ($event: MouseEvent) => unknown): this {
     this.clickHandler = callback;
     return this;
   }
@@ -225,16 +225,16 @@ export class ButtonComponent extends BaseComponent {
    * handler settles, which is one microtask even for a handler that is not async. A handler that rejects is logged
    * rather than left as an unhandled rejection, which would fail an unrelated test.
    *
-   * @param event - The event to pass to the handler; a synthetic `click` event by default.
+   * @param $event - The event to pass to the handler; a synthetic `click` event by default.
    */
-  public simulateClick__(event?: MouseEvent): void {
+  public simulateClick__($event?: MouseEvent): void {
     const clickHandler = this.clickHandler;
     if (this.disabled || !clickHandler) {
       return;
     }
 
     this.buttonEl.addClass('mod-loading');
-    const result = clickHandler(event ?? (new Event('click') as MouseEvent));
+    const result = clickHandler($event ?? (new Event('click') as MouseEvent));
     const removeLoading = (): void => {
       this.buttonEl.removeClass('mod-loading');
     };

@@ -62,12 +62,12 @@ describe('Keymap', () => {
     });
 
     it('should return false when the modifier is not held', () => {
-      const event = new KeyboardEvent('keydown');
-      expect(Keymap.isModifier(event, 'Alt')).toBe(false);
-      expect(Keymap.isModifier(event, 'Ctrl')).toBe(false);
-      expect(Keymap.isModifier(event, 'Meta')).toBe(false);
-      expect(Keymap.isModifier(event, 'Mod')).toBe(false);
-      expect(Keymap.isModifier(event, 'Shift')).toBe(false);
+      const $event = new KeyboardEvent('keydown');
+      expect(Keymap.isModifier($event, 'Alt')).toBe(false);
+      expect(Keymap.isModifier($event, 'Ctrl')).toBe(false);
+      expect(Keymap.isModifier($event, 'Meta')).toBe(false);
+      expect(Keymap.isModifier($event, 'Mod')).toBe(false);
+      expect(Keymap.isModifier($event, 'Shift')).toBe(false);
     });
 
     it('should map Mod to Ctrl when not on macOS', () => {

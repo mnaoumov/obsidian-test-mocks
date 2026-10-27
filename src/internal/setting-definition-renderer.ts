@@ -225,8 +225,8 @@ function renderRow(definition: SettingGroupItemOriginal, settingGroup: SettingGr
 
 function setAction(setting: Setting, action: SettingRowAction, index: number): void {
   setting.settingEl.addClass('mod-action', 'tappable');
-  setting.settingEl.addEventListener('click', (event) => {
-    if (event.defaultPrevented) {
+  setting.settingEl.addEventListener('click', ($event) => {
+    if ($event.defaultPrevented) {
       return;
     }
 

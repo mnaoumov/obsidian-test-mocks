@@ -114,7 +114,7 @@ export abstract class PopoverSuggest<T> {
    * Called when the user picks a suggestion, by click or keyboard.
    *
    * @param value - The chosen suggestion.
-   * @param event - The event that picked it.
+   * @param $event - The event that picked it.
    */
-  public abstract selectSuggestion(value: T, event: KeyboardEvent | MouseEvent): void;
+  public abstract selectSuggestion(value: T, $event: KeyboardEvent | MouseEvent): void;
 }

@@ -176,7 +176,7 @@ export abstract class Plugin extends Component {
    * @param _callback - The click callback.
    * @returns The ribbon icon element.
    */
-  public addRibbonIcon(_icon: string, _title: string, _callback: (event: MouseEvent) => unknown): HTMLElement {
+  public addRibbonIcon(_icon: string, _title: string, _callback: ($event: MouseEvent) => unknown): HTMLElement {
     const el = createDiv();
     this.ribbonActions__.push(el);
     return el;

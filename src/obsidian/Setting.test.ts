@@ -271,8 +271,8 @@ describe('Setting', () => {
       const blurSpy = vi.spyOn(inputEl, 'blur');
       // A capturing ancestor listener is the realistic way the flag is already set: the guard is attached when the
       // input is created, so a listener added afterwards on the input itself runs after it.
-      setting.controlEl.addEventListener('keydown', (event) => {
-        event.preventDefault();
+      setting.controlEl.addEventListener('keydown', ($event) => {
+        $event.preventDefault();
       }, { capture: true });
       inputEl.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Enter' }));
       expect(blurSpy).not.toHaveBeenCalled();
@@ -419,8 +419,8 @@ describe('Setting', () => {
       const setting = Setting.create__(createDiv());
       const callback = vi.fn();
       setting.setAction(callback);
-      setting.controlEl.addEventListener('click', (event) => {
-        event.preventDefault();
+      setting.controlEl.addEventListener('click', ($event) => {
+        $event.preventDefault();
       });
       setting.controlEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
       expect(callback).not.toHaveBeenCalled();
@@ -493,8 +493,8 @@ describe('Setting', () => {
       const setting = Setting.create__(createDiv());
       const callback = vi.fn();
       setting.setRowClick(callback);
-      setting.controlEl.addEventListener('click', (event) => {
-        event.preventDefault();
+      setting.controlEl.addEventListener('click', ($event) => {
+        $event.preventDefault();
       });
       setting.controlEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
 

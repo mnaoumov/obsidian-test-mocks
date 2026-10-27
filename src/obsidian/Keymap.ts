@@ -21,13 +21,13 @@ type ModifierEvent = KeyboardEvent | MouseEvent | TouchEvent;
 
 const MIDDLE_MOUSE_BUTTON = 1;
 
-const MODIFIER_FLAG_RESOLVERS: Record<ModifierOriginal, (event: ModifierEvent) => boolean> = {
-  Alt: (event) => event.altKey,
-  Ctrl: (event) => event.ctrlKey,
-  Meta: (event) => event.metaKey,
+const MODIFIER_FLAG_RESOLVERS: Record<ModifierOriginal, ($event: ModifierEvent) => boolean> = {
+  Alt: ($event) => $event.altKey,
+  Ctrl: ($event) => $event.ctrlKey,
+  Meta: ($event) => $event.metaKey,
   // eslint-disable-next-line unicorn/name-replacements -- `Mod` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
-  Mod: (event) => Platform.isMacOS ? event.metaKey : event.ctrlKey,
-  Shift: (event) => event.shiftKey
+  Mod: ($event) => Platform.isMacOS ? $event.metaKey : $event.ctrlKey,
+  Shift: ($event) => $event.shiftKey
 };
 
 /**
@@ -70,40 +70,40 @@ export class Keymap {
   /**
    * Translates an event into the type of pane a link should open in.
    *
-   * @param event - The user event to inspect, if any.
+   * @param $event - The user event to inspect, if any.
    * @returns `'tab'` for a middle click or for Cmd/Ctrl, `'split'` for Cmd/Ctrl+Alt, `'window'` for
    * Cmd/Ctrl+Alt+Shift, and `false` when there is no event or Cmd/Ctrl is not held.
    */
   // eslint-disable-next-line unicorn/name-replacements -- `isModEvent` is Obsidian's own spelling; the mock has to answer to the name callers actually use.
-  public static isModEvent(event?: null | UserEventOriginal): boolean | PaneTypeOriginal {
-    if (!event) {
+  public static isModEvent($event?: null | UserEventOriginal): boolean | PaneTypeOriginal {
+    if (!$event) {
       return false;
     }
 
-    if (event instanceof MouseEvent && event.button === MIDDLE_MOUSE_BUTTON) {
+    if ($event instanceof MouseEvent && $event.button === MIDDLE_MOUSE_BUTTON) {
       return 'tab';
     }
 
-    if (!Keymap.isModifier(event, 'Mod')) {
+    if (!Keymap.isModifier($event, 'Mod')) {
       return false;
     }
 
-    if (!Keymap.isModifier(event, 'Alt')) {
+    if (!Keymap.isModifier($event, 'Alt')) {
       return 'tab';
     }
 
-    return Keymap.isModifier(event, 'Shift') ? 'window' : 'split';
+    return Keymap.isModifier($event, 'Shift') ? 'window' : 'split';
   }
 
   /**
    * Checks whether a modifier key was held during an event.
    *
-   * @param event - The keyboard, mouse or touch event to inspect.
+   * @param $event - The keyboard, mouse or touch event to inspect.
    * @param modifier - The modifier to check; `Mod` means Cmd on macOS and Ctrl elsewhere.
    * @returns Whether the modifier was held.
    */
-  public static isModifier(event: ModifierEvent, modifier: ModifierOriginal): boolean {
-    return MODIFIER_FLAG_RESOLVERS[modifier](event);
+  public static isModifier($event: ModifierEvent, modifier: ModifierOriginal): boolean {
+    return MODIFIER_FLAG_RESOLVERS[modifier]($event);
   }
 
   /**

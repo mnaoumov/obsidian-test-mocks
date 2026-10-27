@@ -178,21 +178,21 @@ export class RenderContext {
     linkEl.setAttr('data-href', linktext);
     linkEl.toggleClass('is-unresolved', !destination);
 
-    linkEl.addEventListener('mousedown', (event: MouseEvent) => {
-      if (event.button === MIDDLE_MOUSE_BUTTON) {
-        event.preventDefault();
+    linkEl.addEventListener('mousedown', ($event: MouseEvent) => {
+      if ($event.button === MIDDLE_MOUSE_BUTTON) {
+        $event.preventDefault();
       }
     });
 
-    linkEl.onClickEvent((event: MouseEvent) => {
-      if (event.button !== PRIMARY_MOUSE_BUTTON && event.button !== MIDDLE_MOUSE_BUTTON) {
+    linkEl.onClickEvent(($event: MouseEvent) => {
+      if ($event.button !== PRIMARY_MOUSE_BUTTON && $event.button !== MIDDLE_MOUSE_BUTTON) {
         return;
       }
 
-      event.preventDefault();
+      $event.preventDefault();
       // Obsidian fires this and forgets it. The mock logs a rejection rather than leaving an unhandled one
       // behind, the same way `ButtonComponent.simulateClick__` handles its click handler's promise.
-      app.workspace.openLinkText(linktext, '', Keymap.isModEvent(event)).catch((error: unknown) => {
+      app.workspace.openLinkText(linktext, '', Keymap.isModEvent($event)).catch((error: unknown) => {
         console.error(error);
       });
     });

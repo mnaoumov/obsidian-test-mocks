@@ -140,11 +140,11 @@ export function getAllAugmentedMemberNames(): Set<string> {
         if ((!isClassDeclaration(statement) && !isInterfaceDeclaration(statement)) || !statement.name) {
           continue;
         }
-        const symbol = checker.getSymbolAtLocation(statement.name);
-        if (!symbol) {
+        const $symbol = checker.getSymbolAtLocation(statement.name);
+        if (!$symbol) {
           continue;
         }
-        for (const property of checker.getPropertiesOfType(checker.getDeclaredTypeOfSymbol(symbol))) {
+        for (const property of checker.getPropertiesOfType(checker.getDeclaredTypeOfSymbol($symbol))) {
           const name = property.getName();
           if (name === 'prototype' || name.startsWith('__@') || name.endsWith(MOCK_SUFFIX)) {
             continue;
@@ -171,15 +171,15 @@ export function getAugmentedSurface(): AugmentedClass[] {
 
   const result: AugmentedClass[] = [];
 
-  for (const [name, symbol] of obsidianExports) {
-    if (!hasFlag(symbol.flags, SymbolFlags.Class) || !mockExports.has(name)) {
+  for (const [name, $symbol] of obsidianExports) {
+    if (!hasFlag($symbol.flags, SymbolFlags.Class) || !mockExports.has(name)) {
       continue;
     }
 
     const declaredByObsidian = new Set<string>();
     const declaredByTypings = new Set<string>();
 
-    for (const declaration of symbol.getDeclarations() ?? []) {
+    for (const declaration of $symbol.getDeclarations() ?? []) {
       if (!isClassDeclaration(declaration) && !isInterfaceDeclaration(declaration)) {
         continue;
       }

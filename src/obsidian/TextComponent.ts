@@ -32,10 +32,10 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
     const eventListeners = this.eventListeners__;
     const origAddEventListener = this.inputEl.addEventListener.bind(this.inputEl);
     this.inputEl.addEventListener = function addEventListenerWrapper(this: HTMLInputElement, ...$arguments: Parameters<HTMLInputElement['addEventListener']>): void {
-      const [event, handler] = $arguments;
+      const [$event, handler] = $arguments;
       if (typeof handler === 'function') {
-        eventListeners[event] ??= [];
-        eventListeners[event].push(handler as (...a: unknown[]) => void);
+        eventListeners[$event] ??= [];
+        eventListeners[$event].push(handler as (...a: unknown[]) => void);
       }
       origAddEventListener(...$arguments);
     } as HTMLInputElement['addEventListener'];
@@ -97,11 +97,11 @@ export class TextComponent extends AbstractTextComponent<HTMLInputElement> {
    * Mock-only: fires an event by calling every listener recorded for it, synchronously and in registration order.
    * No DOM event is dispatched.
    *
-   * @param event - The event type, such as `'keydown'`.
+   * @param $event - The event type, such as `'keydown'`.
    * @param $arguments - The arguments passed to each listener.
    */
-  public simulateEvent__(event: string, ...$arguments: unknown[]): void {
-    for (const handler of this.eventListeners__[event] ?? []) {
+  public simulateEvent__($event: string, ...$arguments: unknown[]): void {
+    for (const handler of this.eventListeners__[$event] ?? []) {
       handler(...$arguments);
     }
   }

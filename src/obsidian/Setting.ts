@@ -282,8 +282,8 @@ export class Setting {
     const comp = TextComponent.create__(this.controlEl);
     if (!Platform.hasPhysicalKeyboard) {
       const { inputEl } = comp;
-      inputEl.addEventListener('keydown', (event) => {
-        if (event.isComposing || event.defaultPrevented || event.key !== 'Enter') {
+      inputEl.addEventListener('keydown', ($event) => {
+        if ($event.isComposing || $event.defaultPrevented || $event.key !== 'Enter') {
           return;
         }
         inputEl.blur();
@@ -514,8 +514,8 @@ export class Setting {
    */
   public setRowClick(callback: () => void): void {
     if (!this.rowClick) {
-      this.settingEl.addEventListener('click', (event) => {
-        if (event.defaultPrevented || this.disabled) {
+      this.settingEl.addEventListener('click', ($event) => {
+        if ($event.defaultPrevented || this.disabled) {
           return;
         }
 

@@ -36,15 +36,15 @@ export class ExtraButtonComponent extends BaseComponent {
     super();
     this.extraSettingsEl = containerEl.createDiv({ attr: { tabIndex: 0 }, cls: 'clickable-icon extra-setting-button' });
     const self = strictProxy(this);
-    this.extraSettingsEl.addEventListener('click', (event) => {
-      event.preventDefault();
+    this.extraSettingsEl.addEventListener('click', ($event) => {
+      $event.preventDefault();
       self.simulateClick__();
     });
-    this.extraSettingsEl.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter' && event.key !== ' ') {
+    this.extraSettingsEl.addEventListener('keydown', ($event) => {
+      if ($event.key !== 'Enter' && $event.key !== ' ') {
         return;
       }
-      event.preventDefault();
+      $event.preventDefault();
       self.simulateClick__();
     });
     self.constructor2__(containerEl);

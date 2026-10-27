@@ -34,7 +34,7 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
    * {@link AbstractInputSuggest.selectSuggestion} calls it.
    */
   // eslint-disable-next-line unicorn/name-replacements -- `selectCb` is the member name in Obsidian's own `AbstractInputSuggest`.
-  public selectCb?: (value: T, event: KeyboardEvent | MouseEvent) => unknown;
+  public selectCb?: (value: T, $event: KeyboardEvent | MouseEvent) => unknown;
   /**
    * The text input element this suggest is attached to.
    */
@@ -100,7 +100,7 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
    * @param callback - Called with the selected suggestion and the event that selected it.
    * @returns This suggest, for chaining.
    */
-  public onSelect(callback: (value: T, event: KeyboardEvent | MouseEvent) => unknown): this {
+  public onSelect(callback: (value: T, $event: KeyboardEvent | MouseEvent) => unknown): this {
     // eslint-disable-next-line unicorn/name-replacements -- `selectCb` is the member name in Obsidian's own `AbstractInputSuggest`.
     this.selectCb = callback;
     return this;
@@ -111,10 +111,10 @@ export abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
    * through {@link AbstractInputSuggest.onSelect}, if any.
    *
    * @param value - The chosen suggestion.
-   * @param event - The event that picked it.
+   * @param $event - The event that picked it.
    */
-  public selectSuggestion(value: T, event: KeyboardEvent | MouseEvent): void {
-    this.selectCb?.(value, event);
+  public selectSuggestion(value: T, $event: KeyboardEvent | MouseEvent): void {
+    this.selectCb?.(value, $event);
   }
 
   /**

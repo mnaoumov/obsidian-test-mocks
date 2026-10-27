@@ -122,9 +122,9 @@ export abstract class EditorSuggest<T> extends PopoverSuggest<T> {
    * Called when the user picks a suggestion.
    *
    * @param value - The chosen suggestion.
-   * @param event - The mouse or keyboard event that made the choice.
+   * @param $event - The mouse or keyboard event that made the choice.
    */
-  public abstract override selectSuggestion(value: T, event: KeyboardEvent | MouseEvent): void;
+  public abstract override selectSuggestion(value: T, $event: KeyboardEvent | MouseEvent): void;
 
   /**
    * Sets the keyboard hints shown below the suggestions. The mock renders nothing and keeps them in

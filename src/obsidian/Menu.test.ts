@@ -19,8 +19,8 @@ describe('Menu', () => {
 
   describe('forEvent', () => {
     it('should create a menu from a mouse event', () => {
-      const event = new MouseEvent('click');
-      const menu = Menu.forEvent(event);
+      const $event = new MouseEvent('click');
+      const menu = Menu.forEvent($event);
       expect(menu).toBeInstanceOf(Menu);
     });
   });
@@ -171,8 +171,8 @@ describe('Menu', () => {
   describe('showAtMouseEvent', () => {
     it('should return this', () => {
       const menu = Menu.create2__();
-      const event = new MouseEvent('click');
-      expect(menu.showAtMouseEvent(event)).toBe(menu);
+      const $event = new MouseEvent('click');
+      expect(menu.showAtMouseEvent($event)).toBe(menu);
     });
   });
 

@@ -129,9 +129,9 @@ describe('SuggestModal', () => {
       const app = App.createConfigured__();
       const modal = new ConcreteSuggestModal(app);
       const closeSpy = vi.spyOn(modal, 'close');
-      const event = new MouseEvent('click');
-      modal.selectSuggestion('alpha', event);
-      expect(modal.onChooseSuggestion).toHaveBeenCalledWith('alpha', event);
+      const $event = new MouseEvent('click');
+      modal.selectSuggestion('alpha', $event);
+      expect(modal.onChooseSuggestion).toHaveBeenCalledWith('alpha', $event);
       expect(closeSpy).toHaveBeenCalled();
     });
   });

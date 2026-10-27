@@ -294,8 +294,8 @@ function isImplementedAsMethod(target: object, member: string): boolean {
   return false;
 }
 
-function isPublic(symbol: TsSymbol): boolean {
-  for (const declaration of symbol.getDeclarations() ?? []) {
+function isPublic($symbol: TsSymbol): boolean {
+  for (const declaration of $symbol.getDeclarations() ?? []) {
     const modifierFlags = getCombinedModifierFlags(declaration);
     if (hasFlag(modifierFlags, ModifierFlags.Private) || hasFlag(modifierFlags, ModifierFlags.Protected)) {
       return false;

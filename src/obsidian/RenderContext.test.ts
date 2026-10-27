@@ -143,10 +143,10 @@ describe('RenderContext', () => {
       const el = createDiv();
       RenderContext.create__(app).renderFileLink('Note', null, el);
 
-      const event = new MouseEvent('click', { button: 0, cancelable: true });
-      el.find('.internal-link').dispatchEvent(event);
+      const $event = new MouseEvent('click', { button: 0, cancelable: true });
+      el.find('.internal-link').dispatchEvent($event);
 
-      expect(event.defaultPrevented).toBe(true);
+      expect($event.defaultPrevented).toBe(true);
       expect(openLinkTextSpy).toHaveBeenCalledWith('Note', '', false);
     });
 

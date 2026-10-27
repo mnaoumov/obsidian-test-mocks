@@ -243,10 +243,10 @@ describe('ButtonComponent', () => {
     it('should pass the event it is given', () => {
       const button = createButton();
       const handler = vi.fn();
-      const event = new MouseEvent('click');
+      const $event = new MouseEvent('click');
       button.onClick(handler);
-      button.simulateClick__(event);
-      expect(handler).toHaveBeenCalledWith(event);
+      button.simulateClick__($event);
+      expect(handler).toHaveBeenCalledWith($event);
     });
 
     it('should not invoke the handler when the button is disabled, as Obsidian does not', () => {

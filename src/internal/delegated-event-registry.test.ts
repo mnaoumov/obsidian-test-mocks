@@ -22,9 +22,9 @@ interface Tree {
 }
 
 function click(target: EventTarget): Event {
-  const event = new Event('click', { bubbles: true });
-  target.dispatchEvent(event);
-  return event;
+  const $event = new Event('click', { bubbles: true });
+  target.dispatchEvent($event);
+  return $event;
 }
 
 function createTree(): Tree {
@@ -44,8 +44,8 @@ describe('delegatedOn', () => {
       return this;
     });
     delegatedOn(root, 'click', '.action', listener);
-    const event = click(icon);
-    expect(listener).toHaveBeenCalledExactlyOnceWith(event, button);
+    const $event = click(icon);
+    expect(listener).toHaveBeenCalledExactlyOnceWith($event, button);
     expect(listener.mock.instances[0]).toBe(root);
   });
 

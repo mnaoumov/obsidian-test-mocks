@@ -59,11 +59,11 @@ export function assertNonNullable<T extends NullableConstraint<T>>(value: T, err
  * Views an object as a {@link GenericObject} as well as its own type, without any runtime check.
  *
  * @typeParam T - The object's type.
- * @param object - The object to view.
+ * @param $object - The object to view.
  * @returns The same object, typed so arbitrary string keys can be read and written.
  */
-export function ensureGenericObject<T extends object>(object: T): GenericObject & T {
-  return object as GenericObject & T;
+export function ensureGenericObject<T extends object>($object: T): GenericObject & T {
+  return $object as GenericObject & T;
 }
 
 /**
