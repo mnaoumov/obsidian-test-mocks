@@ -64,6 +64,7 @@ export interface AssignBlockIdsParams {
  * Consecutive lines of one block, of one blockquote, or of one comment block.
  */
 interface LineGroup {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   isOpenComment: boolean;
   readonly kind: 'comment' | 'quote' | 'text';
   readonly lines: string[];

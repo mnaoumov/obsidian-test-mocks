@@ -13,9 +13,9 @@ import { ensureNonNullable } from '../type-guards.ts';
 
 interface CommonEnds {
   // The number of characters the two lines share at their ends, counted after `start`.
-  end: number;
+  readonly end: number;
   // The number of characters the two lines share at their starts.
-  start: number;
+  readonly start: number;
 }
 
 /**

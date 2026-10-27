@@ -18,6 +18,6 @@ export type MarkdownViewMode = MarkdownEditView | MarkdownPreviewView;
  * The modes a `MarkdownView` has registered, keyed by each mode's `type`.
  */
 export interface MarkdownViewModes {
-  preview: MarkdownPreviewView;
-  source: MarkdownEditView;
+  readonly preview: MarkdownPreviewView;
+  readonly source: MarkdownEditView;
 }

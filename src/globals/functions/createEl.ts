@@ -5,8 +5,11 @@
  */
 
 interface ElementEx {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- createEl assigns this DOM property from the element options.
   placeholder?: string;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- createEl assigns this DOM property from the element options.
   type?: string;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- createEl assigns this DOM property from the element options.
   value?: string;
 }
 

@@ -48,12 +48,12 @@ interface WikilinkTarget {
   /**
    * The target to resolve, with a trailing escape and any non-breaking space already folded away.
    */
-  href: string;
+  readonly href: string;
 
   /**
    * The text the link shows.
    */
-  title: string;
+  readonly title: string;
 }
 
 /**
@@ -214,16 +214,21 @@ interface ListState {
   // The number of `>` levels the list sits in; `0` for a list outside any blockquote.
   readonly depth: number;
   // The first line of the list, which its root items are parented to.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   firstLine: number;
   // The end offset of the list's section so far; only a depth-0 list has a section.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   groupEnd: number;
   // The offset the list's section starts at.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   groupStart: number;
   // The kind of the list's top-level markers (see `getListMarkerKind`).
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   kind: string;
   // The stack of open items, root first.
   readonly openItems: OpenListItem[];
   // The line of the list's latest item.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   previousLine: number;
   // What the leaf-block pre-pass found.
   readonly scan: LeafBlockScan;
@@ -254,12 +259,15 @@ interface NestedList {
 interface OpenListItem {
   // Where the item would end if a sibling item followed it after the blank lines seen since its last value line: the
   // start of the first of them, past the containers' prefix. `undefined` while no such blank line has been seen.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   blankLineEnd: number | undefined;
   // The end of the item's last child that is not a list, or `-1` while it has none.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   blockEnd: number;
   // The item in the cache, whose end is written when the item closes.
   readonly cache: ListItemCache;
   // How many child blocks the item holds: its first paragraph, each nested list and each later block.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   childCount: number;
   // The lines of the items nested directly in the item, whose start is moved when the item closes.
   readonly childLines: NestedItemLine[];
@@ -267,6 +275,7 @@ interface OpenListItem {
   readonly containerColumn: number;
   readonly contentColumn: number;
   // Whether the item's last block is a fenced code block, a comment or a math block that no line has closed yet.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   isInHidingBlock: boolean;
   // The kind of the item's marker (see `getListMarkerKind`); an item of another kind is not its sibling.
   readonly kind: string;
@@ -276,9 +285,11 @@ interface OpenListItem {
   readonly nestedLists: NestedList[];
   // The visual column up to which Obsidian strips each later line of the item before it reads the item's blocks: the
   // least indent of those lines past the item's container, and at most the width of the item's marker.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   removalColumn: number;
   // The end of the item's last value line: any line it holds, a nested item's included, or a blank line indented at
   // least as far as its content.
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- The parser updates this state field as it advances through the document.
   valueEnd: number;
 }
 

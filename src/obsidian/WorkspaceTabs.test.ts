@@ -16,9 +16,9 @@ const THREE_TABS = 3;
 const OUT_OF_RANGE_INDEX = 10;
 
 interface BuiltGroup {
-  app: App;
-  group: WorkspaceTabs;
-  leaves: WorkspaceLeaf[];
+  readonly app: App;
+  readonly group: WorkspaceTabs;
+  readonly leaves: WorkspaceLeaf[];
 }
 
 function buildGroup(count: number): BuiltGroup {

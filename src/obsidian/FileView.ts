@@ -30,7 +30,7 @@ const NO_FILE_LABEL = 'No file';
  * A view state that carries a `file` entry, which {@link FileView.setState} resolves into the file to load.
  */
 interface StateWithFileEntry {
-  file?: unknown;
+  readonly file?: unknown;
 }
 
 /**

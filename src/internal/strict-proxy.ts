@@ -67,12 +67,12 @@ const PASSTHROUGH_PROPS = new Set<string | symbol>([
 type MockClassLike<T> = MockClassPrototypeRef<T> & MockClassRef;
 
 interface MockClassPrototypeRef<T> {
-  prototype: T;
+  readonly prototype: T;
 }
 
 interface MockClassRef {
-  name: string;
-  prototype: object;
+  readonly name: string;
+  readonly prototype: object;
 }
 
 /**

@@ -21,9 +21,9 @@ import {
 import { ensureNonNullable } from './type-guards.ts';
 
 interface FileMeta {
-  ctime: number;
-  mtime: number;
-  size: number;
+  readonly ctime: number;
+  readonly mtime: number;
+  readonly size: number;
 }
 
 const TRASH_FOLDER = '.trash';

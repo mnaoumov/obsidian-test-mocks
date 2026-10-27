@@ -12,18 +12,18 @@ import {
 import { ensureGenericObject } from './type-guards.ts';
 
 interface DeepNested {
-  flag: boolean;
+  readonly flag: boolean;
 }
 
 interface MockTarget {
-  name: string;
-  nested: Nested;
-  run: () => string;
+  readonly name: string;
+  readonly nested: Nested;
+  readonly run: () => string;
 }
 
 interface Nested {
-  deep: DeepNested;
-  value: number;
+  readonly deep: DeepNested;
+  readonly value: number;
 }
 
 /**

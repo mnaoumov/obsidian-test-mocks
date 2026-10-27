@@ -19,11 +19,12 @@ import { castTo } from './castTo.ts';
 export type DelegatedListener<T extends EventTarget> = (this: T, event: Event, delegateTarget: HTMLElement) => unknown;
 
 interface DelegatedEventTarget extends EventTarget {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Event registration initializes the target-owned registry lazily.
   _EVENTS?: Record<string, EventListenerInfo[]>;
 }
 
 interface MatchParentElement {
-  matchParent?: (selector: string, lastParent?: Element) => Element | null;
+  readonly matchParent?: (selector: string, lastParent?: Element) => Element | null;
 }
 
 /**
