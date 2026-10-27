@@ -155,7 +155,7 @@ export class Component {
   public registerDomEvent<K extends keyof WindowEventMap>(
     el: Window,
     type: K,
-    callback: (this: HTMLElement, event: WindowEventMap[K]) => unknown,
+    callback: (this: HTMLElement, $event: WindowEventMap[K]) => unknown,
     options?: AddEventListenerOptions | boolean
   ): void;
   /**
@@ -170,7 +170,7 @@ export class Component {
   public registerDomEvent<K extends keyof DocumentEventMap>(
     el: Document,
     type: K,
-    callback: (this: HTMLElement, event: DocumentEventMap[K]) => unknown,
+    callback: (this: HTMLElement, $event: DocumentEventMap[K]) => unknown,
     options?: AddEventListenerOptions | boolean
   ): void;
   /**
@@ -185,7 +185,7 @@ export class Component {
   public registerDomEvent<K extends keyof HTMLElementEventMap>(
     el: HTMLElement,
     type: K,
-    callback: (this: HTMLElement, event: HTMLElementEventMap[K]) => unknown,
+    callback: (this: HTMLElement, $event: HTMLElementEventMap[K]) => unknown,
     options?: AddEventListenerOptions | boolean
   ): void;
   /**

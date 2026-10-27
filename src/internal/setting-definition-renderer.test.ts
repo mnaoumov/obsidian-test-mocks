@@ -197,8 +197,8 @@ describe('renderSettingDefinitions', () => {
        * A capturing listener on an ancestor runs before the row's own listener, the way a component that
        * handles the click itself does.
        */
-      containerEl.addEventListener('click', (event) => {
-        event.preventDefault();
+      containerEl.addEventListener('click', ($event) => {
+        $event.preventDefault();
       }, { capture: true });
 
       rows[0]?.settingEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));

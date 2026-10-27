@@ -11,31 +11,31 @@ import {
 
 describe('UIEvent.prototype', () => {
   it('should expose win as the global window', () => {
-    const event = new UIEvent('click');
-    expect(event.win).toBe(window);
+    const $event = new UIEvent('click');
+    expect($event.win).toBe(window);
   });
 
   it('should expose doc as the window document', () => {
-    const event = new UIEvent('click');
-    expect(event.doc).toBe(window.document);
+    const $event = new UIEvent('click');
+    expect($event.doc).toBe(window.document);
   });
 
   it('should expose targetNode as the event target when it is a node', () => {
     const target = document.createElement('div');
-    const event = new MouseEvent('click');
-    target.dispatchEvent(event);
-    expect(event.targetNode).toBe(target);
+    const $event = new MouseEvent('click');
+    target.dispatchEvent($event);
+    expect($event.targetNode).toBe(target);
   });
 
   it('should expose targetNode as null when there is no node target', () => {
-    const event = new UIEvent('click');
-    expect(event.targetNode).toBeNull();
+    const $event = new UIEvent('click');
+    expect($event.targetNode).toBeNull();
   });
 
   it('should report instanceOf for matching constructors', () => {
-    const event = new MouseEvent('click');
-    expect(event.instanceOf(MouseEvent)).toBe(true);
-    expect(event.instanceOf(KeyboardEvent)).toBe(false);
+    const $event = new MouseEvent('click');
+    expect($event.instanceOf(MouseEvent)).toBe(true);
+    expect($event.instanceOf(KeyboardEvent)).toBe(false);
   });
 
   describe('teardownUIEventPrototype', () => {

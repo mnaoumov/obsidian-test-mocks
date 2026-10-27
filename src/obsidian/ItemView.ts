@@ -59,7 +59,7 @@ export abstract class ItemView extends View {
    * @param _callback - The handler to call when the button is clicked; never called by the mock.
    * @returns A new detached element standing in for the button.
    */
-  public addAction(_icon: IconNameOriginal, _title: string, _callback: (event: MouseEvent) => unknown): HTMLElement {
+  public addAction(_icon: IconNameOriginal, _title: string, _callback: ($event: MouseEvent) => unknown): HTMLElement {
     return createDiv();
   }
 

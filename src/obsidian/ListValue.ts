@@ -505,8 +505,8 @@ export class ListValue extends NotNullValue {
       return NullValue.value;
     }
     const mean = sumOf(numbers) / numbers.length;
-    const squaredDeviations = numbers.map((number) => {
-      const deviation = number - mean;
+    const squaredDeviations = numbers.map(($number) => {
+      const deviation = $number - mean;
       return deviation * deviation;
     });
     return NumberValue.create__(Math.sqrt(sumOf(squaredDeviations) / squaredDeviations.length));
@@ -571,7 +571,7 @@ function flattenInto(elements: readonly unknown[], flattened: unknown[]): void {
 }
 
 function sumOf(numbers: readonly number[]): number {
-  return numbers.reduce((total, number) => total + number, 0);
+  return numbers.reduce((total, $number) => total + $number, 0);
 }
 
 function toSortKey(element: unknown): unknown {

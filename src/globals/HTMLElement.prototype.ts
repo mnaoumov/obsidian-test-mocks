@@ -107,11 +107,11 @@ export function on(
  */
 export function onClickEvent(
   this: HTMLElement,
-  listener: (this: HTMLElement, event: MouseEvent) => unknown,
+  listener: (this: HTMLElement, $event: MouseEvent) => unknown,
   options?: AddEventListenerOptions | boolean
 ): void {
-  this.addEventListener('click', (event: Event) => {
-    listener.call(this, event as MouseEvent);
+  this.addEventListener('click', ($event: Event) => {
+    listener.call(this, $event as MouseEvent);
   }, options);
 }
 

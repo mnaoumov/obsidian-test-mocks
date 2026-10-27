@@ -162,10 +162,10 @@ export function setAttr(this: Element, qualifiedName: string, value: boolean | n
 /**
  * Sets several attributes at once, as {@link setAttr} does for each entry.
  *
- * @param object - Attribute names mapped to their values; a `null` value removes that attribute.
+ * @param $object - Attribute names mapped to their values; a `null` value removes that attribute.
  */
-export function setAttrs(this: Element, object: Record<string, boolean | null | number | string>): void {
-  for (const [k, v] of Object.entries(object)) {
+export function setAttrs(this: Element, $object: Record<string, boolean | null | number | string>): void {
+  for (const [k, v] of Object.entries($object)) {
     setAttr.call(this, k, v);
   }
 }

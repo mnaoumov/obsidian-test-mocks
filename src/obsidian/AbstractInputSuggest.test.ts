@@ -107,9 +107,9 @@ describe('AbstractInputSuggest', () => {
       const suggest = createSuggestWithInput(input);
       const callback = vi.fn();
       suggest.onSelect(callback);
-      const event = new MouseEvent('click');
-      suggest.selectSuggestion('suggestion', event);
-      expect(callback).toHaveBeenCalledWith('suggestion', event);
+      const $event = new MouseEvent('click');
+      suggest.selectSuggestion('suggestion', $event);
+      expect(callback).toHaveBeenCalledWith('suggestion', $event);
     });
 
     it('should do nothing when no callback was registered', () => {

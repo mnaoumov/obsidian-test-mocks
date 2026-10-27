@@ -79,15 +79,15 @@ interface MockClassRef {
  * Unwraps a strict proxy, giving access to the underlying object without the throwing property checks.
  *
  * @typeParam T - The value's type.
- * @param object - A value that may be a strict proxy.
- * @returns The object the proxy wraps, or `object` itself when it is not a strict proxy or not an object.
+ * @param $object - A value that may be a strict proxy.
+ * @returns The object the proxy wraps, or `$object` itself when it is not a strict proxy or not an object.
  */
-export function bypassStrictProxy<T>(object: T): T {
-  if (!isObjectLike(object)) {
-    return object;
+export function bypassStrictProxy<T>($object: T): T {
+  if (!isObjectLike($object)) {
+    return $object;
   }
   // eslint-disable-next-line unicorn/no-computed-property-existence-check -- `in` walks the PROTOTYPE CHAIN, which is the point here; `Object.hasOwn` only sees own properties and would change what this checks.
-  return (STRICT_PROXY_TARGET_SYMBOL in object) ? (object[STRICT_PROXY_TARGET_SYMBOL] as T) : object;
+  return (STRICT_PROXY_TARGET_SYMBOL in $object) ? ($object[STRICT_PROXY_TARGET_SYMBOL] as T) : $object;
 }
 // eslint-disable-next-line @typescript-eslint/unified-signatures -- This overload infers T from mockClass; the `unknown` overload below requires explicit T. Cannot be combined.
 export function strictProxy<T>(value: unknown, mockClass: MockClassLike<T>): T;

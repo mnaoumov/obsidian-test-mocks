@@ -16,7 +16,7 @@ import { castTo } from './castTo.ts';
  *
  * @typeParam T - The event target's type, bound as the listener's `this`.
  */
-export type DelegatedListener<T extends EventTarget> = (this: T, event: Event, delegateTarget: HTMLElement) => unknown;
+export type DelegatedListener<T extends EventTarget> = (this: T, $event: Event, delegateTarget: HTMLElement) => unknown;
 
 interface DelegatedEventTarget extends EventTarget {
   // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Event registration initializes the target-owned registry lazily.
@@ -80,14 +80,14 @@ export function delegatedOn<T extends EventTarget>(
   listener: DelegatedListener<T>,
   options?: AddEventListenerOptions | boolean
 ): void {
-  function callback(event: Event): void {
-    const eventTarget = castTo<MatchParentElement | null>(event.target);
+  function callback($event: Event): void {
+    const eventTarget = castTo<MatchParentElement | null>($event.target);
     if (!eventTarget?.matchParent) {
       return;
     }
-    const delegateTarget = eventTarget.matchParent(selector, castTo<Element>(event.currentTarget));
+    const delegateTarget = eventTarget.matchParent(selector, castTo<Element>($event.currentTarget));
     if (delegateTarget) {
-      listener.call(target, event, castTo<HTMLElement>(delegateTarget));
+      listener.call(target, $event, castTo<HTMLElement>(delegateTarget));
     }
   }
   const delegatedTarget = castTo<DelegatedEventTarget>(target);

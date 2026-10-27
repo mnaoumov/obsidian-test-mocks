@@ -77,7 +77,7 @@ export class ConfirmationButton extends ButtonComponent {
    * @param handler - The click handler.
    * @returns This button, for chaining.
    */
-  public override onClick(handler: (event: MouseEvent) => unknown): this {
+  public override onClick(handler: ($event: MouseEvent) => unknown): this {
     return super.onClick(handler);
   }
 

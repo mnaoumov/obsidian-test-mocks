@@ -204,6 +204,8 @@ Two rules are scoped off where they cannot be satisfied, both for the same reaso
 
 Reserved-word expansions are spelled `$function` / `$arguments` / `$string` rather than the rule's default `function_` / `arguments_`, so a trailing underscore never reads as the `__` mock-member suffix.
 
+`typescript-dev-toolkit/no-keyword-identifiers` (toolkit 5.0+) enforces the `$` prefix for bare keyword bindings, including `object`, `number`, `symbol` and `event`. Rename bindings and their references while preserving property names, import/export aliases and other API contracts; the rule offers suggestions, never autofixes.
+
 `import-x/no-nodejs-modules` is off for `scripts/` and friends (build tooling reads from disk) and for `testFiles` — a test runs under vitest in Node and is never part of the published library, so the ban has nothing to protect there. The shared config in `@mnaoumov/typescript-dev-toolkit` scopes the same rule off for `context.testFiles`. It is what lets the two conformance tests read `obsidian.d.ts` and the checked-in typings inventory without an inline waiver at each import.
 
 `linterOptions.reportUnusedDisableDirectives` is set to `'error'` repo-wide. ESLint's default is `'warn'`, which would let a waiver that has stopped silencing anything sit in the tree — still naming a rule as the reason for the code beneath it, untruthfully. Every rule here is an error; the directives claiming to suppress them are held to the same bar. `npm run lint` also passes `--max-warnings 0` (the `lint` from `@mnaoumov/typescript-dev-toolkit/linters/eslint`), so a warning from any source fails the run rather than exiting 0; `'error'` here still matters, because it names the directive as the failure instead of a bare warning count.

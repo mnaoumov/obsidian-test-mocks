@@ -100,9 +100,9 @@ export abstract class FuzzySuggestModal<T> extends SuggestModal<FuzzyMatchOrigin
    * {@link FuzzySuggestModal.onChooseItem}.
    *
    * @param item - The chosen fuzzy match.
-   * @param event - The keyboard or mouse event that made the choice.
+   * @param $event - The keyboard or mouse event that made the choice.
    */
-  public override onChooseSuggestion(item: FuzzyMatchOriginal<T>, event: KeyboardEvent | MouseEvent): void {
-    this.onChooseItem(item.item, event);
+  public override onChooseSuggestion(item: FuzzyMatchOriginal<T>, $event: KeyboardEvent | MouseEvent): void {
+    this.onChooseItem(item.item, $event);
   }
 }

@@ -44,7 +44,7 @@ export class MenuItem {
   /**
    * Mock-only: the click handler set by {@link MenuItem.onClick}, or `null` when none was set.
    */
-  public onClick__: ((event: KeyboardEvent | MouseEvent) => unknown) | null = null;
+  public onClick__: (($event: KeyboardEvent | MouseEvent) => unknown) | null = null;
 
   /**
    * The id of the menu section the item belongs to; empty when none was set.
@@ -119,7 +119,7 @@ export class MenuItem {
    * @param callback - The click handler.
    * @returns This item, for chaining.
    */
-  public onClick(callback: (event: KeyboardEvent | MouseEvent) => unknown): this {
+  public onClick(callback: ($event: KeyboardEvent | MouseEvent) => unknown): this {
     this.onClick__ = callback;
     return this;
   }
