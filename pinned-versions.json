@@ -22,11 +22,17 @@
       "check": "node -e \"process.stdout.write(require('obsidian/package.json').peerDependencies['@codemirror/view'])\"",
       "expect": "6.43.13"
     },
-    "moment": {
+    "eslint-plugin-unicorn": {
       "section": "devDependencies",
-      "why": "Must match the copy Obsidian bundles and re-exports as `moment`: obsidian's own dependencies name this exact version, and a different one would type against an API the runtime does not have. Consumers reach it through the caret peer (^2.29.4), which obsidian's own moment dependency satisfies - an exact runtime dependency here nested a second, advisory-affected moment 2.29.4 under the mocks for every consumer on obsidian 1.14.",
-      "check": "node -e \"process.stdout.write(require('obsidian/package.json').dependencies.moment)\"",
-      "expect": "2.31.0"
+      "why": "`scripts/eslint-config.ts` is a hand copy of @mnaoumov/typescript-dev-toolkit's shared ESLint config, compared against it on every sweep (eslint-config-divergences.json), and the toolkit builds that config on eslint-plugin-unicorn ^76. Floating this copy to 78 (on 2026-10-18) added rules the shared config has never seen - `unicorn/no-asterisk-prefix-in-documentation-comments` alone reported 2,456 findings, against the `/** ... */` continuation style every TSDoc block here and in the toolkit uses - plus about 25 findings from other new or tightened rules. Those are decisions for the shared config to make first and this copy to follow, not ones a hand copy should make ahead of it. The check records the toolkit's unicorn range: when it moves past ^76, move this pin with it and take the new rules the way the shared config takes them.",
+      "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@mnaoumov/typescript-dev-toolkit/package.json','utf8')).dependencies['eslint-plugin-unicorn'])\"",
+      "expect": "^76.0.0"
+    },
+    "fflate": {
+      "section": "overrides",
+      "why": "satori pins fflate at exactly 0.7.3, which sits inside GHSA-px8p-9vwx-vf98 (0.7.0 - 0.7.4: unzipSync can enter an infinite loop on a malformed ZIP64 archive). npm audit's only offer is `--force` down to satori@0.32.0, i.e. a downgrade. 0.7.5 is the patched release on the same minor - and is already what @shuding/opentype.js resolves to in this same tree - so the override clears the advisory without moving satori off the fflate API it pins itself to. The check records the version satori itself asks for: when satori moves onto a patched fflate, this override can be dropped.",
+      "check": "node -e \"process.stdout.write(require('satori/package.json').dependencies.fflate)\"",
+      "expect": "0.7.3"
     },
     "js-yaml": {
       "section": "overrides",
@@ -41,35 +47,36 @@
       "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/micromark-extension-math/package.json','utf8')).dependencies.katex)\"",
       "expect": "^0.16.0"
     },
-    "postcss-selector-parser": {
-      "section": "overrides",
-      "why": "@astrojs/starlight reaches postcss-nested 6.2.0 through expressive-code (@expressive-code/core asks for ^6.0.1), and postcss-nested 6 asks for postcss-selector-parser ^6.1.1, which sits inside GHSA-rj75-hqrm-r3gf (<7.1.6: quadratic complexity in flat selector parsing). Starlight is on its newest release and npm audit offers only a downgrade to 0.41.11. postcss-nested 7 and later ask for ^7 with no change to how they call the parser, so the override forces the patched 7.1.6 that eslint-plugin-astro already resolves in this same tree. `npm run docs:build` is the gate that exercises it. The check records the postcss-nested range @expressive-code/core asks for: when it moves past 6.x, this override can be dropped.",
-      "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@expressive-code/core/package.json','utf8')).dependencies['postcss-nested'])\"",
-      "expect": "^6.0.1"
-    },
-    "fflate": {
-      "section": "overrides",
-      "why": "satori pins fflate at exactly 0.7.3, which sits inside GHSA-px8p-9vwx-vf98 (0.7.0 - 0.7.4: unzipSync can enter an infinite loop on a malformed ZIP64 archive). npm audit's only offer is `--force` down to satori@0.32.0, i.e. a downgrade. 0.7.5 is the patched release on the same minor - and is already what @shuding/opentype.js resolves to in this same tree - so the override clears the advisory without moving satori off the fflate API it pins itself to. The check records the version satori itself asks for: when satori moves onto a patched fflate, this override can be dropped.",
-      "check": "node -e \"process.stdout.write(require('satori/package.json').dependencies.fflate)\"",
-      "expect": "0.7.3"
-    },
-    "eslint-plugin-unicorn": {
+    "moment": {
       "section": "devDependencies",
-      "why": "`scripts/eslint-config.ts` is a hand copy of @mnaoumov/typescript-dev-toolkit's shared ESLint config, compared against it on every sweep (eslint-config-divergences.json), and the toolkit builds that config on eslint-plugin-unicorn ^76. Floating this copy to 78 (on 2026-10-18) added rules the shared config has never seen - `unicorn/no-asterisk-prefix-in-documentation-comments` alone reported 2,456 findings, against the `/** ... */` continuation style every TSDoc block here and in the toolkit uses - plus about 25 findings from other new or tightened rules. Those are decisions for the shared config to make first and this copy to follow, not ones a hand copy should make ahead of it. The check records the toolkit's unicorn range: when it moves past ^76, move this pin with it and take the new rules the way the shared config takes them.",
-      "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@mnaoumov/typescript-dev-toolkit/package.json','utf8')).dependencies['eslint-plugin-unicorn'])\"",
-      "expect": "^76.0.0"
-    },
-    "satori": {
-      "section": "devDependencies",
-      "why": "@mnaoumov/typescript-dev-toolkit declares satori as a peer at ^0.33.5, which for a 0.x version admits 0.33.x only, while the caret sweep floats this repo's own range to the newest satori (0.62.0 on 2026-10-18). npm refuses to resolve an optional peer present at a version its range excludes, so a floated satori makes the whole sweep UNRESOLVABLE. The toolkit's docs-site export renders the OG images with it, so it has to be a version that peer range admits. The check records the toolkit's peer range: when it moves, move this pin with it.",
-      "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@mnaoumov/typescript-dev-toolkit/package.json','utf8')).peerDependencies.satori)\"",
-      "expect": "^0.33.5"
+      "why": "Must match the copy Obsidian bundles and re-exports as `moment`: obsidian's own dependencies name this exact version, and a different one would type against an API the runtime does not have. Consumers reach it through the caret peer (^2.29.4), which obsidian's own moment dependency satisfies - an exact runtime dependency here nested a second, advisory-affected moment 2.29.4 under the mocks for every consumer on obsidian 1.14.",
+      "check": "node -e \"process.stdout.write(require('obsidian/package.json').dependencies.moment)\"",
+      "expect": "2.31.0"
     },
     "obsidian": {
       "section": "devDependencies",
       "why": "These mocks reproduce one specific Obsidian API surface, so the type definitions they are written against are pinned rather than floated. The check records the newest published obsidian release: when it moves, the mocks should be re-examined against the new API rather than silently drifting.",
       "check": "npm view obsidian version",
       "expect": "1.14.4"
+    },
+    "postcss-selector-parser": {
+      "section": "overrides",
+      "why": "@astrojs/starlight reaches postcss-nested 6.2.0 through expressive-code (@expressive-code/core asks for ^6.0.1), and postcss-nested 6 asks for postcss-selector-parser ^6.1.1, which sits inside GHSA-rj75-hqrm-r3gf (<7.1.6: quadratic complexity in flat selector parsing). Starlight is on its newest release and npm audit offers only a downgrade to 0.41.11. postcss-nested 7 and later ask for ^7 with no change to how they call the parser, so the override forces the patched 7.1.6 that eslint-plugin-astro already resolves in this same tree. `npm run docs:build` is the gate that exercises it. The check records the postcss-nested range @expressive-code/core asks for: when it moves past 6.x, this override can be dropped.",
+      "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@expressive-code/core/package.json','utf8')).dependencies['postcss-nested'])\"",
+      "expect": "^6.0.1"
+    },
+    "re2js": {
+      "section": "overrides",
+      "why": "Clears GHSA-gg6h-894w-4m9c (RE2JS quadratic-time denial of service in lookbehind matching, >=2.2.0 <2.8.7). Reached only through markdownlint, whose newest release 0.42.0 pins re2js at the exact 2.8.6, and markdownlint-cli2 0.24.0 pins that markdownlint exactly in turn, so no bump reaches the fix. 2.9.1 is the version markdownlint itself moved to upstream, so the forced minor is the one it is tested against. NEVER take the `npm audit fix --force` remedy: it downgrades the toolkit packages.",
+      "check": "node -e \"const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync('node_modules/markdownlint/package.json','utf8')).dependencies.re2js)\"",
+      "expect": "2.8.6",
+      "manualCheck": "The check reads the exact re2js pin of the installed markdownlint, which moves only when a markdownlint-cli2 release pins a newer markdownlint. When it reads 2.8.7 or later, drop the override and this entry and re-run `npm audit`."
+    },
+    "satori": {
+      "section": "devDependencies",
+      "why": "@mnaoumov/typescript-dev-toolkit declares satori as a peer at ^0.33.5, which for a 0.x version admits 0.33.x only, while the caret sweep floats this repo's own range to the newest satori (0.62.0 on 2026-10-18). npm refuses to resolve an optional peer present at a version its range excludes, so a floated satori makes the whole sweep UNRESOLVABLE. The toolkit's docs-site export renders the OG images with it, so it has to be a version that peer range admits. The check records the toolkit's peer range: when it moves, move this pin with it.",
+      "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@mnaoumov/typescript-dev-toolkit/package.json','utf8')).peerDependencies.satori)\"",
+      "expect": "^0.33.5"
     },
     "typescript": {
       "section": "devDependencies",
