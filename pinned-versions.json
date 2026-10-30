@@ -7,7 +7,15 @@
     "`expect`. Equal means the pin is still required; different means the condition that justified the pin has changed",
     "and the pin should be re-examined. `check: null` means no mechanical test exists - it is reported for manual review",
     "on every run instead of going quiet. Every exact pin must have an entry here, and every entry must name a package",
-    "that is actually present in the declared section; the script reports either mismatch."
+    "that is actually present in the declared section; the script reports either mismatch.",
+    "",
+    "Known and NOT overridden (2026-10-29): GHSA-gcqx-w48m-w2h4 (low), deepmerge mergeObject() prototype poisoning. It",
+    "affects deepmerge >= 4.2.0, <= 4.3.1 with no patched version, and 4.3.1 (2023) is the latest release, so there is",
+    "nothing to override it to. It is reached only through jest-config, under jest, ts-jest and",
+    "@mnaoumov/typescript-dev-toolkit, and jest-config's latest 30.5.2 still requires ^4.3.1; `npm audit fix --force`",
+    "would only downgrade jest to 25. Exposure: jest-config merges this repo's own jest configuration, never untrusted",
+    "input, and it never ships. That is all 7 low findings `npm audit` reports. Add an override once a patched",
+    "deepmerge exists, or drop this note once jest-config stops depending on it."
   ],
   "pins": {
     "@codemirror/state": {
