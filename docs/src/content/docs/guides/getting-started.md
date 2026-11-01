@@ -81,5 +81,7 @@ for something `obsidian.d.ts` declares.
   obsidian types.
 - [Using with `obsidian-typings`](/obsidian-test-mocks/guides/obsidian-typings/) — bridging the internal
   API surface.
+- [Network Requests](/obsidian-test-mocks/guides/network-requests/) — what `requestUrl` answers, and how
+  to give a test its own responses.
 - [API reference](/obsidian-test-mocks/api/) — the complete, searchable API generated from the library's
   TSDoc.

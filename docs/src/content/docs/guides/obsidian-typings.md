@@ -67,7 +67,7 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `MarkdownRenderer` | `onload` |
 | `MarkdownView` | `editMode`, `getEphemeralState`, `getState`, `modes`, `onload`, `setEphemeralState` |
 | `Menu` | `dom`, `items`, `setSectionSubmenu` |
-| `MenuItem` | `checked`, `disabled`, `section`, `setSubmenu`, `submenu` |
+| `MenuItem` | `checked`, `disabled`, `menu`, `section`, `setSubmenu`, `submenu` |
 | `MetadataCache` | `app`, `computeMetadataAsync`, `fileCache`, `isSupportedFile`, `iterateRefsForFile`, `metadataCache` |
 | `Modal` | `bgEl`, `headerEl` |
 | `ObjectValue` | `data`, `getInsensitive`, `lazyEvaluator`, `valuesRaw` |

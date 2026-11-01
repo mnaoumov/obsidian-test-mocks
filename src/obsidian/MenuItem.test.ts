@@ -17,9 +17,14 @@ describe('MenuItem', () => {
     expect(item).toBeInstanceOf(MenuItem);
   });
 
+  it('should keep the menu it belongs to', () => {
+    const menu = Menu.create2__();
+    expect(MenuItem.create__(menu).menu).toBe(menu);
+  });
+
   describe('setTitle', () => {
     it('should set the title and return this', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       const result = item.setTitle('My Item');
       expect(item.title__).toBe('My Item');
       expect(result).toBe(item);
@@ -28,7 +33,7 @@ describe('MenuItem', () => {
 
   describe('setIcon', () => {
     it('should set the icon and return this', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       const result = item.setIcon('star');
       expect(item.icon__).toBe('star');
       expect(result).toBe(item);
@@ -37,7 +42,7 @@ describe('MenuItem', () => {
 
   describe('onClick', () => {
     it('should set the click handler and return this', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       const handler = vi.fn();
       const result = item.onClick(handler);
       expect(item.onClick__).toBe(handler);
@@ -47,7 +52,7 @@ describe('MenuItem', () => {
 
   describe('setChecked', () => {
     it('should set checked state', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       item.setChecked(true);
       expect(item.checked).toBe(true);
     });
@@ -55,7 +60,7 @@ describe('MenuItem', () => {
 
   describe('setDisabled', () => {
     it('should set disabled state', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       item.setDisabled(true);
       expect(item.disabled).toBe(true);
     });
@@ -63,7 +68,7 @@ describe('MenuItem', () => {
 
   describe('setIsLabel', () => {
     it('should set isLabel state', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       item.setIsLabel(true);
       expect(item.isLabel__).toBe(true);
     });
@@ -71,7 +76,7 @@ describe('MenuItem', () => {
 
   describe('setSection', () => {
     it('should set section', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       item.setSection('main');
       expect(item.section).toBe('main');
     });
@@ -79,7 +84,7 @@ describe('MenuItem', () => {
 
   describe('setWarning', () => {
     it('should set warning state', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       item.setWarning(true);
       expect(item.warning__).toBe(true);
     });
@@ -87,19 +92,19 @@ describe('MenuItem', () => {
 
   describe('setSubmenu', () => {
     it('should have no submenu until one is created', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       expect(item.submenu).toBeNull();
     });
 
     it('should return a new Menu and record it', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       const submenu = item.setSubmenu();
       expect(submenu).toBeInstanceOf(Menu);
       expect(item.submenu).toBe(submenu);
     });
 
     it('should return the same Menu on subsequent calls', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       expect(item.setSubmenu()).toBe(item.setSubmenu());
     });
   });
@@ -114,16 +119,16 @@ describe('MenuItem', () => {
     });
 
     it('should not throw', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       expect(() => {
-        item.constructor__(null);
+        item.constructor__(Menu.create2__());
       }).not.toThrow();
     });
   });
 
   describe('asOriginalType__', () => {
     it('should return the same instance typed as the original', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       const original: MenuItemOriginal = item.asOriginalType__();
       expect(original).toBe(item);
     });
@@ -131,7 +136,7 @@ describe('MenuItem', () => {
 
   describe('fromOriginalType__', () => {
     it('should return the same instance typed as the mock type', () => {
-      const item = MenuItem.create__(null);
+      const item = MenuItem.create__(Menu.create2__());
       const mock = MenuItem.fromOriginalType__(item.asOriginalType__());
       expect(mock).toBe(item);
     });
