@@ -465,7 +465,6 @@
   "MenuItem.dom",
   "MenuItem.handleEvent",
   "MenuItem.iconEl",
-  "MenuItem.menu",
   "MenuItem.removeIcon",
   "MenuItem.setActive",
   "MenuItem.titleEl",

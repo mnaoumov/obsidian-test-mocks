@@ -42,6 +42,11 @@ export class MenuItem {
   public isLabel__ = false;
 
   /**
+   * The menu the item belongs to.
+   */
+  public menu: Menu;
+
+  /**
    * Mock-only: the click handler set by {@link MenuItem.onClick}, or `null` when none was set.
    */
   public onClick__: (($event: KeyboardEvent | MouseEvent) => unknown) | null = null;
@@ -66,7 +71,8 @@ export class MenuItem {
    */
   public warning__ = false;
 
-  private constructor(menu: unknown) {
+  private constructor(menu: Menu) {
+    this.menu = menu;
     const self = strictProxy(this);
     self.constructor__(menu);
     return self;
@@ -76,10 +82,10 @@ export class MenuItem {
    * Mock-only factory: creates a menu item, spyable via `vi.spyOn(MenuItem, 'create__')`. Obsidian's constructor
    * is private; items come from `Menu.addItem`.
    *
-   * @param menu - The menu the item belongs to; not stored by the mock.
+   * @param menu - The menu the item belongs to, kept in {@link MenuItem.menu}.
    * @returns The new menu item.
    */
-  public static create__(menu: unknown): MenuItem {
+  public static create__(menu: Menu): MenuItem {
     return new MenuItem(menu);
   }
 
@@ -108,7 +114,7 @@ export class MenuItem {
    *
    * @param _menu - The menu the item belongs to.
    */
-  public constructor__(_menu: unknown): void {
+  public constructor__(_menu: Menu): void {
     noop();
   }
 
