@@ -86,7 +86,7 @@ Filing from the CLI or the API (`gh issue create --body`, or an AI agent filing 
 
 ## My other Obsidian resources
 
-[My other Obsidian resources](https://github.com/mnaoumov/obsidian-resources)
+[My other Obsidian resources](https://mnaoumov.dev/obsidian/)
 
 ## License
 
