@@ -70,6 +70,18 @@ library's TSDoc — is published at
 - [Using with `obsidian-typings`](https://mnaoumov.dev/obsidian-test-mocks/guides/obsidian-typings/)
 - [Design Principles](https://mnaoumov.dev/obsidian-test-mocks/guides/design-principles/)
 
+## See also
+
+[My other Obsidian resources](https://mnaoumov.dev/obsidian/)
+
+| Library | Features | How `obsidian-test-mocks` differs |
+| --- | --- | --- |
+| [`jest-environment-obsidian`](https://github.com/community-archive/jest-environment-obsidian) | Jest environment and preset; shims the `obsidian` module; reimplements Obsidian's prototype extensions; warnings for unsupported usage | Same goal as `jest-environment-obsidian`, which is archived at Obsidian 1.1.16: mocks the whole current `obsidian.d.ts` with in-memory behavior; supports Vitest as well as Jest; omits its warnings |
+| [`obsidian-mock`](https://github.com/bobhy/obsidian-mock) | Mock classes for Obsidian's API, imported from `obsidian-mock` in place of `obsidian`; TypeScript types; test utilities | Same goal as `obsidian-mock`, which is not published on npm: published on npm; mocks the `obsidian` module itself through a setup file; adds Obsidian's prototype extensions to DOM and JS builtins |
+| [`obsidian-test-kit`](https://github.com/chhoumann/obsidian-test-kit) | Vitest stub aliased as `obsidian`; jsdom polyfills for DOM helpers, `moment`, globals and animations; `@testing-library/jest-dom` matchers; stub loads in a `node` environment | Same goal as `obsidian-test-kit`: mocks every `obsidian.d.ts` member, with an in-memory vault, metadata cache and workspace; supports Jest as well as Vitest; omits its matchers and its DOM-free `node` stub |
+
+Last searched for similar libraries on 2026-11-04.
+
 ## Support
 
 <!-- markdownlint-disable MD033 -->
@@ -83,10 +95,6 @@ library's TSDoc — is published at
 Open issues through the [issue forms](https://github.com/mnaoumov/obsidian-test-mocks/issues/new/choose), not as blank issues.
 
 Filing from the CLI or the API (`gh issue create --body`, or an AI agent filing for you) skips the form, and `gh issue create --template` cannot load an issue form. In that case, open the matching form in [`.github/ISSUE_TEMPLATE/`](https://github.com/mnaoumov/obsidian-test-mocks/tree/HEAD/.github/ISSUE_TEMPLATE), copy every field as a `### <label>` heading in the form's order, and fill in each one. Always state the version you used and your operating system.
-
-## My other Obsidian resources
-
-[My other Obsidian resources](https://mnaoumov.dev/obsidian/)
 
 ## License
 
