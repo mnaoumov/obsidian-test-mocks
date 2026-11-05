@@ -65,6 +65,12 @@ describe('ExtraButtonComponent', () => {
       expect(button.extraSettingsEl.getAttribute('aria-label')).toBe('Settings');
     });
 
+    it('should write the tooltip options to extraSettingsEl, as Obsidian does', () => {
+      const button = createExtraButton();
+      button.setTooltip('tip', { delay: 100 });
+      expect(button.extraSettingsEl.getAttribute('data-tooltip-delay')).toBe('100');
+    });
+
     it('should return this for chaining', () => {
       const button = createExtraButton();
       expect(button.setTooltip('tip')).toBe(button);

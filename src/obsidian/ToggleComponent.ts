@@ -11,6 +11,7 @@ import type {
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
+import { setTooltip } from './functions/setTooltip.ts';
 import { ValueComponent } from './ValueComponent.ts';
 
 /**
@@ -131,14 +132,14 @@ export class ToggleComponent extends ValueComponent<boolean> {
   }
 
   /**
-   * Sets the toggle's tooltip. The mock writes it to the element's `aria-label` and ignores the options.
+   * Sets the toggle's tooltip on {@link ToggleComponent.toggleEl} through `setTooltip`, as Obsidian does.
    *
    * @param tooltip - The tooltip text.
-   * @param _options - Tooltip placement and delay options.
+   * @param options - Tooltip placement and delay options.
    * @returns This component, for chaining.
    */
-  public setTooltip(tooltip: string, _options?: TooltipOptionsOriginal): this {
-    this.toggleEl.setAttribute('aria-label', tooltip);
+  public setTooltip(tooltip: string, options?: TooltipOptionsOriginal): this {
+    setTooltip(this.toggleEl, tooltip, options);
     return this;
   }
 

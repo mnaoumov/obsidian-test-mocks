@@ -102,6 +102,12 @@ describe('ToggleComponent', () => {
       expect(toggle.toggleEl.getAttribute('aria-label')).toBe('Toggle hint');
     });
 
+    it('should write the tooltip options to toggleEl, as Obsidian does', () => {
+      const toggle = ToggleComponent.create__(createDiv());
+      toggle.setTooltip('tip', { gap: 4 });
+      expect(toggle.toggleEl.getAttribute('data-tooltip-gap')).toBe('4');
+    });
+
     it('should return this', () => {
       const toggle = ToggleComponent.create__(createDiv());
       expect(toggle.setTooltip('tip')).toBe(toggle);

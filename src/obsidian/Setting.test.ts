@@ -365,6 +365,12 @@ describe('Setting', () => {
       expect(setting.settingEl.getAttribute('aria-label')).toBeNull();
     });
 
+    it('should write the tooltip options to nameEl, as Obsidian does', () => {
+      const setting = Setting.create__(createDiv());
+      setting.setTooltip('tip', { classes: ['mod-a'] });
+      expect(setting.nameEl.getAttribute('data-tooltip-classes')).toBe('mod-a');
+    });
+
     it('should return this for chaining', () => {
       const setting = Setting.create__(createDiv());
       expect(setting.setTooltip('tip')).toBe(setting);

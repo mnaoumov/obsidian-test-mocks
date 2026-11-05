@@ -12,6 +12,7 @@ import type {
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
+import { setTooltip } from './functions/setTooltip.ts';
 
 /**
  * Mock of Obsidian's `ButtonComponent`.
@@ -197,14 +198,14 @@ export class ButtonComponent extends BaseComponent {
   }
 
   /**
-   * Sets the button's tooltip. The mock writes it to the `aria-label` attribute and ignores the options.
+   * Sets the button's tooltip on {@link ButtonComponent.buttonEl} through `setTooltip`, as Obsidian does.
    *
    * @param tooltip - The tooltip text.
-   * @param _options - Tooltip placement and behavior options.
+   * @param options - Tooltip placement and behavior options.
    * @returns This button, for chaining.
    */
-  public setTooltip(tooltip: string, _options?: TooltipOptionsOriginal): this {
-    this.buttonEl.setAttribute('aria-label', tooltip);
+  public setTooltip(tooltip: string, options?: TooltipOptionsOriginal): this {
+    setTooltip(this.buttonEl, tooltip, options);
     return this;
   }
 
