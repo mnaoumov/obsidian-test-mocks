@@ -1177,6 +1177,16 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   dismissed" — a consumer that dropped the duration of a notice meant to stay could not catch it. Only `undefined`
   takes the default; an explicit `0` is still recorded as `0`.
 
+- **`setTooltip` writes what Obsidian writes, and the four component `setTooltip`s go through it** (2026-11-05, read
+  in Obsidian 1.14.4's and 1.15.0's `app.js`, which agree). It was a no-op, so a test could not see a tooltip a
+  plugin set with the function. The text goes to `aria-label`, which Obsidian's hover handler reads, and each option
+  that is set goes to the attribute that handler reads too: `data-tooltip-position` (only for a placement other than
+  `bottom`), `data-tooltip-classes` (space-joined), `data-tooltip-delay` and `data-tooltip-gap` (only when non-zero).
+  Nothing is ever removed, so a later call without an option keeps the earlier value, as in the app. `Setting`
+  (on `nameEl`), `ButtonComponent`, `ExtraButtonComponent` and `ToggleComponent` delegate to it as Obsidian's do, so
+  their options are no longer dropped. The idea came from the hand-rolled `obsidian` mock in obsidian-tasks, which
+  records the tooltip for its tests; no code was taken from it.
+
 - **The mocks track `obsidian` 1.14.4** (2026-10-18, read in that version's `obsidian.d.ts` and `app.js`). Most of
   the declaration file's growth over 1.13.1 is documentation. What changed for a consumer:
   - **`TExternalFile` is new**, a `TFile` for a file outside the vault. As in Obsidian, its `path` is the filesystem

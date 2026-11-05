@@ -202,6 +202,12 @@ describe('ButtonComponent', () => {
       expect(button.buttonEl.getAttribute('aria-label')).toBe('My tooltip');
     });
 
+    it('should write the tooltip options to buttonEl, as Obsidian does', () => {
+      const button = createButton();
+      button.setTooltip('tip', { placement: 'top' });
+      expect(button.buttonEl.getAttribute('data-tooltip-position')).toBe('top');
+    });
+
     it('should return this for chaining', () => {
       const button = createButton();
       expect(button.setTooltip('tip')).toBe(button);

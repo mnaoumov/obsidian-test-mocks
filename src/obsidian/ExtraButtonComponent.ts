@@ -4,11 +4,15 @@
  * Mock of Obsidian's `ExtraButtonComponent`, the small icon button at the end of a setting row.
  */
 
-import type { ExtraButtonComponent as ExtraButtonComponentOriginal } from 'obsidian';
+import type {
+  ExtraButtonComponent as ExtraButtonComponentOriginal,
+  TooltipOptions as TooltipOptionsOriginal
+} from 'obsidian';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { BaseComponent } from './BaseComponent.ts';
+import { setTooltip } from './functions/setTooltip.ts';
 
 /**
  * Mock of Obsidian's `ExtraButtonComponent`.
@@ -130,13 +134,14 @@ export class ExtraButtonComponent extends BaseComponent {
   }
 
   /**
-   * Sets the button's tooltip. The mock writes it to the `aria-label` attribute.
+   * Sets the button's tooltip on {@link ExtraButtonComponent.extraSettingsEl} through `setTooltip`, as Obsidian does.
    *
    * @param tooltip - The tooltip text.
+   * @param options - Tooltip placement and behavior options.
    * @returns This button, for chaining.
    */
-  public setTooltip(tooltip: string): this {
-    this.extraSettingsEl.setAttribute('aria-label', tooltip);
+  public setTooltip(tooltip: string, options?: TooltipOptionsOriginal): this {
+    setTooltip(this.extraSettingsEl, tooltip, options);
     return this;
   }
 

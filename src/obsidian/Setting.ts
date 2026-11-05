@@ -31,6 +31,7 @@ import { ColorComponent } from './ColorComponent.ts';
 import { DisplayValueComponent } from './DisplayValueComponent.ts';
 import { DropdownComponent } from './DropdownComponent.ts';
 import { ExtraButtonComponent } from './ExtraButtonComponent.ts';
+import { setTooltip } from './functions/setTooltip.ts';
 import { MomentFormatComponent } from './MomentFormatComponent.ts';
 import { ProgressBarComponent } from './ProgressBarComponent.ts';
 import { SearchComponent } from './SearchComponent.ts';
@@ -527,15 +528,15 @@ export class Setting {
   }
 
   /**
-   * Sets the row's tooltip. The mock stores it as the `aria-label` attribute of {@link Setting.nameEl} — the
-   * element Obsidian tooltips — and ignores the options.
+   * Sets the row's tooltip on {@link Setting.nameEl}, the element Obsidian tooltips, through `setTooltip`, as
+   * Obsidian does.
    *
    * @param tooltip - The tooltip text.
-   * @param _options - How the tooltip is displayed.
+   * @param options - How the tooltip is displayed.
    * @returns This setting, for chaining.
    */
-  public setTooltip(tooltip: string, _options?: TooltipOptionsOriginal): this {
-    this.nameEl.setAttribute('aria-label', tooltip);
+  public setTooltip(tooltip: string, options?: TooltipOptionsOriginal): this {
+    setTooltip(this.nameEl, tooltip, options);
     return this;
   }
 
