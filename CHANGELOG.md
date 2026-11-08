@@ -2,428 +2,600 @@
 
 ## 7.3.0
 
-- fix(metadata-cache): stop throwing on a tab between quote levels
-- fix: re #4
-- docs(changelog): escape the issue-title tags so markdownlint and cspell pass
-- docs(changelog): name the issue each released entry resolved
-- chore(docs): explain the barrel entry points on the API index
-- chore(docs): build the site with typescript-dev-toolkit's docs-site export
-- chore: retire the copy-sync gate and drop obsidian-dev-utils mentions
-- feat: track obsidian 1.14.4 and mock its new API surface
-- chore(deps): sweep dependencies onto typescript-dev-toolkit 3.7
-- fix(scripts): merge skipping prepare-script output above the npm pack JSON
+This release has 1 new feature, 3 fixes and 2 documentation changes. 4 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### New
+
+- track obsidian 1.14.4 and mock its new API surface
+
+### Fixed
+
+- **metadata-cache:** stop throwing on a tab between quote levels
+- \[BUG\] Metadata parsing crashes on a quoted list inside a list item (#4)
+- **scripts:** merge skipping prepare-script output above the npm pack JSON
+
+### Documentation
+
+- **changelog:** escape the issue-title tags so markdownlint and cspell pass
+- **changelog:** name the issue each released entry resolved
 
 ## 7.2.3
 
-- fix(normalizePath): port Obsidian's root, NFC and no-break-space handling
-- chore(scripts): merge passing linkCheckExcludeGlobs to the markdown lint
-- chore(scripts): merge importing readIndexContent from typescript-dev-toolkit
-- chore(scripts): merge letting wrapCliTask carry check:copy-sync's exit code
-- chore(docs-gen): merge dropping the obsidian-typings bridge mapping
-- chore(docs-gen): merge recording the single-src walk as a copy-sync divergence
-- chore: merge the switch to the published @mnaoumov packages
+This release has 1 fix. 6 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Fixed
+
+- **normalizePath:** port Obsidian's root, NFC and no-break-space handling
 
 ## 7.2.2
 
-- fix(deps): merge making CodeMirror and moment peers that follow obsidian
-- fix(scripts): merge reading vendored eslint rules from typescript-dev-toolkit
-- fix(eslint): merge linting vitest.config.ts
-- fix(metadata-cache): merge ending an item in a lazily opened blockquote
-- fix(metadata-cache): merge reading definitions inside containers
-- fix(metadata-cache): merge reading an inline block id after any inline token
-- fix(metadata-cache): merge reading tab list markers and whitespace lines in HTML blocks
-- fix(metadata-cache): merge reading a list marker that ends its line as an empty item
-- feat(metadata-cache): merge filling footnotes, footnoteRefs and referenceLinks
-- fix(metadata-cache): merge reading stacked list markers and ordered items after a quote
-- fix(metadata-cache): merge ending lists, math blocks and quoted items as Obsidian's worker does
-- fix(metadata-cache): merge closing the frontmatter block as Obsidian's worker does
-- fix(metadata-cache): merge reading headings, definitions, block ids and list lines as Obsidian's worker does
-- fix(metadata-cache): merge parenting, stripping and closing list items as Obsidian's worker does
-- fix(metadata-cache): merge ending the frontmatter block at its closing delimiter
-- fix(metadata-cache): merge reading the blocks between sections as Obsidian's worker does
-- fix(metadata-cache): merge hiding list items inside code blocks, comments and math blocks
-- Merge branch 'T2866': parse CRLF and lone-CR notes as Obsidian does
-- Merge branch 'T2863': type callout blocks as callout sections
-- fix(metadata-cache): merge list item ends measured against Obsidian
-- fix(metadata-cache): merge list items inside blockquotes
-- fix(metadata-cache): merge list grouping by intervening content
+This release has 1 new feature and 21 fixes.
+
+### New
+
+- **metadata-cache:** merge filling footnotes, footnoteRefs and referenceLinks
+
+### Fixed
+
+- **deps:** merge making CodeMirror and moment peers that follow obsidian
+- **scripts:** merge reading vendored eslint rules from typescript-dev-toolkit
+- **eslint:** merge linting vitest.config.ts
+- **metadata-cache:** merge ending an item in a lazily opened blockquote
+- **metadata-cache:** merge reading definitions inside containers
+- **metadata-cache:** merge reading an inline block id after any inline token
+- **metadata-cache:** merge reading tab list markers and whitespace lines in HTML blocks
+- **metadata-cache:** merge reading a list marker that ends its line as an empty item
+- **metadata-cache:** merge reading stacked list markers and ordered items after a quote
+- **metadata-cache:** merge ending lists, math blocks and quoted items as Obsidian's worker does
+- **metadata-cache:** merge closing the frontmatter block as Obsidian's worker does
+- **metadata-cache:** merge reading headings, definitions, block ids and list lines as Obsidian's worker does
+- **metadata-cache:** merge parenting, stripping and closing list items as Obsidian's worker does
+- **metadata-cache:** merge ending the frontmatter block at its closing delimiter
+- **metadata-cache:** merge reading the blocks between sections as Obsidian's worker does
+- **metadata-cache:** merge hiding list items inside code blocks, comments and math blocks
+- **metadata-cache:** merge parsing CRLF and lone-CR notes as Obsidian does
+- **metadata-cache:** merge typing callout blocks as callout sections
+- **metadata-cache:** merge list item ends measured against Obsidian
+- **metadata-cache:** merge list items inside blockquotes
+- **metadata-cache:** merge list grouping by intervening content
 
 ## 7.2.1
 
-- fix(metadata-cache): merge list items starting at their container's content column
-- perf(metadata-cache): merge linear-time list parent lookup (re #3 - \[BUG\] Quadratic parent lookup when parsing flat lists)
+This release has 1 fix and 1 improvement.
+
+### Fixed
+
+- **metadata-cache:** merge list items starting at their container's content column
+
+### Improved
+
+- **metadata-cache:** merge linear-time list parent lookup (re #3 - \[BUG\] Quadratic parent lookup when parsing flat lists)
 
 ## 7.2.0
 
-- fix(metadata-cache): merge resolving link paths without regard to case
-- feat(platform): merge Platform.canOpenExternalFiles
-- fix(docs): merge rendering GitHub alerts as Starlight asides again
+This release has 1 new feature and 2 fixes.
+
+### New
+
+- **platform:** merge Platform.canOpenExternalFiles
+
+### Fixed
+
+- **metadata-cache:** merge resolving link paths without regard to case
+- **docs:** merge rendering GitHub alerts as Starlight asides again
 
 ## 7.1.0
 
-- docs: merge the resolveLinks comment reword
-- feat: merge the WorkspaceLeaf tab header model
-- chore: merge the obsidian-typings 6.38.0 raise and regenerated typings surface
-- fix(file-system-adapter): merge the rmdir file deletion
+This release has 1 new feature, 1 fix and 1 documentation change. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### New
+
+- merge the WorkspaceLeaf tab header model
+
+### Fixed
+
+- **file-system-adapter:** merge the rmdir file deletion
+
+### Documentation
+
+- merge the resolveLinks comment reword
 
 ## 7.0.0
 
-- docs(changelog): reword a shipped entry that named a private branch
-- fix(vault)!: merge the root-first recurseChildren walk
-- chore: merge the eslint-plugin-unicorn 76 raise
-- fix: merge the Notice omitted-duration default
-- chore(scripts): merge the file-header helper taken from typescript-template
-- chore: merge the repo-neutral git-content suite
-- chore: merge the eslint exit classification and batched-exec fixes
-- chore: merge the contributing-guide base-branch fix
-- chore: merge the missing-parent write refusal
-- chore: merge the re-measured eslint-plugin-unicorn consumer table
-- chore: merge MetadataCache.isSupportedFile
-- chore: merge the git-content non-repository comment fix
-- chore: merge the retired copy-sync divergences
-- fix: merge getFrontMatterInfo trailing-newline port
+This release has 1 breaking change, 2 fixes and 1 documentation change. 10 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Breaking changes
+
+- **vault:** merge the root-first recurseChildren walk
+
+### Fixed
+
+- merge the Notice omitted-duration default
+- merge getFrontMatterInfo trailing-newline port
+
+### Documentation
+
+- **changelog:** reword a shipped entry that named a private branch
 
 ## 6.1.0
 
-- feat: merge Plugins.manifests and a real Editor.cm
+This release has 1 new feature.
+
+### New
+
+- merge Plugins.manifests and a real Editor.cm
 
 ## 6.0.0
 
-- chore(copy-sync): read both gates' subject from the git index, not the working tree
-- chore(copy-sync): take upstream's `../.astro/types.d.ts`, and roster `docs/tsconfig.json`
-- chore(copy-sync): extend the shape gate to astro.config.ts, docs/src and build-pages.yml
-- chore(docs-gen): gate the copy-sync tree by the shape of each file's diff against upstream
-- chore(docs-gen): re-sync with obsidian-dev-utils after its unicorn 75 adoption
-- chore(lint): record the deliberate ESLint-config divergences, and adopt one that was not
-- docs(lint): state the unicorn arm's reason in a form that is true in every consumer
-- chore(lint): gate the vendored rule sources against upstream, and re-sync three
-- docs(types): record that an inlined shape is not retired by a typings release
-- chore: update libs
-- docs(agents): correct the canOpenExternalFiles cross-reference
-- feat(setting): implement setIcon and iconEl, and promote setRowClick and rowClick
-- feat(platform): merge mobileDeviceHeight and mobileKeyboardHeight
-- feat(platform): merge the five remaining can* getters
-- feat(platform): merge the ten remaining PlatformEx members
-- fix(markdown-parser)!: merge the sequence-frontmatter fix
-- fix(markdown-parser)!: merge the empty-frontmatterLinks fix
-- fix(value)!: merge the Bases value rendering
-- fix(markdown-parser)!: merge the absent-frontmatter-cache fix
-- fix(reg-exp-value)!: merge the wrapped-pattern fix
-- fix(value)!: merge the Bases value type-name assignment
-- fix(null-value)!: merge the singleton and null-printing fix
-- fix(tags)!: merge the #-prefixed tag storage fix
-- fix(frontmatter)!: merge the aliases and entries fidelity fix
-- fix(markdown-parser)!: merge the broken-frontmatter catch
-- feat(settings): merge the addText Enter-blur affordance
-- fix(value)!: merge the per-class equals and looseEquals fidelity fix
-- feat(metadata-cache): merge the iterateRefsForFile walk
-- fix(tags)!: merge the tag-list subclass fix
-- fix(markdown-parser)!: merge the frontmatter-link fidelity fix
-- fix(tags)!: merge the tag-reading fidelity fix
-- fix(markdown-parser)!: merge the non-object frontmatter record fix
-- feat(workspace-leaf)!: merge the real leaf view and its view registry
-- fix(settings)!: merge the setClass split and mod-toggle fidelity fix
-- fix(value)!: merge the equals and looseEquals statics fidelity fix
-- feat(file-value)!: merge the five file-key accessors
-- fix(file-manager)!: merge the trashOption routing fidelity fix
-- fix(workspace)!: merge the empty-tab reuse fidelity fix
-- docs: record that the View base neither navigates nor carries an empty icon
-- fix(view)!: merge the navigation and icon default fidelity fix
-- fix(settings)!: merge the tooltip target and setWarning fidelity fix
-- feat(bases)!: merge the list aggregations and the value icon, keys and objectAccess work
-- fix(markdown-view)!: merge the four-buffer delegation fix
-- fix(editor)!: merge the deleteLine and line-swap fidelity fix
-- fix(vault)!: merge the trash routing and .trash folder fidelity fix
-- fix(workspace): merge the leaf-lifecycle fidelity fix
-- fix(settings)!: disable the element, and build the row as Obsidian does
-- fix(bases)!: render a relative date relatively, and give ObjectValue its real lookups
-- fix(markdown-view)!: dispatch a minimal line diff on set, not a whole-document replace
-- fix(editor)!: map the selection through a change, restore it on undo and redo, and port processLines
-- fix(vault)!: clear a removed entry's parent, honour delete's force, and split the two adapters' rmdir and copy
-- fix(node)!: merge the insertAfter, setChildrenInPlace and empty fidelity fixes
-- fix(mocks)!: merge the debounce, search, heading, sanitizing, icon and event fidelity fixes
-- fix(workspace)!: merge the workspace layout tree, leaf event, Menu.hide and link text fixes
-- fix(mocks)!: merge the MenuItem, suggest, Events, PopoverState and QueryController fixes
-- fix(settings)!: merge the setting component change-callback and SettingGroup fidelity fixes
-- fix(bases)!: merge the DateValue, DurationValue, ListValue, FileValue and LinkValue fidelity fixes
-- fix(editor)!: merge the Editor position, word, transaction and setValue fidelity fixes
-- fix(vault)!: merge the folder delete, copy and create collision fidelity fixes
-- fix(globals): merge the receiver fix for onNodeInserted, onWindowMigrated and indexOf
-- chore: merge the TSDoc requirement on every exported member
-- chore: merge the adoption of the unicorn 75 recommended rules
-- chore(nano-staged): lint staged .astro files before a commit
-- chore: update libs
-- style(comments): restore a camelCase symbol that opens a comment
-- docs(eslint-rules): state the real upstream and the two deltas a copy applies
-- chore: update libs
-- docs(eslint-config): say why `no-console` is off over the script files
-- chore(deps): drop the dead glob and test-exclude overrides
-- docs(deps): fix the js-yaml pin's check, and what it says about markdownlint-cli2
-- style(comments): stop capitalizing the middle of a wrapped comment
-- chore(deps): drop the dead markdown-it override
-- docs: replace the private rule-id citations with what they assert
-- docs: name the library and the sibling plugins so a reader can resolve them
-- docs(agents): say that the custom rule sources are shared copies, and what that forbids
-- fix(eslint): move the recursion suppression out of the shared rule source
-- fix(scripts): resolve local tool hops through the node_modules/.bin shim
-- chore(spellcheck): teach cspell the word lintable
-- fix(scripts): reconcile the shared helper copies across the sibling projects
+This release has 40 breaking changes, 6 new features, 5 fixes and 10 documentation changes. 18 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Breaking changes
+
+- **markdown-parser:** merge the sequence-frontmatter fix
+- **markdown-parser:** merge the empty-frontmatterLinks fix
+- **value:** merge the Bases value rendering
+- **markdown-parser:** merge the absent-frontmatter-cache fix
+- **reg-exp-value:** merge the wrapped-pattern fix
+- **value:** merge the Bases value type-name assignment
+- **null-value:** merge the singleton and null-printing fix
+- **tags:** merge the #-prefixed tag storage fix
+- **frontmatter:** merge the aliases and entries fidelity fix
+- **markdown-parser:** merge the broken-frontmatter catch
+- **value:** merge the per-class equals and looseEquals fidelity fix
+- **tags:** merge the tag-list subclass fix
+- **markdown-parser:** merge the frontmatter-link fidelity fix
+- **tags:** merge the tag-reading fidelity fix
+- **markdown-parser:** merge the non-object frontmatter record fix
+- **workspace-leaf:** merge the real leaf view and its view registry
+- **settings:** merge the setClass split and mod-toggle fidelity fix
+- **value:** merge the equals and looseEquals statics fidelity fix
+- **file-value:** merge the five file-key accessors
+- **file-manager:** merge the trashOption routing fidelity fix
+- **workspace:** merge the empty-tab reuse fidelity fix
+- **view:** merge the navigation and icon default fidelity fix
+- **settings:** merge the tooltip target and setWarning fidelity fix
+- **bases:** merge the list aggregations and the value icon, keys and objectAccess work
+- **markdown-view:** merge the four-buffer delegation fix
+- **editor:** merge the deleteLine and line-swap fidelity fix
+- **vault:** merge the trash routing and .trash folder fidelity fix
+- **settings:** disable the element, and build the row as Obsidian does
+- **bases:** render a relative date relatively, and give ObjectValue its real lookups
+- **markdown-view:** dispatch a minimal line diff on set, not a whole-document replace
+- **editor:** map the selection through a change, restore it on undo and redo, and port processLines
+- **vault:** clear a removed entry's parent, honour delete's force, and split the two adapters' rmdir and copy
+- **node:** merge the insertAfter, setChildrenInPlace and empty fidelity fixes
+- **mocks:** merge the debounce, search, heading, sanitizing, icon and event fidelity fixes
+- **workspace:** merge the workspace layout tree, leaf event, Menu.hide and link text fixes
+- **mocks:** merge the MenuItem, suggest, Events, PopoverState and QueryController fixes
+- **settings:** merge the setting component change-callback and SettingGroup fidelity fixes
+- **bases:** merge the DateValue, DurationValue, ListValue, FileValue and LinkValue fidelity fixes
+- **editor:** merge the Editor position, word, transaction and setValue fidelity fixes
+- **vault:** merge the folder delete, copy and create collision fidelity fixes
+
+### New
+
+- **setting:** implement setIcon and iconEl, and promote setRowClick and rowClick
+- **platform:** merge mobileDeviceHeight and mobileKeyboardHeight
+- **platform:** merge the five remaining can* getters
+- **platform:** merge the ten remaining PlatformEx members
+- **settings:** merge the addText Enter-blur affordance
+- **metadata-cache:** merge the iterateRefsForFile walk
+
+### Fixed
+
+- **workspace:** merge the leaf-lifecycle fidelity fix
+- **globals:** merge the receiver fix for onNodeInserted, onWindowMigrated and indexOf
+- **eslint:** move the recursion suppression out of the shared rule source
+- **scripts:** resolve local tool hops through the node_modules/.bin shim
+- **scripts:** reconcile the shared helper copies across the sibling projects
+
+### Documentation
+
+- **lint:** state the unicorn arm's reason in a form that is true in every consumer
+- **types:** record that an inlined shape is not retired by a typings release
+- **agents:** correct the canOpenExternalFiles cross-reference
+- record that the View base neither navigates nor carries an empty icon
+- **eslint-rules:** state the real upstream and the two deltas a copy applies
+- **eslint-config:** say why `no-console` is off over the script files
+- **deps:** fix the js-yaml pin's check, and what it says about markdownlint-cli2
+- replace the private rule-id citations with what they assert
+- name the library and the sibling plugins so a reader can resolve them
+- **agents:** say that the custom rule sources are shared copies, and what that forbids
 
 ## 5.2.0
 
-- test(vitest): give both projects a shared testTimeout, off the 5s default
-- docs(scripts): drop the private tracker ids from the npm-pack comments
-- test(vitest): give the scripts tests their own node project
-- fix(docs): move the relative-link rewrite onto Sätteri, which docs:build has needed since Astro 7.3
-- chore(deps): bump to latest, and clear the js-yaml and smol-toml advisories with overrides
-- fix(scripts): run the script hops through the detected package manager
-- chore: make the LICENSE copyright line lintable and guard it against the year roll-over
+This release has 2 fixes and 1 documentation change. 4 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Fixed
+
+- **docs:** move the relative-link rewrite onto Sätteri, which docs:build has needed since Astro 7.3
+- **scripts:** run the script hops through the detected package manager
+
+### Documentation
+
+- **scripts:** drop the private tracker ids from the npm-pack comments
 
 ## 5.1.0
 
-- chore(lint): retire the conformance-test Node-builtins waivers
-- fix(metadata-cache): setCache__ emits the changed event Obsidian actually emits
-- chore(deps): bump to latest, and clear the fflate advisory with a 0.7.5 override
+This release has 1 fix. 2 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Fixed
+
+- **metadata-cache:** setCache__ emits the changed event Obsidian actually emits
 
 ## 5.0.0
 
-- refactor(build): rename build:compile:typescript to build:compile
-- fix(release): parse npm pack --json under npm 12, so the release stops half-failing
-- feat(App): mock Plugins so app.plugins.getPlugin() answers null
-- fix(build): drop build:compile, a gate that skipped declaration validation
-- feat(obsidian-typings)!: implement Obsidian internals under their real names
+This release has 1 breaking change, 1 new feature and 2 fixes. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### Breaking changes
+
+- **obsidian-typings:** implement Obsidian internals under their real names
+
+### New
+
+- **App:** mock Plugins so app.plugins.getPlugin() answers null
+
+### Fixed
+
+- **release:** parse npm pack --json under npm 12, so the release stops half-failing
+- **build:** drop build:compile, a gate that skipped declaration validation
 
 ## 4.2.1
 
-- feat(version): add --no-changelog-editing, so a release can run unattended
-- fix(strict-proxy): yield on the properties test tooling duck-types on
-- chore: update libs
-- ci: publish the release tarball by path, not as a git shorthand
+This release has 1 new feature and 1 fix. 2 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### New
+
+- **version:** add --no-changelog-editing, so a release can run unattended
+
+### Fixed
+
+- **strict-proxy:** yield on the properties test tooling duck-types on
 
 ## 4.2.0
 
-- feat(vault): populate `TFile.stat` from the adapter
-- ci: publish to npm via trusted publishing instead of a local NPM_TOKEN
-- chore: update libs
-- fix(docs): replace the obsidian-dev-utils favicon with an icon of this package's own
-- feat(docs): add Astro + Starlight documentation site
-- chore: update libs
+This release has 2 new features and 1 fix. 3 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### New
+
+- **vault:** populate `TFile.stat` from the adapter
+- **docs:** add Astro + Starlight documentation site
+
+### Fixed
+
+- **docs:** replace the obsidian-dev-utils favicon with an icon of this package's own
 
 ## 4.1.0
 
-- feat(modal): model Obsidian's real modal DOM
-- chore: update libs
+This release has 1 new feature. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### New
+
+- **modal:** model Obsidian's real modal DOM
 
 ## 4.0.0
 
-- chore!: strict unicorn config
-- chore: update libs
+This release has 1 breaking change. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### Breaking changes
+
+- strict unicorn config
 
 ## 3.11.0
 
-- feat!: record separators in the Menu mock
-- feat(menu): bridge Menu.items and Menu.setSectionSubmenu
+This release has 1 breaking change and 1 new feature.
+
+### Breaking changes
+
+- record separators in the Menu mock
+
+### New
+
+- **menu:** bridge Menu.items and Menu.setSectionSubmenu
 
 ## 3.10.1
 
-- fix(markdown-parser): locate every block of a multi-block gap at its own offset
+This release has 1 fix.
+
+### Fixed
+
+- **markdown-parser:** locate every block of a multi-block gap at its own offset
 
 ## 3.10.0
 
-- feat(SettingTab): render declarative setting definitions the way Obsidian does
-- feat(scripts): add per-script env-var off switch
-- chore: update libs and clear the npm audit
-- test(node-setup): pin the doc getter's global-document fallback
+This release has 2 new features. 2 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### New
+
+- **SettingTab:** render declarative setting definitions the way Obsidian does
+- **scripts:** add per-script env-var off switch
 
 ## 3.9.0
 
-- feat(menu-item): model the submenu surface
+This release has 1 new feature.
+
+### New
+
+- **menu-item:** model the submenu surface
 
 ## 3.8.0
 
-- feat(vault): model the attachment-path resolution surface
-- chore: update libs
+This release has 1 new feature. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### New
+
+- **vault:** model the attachment-path resolution surface
 
 ## 3.7.0
 
-- fix(globals): make Keymap and value-typed augmented members faithful
-- docs: update
-- build: pin the dev Node version to 26 via .nvmrc
-- build: lock typescript to 6.0.3
+This release has 1 fix and 1 documentation change. 2 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Fixed
+
+- **globals:** make Keymap and value-typed augmented members faithful
+
+### Documentation
+
+- update
 
 ## 3.6.0
 
-- feat: model SuggestModal instruction bar
-- chore: update libs
+This release has 1 new feature. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### New
+
+- model SuggestModal instruction bar
 
 ## 3.5.1
 
-- fix(obsidian): make markdown cache position end offsets exclusive
-- refactor: keep only first line of each commit in changelog
+This release has 1 fix. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### Fixed
+
+- **obsidian:** make markdown cache position end offsets exclusive
 
 ## 3.5.0
 
-- feat(obsidian): add Vault.reconcile__ to sync the tree from the adapter
-- feat(obsidian-typings): model MetadataCache fileCache and computeMetadataAsync
-- feat(obsidian): faithful synchronous MetadataCache indexing
-- feat(obsidian): createFolder creates and links intermediate ancestors
-- feat(obsidian): cascade descendant paths on folder rename
-- feat(obsidian-typings): getAvailablePath de-duplicates via existence check
-- docs: correct getAvailablePath stub description
-- docs: tighten MetadataCache gap with the two real editLinks frictions
-- docs: correct stale rule/module references and MetadataCache gap
-- docs: record modeling gaps that block consumer unit coverage
+This release has 6 new features and 4 documentation changes.
+
+### New
+
+- **obsidian:** add Vault.reconcile__ to sync the tree from the adapter
+- **obsidian-typings:** model MetadataCache fileCache and computeMetadataAsync
+- **obsidian:** faithful synchronous MetadataCache indexing
+- **obsidian:** createFolder creates and links intermediate ancestors
+- **obsidian:** cascade descendant paths on folder rename
+- **obsidian-typings:** getAvailablePath de-duplicates via existence check
+
+### Documentation
+
+- correct getAvailablePath stub description
+- tighten MetadataCache gap with the two real editLinks frictions
+- correct stale rule/module references and MetadataCache gap
+- record modeling gaps that block consumer unit coverage
 
 ## 3.4.0
 
-- feat(obsidian): faithful DateValue.relative and DurationValue.parseFromString
-- refactor(obsidian): suffix PluginSettingTab.plugin as plugin__
-- feat(obsidian): mock remaining missing members across views and suggests Add the obsidian.d.ts members flagged by the conformance test
-- feat(obsidian): mock Plugin registration methods for conformance
-- feat(obsidian): adapter getFullPath/readLocalFile, PopoverState, __ renames
-- feat(globals): mock UIEvent augmentation members; fix global conformance targets
-- refactor(obsidian): use \_IN\_ form for DurationValue time constants
-- refactor(obsidian): spell out Milliseconds in DurationValue constants
-- feat(obsidian): mock Bases value-type members for conformance
-- test(obsidian): add an automated obsidian.d.ts conformance test
-- chore: record obsidian 1.13.1 as the API baseline
-- feat(obsidian): implement the obsidian 1.13.1 API delta in the mocks
-- refactor(eslint): adopt obsidian-dev-utils baseline for custom rules
-- refactor(scripts): make format.ts helper self-contained
-- feat(scripts): add linkinator and unify markdownlint.ts link-checking
-- docs: require matching latest obsidian.d.ts API on each release (L11)
-- refactor(scripts): import process explicitly in spellcheck
-- feat(scripts): add isVerbose option to check-project-types
-- fix(scripts): make markdownlint schema Rule import type-only
-- chore: read .env and honor NANO_STAGED opt-out in nano-staged config
-- chore: update libs
+This release has 9 new features, 1 fix and 1 documentation change. 10 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### New
+
+- **obsidian:** faithful DateValue.relative and DurationValue.parseFromString
+- **obsidian:** mock remaining missing members across views and suggests Add the obsidian.d.ts members flagged by the conformance test
+- **obsidian:** mock Plugin registration methods for conformance
+- **obsidian:** adapter getFullPath/readLocalFile, PopoverState, __ renames
+- **globals:** mock UIEvent augmentation members; fix global conformance targets
+- **obsidian:** mock Bases value-type members for conformance
+- **obsidian:** implement the obsidian 1.13.1 API delta in the mocks
+- **scripts:** add linkinator and unify markdownlint.ts link-checking
+- **scripts:** add isVerbose option to check-project-types
+
+### Fixed
+
+- **scripts:** make markdownlint schema Rule import type-only
+
+### Documentation
+
+- require matching latest obsidian.d.ts API on each release (L11)
 
 ## 3.3.0
 
-- feat: more bridges
+This release has 1 new feature.
+
+### New
+
+- more bridges
 
 ## 3.2.0
 
-- chore: normalize TypeScript lib casing to ES2022
-- feat: add no-unused-params-members ESLint rule
-- feat: expose AbstractInputSuggest.textInputEl via bridge
-- feat(eslint): enforce readonly Params/Options/Result members
-- feat(eslint): migrate recent obsidian-dev-utils eslint changes
+This release has 4 new features. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### New
+
+- add no-unused-params-members ESLint rule
+- expose AbstractInputSuggest.textInputEl via bridge
+- **eslint:** enforce readonly Params/Options/Result members
+- **eslint:** migrate recent obsidian-dev-utils eslint changes
 
 ## 3.1.1
 
-- chore: remove patches
-- feat: replace patch-package with manual type validation
+This release has 1 new feature. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### New
+
+- replace patch-package with manual type validation
 
 ## 3.1.0
 
-- refactor: introduce castTo\<T\> type-bridging helper
-- test: cover createDiv non-div guard
-- fix: refine Component
+This release has 1 fix. 2 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Fixed
+
+- refine Component
 
 ## 3.0.0
 
-- feat: add obsidian-typings bridges
+This release has 1 new feature.
+
+### New
+
+- add obsidian-typings bridges
 
 ## 2.0.4
 
-- chore: update libs
-- refactor: migrate to @obsidian-typings/obsidian-public-latest
+This release has maintenance changes only. 2 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
 
 ## 2.0.3
 
-- chore: update libs
+This release has maintenance changes only. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
 
 ## 2.0.2
 
-- docs: add CONTRIBUTING
-- chore: add attestation
-- refactor: noop
-- docs: update README
+This release has 2 documentation changes. 2 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Documentation
+
+- add CONTRIBUTING
+- update README
 
 ## 2.0.1
 
-- fix(build): rewrite .ts extension in dynamic import() calls
+This release has 1 fix.
+
+### Fixed
+
+- **build:** rewrite .ts extension in dynamic import() calls
 
 ## 2.0.0
 
-- feat!: add support for jest
+This release has 1 breaking change.
+
+### Breaking changes
+
+- add support for jest
 
 ## 1.1.1
 
-- fix: build
+This release has 1 fix.
+
+### Fixed
+
+- build
 
 ## 1.1.0
 
-- chore: set rootDir
-- feat: bypassStrictProxy
+This release has 1 new feature. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### New
+
+- bypassStrictProxy
 
 ## 1.0.11
 
-- fix: nested createEl re #1
-- refactor: simplify
-- chore: allow magic numbers in tests
-- chore: update issue templates
+This release has 1 fix. 3 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Fixed
+
+- nested createEl re #1
 
 ## 1.0.10
 
-- fix: tests
-- chore: improve as checks
-- refactor: rename globals entry point to setup
-- feat: make App.create... sync
-- feat: add local ESLint rule no-used-underscore-params
+This release has 2 new features and 1 fix. 2 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### New
+
+- make App.create... sync
+- add local ESLint rule no-used-underscore-params
+
+### Fixed
+
+- tests
 
 ## 1.0.9
 
-- fix: declare types
+This release has 1 fix.
+
+### Fixed
+
+- declare types
 
 ## 1.0.8
 
-- feat: expose fileMap__
-- test: restore 100% coverage
-- feat: add fromOriginalType__()
+This release has 2 new features. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### New
+
+- expose fileMap__
+- add fromOriginalType__()
 
 ## 1.0.7
 
-- fix: expose proper type
-- feat: expose setVaultAbstractFile__and deleteVaultAbstractFile__ on Vault
+This release has 1 new feature and 1 fix.
+
+### New
+
+- expose setVaultAbstractFile__and deleteVaultAbstractFile__ on Vault
+
+### Fixed
+
+- expose proper type
 
 ## 1.0.6
 
-- refactor: stop re-exporting non-mocked types
+This release has maintenance changes only. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
 
 ## 1.0.5
 
-- fix: batching for too many files
-- fix: generated types
-- docs: update README
+This release has 2 fixes and 1 documentation change.
+
+### Fixed
+
+- batching for too many files
+- generated types
+
+### Documentation
+
+- update README
 
 ## 1.0.4
 
-- test: add 100% test coverage
-- fix: generated types
+This release has 1 fix. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### Fixed
+
+- generated types
 
 ## 1.0.3
 
-- refactor: remove unnecessary _ prefix from private fields
-- refactor: use resolution-mode re-exports for ESM type
-- refactor: wrap build-types.ts execution in main()
-- feat: generate and ship .d.mts/.d.cts type declarations
-- refactor: remove _ prefix from private fields
-- feat: implement WorkspaceLeaf.detach() and Workspace.openLinkText()
-- feat: implement Editor.exec() for all EditorCommandName commands
-- feat: implement sortSearchResults with score-based descending sort
+This release has 4 new features. 4 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### New
+
+- generate and ship .d.mts/.d.cts type declarations
+- implement WorkspaceLeaf.detach() and Workspace.openLinkText()
+- implement Editor.exec() for all EditorCommandName commands
+- implement sortSearchResults with score-based descending sort
 
 ## 1.0.2
 
-- chore: fix lib extensions
-- docs: fix
+This release has 1 documentation change. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### Documentation
+
+- fix
 
 ## 1.0.1
 
-- chore: add postinstall
-- docs: cleanup
+This release has 1 documentation change. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### Documentation
+
+- cleanup
 
 ## 1.0.0
+
+This release has 1 other change.
+
+### Other changes
 
 - Initial
