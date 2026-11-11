@@ -20,6 +20,11 @@ import { WorkspaceContainer } from './WorkspaceContainer.ts';
  */
 export class WorkspaceWindow extends WorkspaceContainer {
   /**
+   * The item kind, `window`, as Obsidian names it.
+   */
+  public override type = 'window';
+
+  /**
    * The document of the popout window. The mock has no separate window.
    *
    * @returns The global `document`.

@@ -16,6 +16,8 @@ const FULL_DIMENSION = 100;
 const HALF_DIMENSION = FULL_DIMENSION / 2;
 
 class BareWorkspaceItem extends WorkspaceItem {
+  public type = 'bare';
+
   public constructor() {
     super();
   }
@@ -185,6 +187,26 @@ describe('WorkspaceItem', () => {
       expect(() => {
         item.constructor2__();
       }).not.toThrow();
+    });
+  });
+
+  describe('id', () => {
+    it('should keep the id given at construction', () => {
+      const app = App.createConfigured__();
+      expect(WorkspaceLeaf.create2__(app, 'given').id).toBe('given');
+    });
+
+    it('should generate a distinct id when none is given', () => {
+      expect(new BareWorkspaceItem().id).not.toBe(new BareWorkspaceItem().id);
+    });
+  });
+
+  describe('serialize()', () => {
+    it('should record the id and type, and the dimension only when it has one', () => {
+      const item = new BareWorkspaceItem();
+      expect(item.serialize()).toEqual({ id: item.id, type: 'bare' });
+      item.setDimension(40);
+      expect(item.serialize()).toEqual({ dimension: 40, id: item.id, type: 'bare' });
     });
   });
 });

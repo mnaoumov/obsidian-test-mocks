@@ -9,6 +9,7 @@ import type {
   WorkspaceTabs as WorkspaceTabsOriginal
 } from 'obsidian';
 
+import type { SerializedWorkspaceItem } from '../internal/types.ts';
 import type { Workspace } from './Workspace.ts';
 import type { WorkspaceItem } from './WorkspaceItem.ts';
 
@@ -47,6 +48,11 @@ export class WorkspaceTabs extends WorkspaceParent {
    * any member access.
    */
   public override parent: WorkspaceSplitOriginal = createParentPlaceholder<WorkspaceSplitOriginal>();
+
+  /**
+   * The item kind, `tabs`, as Obsidian names it.
+   */
+  public type = 'tabs';
 
   /**
    * Creates a tab group. Obsidian does not construct it publicly; use {@link WorkspaceTabs.create2__}.
@@ -160,6 +166,20 @@ export class WorkspaceTabs extends WorkspaceParent {
 
     this.currentTab = clamped;
     this.requireWorkspace().requestSaveLayout();
+  }
+
+  /**
+   * Serializes the tab group, as Obsidian does: the parent's keys, `currentTab` when it is past the first tab, and
+   * `stacked` when the group is stacked.
+   *
+   * @returns The serialized tab group.
+   */
+  public override serialize(): SerializedWorkspaceItem {
+    return {
+      ...super.serialize(),
+      ...this.currentTab > 0 && { currentTab: this.currentTab },
+      ...this.isStacked && { stacked: true }
+    };
   }
 
   /**

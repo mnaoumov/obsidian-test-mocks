@@ -26,6 +26,11 @@ export class WorkspaceMobileDrawer extends WorkspaceParent {
   public collapsed = false;
 
   /**
+   * The item kind, `mobile-drawer`, as Obsidian names it.
+   */
+  public type = 'mobile-drawer';
+
+  /**
    * Creates a drawer. Obsidian does not construct it publicly; use {@link WorkspaceMobileDrawer.create2__}.
    */
   protected constructor() {

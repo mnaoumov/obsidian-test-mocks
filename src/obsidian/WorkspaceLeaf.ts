@@ -15,7 +15,10 @@ import type {
   WorkspaceTabs as WorkspaceTabsOriginal
 } from 'obsidian';
 
-import type { ViewStateResultInternal } from '../internal/types.ts';
+import type {
+  SerializedWorkspaceItem,
+  ViewStateResultInternal
+} from '../internal/types.ts';
 import type { App } from './App.ts';
 import type { TFile } from './TFile.ts';
 
@@ -34,10 +37,7 @@ import { FileView } from './FileView.ts';
 import { View } from './View.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 
-// Held on an object so the counter can advance from inside the constructor without assigning to a module-level binding (`unicorn/no-top-level-assignment-in-function`).
-const leafIdCounter = { next: 1 };
-
-// Held the same way, for the id `setGroupMember` gives a leaf that is in no group yet.
+// Held on an object so the counter can advance from inside a method without assigning to a module-level binding (`unicorn/no-top-level-assignment-in-function`): the id `setGroupMember` gives a leaf that is in no group yet.
 const groupIdCounter = { next: 1 };
 
 // Obsidian's group ids are 16 hexadecimal digits.
@@ -77,11 +77,6 @@ export class WorkspaceLeaf extends WorkspaceItem {
    * The hover popover currently shown for the leaf, or `null` when there is none.
    */
   public hoverPopover: HoverPopoverOriginal | null = null;
-
-  /**
-   * Mock-only: the leaf id, either the one given at construction or the next value of a module-wide counter.
-   */
-  public id__: string;
 
   /**
    * Whether the leaf is deferred because it is in the background, holding a placeholder instead of its real view.
@@ -139,6 +134,11 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public tabHeaderStatusContainerEl: HTMLDivElement;
 
   /**
+   * The item kind, `leaf`, as Obsidian names it.
+   */
+  public type = 'leaf';
+
+  /**
    * The view shown in the leaf. Never `null`: a leaf showing nothing holds {@link WorkspaceLeaf._empty}.
    */
   public view: ViewOriginal;
@@ -169,7 +169,6 @@ export class WorkspaceLeaf extends WorkspaceItem {
   protected constructor(app: App, id?: string) {
     super(app.workspace, id);
     this.app__ = app;
-    this.id__ = id ?? String(leafIdCounter.next++);
     this._empty = EmptyView.create2__(this);
     this.view = this._empty.asOriginalType2__();
     this.containerEl.append(this._empty.containerEl);
@@ -401,6 +400,21 @@ export class WorkspaceLeaf extends WorkspaceItem {
     };
 
     await this.setViewState(viewState, options.eState);
+  }
+
+  /**
+   * Serializes the leaf, as Obsidian does: the item's id, type and dimension, then `pinned` when the leaf is pinned,
+   * its view state, and its linked-view group when it has one.
+   *
+   * @returns The serialized leaf.
+   */
+  public override serialize(): SerializedWorkspaceItem {
+    return {
+      ...super.serialize(),
+      ...this.pinned && { pinned: true },
+      state: this.getViewState(),
+      ...this.group !== null && { group: this.group }
+    };
   }
 
   /**

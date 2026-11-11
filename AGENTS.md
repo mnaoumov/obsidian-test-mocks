@@ -1107,6 +1107,32 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   `tabHeaderStatusLinkEl`, which it creates lazily, stay unmocked), the header's listeners (close click, drag, context
   menu, middle click), and placing the header in its tab group's `tabHeaderContainerEl`.
 
+- **The layout serializes and restores itself, as Obsidian 1.15.1 does** (2026-11-11, read in that version's `app.js`).
+  `Workspace.getLayout()` returns the real serialized tree (`main`, `left`, `right`, `left-ribbon`, plus `floating` and
+  `active` when there are any) instead of `{}`, and `changeLayout(layout)` rebuilds it: once the layout is ready it runs
+  `clearLayout()` and then `setLayout(layout)`, which is async and deserializes each tree through `deserializeLayout`.
+  `readWorkspaceFile()` reads `<configDir>/workspace.json` (`workspace-mobile.json` on mobile) through the adapter and
+  answers `{}` when it is missing or does not parse. So `changeLayout(getLayout())` round-trips leaves, their ids, view
+  states, groups and pinned flags, tab groups, splits and sidedock widths. What a consumer meets:
+  - **Every layout item has Obsidian's `id`, `type` and `serialize()`.** `WorkspaceLeaf.id__` is GONE (a breaking change):
+    the id is `WorkspaceItem.id`, on every item, still a module-wide counter when none is given rather than Obsidian's
+    16 random hex characters, so ids stay deterministic.
+  - **`setLayout` makes the layout ready** and requests a layout change and the active-leaf events, as Obsidian's does,
+    but it does NOT run `onLayoutReady` callbacks: in Obsidian `loadLayout` does that, and here `setLayoutReady__` still
+    does.
+  - **`clearLayout` puts fresh empty splits in place** of the four Obsidian sets to `null`, so nothing built afterwards
+    finds the old leaves. Without that, a restored leaf joined the linked-view group of the leaf it replaced, and lost
+    its pinned flag to it.
+  - **Each sidebar is now a horizontal sidedock from the start**, Obsidian's direction, where the mock used to build them
+    vertical. `WorkspaceSidedock` carries `side`, `size` (300) and `setSize`; `WorkspaceSplit.recomputeChildrenDimensions`
+    scales the children's dimensions to 100, or clears them all when any child has none.
+  - **The ribbon holds no items**, so `WorkspaceRibbon.serialize()` is `{ hiddenItems: {} }` and `load` changes nothing.
+  - Not modelled: `saveLayout` / `loadLayout` (`requestSaveLayout` still debounces a no-op, so nothing writes
+    `workspace.json`), the mobile drawers (a `mobile-drawer` entry restores to `null`), deferred views, placing the
+    layout's elements in `Workspace.containerEl`, and closing popout windows. A `main` entry that does not restore to a
+    root split, or a sidebar entry that does not restore to a sidedock, is treated as missing, where Obsidian would
+    store whatever it got.
+
 - **The `View` base does NOT navigate, and carries `lucide-file`** (2026-09-17, read in Obsidian 1.14.2's
   `app.js`). Obsidian's base constructor sets `icon = 'lucide-file'` and `navigation = false`; the mock had both
   inverted. It matters because `WorkspaceLeaf.canNavigate()` reads `view.navigation`, so a bare mock view used to

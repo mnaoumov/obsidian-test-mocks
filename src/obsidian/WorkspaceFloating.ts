@@ -23,14 +23,20 @@ export class WorkspaceFloating extends WorkspaceParent {
   public override allowSingleChild = true;
 
   /**
+   * The item kind, `floating`, as Obsidian names it.
+   */
+  public type = 'floating';
+
+  /**
    * Creates the floating item. Obsidian does not construct it publicly; use {@link WorkspaceFloating.create2__}.
    *
    * @param workspace - The workspace the floating item belongs to.
+   * @param id - The item id; a unique numeric id is generated when omitted.
    */
-  protected constructor(workspace?: Workspace) {
-    super(workspace);
+  protected constructor(workspace?: Workspace, id?: string) {
+    super(workspace, id);
     const self = strictProxy(this);
-    self.constructor4__(workspace);
+    self.constructor4__(workspace, id);
     return self;
   }
 
@@ -39,10 +45,11 @@ export class WorkspaceFloating extends WorkspaceParent {
    * numbered subclass variant of `create__`.
    *
    * @param workspace - The workspace the floating item belongs to.
+   * @param id - The item id; a unique numeric id is generated when omitted.
    * @returns The new floating item.
    */
-  public static create2__(workspace?: Workspace): WorkspaceFloating {
-    return new WorkspaceFloating(workspace);
+  public static create2__(workspace?: Workspace, id?: string): WorkspaceFloating {
+    return new WorkspaceFloating(workspace, id);
   }
 
   /**
@@ -71,8 +78,9 @@ export class WorkspaceFloating extends WorkspaceParent {
    * `vi.spyOn(WorkspaceFloating.prototype, 'constructor4__')`.
    *
    * @param _workspace - The workspace the floating item was created with.
+   * @param _id - The item id the floating item was created with.
    */
-  public constructor4__(_workspace?: Workspace): void {
+  public constructor4__(_workspace?: Workspace, _id?: string): void {
     noop();
   }
 }

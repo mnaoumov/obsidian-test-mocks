@@ -6,6 +6,8 @@
 
 import type {
   Events,
+  SplitDirection,
+  ViewState,
   ViewStateResult as ViewStateResultOriginal
 } from 'obsidian';
 
@@ -91,6 +93,49 @@ export type MaybeReturn<T> = T | void;
 export interface ParsedLinktext {
   readonly path: string;
   readonly subpath: string;
+}
+
+/**
+ * A ribbon's saved state, as `WorkspaceRibbon.serialize` returns it: whether each ribbon item is hidden, keyed by
+ * item id, in display order.
+ */
+export interface RibbonState {
+  readonly hiddenItems: Record<string, boolean>;
+}
+
+/**
+ * A serialized workspace layout, the shape `Workspace.getLayout` returns and `Workspace.setLayout` reads: the
+ * main, left, right and floating trees, the left ribbon, the id of the active leaf and, in `workspace.json`, the
+ * recently opened files. Every key is optional, because `setLayout` accepts a partial layout and fills in the rest.
+ */
+export interface SerializedWorkspace {
+  readonly 'active'?: string;
+  readonly 'floating'?: SerializedWorkspaceItem;
+  readonly 'lastOpenFiles'?: string[];
+  readonly 'left'?: SerializedWorkspaceItem;
+  readonly 'left-ribbon'?: Partial<RibbonState>;
+  readonly 'main'?: SerializedWorkspaceItem;
+  readonly 'right'?: SerializedWorkspaceItem;
+}
+
+/**
+ * One serialized node of the workspace layout tree, as `WorkspaceItem.serialize` returns it. `id` and `type` are
+ * always present; each subclass adds its own keys.
+ */
+export interface SerializedWorkspaceItem {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- `deserializeLayout` drops the children it cannot restore from this array in place, as Obsidian does.
+  children?: SerializedWorkspaceItem[];
+  readonly collapsed?: boolean;
+  readonly currentTab?: number;
+  readonly dimension?: number;
+  readonly direction?: SplitDirection;
+  readonly group?: string;
+  readonly id: string;
+  readonly pinned?: boolean;
+  readonly stacked?: boolean;
+  readonly state?: ViewState;
+  readonly type: string;
+  readonly width?: number;
 }
 
 /**

@@ -10,6 +10,7 @@ import type {
   WorkspaceParent as WorkspaceParentOriginal
 } from 'obsidian';
 
+import type { SerializedWorkspaceItem } from '../internal/types.ts';
 import type { Workspace } from './Workspace.ts';
 
 import { castTo } from '../internal/castTo.ts';
@@ -32,6 +33,10 @@ interface LayoutParent {
 
 // Obsidian stores a flex-grow outside the open range `(0, 100)` as `null`.
 const MAX_DIMENSION = 100;
+
+// Obsidian gives an item created without an id 16 random hex characters; the mock counts instead, so a test sees the
+// same ids on every run.
+const itemIdCounter = { next: 1 };
 
 /**
  * Mock of Obsidian's `WorkspaceItem`, the base of leaves, splits, tabs and the other layout nodes.
@@ -57,10 +62,22 @@ export abstract class WorkspaceItem extends Events {
   public dimension: null | number = null;
 
   /**
+   * The item id, which a serialized layout records and `Workspace.getLeafById` looks a leaf up by: the one given at
+   * construction, or the next value of a module-wide counter.
+   */
+  public id: string;
+
+  /**
    * The direct parent of the item. An item with no parent holds an empty strict proxy instead, which throws on any
    * member access; {@link WorkspaceItem.setParent} and `WorkspaceParent.insertChild` replace it.
    */
   public parent: WorkspaceParentOriginal = createParentPlaceholder<WorkspaceParentOriginal>();
+
+  /**
+   * The item's kind, the `type` its serialized form carries: `split`, `tabs`, `leaf`, `floating`, `window` or
+   * `mobile-drawer`.
+   */
+  public abstract type: string;
 
   /**
    * The workspace the item belongs to, which subclasses reach for `onLayoutChange` and the layout requests. It is
@@ -74,11 +91,12 @@ export abstract class WorkspaceItem extends Events {
    *
    * @param workspace - The workspace the item belongs to; {@link WorkspaceItem.getContainer} falls back to its root
    * split.
-   * @param id - The item id.
+   * @param id - The item id; a unique numeric id is generated when omitted.
    */
   protected constructor(workspace?: Workspace, id?: string) {
     super();
     this.layoutWorkspace = workspace;
+    this.id = id ?? String(itemIdCounter.next++);
     const self = strictProxy(this);
     self.constructor2__(workspace, id);
     return self;
@@ -151,6 +169,20 @@ export abstract class WorkspaceItem extends Events {
    */
   public getRoot(): WorkspaceItem {
     return this.hasParent() ? castTo<WorkspaceItem>(this.parent).getRoot() : this;
+  }
+
+  /**
+   * Serializes the item, as Obsidian does: its id and type, and its dimension when it has one. Subclasses add their own
+   * keys.
+   *
+   * @returns The serialized item.
+   */
+  public serialize(): SerializedWorkspaceItem {
+    return {
+      id: this.id,
+      type: this.type,
+      ...(this.dimension && { dimension: this.dimension })
+    };
   }
 
   /**

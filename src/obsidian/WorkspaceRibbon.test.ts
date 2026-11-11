@@ -33,4 +33,20 @@ describe('WorkspaceRibbon', () => {
       expect(mock).toBe(ribbon);
     });
   });
+
+  describe('load()', () => {
+    it('should accept a saved state without throwing', () => {
+      const app = App.createConfigured__();
+      expect(() => {
+        app.workspace.leftRibbon.load({ hiddenItems: { item: true } });
+      }).not.toThrow();
+    });
+  });
+
+  describe('serialize()', () => {
+    it('should report no hidden items for a ribbon that holds none', () => {
+      const app = App.createConfigured__();
+      expect(app.workspace.leftRibbon.serialize()).toEqual({ hiddenItems: {} });
+    });
+  });
 });

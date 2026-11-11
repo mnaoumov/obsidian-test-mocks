@@ -90,11 +90,12 @@ your Vitest or Jest `setupFiles` — the members work without them.
 | `Value` | `icon`, `keys`, `objectAccess` |
 | `Vault` | `config`, `exists`, `fileMap`, `getAbstractFileByPathInsensitive`, `getAvailablePath`, `getAvailablePathForAttachments`, `getConfig`, `setConfig` |
 | `View` | `close`, `open` |
-| `Workspace` | `activeLeafEvents`, `activeTabGroup`, `app`, `createLeafInTabGroup`, `floatingSplit`, `getFocusedContainer`, `isAttached`, `iterateLeaves`, `lastActiveFile`, `lastTabGroupStacked`, `onLayoutChange`, `requestActiveLeafEvents`, `requestLayoutChangeEvents`, `requestUpdateLayout`, `splitLeaf`, `updateLayout` |
-| `WorkspaceItem` | `containerEl`, `detach`, `dimension`, `setDimension`, `setParent` |
-| `WorkspaceLeaf` | `_empty`, `activeTime`, `canNavigate`, `group`, `pinned`, `setDimension`, `tabHeaderCloseEl`, `tabHeaderEl`, `tabHeaderInnerIconEl`, `tabHeaderInnerTitleEl`, `tabHeaderStatusContainerEl`, `working` |
-| `WorkspaceParent` | `allowSingleChild`, `children`, `insertChild`, `removeChild`, `replaceChild` |
-| `WorkspaceSidedock` | `allowSingleChild`, `children`, `direction` |
+| `Workspace` | `activeLeafEvents`, `activeTabGroup`, `app`, `clearLayout`, `createLeafInTabGroup`, `deserializeLayout`, `floatingSplit`, `getFocusedContainer`, `isAttached`, `iterateLeaves`, `lastActiveFile`, `lastTabGroupStacked`, `onLayoutChange`, `readWorkspaceFile`, `requestActiveLeafEvents`, `requestLayoutChangeEvents`, `requestUpdateLayout`, `setLayout`, `splitLeaf`, `updateLayout` |
+| `WorkspaceItem` | `containerEl`, `detach`, `dimension`, `id`, `serialize`, `setDimension`, `setParent`, `type` |
+| `WorkspaceLeaf` | `_empty`, `activeTime`, `canNavigate`, `group`, `pinned`, `setDimension`, `tabHeaderCloseEl`, `tabHeaderEl`, `tabHeaderInnerIconEl`, `tabHeaderInnerTitleEl`, `tabHeaderStatusContainerEl`, `type`, `working` |
+| `WorkspaceParent` | `allowSingleChild`, `children`, `insertChild`, `recomputeChildrenDimensions`, `removeChild`, `replaceChild` |
+| `WorkspaceRibbon` | `load`, `serialize` |
+| `WorkspaceSidedock` | `allowSingleChild`, `children`, `direction`, `recomputeChildrenDimensions`, `serialize`, `setSize`, `side`, `size` |
 | `WorkspaceSplit` | `direction`, `setDirection` |
 | `WorkspaceTabs` | `currentTab`, `isStacked`, `selectTab`, `selectTabIndex`, `setStacked` |
 <!-- END GENERATED: implemented-internals -->
