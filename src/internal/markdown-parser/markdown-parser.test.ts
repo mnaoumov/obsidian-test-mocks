@@ -23,6 +23,9 @@ const LINE_A = 2;
 const LINE_B = 3;
 const LINE_D = 5;
 const FLAT_LIST_ITEM_COUNT = 10_000;
+// About 8 s alone and 34 s under coverage on a loaded 2-core machine (2026-11-11), past the shared 30 s budget.
+// A quadratic parent lookup, the regression this test guards, would take far longer than this bound.
+const LARGE_FLAT_LIST_TIMEOUT_MS = 120_000;
 const HEADING_OFFSET = 10;
 const COMPLEX_HEADING_COUNT = 2;
 const COMPLEX_LIST_ITEM_COUNT = 2;
@@ -1347,7 +1350,7 @@ describe('parseMarkdownContent', () => {
       expect(cache.listItems).toHaveLength(FLAT_LIST_ITEM_COUNT);
       expect(cache.listItems?.every((item) => item.parent === ROOT_PARENT_LINE)).toBe(true);
       expect(cache.sections?.filter((section) => section.type === 'list')).toHaveLength(1);
-    });
+    }, LARGE_FLAT_LIST_TIMEOUT_MS);
   });
 
   describe('sections', () => {
