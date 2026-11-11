@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## 8.0.0
+
+- test: give the large flat list test its own timeout
+- feat!: port Obsidian's workspace layout serialization and restore
+- docs(changelog): regroup the published release notes for readers
+- feat: port Obsidian's setTooltip and route the component tooltips through it
+- docs: link the changelog from the README and the docs site
+- docs: add a See also comparison of similar mock libraries
+- docs: link to the Obsidian resources page
+- feat: keep MenuItem.menu and document stubbing requestUrl
+- docs: add issue-filing instructions for AI agents
+- docs(deps): record unpatched deepmerge advisory
+- build(deps): override re2js to ^2.9.1 for GHSA-gg6h-894w-4m9c
+- build(deps): bump typescript-dev-toolkit to ^5.2.0
+- build(deps): bump @mnaoumov/typescript-dev-toolkit to ^5.1.0
+- refactor: adopt shared keyword identifier rule
+- chore(deps): clear tooling audit advisories
+- refactor(types): adopt readonly interface members
+- docs(readme): combine related resources and plugin comparisons
+- refactor(internal): group src/internal by subject
+
 ## 7.3.0
 
 This release has 1 new feature, 3 fixes and 2 documentation changes. 4 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
