@@ -6,6 +6,7 @@
 
 import type { WorkspaceParent as WorkspaceParentOriginal } from 'obsidian';
 
+import type { SerializedWorkspaceItem } from '../internal/types.ts';
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
@@ -92,6 +93,14 @@ export abstract class WorkspaceParent extends WorkspaceItem {
   }
 
   /**
+   * Re-derives the children's shares from their dimensions. A no-op here, as in Obsidian: only a split has shares to
+   * recompute.
+   */
+  public recomputeChildrenDimensions(): void {
+    noop();
+  }
+
+  /**
    * Removes a child and leaves it without a parent. As in Obsidian, a parent left empty then removes itself from its
    * own parent, and one left with a single child it may not keep is replaced there by that child, inheriting the
    * dimension the parent had.
@@ -140,6 +149,18 @@ export abstract class WorkspaceParent extends WorkspaceItem {
     this.children[position] = child;
     child.setParent(this.asOriginalType3__());
     this.onLayoutChange();
+  }
+
+  /**
+   * Serializes the parent, as Obsidian does: the item's own keys and each child's serialized form, in order.
+   *
+   * @returns The serialized parent.
+   */
+  public override serialize(): SerializedWorkspaceItem {
+    return {
+      ...super.serialize(),
+      children: this.children.map((child) => child.serialize())
+    };
   }
 
   private onLayoutChange(): void {

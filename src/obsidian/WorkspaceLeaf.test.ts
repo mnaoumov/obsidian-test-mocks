@@ -102,13 +102,13 @@ describe('WorkspaceLeaf', () => {
       const app = App.createConfigured__();
       const leaf1 = WorkspaceLeaf.create2__(app);
       const leaf2 = WorkspaceLeaf.create2__(app);
-      expect(leaf1.id__).not.toBe(leaf2.id__);
+      expect(leaf1.id).not.toBe(leaf2.id);
     });
 
     it('should use the provided id', () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app, 'custom-id');
-      expect(leaf.id__).toBe('custom-id');
+      expect(leaf.id).toBe('custom-id');
     });
   });
 
@@ -753,6 +753,18 @@ describe('WorkspaceLeaf', () => {
       const app = App.createConfigured__();
       const leaf = WorkspaceLeaf.create2__(app);
       expect(leaf.isDeferred).toBe(false);
+    });
+  });
+
+  describe('serialize()', () => {
+    it('should record the view state, and the pinned flag and group only when set', () => {
+      const app = App.createConfigured__();
+      const leaf = WorkspaceLeaf.create2__(app, 'leaf');
+      expect(leaf.type).toBe('leaf');
+      expect(leaf.serialize()).toEqual({ id: 'leaf', state: leaf.getViewState(), type: 'leaf' });
+      leaf.togglePinned();
+      leaf.setGroup('group');
+      expect(leaf.serialize()).toEqual({ group: 'group', id: 'leaf', pinned: true, state: leaf.getViewState(), type: 'leaf' });
     });
   });
 });

@@ -13,6 +13,8 @@ const OUT_OF_RANGE_INDEX = 10;
 const HALF_DIMENSION = 50;
 
 class BareWorkspaceParent extends WorkspaceParent {
+  public type = 'bare';
+
   public constructor() {
     super();
   }
@@ -173,6 +175,30 @@ describe('WorkspaceParent', () => {
       expect(() => {
         parent.constructor3__();
       }).not.toThrow();
+    });
+  });
+
+  describe('recomputeChildrenDimensions()', () => {
+    it('should leave the children alone', () => {
+      const parent = new BareWorkspaceParent();
+      const child = new BareWorkspaceParent();
+      parent.insertChild(0, child);
+      child.setDimension(30);
+      parent.recomputeChildrenDimensions();
+      expect(child.dimension).toBe(30);
+    });
+  });
+
+  describe('serialize()', () => {
+    it('should add each child in order', () => {
+      const parent = new BareWorkspaceParent();
+      const child = new BareWorkspaceParent();
+      parent.insertChild(0, child);
+      expect(parent.serialize()).toEqual({
+        children: [{ children: [], id: child.id, type: 'bare' }],
+        id: parent.id,
+        type: 'bare'
+      });
     });
   });
 });

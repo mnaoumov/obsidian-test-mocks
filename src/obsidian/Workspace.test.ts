@@ -13,15 +13,20 @@ import {
 } from 'vitest';
 
 import { castTo } from '../internal/castTo.ts';
-import { noopAsync } from '../internal/noop.ts';
+import {
+  noop,
+  noopAsync
+} from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { App } from './App.ts';
+import { Platform } from './vars/Platform.ts';
 import { View } from './View.ts';
 import { Workspace } from './Workspace.ts';
 import { WorkspaceFloating } from './WorkspaceFloating.ts';
 import { WorkspaceItem } from './WorkspaceItem.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
+import { WorkspaceSidedock } from './WorkspaceSidedock.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
 import { WorkspaceTabs } from './WorkspaceTabs.ts';
 import { WorkspaceWindow } from './WorkspaceWindow.ts';
@@ -39,6 +44,8 @@ const QUARTER_DIMENSION = HALF_DIMENSION / 2;
 const filledTabCounter = { next: 1 };
 
 class BareWorkspaceItem extends WorkspaceItem {
+  public type = 'bare';
+
   public constructor() {
     super();
   }
@@ -134,9 +141,257 @@ describe('Workspace', () => {
   });
 
   describe('changeLayout()', () => {
-    it('should resolve without throwing', async () => {
+    it('should do nothing before the layout is ready', async () => {
       const app = App.createConfigured__();
-      await expect(app.workspace.changeLayout({})).resolves.toBeUndefined();
+      const setLayoutSpy = vi.spyOn(app.workspace, 'setLayout');
+      await app.workspace.changeLayout({});
+      expect(setLayoutSpy).not.toHaveBeenCalled();
+    });
+
+    it('should clear the layout and then set the new one once the layout is ready', async () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const calls: string[] = [];
+      vi.spyOn(app.workspace, 'clearLayout').mockImplementation(async () => {
+        calls.push('clearLayout');
+        await noopAsync();
+      });
+      vi.spyOn(app.workspace, 'setLayout').mockImplementation(async (data) => {
+        calls.push(`setLayout ${JSON.stringify(data)}`);
+        await noopAsync();
+      });
+      await app.workspace.changeLayout({ active: 'x' });
+      expect(calls).toEqual(['clearLayout', 'setLayout {"active":"x"}']);
+    });
+
+    it('should round-trip a layout taken by getLayout', async () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const first = app.workspace.getLeaf('tab');
+      await first.openFile(app.vault.createSync__('first.md', ''));
+      const second = app.workspace.getLeaf('split');
+      await second.openFile(app.vault.createSync__('second.md', ''));
+      first.setGroup('linked');
+      second.setGroup('linked');
+      second.togglePinned();
+      app.workspace.leftSplit.setSize(250);
+      const layout = app.workspace.getLayout();
+
+      await app.workspace.changeLayout(layout);
+
+      expect(app.workspace.getLayout()).toEqual(layout);
+      expect(app.workspace.layoutReady).toBe(true);
+      const restored = ensureNonNullable(app.workspace.getLeafById(second.id));
+      expect(restored).not.toBe(second);
+      expect(app.workspace.activeLeaf).toBe(restored);
+      expect(restored.getViewState().state).toEqual({ file: 'second.md' });
+    });
+  });
+
+  describe('clearLayout()', () => {
+    it('should stop the layout being ready, cancel a pending layout change and empty every leaf', async () => {
+      const app = App.createConfigured__();
+      app.workspace.setLayoutReady__();
+      const leaf = app.workspace.getLeaf('tab');
+      await leaf.openFile(app.vault.createSync__('note.md', ''));
+      const cancelSpy = vi.spyOn(app.workspace.requestLayoutChangeEvents, 'cancel');
+
+      await app.workspace.clearLayout();
+
+      expect(app.workspace.layoutReady).toBe(false);
+      expect(cancelSpy).toHaveBeenCalled();
+      expect(leaf.view.getViewType()).toBe('empty');
+      expect(app.workspace.activeLeaf).toBeNull();
+    });
+  });
+
+  describe('deserializeLayout()', () => {
+    it('should answer null for an entry type it does not restore', async () => {
+      const app = App.createConfigured__();
+      await expect(app.workspace.deserializeLayout({ id: 'd', type: 'mobile-drawer' }, 'left')).resolves.toBeNull();
+    });
+
+    it('should wrap a leaf found directly under a split in a tab group of its own', async () => {
+      const app = App.createConfigured__();
+      const split = ensureNonNullable(
+        await app.workspace.deserializeLayout({
+          children: [{ id: 'leaf', state: { type: 'empty' }, type: 'leaf' }],
+          direction: 'horizontal',
+          id: 'split',
+          type: 'split'
+        }, null)
+      );
+      expect(split).toBeInstanceOf(WorkspaceSplit);
+      const [tabs] = castTo<WorkspaceSplit>(split).children;
+      expect(tabs).toBeInstanceOf(WorkspaceTabs);
+      expect(castTo<WorkspaceTabs>(tabs).children.at(0)?.id).toBe('leaf');
+    });
+
+    it('should drop the children it cannot restore, in place, and a split left empty', async () => {
+      const app = App.createConfigured__();
+      const entry = {
+        children: [{ id: 'tabs', type: 'tabs' }, { id: 'nothing', type: 'unknown' }],
+        id: 'split',
+        type: 'split'
+      };
+      await expect(app.workspace.deserializeLayout(entry, null)).resolves.toBeNull();
+      expect(entry.children).toEqual([]);
+    });
+
+    it('should restore a sidedock with its width, collapsed state and children even when empty', async () => {
+      const app = App.createConfigured__();
+      const sidedock = await app.workspace.deserializeLayout({ collapsed: true, direction: 'horizontal', id: 's', type: 'split', width: 222 }, 'right');
+      expect(sidedock).toBeInstanceOf(WorkspaceSidedock);
+      expect(castTo<WorkspaceSidedock>(sidedock).size).toBe(222);
+      expect(castTo<WorkspaceSidedock>(sidedock).collapsed).toBe(true);
+    });
+
+    it('should not restore a sidebar on mobile', async () => {
+      const app = App.createConfigured__();
+      Platform.isMobile = true;
+      try {
+        await expect(app.workspace.deserializeLayout({ direction: 'horizontal', id: 's', type: 'split' }, 'left')).resolves.toBeNull();
+      } finally {
+        Platform.isMobile = false;
+      }
+    });
+
+    it('should merge every tab group of the root into the first one where the platform cannot split', async () => {
+      const app = App.createConfigured__();
+      Platform.isPhone = true;
+      try {
+        const root = await app.workspace.deserializeLayout({
+          children: [
+            { children: [{ id: 'a', state: { type: 'empty' }, type: 'leaf' }], id: 't1', type: 'tabs' },
+            {
+              children: [{ children: [{ id: 'b', state: { type: 'empty' }, type: 'leaf' }], id: 't2', type: 'tabs' }],
+              direction: 'horizontal',
+              id: 'inner',
+              type: 'split'
+            }
+          ],
+          direction: 'vertical',
+          id: 'root',
+          type: 'split'
+        }, 'root');
+        const [tabs] = castTo<WorkspaceSplit>(root).children;
+        expect(castTo<WorkspaceSplit>(root).children).toHaveLength(1);
+        expect(castTo<WorkspaceTabs>(tabs).children.map((leaf) => leaf.id)).toEqual(['a', 'b']);
+      } finally {
+        Platform.isPhone = false;
+      }
+    });
+
+    it('should merge past entries with no children, and leave a root with no tab group as it is', async () => {
+      const app = App.createConfigured__();
+      Platform.isPhone = true;
+      try {
+        const merged = await app.workspace.deserializeLayout({
+          children: [
+            { id: 'loose', state: { type: 'empty' }, type: 'leaf' },
+            { children: [{ id: 'a', state: { type: 'empty' }, type: 'leaf' }], id: 't1', type: 'tabs' },
+            { id: 't2', type: 'tabs' }
+          ],
+          direction: 'vertical',
+          id: 'root',
+          type: 'split'
+        }, 'root');
+        const [mergedTabs] = castTo<WorkspaceSplit>(merged).children;
+        expect(castTo<WorkspaceTabs>(mergedTabs).children.map((leaf) => leaf.id)).toEqual(['a']);
+
+        const untouched = await app.workspace.deserializeLayout({
+          children: [{ id: 'only', state: { type: 'empty' }, type: 'leaf' }],
+          direction: 'vertical',
+          id: 'root2',
+          type: 'split'
+        }, 'root');
+        const [wrappingTabs] = castTo<WorkspaceSplit>(untouched).children;
+        expect(castTo<WorkspaceTabs>(wrappingTabs).children.map((leaf) => leaf.id)).toEqual(['only']);
+      } finally {
+        Platform.isPhone = false;
+      }
+    });
+
+    it('should restore a floating split that lists no children', async () => {
+      const app = App.createConfigured__();
+      const floating = castTo<WorkspaceFloating>(await app.workspace.deserializeLayout({ id: 'bare-floating', type: 'floating' }, null));
+      expect(floating.children).toEqual([]);
+    });
+
+    it('should restore the stacked state and current tab of a tab group, and drop an empty one', async () => {
+      const app = App.createConfigured__();
+      const tabs = castTo<WorkspaceTabs>(
+        await app.workspace.deserializeLayout({
+          children: [{ id: 'a', state: { type: 'empty' }, type: 'leaf' }, { id: 'b', state: { type: 'empty' }, type: 'leaf' }],
+          currentTab: 1,
+          id: 't',
+          stacked: true,
+          type: 'tabs'
+        }, null)
+      );
+      expect(tabs.isStacked).toBe(true);
+      expect(tabs.currentTab).toBe(1);
+      await expect(app.workspace.deserializeLayout({ children: [], id: 'e', type: 'tabs' }, null)).resolves.toBeNull();
+    });
+
+    it('should restore a leaf with no view state, logging a view state that fails', async () => {
+      const app = App.createConfigured__();
+      const leaf = await app.workspace.deserializeLayout({ id: 'plain', type: 'leaf' }, null);
+      expect(leaf?.id).toBe('plain');
+
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
+      const setViewStateSpy = vi.spyOn(WorkspaceLeaf.prototype, 'setViewState').mockRejectedValueOnce(new Error('boom'));
+      try {
+        const failed = await app.workspace.deserializeLayout({ id: 'failed', state: { type: 'markdown' }, type: 'leaf' }, null);
+        expect(failed?.id).toBe('failed');
+        expect(errorSpy).toHaveBeenCalledWith('Failed to restore view of type "markdown"', expect.any(Error));
+      } finally {
+        setViewStateSpy.mockRestore();
+        errorSpy.mockRestore();
+      }
+    });
+
+    it('should keep only the window children of a floating split, and restore a window only in the desktop app', async () => {
+      const app = App.createConfigured__();
+      const windowEntry = {
+        children: [{ children: [{ id: 'w', state: { type: 'empty' }, type: 'leaf' }], id: 'wt', type: 'tabs' }],
+        id: 'win',
+        type: 'window'
+      };
+      const floating = castTo<WorkspaceFloating>(
+        await app.workspace.deserializeLayout({
+          children: [windowEntry, { id: 'stray', type: 'tabs' }],
+          id: 'floating',
+          type: 'floating'
+        }, null)
+      );
+      expect(floating.id).toBe('floating');
+      expect(floating.children).toHaveLength(1);
+      expect(floating.children.at(0)).toBeInstanceOf(WorkspaceWindow);
+
+      await expect(app.workspace.deserializeLayout({ children: [], id: 'empty', type: 'window' }, null)).resolves.toBeNull();
+
+      Platform.isDesktopApp = false;
+      try {
+        await expect(app.workspace.deserializeLayout(windowEntry, null)).resolves.toBeNull();
+      } finally {
+        Platform.isDesktopApp = true;
+      }
+    });
+
+    it('should log and drop a window that fails to open', async () => {
+      const app = App.createConfigured__();
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(noop);
+      const createSpy = vi.spyOn(WorkspaceWindow, 'create3__').mockImplementationOnce(() => {
+        throw new Error('no window');
+      });
+      try {
+        await expect(app.workspace.deserializeLayout({ children: [], id: 'win', type: 'window' }, null)).resolves.toBeNull();
+        expect(errorSpy).toHaveBeenCalledWith('Failed to restore popout window', expect.any(Error));
+      } finally {
+        createSpy.mockRestore();
+        errorSpy.mockRestore();
+      }
     });
   });
 
@@ -559,9 +814,23 @@ describe('Workspace', () => {
   });
 
   describe('getLayout()', () => {
-    it('should return an empty object', () => {
+    it('should serialize the main area, the sidebars and the left ribbon', () => {
       const app = App.createConfigured__();
-      expect(app.workspace.getLayout()).toEqual({});
+      expect(app.workspace.getLayout()).toEqual({
+        'left': app.workspace.leftSplit.serialize(),
+        'left-ribbon': { hiddenItems: {} },
+        'main': app.workspace.rootSplit.serialize(),
+        'right': app.workspace.rightSplit.serialize()
+      });
+    });
+
+    it('should add the active leaf and the popout windows when there are any', () => {
+      const app = App.createConfigured__();
+      const leaf = app.workspace.getLeaf('window');
+      app.workspace.setActiveLeaf(leaf);
+      const layout = app.workspace.getLayout();
+      expect(layout['active']).toBe(leaf.id);
+      expect(layout['floating']).toEqual(app.workspace.floatingSplit.serialize());
     });
   });
 
@@ -660,23 +929,23 @@ describe('Workspace', () => {
     it('should return the leaf with the given id', () => {
       const app = App.createConfigured__();
       const leaf = app.workspace.getLeaf(true);
-      const result = app.workspace.getLeafById(leaf.id__);
+      const result = app.workspace.getLeafById(leaf.id);
       expect(result).toBe(leaf);
     });
 
     it('should return the first match when several leaves share an id', () => {
       const app = App.createConfigured__();
       const leaf = app.workspace.getLeaf(true);
-      const twin = WorkspaceLeaf.create2__(app, leaf.id__);
+      const twin = WorkspaceLeaf.create2__(app, leaf.id);
       castTo<WorkspaceTabs>(leaf.parent).insertChild(-1, twin);
-      expect(app.workspace.getLeafById(leaf.id__)).toBe(leaf);
+      expect(app.workspace.getLeafById(leaf.id)).toBe(leaf);
     });
 
     it('should skip layout items that are neither leaves nor parents', () => {
       const app = App.createConfigured__();
       app.workspace.rootSplit.insertChild(0, new BareWorkspaceItem());
       const leaf = app.workspace.getLeaf(true);
-      expect(app.workspace.getLeafById(leaf.id__)).toBe(leaf);
+      expect(app.workspace.getLeafById(leaf.id)).toBe(leaf);
       expect(collectAllLeaves(app)).toEqual([leaf]);
     });
 
@@ -685,7 +954,7 @@ describe('Workspace', () => {
       const first = await openFilledTab(app);
       const second = app.workspace.getLeaf('tab');
       expect(first).not.toBe(second);
-      expect(app.workspace.getLeafById(second.id__)).toBe(second);
+      expect(app.workspace.getLeafById(second.id)).toBe(second);
     });
 
     it('should return null for unknown id', () => {
@@ -1535,6 +1804,134 @@ describe('Workspace', () => {
       expect(() => {
         app.workspace.updateOptions();
       }).not.toThrow();
+    });
+  });
+
+  describe('readWorkspaceFile()', () => {
+    it('should read and parse workspace.json from the config folder', async () => {
+      const app = App.createConfigured__();
+      await app.vault.adapter.mkdir(app.vault.configDir);
+      await app.vault.adapter.write(`${app.vault.configDir}/workspace.json`, '{"active":"a"}');
+      await expect(app.workspace.readWorkspaceFile()).resolves.toEqual({ active: 'a' });
+    });
+
+    it('should read workspace-mobile.json on mobile', async () => {
+      const app = App.createConfigured__();
+      await app.vault.adapter.mkdir(app.vault.configDir);
+      await app.vault.adapter.write(`${app.vault.configDir}/workspace-mobile.json`, '{"active":"m"}');
+      Platform.isMobile = true;
+      try {
+        await expect(app.workspace.readWorkspaceFile()).resolves.toEqual({ active: 'm' });
+      } finally {
+        Platform.isMobile = false;
+      }
+    });
+
+    it('should answer an empty object when the file is missing', async () => {
+      const app = App.createConfigured__();
+      await expect(app.workspace.readWorkspaceFile()).resolves.toEqual({});
+    });
+  });
+
+  describe('setLayout()', () => {
+    it('should create a root with one active leaf, a left and a collapsed right sidedock for an empty layout', async () => {
+      const app = App.createConfigured__();
+      await app.workspace.setLayout({});
+      expect(app.workspace.layoutReady).toBe(true);
+      const [tabs] = app.workspace.rootSplit.children;
+      const [leaf] = castTo<WorkspaceTabs>(tabs).children;
+      expect(app.workspace.activeLeaf).toBe(leaf);
+      expect(app.workspace.leftSplit.collapsed).toBe(false);
+      expect(app.workspace.leftSplit.direction).toBe('horizontal');
+      expect(app.workspace.rightSplit.collapsed).toBe(true);
+      expect(app.workspace.floatingSplit.children).toEqual([]);
+    });
+
+    it('should open the most recently opened file in the leaf it creates', async () => {
+      const app = App.createConfigured__();
+      const file = app.vault.createSync__('recent.md', '');
+      vi.spyOn(app.workspace, 'getLastOpenFiles').mockReturnValue(['recent.md']);
+      await app.workspace.setLayout({});
+      expect(app.workspace.activeLeaf?.file__).toBe(file);
+    });
+
+    it('should leave the new leaf empty when the most recent path is no file', async () => {
+      const app = App.createConfigured__();
+      vi.spyOn(app.workspace, 'getLastOpenFiles').mockReturnValue(['missing.md']);
+      await app.workspace.setLayout({});
+      expect(app.workspace.activeLeaf?.view.getViewType()).toBe('empty');
+    });
+
+    it('should turn the root vertical and the sidebars horizontal', async () => {
+      const app = App.createConfigured__();
+      await app.workspace.setLayout({
+        left: { direction: 'vertical', id: 'left', type: 'split' },
+        main: {
+          children: [{ children: [{ id: 'a', state: { type: 'empty' }, type: 'leaf' }], id: 't', type: 'tabs' }],
+          direction: 'horizontal',
+          id: 'root',
+          type: 'split'
+        },
+        right: { direction: 'vertical', id: 'right', type: 'split' }
+      });
+      expect(app.workspace.rootSplit.id).toBe('root');
+      expect(app.workspace.rootSplit.direction).toBe('vertical');
+      expect(app.workspace.leftSplit.id).toBe('left');
+      expect(app.workspace.leftSplit.direction).toBe('horizontal');
+      expect(app.workspace.rightSplit.direction).toBe('horizontal');
+      expect(app.workspace.rightSplit.collapsed).toBe(false);
+    });
+
+    it('should treat entries that do not restore to the expected kind as missing', async () => {
+      const app = App.createConfigured__();
+      await app.workspace.setLayout({
+        floating: { id: 'f', type: 'tabs' },
+        left: { id: 'l', type: 'tabs' },
+        main: { id: 'm', type: 'tabs' }
+      });
+      expect(app.workspace.rootSplit.id).not.toBe('m');
+      expect(app.workspace.leftSplit.id).not.toBe('l');
+      expect(app.workspace.floatingSplit.id).not.toBe('f');
+    });
+
+    it('should restore the floating split and load the left ribbon', async () => {
+      const app = App.createConfigured__();
+      const loadSpy = vi.spyOn(app.workspace.leftRibbon, 'load');
+      await app.workspace.setLayout({ 'floating': { children: [], id: 'floating', type: 'floating' }, 'left-ribbon': { hiddenItems: { a: true } } });
+      expect(app.workspace.floatingSplit.id).toBe('floating');
+      expect(loadSpy).toHaveBeenCalledWith({ hiddenItems: { a: true } });
+    });
+
+    it('should activate the leaf named by active, unless it sits in a collapsed sidebar', async () => {
+      function sidebar(isCollapsed: boolean): Record<string, unknown> {
+        return {
+          children: [{ children: [{ id: 'side', state: { type: 'empty' }, type: 'leaf' }], id: 'st', type: 'tabs' }],
+          collapsed: isCollapsed,
+          direction: 'horizontal',
+          id: 'right',
+          type: 'split'
+        };
+      }
+      const app = App.createConfigured__();
+      await app.workspace.setLayout(castTo<Parameters<Workspace['setLayout']>[0]>({ active: 'side', right: sidebar(false) }));
+      expect(app.workspace.activeLeaf?.id).toBe('side');
+
+      const other = App.createConfigured__();
+      await other.workspace.setLayout(castTo<Parameters<Workspace['setLayout']>[0]>({ active: 'side', left: sidebar(true) }));
+      expect(other.workspace.activeLeaf?.id).not.toBe('side');
+
+      const third = App.createConfigured__();
+      await third.workspace.setLayout(castTo<Parameters<Workspace['setLayout']>[0]>({ active: 'side', right: sidebar(true) }));
+      expect(third.workspace.activeLeaf?.id).not.toBe('side');
+    });
+
+    it('should request a layout change and the active-leaf events', async () => {
+      const app = App.createConfigured__();
+      const onLayoutChangeSpy = vi.spyOn(app.workspace, 'onLayoutChange');
+      const activeLeafEventsSpy = vi.spyOn(app.workspace, 'requestActiveLeafEvents');
+      await app.workspace.setLayout({});
+      expect(onLayoutChangeSpy).toHaveBeenCalled();
+      expect(activeLeafEventsSpy).toHaveBeenCalled();
     });
   });
 

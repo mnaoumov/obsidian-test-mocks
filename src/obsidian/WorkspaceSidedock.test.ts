@@ -64,4 +64,16 @@ describe('WorkspaceSidedock', () => {
       expect(mock).toBe(sidedock);
     });
   });
+
+  describe('serialize()', () => {
+    it('should record the side, the width and the collapsed state', () => {
+      const app = App.createConfigured__();
+      const sidedock = WorkspaceSidedock.create3__(app.workspace, 'horizontal', 'left', 'dock');
+      expect(sidedock.side).toBe('left');
+      expect(sidedock.serialize()).toEqual({ children: [], direction: 'horizontal', id: 'dock', type: 'split', width: 300 });
+      sidedock.setSize(250);
+      sidedock.collapse();
+      expect(sidedock.serialize()).toEqual({ children: [], collapsed: true, direction: 'horizontal', id: 'dock', type: 'split', width: 250 });
+    });
+  });
 });

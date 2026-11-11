@@ -9,11 +9,15 @@ import type {
   WorkspaceSidedock as WorkspaceSidedockOriginal
 } from 'obsidian';
 
+import type { SerializedWorkspaceItem } from '../internal/types.ts';
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { WorkspaceSplit } from './WorkspaceSplit.ts';
+
+// Obsidian's starting width for a sidedock, in pixels.
+const DEFAULT_SIDEDOCK_SIZE = 300;
 
 /**
  * Mock of Obsidian's `WorkspaceSidedock`. Nothing is resized on screen: expanding and collapsing only update
@@ -26,6 +30,17 @@ export class WorkspaceSidedock extends WorkspaceSplit {
   public collapsed = false;
 
   /**
+   * Which side the sidedock is on, `left` or `right`, as given at construction.
+   */
+  public side: string;
+
+  /**
+   * The sidedock's width in pixels; Obsidian starts every sidedock at 300. The mock renders nothing, so it only keeps
+   * the value, which {@link WorkspaceSidedock.serialize} records as `width`.
+   */
+  public size = DEFAULT_SIDEDOCK_SIZE;
+
+  /**
    * Creates a sidebar split. Obsidian does not construct it publicly; use {@link WorkspaceSidedock.create3__}.
    *
    * @param workspace - The workspace the sidebar belongs to.
@@ -35,6 +50,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
    */
   protected constructor(workspace: Workspace, direction: SplitDirectionOriginal, side: string, id?: string) {
     super(workspace, direction, id);
+    this.side = side;
     const self = strictProxy(this);
     self.constructor5__(workspace, direction, side, id);
     return self;
@@ -100,6 +116,28 @@ export class WorkspaceSidedock extends WorkspaceSplit {
    */
   public expand(): void {
     this.collapsed = false;
+  }
+
+  /**
+   * Serializes the sidedock, as Obsidian does: the split's keys, its width, and `collapsed` when it is collapsed.
+   *
+   * @returns The serialized sidedock.
+   */
+  public override serialize(): SerializedWorkspaceItem {
+    return {
+      ...super.serialize(),
+      width: this.size,
+      ...this.collapsed && { collapsed: true }
+    };
+  }
+
+  /**
+   * Sets the sidedock's width. Obsidian also writes it to the element's style; the mock only keeps the value.
+   *
+   * @param size - The width in pixels.
+   */
+  public setSize(size: number): void {
+    this.size = size;
   }
 
   /**

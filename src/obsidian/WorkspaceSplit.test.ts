@@ -53,4 +53,41 @@ describe('WorkspaceSplit', () => {
       expect(mock).toBe(split);
     });
   });
+
+  describe('recomputeChildrenDimensions()', () => {
+    it('should scale the children to add up to 100 when every child has a dimension', () => {
+      const app = App.createConfigured__();
+      const split = WorkspaceSplit.create2__(app.workspace, 'vertical');
+      const first = WorkspaceSplit.create2__(app.workspace, 'vertical');
+      const second = WorkspaceSplit.create2__(app.workspace, 'vertical');
+      split.insertChild(0, first);
+      split.insertChild(1, second);
+      first.setDimension(10);
+      second.setDimension(30);
+      split.recomputeChildrenDimensions();
+      expect(first.dimension).toBe(25);
+      expect(second.dimension).toBe(75);
+    });
+
+    it('should clear every dimension when any child has none', () => {
+      const app = App.createConfigured__();
+      const split = WorkspaceSplit.create2__(app.workspace, 'vertical');
+      const first = WorkspaceSplit.create2__(app.workspace, 'vertical');
+      const second = WorkspaceSplit.create2__(app.workspace, 'vertical');
+      split.insertChild(0, first);
+      split.insertChild(1, second);
+      first.setDimension(10);
+      split.recomputeChildrenDimensions();
+      expect(first.dimension).toBeNull();
+      expect(second.dimension).toBeNull();
+    });
+  });
+
+  describe('serialize()', () => {
+    it('should record the type and the direction', () => {
+      const app = App.createConfigured__();
+      const split = WorkspaceSplit.create2__(app.workspace, 'horizontal', 'my-split');
+      expect(split.serialize()).toEqual({ children: [], direction: 'horizontal', id: 'my-split', type: 'split' });
+    });
+  });
 });

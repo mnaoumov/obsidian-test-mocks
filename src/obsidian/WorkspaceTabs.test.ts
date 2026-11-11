@@ -166,4 +166,25 @@ describe('WorkspaceTabs', () => {
       expect(group.currentTab).toBe(-1);
     });
   });
+
+  describe('serialize()', () => {
+    it('should record the current tab only past the first, and the stacked state only when stacked', () => {
+      const app = App.createConfigured__();
+      const tabs = WorkspaceTabs.create2__(app.workspace, 'tabs');
+      const first = WorkspaceLeaf.create2__(app);
+      const second = WorkspaceLeaf.create2__(app);
+      tabs.insertChild(0, first);
+      tabs.insertChild(1, second);
+      expect(tabs.serialize()).toEqual({ children: [first.serialize(), second.serialize()], id: 'tabs', type: 'tabs' });
+      tabs.selectTabIndex(1);
+      tabs.setStacked(true);
+      expect(tabs.serialize()).toEqual({
+        children: [first.serialize(), second.serialize()],
+        currentTab: 1,
+        id: 'tabs',
+        stacked: true,
+        type: 'tabs'
+      });
+    });
+  });
 });

@@ -6,6 +6,7 @@
 
 import type { WorkspaceRibbon as WorkspaceRibbonOriginal } from 'obsidian';
 
+import type { RibbonState } from '../internal/types.ts';
 import type { Workspace } from './Workspace.ts';
 
 import { noop } from '../internal/noop.ts';
@@ -67,5 +68,26 @@ export class WorkspaceRibbon {
    */
   public constructor__(_workspace: Workspace, _side: string): void {
     noop();
+  }
+
+  /**
+   * Restores which ribbon items are hidden, and in what order, from a saved state. The mock ribbon holds no items, so
+   * there is nothing for the state to apply to, exactly as in an Obsidian ribbon with no items; Obsidian then
+   * re-renders the ribbon, which the mock does not.
+   *
+   * @param _state - The saved state, as {@link WorkspaceRibbon.serialize} returns it.
+   */
+  public load(_state: Partial<RibbonState>): void {
+    noop();
+  }
+
+  /**
+   * Serializes the ribbon, as Obsidian does: whether each item is hidden, keyed by item id. The mock ribbon holds no
+   * items, so the record is empty.
+   *
+   * @returns The ribbon state.
+   */
+  public serialize(): RibbonState {
+    return { hiddenItems: {} };
   }
 }

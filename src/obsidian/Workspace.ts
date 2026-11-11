@@ -13,30 +13,31 @@ import type {
   Side as SideOriginal,
   SplitDirection as SplitDirectionOriginal,
   View as ViewOriginal,
+  ViewState as ViewStateOriginal,
   Workspace as WorkspaceOriginal,
   WorkspaceParent as WorkspaceParentOriginal,
   WorkspaceWindowInitData as WorkspaceWindowInitDataOriginal
 } from 'obsidian';
 
 import type {
+  SerializedWorkspace,
+  SerializedWorkspaceItem,
   WorkspaceEnsureSideLeafOptions,
   WorkspaceSetActiveLeafOptions
 } from '../internal/types.ts';
 import type { App } from './App.ts';
-import type { TFile } from './TFile.ts';
 import type { WorkspaceItem } from './WorkspaceItem.ts';
 
 import { castTo } from '../internal/castTo.ts';
-import {
-  noop,
-  noopAsync
-} from '../internal/noop.ts';
+import { noop } from '../internal/noop.ts';
 import { strictProxy } from '../internal/strict-proxy.ts';
 import { ensureNonNullable } from '../internal/type-guards.ts';
 import { EmptyView } from '../internal/views/empty-view.ts';
 import { isParentPlaceholder } from '../internal/views/workspace-layout.ts';
 import { Events } from './Events.ts';
 import { debounce } from './functions/debounce.ts';
+import { TFile } from './TFile.ts';
+import { Platform } from './vars/Platform.ts';
 import { WorkspaceFloating } from './WorkspaceFloating.ts';
 import { WorkspaceLeaf } from './WorkspaceLeaf.ts';
 import { WorkspaceParent } from './WorkspaceParent.ts';
@@ -58,6 +59,10 @@ const SPLIT_DIMENSION_SHARE = 2;
 
 // Obsidian debounces its `layout-change` trigger by this many milliseconds.
 const LAYOUT_CHANGE_DEBOUNCE_MS = 10;
+
+// The files `readWorkspaceFile` reads from the vault's config folder, on desktop and on mobile.
+const WORKSPACE_FILE_NAME = 'workspace.json';
+const MOBILE_WORKSPACE_FILE_NAME = 'workspace-mobile.json';
 
 /**
  * Mock of Obsidian's `Workspace`.
@@ -167,9 +172,9 @@ export class Workspace extends Events {
     this.containerEl = containerEl;
     this.floatingSplit = WorkspaceFloating.create2__(this);
     this.leftRibbon = WorkspaceRibbon.create__(this, 'left');
-    this.leftSplit = WorkspaceSidedock.create3__(this, 'vertical', 'left');
+    this.leftSplit = WorkspaceSidedock.create3__(this, 'horizontal', 'left');
     this.rightRibbon = WorkspaceRibbon.create__(this, 'right');
-    this.rightSplit = WorkspaceSidedock.create3__(this, 'vertical', 'right');
+    this.rightSplit = WorkspaceSidedock.create3__(this, 'horizontal', 'right');
     this.rootSplit = WorkspaceRoot.create3__(this, 'vertical');
     const self = strictProxy(this);
     self.constructor2__(app, containerEl);
@@ -229,12 +234,44 @@ export class Workspace extends Events {
   }
 
   /**
-   * Replaces the workspace layout with a serialized one. A no-op in the mock.
+   * Replaces the workspace layout with a serialized one, as Obsidian does: once the layout is ready, it clears the
+   * current layout through {@link Workspace.clearLayout} and rebuilds it from `workspace` through
+   * {@link Workspace.setLayout}. Before the layout is ready it does nothing at all.
    *
-   * @param _workspace - The serialized layout.
+   * @param workspace - The serialized layout, as {@link Workspace.getLayout} returns it.
    */
-  public async changeLayout(_workspace: unknown): Promise<void> {
-    await noopAsync();
+  public async changeLayout(workspace: unknown): Promise<void> {
+    if (!this.layoutReady) {
+      return;
+    }
+
+    await this.clearLayout();
+    await this.setLayout(castTo<SerializedWorkspace>(workspace));
+  }
+
+  /**
+   * Takes the current layout down before {@link Workspace.setLayout} builds a new one, as Obsidian does: the layout
+   * stops being ready, a pending `layout-change` is cancelled, every leaf goes back to the empty view, and there is no
+   * active leaf any more.
+   *
+   * Obsidian then detaches the splits' elements, unloads their components, closes the popout windows and sets the four
+   * splits to `null`. The mock builds no layout DOM and has no window to close, and its splits are never `null`, so it
+   * puts fresh empty ones in their place instead: a leaf built afterwards finds none of the old leaves, which is what
+   * keeps an old leaf's linked-view group, and its pinned flag with it, out of the restored layout.
+   */
+  public async clearLayout(): Promise<void> {
+    this.layoutReady = false;
+    this.requestLayoutChangeEvents.cancel();
+    const closing: Promise<unknown>[] = [];
+    this.iterateAllLeaves((leaf) => {
+      closing.push(leaf.open(null));
+    });
+    await Promise.all(closing);
+    this.rootSplit = WorkspaceRoot.create3__(this, 'vertical');
+    this.leftSplit = WorkspaceSidedock.create3__(this, 'horizontal', 'left');
+    this.rightSplit = WorkspaceSidedock.create3__(this, 'horizontal', 'right');
+    this.floatingSplit = WorkspaceFloating.create2__(this);
+    this.activeLeaf = null;
   }
 
   /**
@@ -319,6 +356,79 @@ export class Workspace extends Events {
       this.setActiveLeaf(leaf);
     }
     return leaf;
+  }
+
+  /**
+   * Builds one node of the layout tree from its serialized form, as Obsidian does, and the subtree under it.
+   *
+   * - A `split` becomes the root split when `side` is `root`, a sidedock with its width and collapsed state when `side`
+   *   is `left` or `right`, and a plain split otherwise. A split that ends up with no children is dropped, except a
+   *   sidedock. On a platform that cannot split, every tab group of the root is merged into its first one.
+   * - A `floating` entry keeps only its `window` children, and a `window` entry is restored only in the desktop app.
+   * - A `tabs` entry restores its stacked state and its current tab, and is dropped when it ends up empty.
+   * - A `leaf` entry gets a leaf with the entry's id, its view state, its linked-view group and its pinned flag. A view
+   *   state that fails to apply is logged, as in Obsidian.
+   * - A leaf found directly under anything but a tab group is wrapped in a tab group of its own, and a child that cannot
+   *   be restored is removed from `entry.children` in place.
+   *
+   * Not modelled: Obsidian's 10-second limit on restoring a leaf's view, and the mobile drawers, so a `mobile-drawer`
+   * entry, and a sidebar entry on mobile, answer `null`.
+   *
+   * @param entry - The serialized node.
+   * @param side - `root`, `left` or `right` for the top of the main area or a sidebar, `null` for anything below.
+   * @returns The restored node, or `null` when there is nothing to restore.
+   */
+  public async deserializeLayout(entry: SerializedWorkspaceItem, side: 'left' | 'right' | 'root' | null): Promise<null | WorkspaceItem> {
+    switch (entry.type) {
+      case 'floating': {
+        const floating = WorkspaceFloating.create2__(this, entry.id);
+        if (entry.children) {
+          entry.children = entry.children.filter((child) => child.type === 'window');
+        }
+        await this.deserializeChildren(entry, floating);
+        return floating;
+      }
+      case 'leaf': {
+        return this.deserializeLeaf(entry);
+      }
+      case 'split': {
+        return this.deserializeSplit(entry, side);
+      }
+      case 'tabs': {
+        const tabs = WorkspaceTabs.create2__(this, entry.id);
+        if (entry.stacked) {
+          tabs.setStacked(true);
+        }
+        await this.deserializeChildren(entry, tabs);
+        if (tabs.children.length === 0) {
+          return null;
+        }
+        tabs.selectTabIndex(entry.currentTab ?? 0);
+        tabs.recomputeChildrenDimensions();
+        return tabs;
+      }
+      case 'window': {
+        if (!Platform.isDesktopApp) {
+          return null;
+        }
+        let workspaceWindow: WorkspaceWindow;
+        try {
+          workspaceWindow = WorkspaceWindow.create3__(this, entry.id, castTo<Record<string, number>>(entry));
+        } catch (error) {
+          console.error('Failed to restore popout window', error);
+          return null;
+        }
+        await this.deserializeChildren(entry, workspaceWindow);
+        if (workspaceWindow.children.length === 0) {
+          return null;
+        }
+        applyChildDimensions(entry, workspaceWindow);
+        return workspaceWindow;
+      }
+      default: {
+        return null;
+      }
+    }
   }
 
   /**
@@ -459,12 +569,23 @@ export class Workspace extends Events {
   }
 
   /**
-   * Serializes the workspace layout.
+   * Serializes the workspace layout, as Obsidian does: the root split as `main`, the two sidebars as `left` and
+   * `right`, the left ribbon as `left-ribbon`, the popout windows as `floating` when there are any, and the active
+   * leaf's id as `active` when there is one. {@link Workspace.setLayout} and {@link Workspace.changeLayout} read it
+   * back.
    *
-   * @returns The layout; always an empty object in the mock.
+   * @returns The serialized layout.
    */
   public getLayout(): Record<string, unknown> {
-    return {};
+    const layout: SerializedWorkspace = {
+      'left': this.leftSplit.serialize(),
+      'left-ribbon': this.leftRibbon.serialize(),
+      'main': this.rootSplit.serialize(),
+      'right': this.rightSplit.serialize(),
+      ...this.floatingSplit.children.length > 0 && { floating: this.floatingSplit.serialize() },
+      ...this.activeLeaf && { active: this.activeLeaf.id }
+    };
+    return castTo<Record<string, unknown>>(layout);
   }
 
   /**
@@ -497,7 +618,7 @@ export class Workspace extends Events {
   public getLeafById(id: string): null | WorkspaceLeaf {
     let found: null | WorkspaceLeaf = null;
     this.iterateAllLeaves((leaf) => {
-      if (leaf.id__ !== id) {
+      if (leaf.id !== id) {
         return false;
       }
       found = leaf;
@@ -745,6 +866,22 @@ export class Workspace extends Events {
   }
 
   /**
+   * Reads the saved workspace layout, as Obsidian does: `workspace.json` in the vault's config folder, or
+   * `workspace-mobile.json` on mobile, parsed as JSON. A file that is missing or does not parse answers an empty object.
+   *
+   * @returns The saved layout, as {@link Workspace.setLayout} reads it.
+   */
+  public async readWorkspaceFile(): Promise<SerializedWorkspace> {
+    const { vault } = this.app;
+    const fileName = Platform.isMobile ? MOBILE_WORKSPACE_FILE_NAME : WORKSPACE_FILE_NAME;
+    try {
+      return castTo<SerializedWorkspace>(JSON.parse(await vault.adapter.read(`${vault.configDir}/${fileName}`)));
+    } catch {
+      return {};
+    }
+  }
+
+  /**
    * Mock-only: removes a leaf from the layout tree; called when a leaf detaches.
    *
    * It does NOT clear {@link Workspace.activeLeaf}, because Obsidian does not either: a detached active leaf stays
@@ -817,6 +954,99 @@ export class Workspace extends Events {
     this.lastActiveTime = Math.max(Date.now(), this.lastActiveTime + 1);
     leaf.activeTime = this.lastActiveTime;
     this.activeTabGroup?.selectTabIndex(this.activeTabGroup.children.indexOf(leaf));
+    this.requestActiveLeafEvents();
+  }
+
+  /**
+   * Rebuilds the whole layout from a serialized one, as Obsidian does.
+   *
+   * The layout stops being ready while it runs. `main`, `left`, `right` and `floating` are each built through
+   * {@link Workspace.deserializeLayout}, the root split turned vertical and the sidebars horizontal, and the left ribbon
+   * is loaded from `left-ribbon`. Whatever the data leaves out is created fresh: a root split holding one tab group with
+   * one leaf, which opens the most recently opened file and is made active; a left and a collapsed right sidedock; and
+   * an empty floating split. The leaf named by `active` is then made active, unless it sits in a collapsed sidebar.
+   * Finally the layout is ready again, and a layout change and the active-leaf events are requested.
+   *
+   * Departures: a `main` entry that does not restore to a root split, or a sidebar entry that does not restore to a
+   * sidedock, is treated as missing, since Obsidian would store whatever it got; the layout's elements are not placed
+   * in {@link Workspace.containerEl}; the mobile drawers are not modelled; and no view is deferred, so there is nothing
+   * to load at the end.
+   *
+   * @param data - The serialized layout, as {@link Workspace.getLayout} or {@link Workspace.readWorkspaceFile} gives it.
+   */
+  public async setLayout(data: SerializedWorkspace): Promise<void> {
+    this.layoutReady = false;
+
+    let rootSplit: null | WorkspaceRoot = null;
+    if (data.main) {
+      const restored = await this.deserializeLayout(data.main, 'root');
+      if (restored instanceof WorkspaceRoot) {
+        rootSplit = restored;
+        this.rootSplit = restored;
+        if (rootSplit.direction !== 'vertical') {
+          rootSplit.setDirection('vertical');
+          rootSplit.recomputeChildrenDimensions();
+        }
+      }
+    }
+
+    const leftSplit = await this.deserializeSidedock(data.left, 'left');
+    const rightSplit = await this.deserializeSidedock(data.right, 'right');
+
+    let floatingSplit: null | WorkspaceFloating = null;
+    if (data.floating) {
+      const restored = await this.deserializeLayout(data.floating, null);
+      if (restored instanceof WorkspaceFloating) {
+        floatingSplit = restored;
+        this.floatingSplit = restored;
+      }
+    }
+
+    const leftRibbonState = data['left-ribbon'];
+    if (leftRibbonState) {
+      this.leftRibbon.load(leftRibbonState);
+    }
+
+    if (!rootSplit) {
+      rootSplit = WorkspaceRoot.create3__(this, 'vertical');
+      this.rootSplit = rootSplit;
+      const tabs = WorkspaceTabs.create2__(this);
+      const leaf = WorkspaceLeaf.create2__(this.app);
+      tabs.insertChild(0, leaf);
+      rootSplit.insertChild(0, tabs);
+      const [lastOpenFilePath] = this.getLastOpenFiles();
+      if (lastOpenFilePath !== undefined) {
+        const lastOpenFile = this.app.vault.getAbstractFileByPath(lastOpenFilePath);
+        if (lastOpenFile instanceof TFile) {
+          await leaf.openFile(lastOpenFile);
+        }
+      }
+      this.setActiveLeaf(leaf);
+    }
+
+    if (!leftSplit) {
+      this.leftSplit = WorkspaceSidedock.create3__(this, 'horizontal', 'left');
+    }
+    if (!rightSplit) {
+      this.rightSplit = WorkspaceSidedock.create3__(this, 'horizontal', 'right');
+      this.rightSplit.collapse();
+    }
+    if (!floatingSplit) {
+      this.floatingSplit = WorkspaceFloating.create2__(this);
+    }
+
+    const activeLeaf = data.active === undefined ? null : this.getLeafById(data.active);
+    if (activeLeaf) {
+      const root = activeLeaf.getRoot();
+      const isInCollapsedSidebar = (root === this.leftSplit && this.leftSplit.collapsed)
+        || (root === this.rightSplit && this.rightSplit.collapsed);
+      if (!isInCollapsedSidebar) {
+        this.setActiveLeaf(activeLeaf, { focus: true });
+      }
+    }
+
+    this.layoutReady = true;
+    this.onLayoutChange();
     this.requestActiveLeafEvents();
   }
 
@@ -994,6 +1224,101 @@ export class Workspace extends Events {
     return null;
   }
 
+  private async deserializeChildren(entry: SerializedWorkspaceItem, parent: WorkspaceParent): Promise<void> {
+    const children = entry.children ?? [];
+    for (let index = 0; index < children.length; index++) {
+      // Obsidian restores the children one at a time, in order, so the tree is built in a fixed order.
+
+      const restored = await this.deserializeLayout(ensureNonNullable(children[index]), null);
+      if (!restored) {
+        children.splice(index, 1);
+        index--;
+        continue;
+      }
+
+      let child = restored;
+      if (child instanceof WorkspaceLeaf && parent.type !== 'tabs' && parent.type !== 'mobile-drawer') {
+        const tabs = WorkspaceTabs.create2__(this);
+        tabs.insertChild(0, child);
+        child = tabs;
+      }
+      parent.insertChild(index, child);
+    }
+  }
+
+  private async deserializeLeaf(entry: SerializedWorkspaceItem): Promise<WorkspaceLeaf> {
+    const leaf = WorkspaceLeaf.create2__(this.app, entry.id);
+    const viewState = entry.state ?? castTo<ViewStateOriginal>({});
+    try {
+      await leaf.setViewState(viewState);
+    } catch (error) {
+      console.error(`Failed to restore view of type "${viewState.type}"`, error);
+    }
+
+    // Obsidian drops a leaf left with no view; a mock leaf always has one, the empty view at worst.
+    if (entry.group) {
+      leaf.setGroup(entry.group);
+    }
+    if (entry.pinned) {
+      leaf.togglePinned();
+    }
+    return leaf;
+  }
+
+  private async deserializeSidedock(entry: SerializedWorkspaceItem | undefined, side: 'left' | 'right'): Promise<null | WorkspaceSidedock> {
+    if (!entry) {
+      return null;
+    }
+
+    const restored = await this.deserializeLayout(entry, side);
+    if (!(restored instanceof WorkspaceSidedock)) {
+      return null;
+    }
+
+    if (side === 'left') {
+      this.leftSplit = restored;
+    } else {
+      this.rightSplit = restored;
+    }
+    if (restored.direction !== 'horizontal') {
+      restored.setDirection('horizontal');
+      restored.recomputeChildrenDimensions();
+    }
+    return restored;
+  }
+
+  private async deserializeSplit(entry: SerializedWorkspaceItem, side: 'left' | 'right' | 'root' | null): Promise<null | WorkspaceSplit> {
+    const direction = entry.direction ?? 'vertical';
+    let split: WorkspaceSplit;
+    if (side === 'root') {
+      if (!Platform.canSplit) {
+        mergeTabGroups(entry);
+      }
+      split = WorkspaceRoot.create3__(this, direction, entry.id);
+    } else if (side) {
+      if (Platform.isMobile) {
+        return null;
+      }
+      const sidedock = WorkspaceSidedock.create3__(this, direction, side, entry.id);
+      if (entry.width) {
+        sidedock.setSize(entry.width);
+      }
+      if (entry.collapsed) {
+        sidedock.collapse();
+      }
+      split = sidedock;
+    } else {
+      split = WorkspaceSplit.create2__(this, direction, entry.id);
+    }
+
+    await this.deserializeChildren(entry, split);
+    if (split.children.length === 0 && !(split instanceof WorkspaceSidedock)) {
+      return null;
+    }
+    applyChildDimensions(entry, split);
+    return split;
+  }
+
   private findSelectedNavigableLeaf(container: WorkspaceParent): null | WorkspaceLeaf {
     let candidate: null | WorkspaceLeaf = null;
     this.iterateLeaves(container, (leaf) => {
@@ -1046,6 +1371,42 @@ export class Workspace extends Events {
   }
 }
 
+// Gives each restored child the dimension its serialized form recorded, then lets the parent re-derive the shares, as
+// Obsidian does. The two lists line up because a child that could not be restored was removed from `entry.children`.
+function applyChildDimensions(entry: SerializedWorkspaceItem, parent: WorkspaceParent): void {
+  const children = entry.children ?? [];
+  for (const [index, child] of parent.children.entries()) {
+    child.setDimension(children[index]?.dimension ?? null);
+  }
+  parent.recomputeChildrenDimensions();
+}
+
 function getParent(item: WorkspaceItem): null | WorkspaceParent {
   return isParentPlaceholder(item.parent) ? null : WorkspaceParent.fromOriginalType3__(item.parent);
+}
+
+// On a platform that cannot split, Obsidian moves the leaves of every tab group in the root into the first one and
+// keeps that one alone.
+function mergeTabGroups(entry: SerializedWorkspaceItem): void {
+  const tabGroups: SerializedWorkspaceItem[] = [];
+  function collect(item: SerializedWorkspaceItem): void {
+    if (item.type === 'tabs') {
+      tabGroups.push(item);
+      return;
+    }
+    for (const child of item.children ?? []) {
+      collect(child);
+    }
+  }
+  collect(entry);
+
+  const [firstTabGroup, ...otherTabGroups] = tabGroups;
+  if (!firstTabGroup) {
+    return;
+  }
+  firstTabGroup.children ??= [];
+  for (const tabGroup of otherTabGroups) {
+    firstTabGroup.children.push(...tabGroup.children ?? []);
+  }
+  entry.children = [firstTabGroup];
 }
