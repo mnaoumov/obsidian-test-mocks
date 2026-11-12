@@ -140,9 +140,9 @@ describe('Value', () => {
 
     it('should return true for the same instance without consulting instance equals', () => {
       const value = new StringValue('hello');
-      const equalsSpy = vi.spyOn(value, 'equals');
+      const isEqualSpy = vi.spyOn(value, 'equals');
       expect(Value.equals(value, value)).toBe(true);
-      expect(equalsSpy).not.toHaveBeenCalled();
+      expect(isEqualSpy).not.toHaveBeenCalled();
     });
 
     it('should return false for an undefined a JavaScript consumer can still pass', () => {
@@ -168,10 +168,10 @@ describe('Value', () => {
       const testNumber = 1;
       const $string = new StringValue(String(testNumber));
       const $number = new NumberValue(testNumber);
-      const equalsSpy = vi.spyOn($string, 'equals');
+      const isEqualSpy = vi.spyOn($string, 'equals');
       expect($string.toString()).toBe($number.toString());
       expect(Value.equals($string, $number)).toBe(false);
-      expect(equalsSpy).not.toHaveBeenCalled();
+      expect(isEqualSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -190,11 +190,11 @@ describe('Value', () => {
 
     it('should return true for the same instance without consulting either comparison', () => {
       const value = new StringValue('hello');
-      const equalsSpy = vi.spyOn(value, 'equals');
-      const looseEqualsSpy = vi.spyOn(value, 'looseEquals');
+      const isEqualSpy = vi.spyOn(value, 'equals');
+      const isLooseEqualSpy = vi.spyOn(value, 'looseEquals');
       expect(Value.looseEquals(value, value)).toBe(true);
-      expect(equalsSpy).not.toHaveBeenCalled();
-      expect(looseEqualsSpy).not.toHaveBeenCalled();
+      expect(isEqualSpy).not.toHaveBeenCalled();
+      expect(isLooseEqualSpy).not.toHaveBeenCalled();
     });
 
     it('should return false for an undefined a JavaScript consumer can still pass', () => {
@@ -207,9 +207,9 @@ describe('Value', () => {
     it('should answer from strict equality when both are of the same class', () => {
       const a = new StringValue('hello');
       const b = new StringValue('hello');
-      const looseEqualsSpy = vi.spyOn(a, 'looseEquals');
+      const isLooseEqualSpy = vi.spyOn(a, 'looseEquals');
       expect(Value.looseEquals(a, b)).toBe(true);
-      expect(looseEqualsSpy).not.toHaveBeenCalled();
+      expect(isLooseEqualSpy).not.toHaveBeenCalled();
     });
 
     it('should fall back to the loose comparison when two of the same class are not strictly equal', () => {

@@ -213,8 +213,7 @@ function getEslintConfigs(): Linter.Config[] {
           'error',
           {
             message: 'Destructure originalArguments (or originalArgs) into named parameters from the patched signature instead of indexing positionally.',
-            selector:
-              'Property[key.name="patchHandler"] MemberExpression[computed=true]:matches([property.value=/^[0-9]+$/], [property.raw=/^[0-9]/]):matches([object.type="Identifier"][object.name=/^original(Arguments|Args)$/], [object.type="MemberExpression"][object.property.name=/^original(Arguments|Args)$/], [object.type="MemberExpression"][object.property.value=/^original(Arguments|Args)$/])'
+            selector: 'Property[key.name="patchHandler"] MemberExpression[computed=true]:matches([property.value=/^[0-9]+$/], [property.raw=/^[0-9]/]):matches([object.type="Identifier"][object.name=/^original(Arguments|Args)$/], [object.type="MemberExpression"][object.property.name=/^original(Arguments|Args)$/], [object.type="MemberExpression"][object.property.value=/^original(Arguments|Args)$/])'
           },
           {
             message: 'Do not use definite assignment assertions (!). Initialize the field or make it optional.',
@@ -933,16 +932,16 @@ function getUnicornConfigs(): Linter.Config[] {
         'unicorn/no-array-reverse': 'off',
         'unicorn/no-array-sort': 'off',
         /*
+         * Every TSDoc block here, and in the shared config's trees, is written with a ` * ` prefix on each line;
+         * the rule would rewrite every comment to settle a matter of taste. Off, as in the shared config.
+         */
+        'unicorn/no-asterisk-prefix-in-documentation-comments': 'off',
+        /*
          * `continue` inside a nested loop is ordinary, readable control flow here. The rule's remedy is to
          * extract every such loop into its own function, which spreads one coherent traversal across two
          * declarations without making anything clearer.
          */
         'unicorn/no-break-in-nested-loop': 'off',
-        /*
-         * Every TSDoc block here, and in the shared config's trees, is written with a ` * ` prefix on each line;
-         * the rule would rewrite every comment to settle a matter of taste. Off, as in the shared config.
-         */
-        'unicorn/no-asterisk-prefix-in-documentation-comments': 'off',
         /*
          * The rule cannot see through a hoisted function declaration, so it reports a binding that a nested
          * function reads before the early exit. Off, as in the shared config.

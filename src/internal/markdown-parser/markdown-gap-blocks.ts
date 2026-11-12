@@ -122,8 +122,6 @@ interface LineIndent {
 
 type Token = GapToken;
 
-type Tokenizer = (text: string) => null | Token;
-
 const ATX_HEADING_MAX_LEVEL = 6;
 const FENCE_MIN_LENGTH = 3;
 const INDENTED_CODE_COLUMNS = 4;
@@ -358,7 +356,7 @@ export function tokenizeAtxHeading(text: string): GapToken | null {
   let pending = '';
   while (index < text.length && text[index] !== '\n') {
     const char = text.charAt(index);
-    if (char !== ' ' && char !== '\t' && char !== '#') {
+    if (![' ', '\t', '#'].includes(char)) {
       headingText += pending + char;
       pending = '';
       index++;
@@ -670,6 +668,7 @@ function skipWhitespaceAndLineBreaks(text: string, from: number): number {
 }
 
 function tokenizeBlock(text: string, isAtNoteEnd: boolean): Token {
+  type Tokenizer = (blockText: string) => null | Token;
   const tokenizers: Tokenizer[] = [
     tokenizeIndentedCode,
     tokenizeMath,
@@ -710,7 +709,7 @@ function tokenizeBlockId(text: string, isAtNoteEnd: boolean): null | Token {
   }
   const after = text.slice(match[0].length);
   const isFollowedByEnd = isAtNoteEnd && (after === '' || after === '\n');
-  return !isFollowedByEnd && !after.startsWith('\n\n') ? null : { blockId: ensureNonNullable(match[1]), length: match[0].length, type: BLOCK_ID_TYPE };
+  return isFollowedByEnd || after.startsWith('\n\n') ? { blockId: ensureNonNullable(match[1]), length: match[0].length, type: BLOCK_ID_TYPE } : null;
 }
 
 /**
@@ -1038,7 +1037,7 @@ function tokenizeSetextHeading(text: string): null | Token {
 function tokenizeThematicBreak(text: string): null | Token {
   let index = skipSpacesAndTabs(text, 0);
   const marker = text.charAt(index);
-  if (marker !== '*' && marker !== '-' && marker !== '_') {
+  if (!['_', '-', '*'].includes(marker)) {
     return null;
   }
   let markerCount = 0;

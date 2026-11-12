@@ -1,5 +1,6 @@
 import type { Pos } from 'obsidian';
 
+import dedent from 'dedent';
 import {
   describe,
   expect,
@@ -2203,23 +2204,23 @@ describe('parseMarkdownContent', () => {
 
   describe('complex document', () => {
     it('should parse a document with mixed content', () => {
-      const content = [
-        '---',
-        'title: Test',
-        'tags: [meta]',
-        '---',
-        '',
-        '# Introduction',
-        '',
-        'Some text with #inline-tag and [[a link]].',
-        '',
-        '## Details',
-        '',
-        '- [ ] Task 1',
-        '- [x] Task 2',
-        '',
-        '![[embed.png]]'
-      ].join('\n');
+      const content = dedent`
+        ---
+        title: Test
+        tags: [meta]
+        ---
+
+        # Introduction
+
+        Some text with #inline-tag and [[a link]].
+
+        ## Details
+
+        - [ ] Task 1
+        - [x] Task 2
+
+        ![[embed.png]]
+      `;
 
       const cache = parseMarkdownContent(content);
 

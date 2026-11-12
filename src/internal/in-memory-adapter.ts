@@ -621,7 +621,6 @@ export class InMemoryAdapter implements DataAdapterOriginal {
 
     const now = Date.now();
     if (textContent === undefined) {
-      // eslint-disable-next-line unicorn/prefer-spread -- `binaryContent` is an `ArrayBuffer`, so `slice(0)` copies the BUFFER. Spreading it would produce a plain array and lose `byteLength`.
       const copied = ensureNonNullable(binaryContent).slice(0);
       this.binaryFiles.set(normalizedNewPath, copied);
       this.addLowerCaseKey(normalizedNewPath);

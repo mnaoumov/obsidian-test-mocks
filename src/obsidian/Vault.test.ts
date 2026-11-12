@@ -939,11 +939,11 @@ describe('Vault', () => {
       const app = App.createConfigured__({ files: { 'note.md': 'content' } });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       const trashLocalSpy = vi.spyOn(app.vault.adapter, 'trashLocal');
-      const trashSystemSpy = vi.spyOn(app.vault.adapter, 'trashSystem');
+      const didTrashSystemSpy = vi.spyOn(app.vault.adapter, 'trashSystem');
 
       await app.vault.trash(file, false);
 
-      expect(trashSystemSpy).not.toHaveBeenCalled();
+      expect(didTrashSystemSpy).not.toHaveBeenCalled();
       expect(trashLocalSpy).toHaveBeenCalledWith('note.md');
       await expect(app.vault.adapter.read('.trash/note.md')).resolves.toBe('content');
       expect(app.vault.getFileByPath('.trash/note.md')).toBeNull();
@@ -953,11 +953,11 @@ describe('Vault', () => {
       const app = App.createConfigured__({ files: { 'note.md': 'content' } });
       const file = ensureNonNullable(app.vault.getFileByPath('note.md'));
       const trashLocalSpy = vi.spyOn(app.vault.adapter, 'trashLocal');
-      const trashSystemSpy = vi.spyOn(app.vault.adapter, 'trashSystem');
+      const didTrashSystemSpy = vi.spyOn(app.vault.adapter, 'trashSystem');
 
       await app.vault.trash(file, true);
 
-      expect(trashSystemSpy).toHaveBeenCalledWith('note.md');
+      expect(didTrashSystemSpy).toHaveBeenCalledWith('note.md');
       expect(trashLocalSpy).not.toHaveBeenCalled();
       await expect(app.vault.adapter.exists('.trash/note.md')).resolves.toBe(false);
     });

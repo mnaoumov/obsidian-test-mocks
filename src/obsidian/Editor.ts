@@ -556,9 +556,9 @@ export abstract class Editor {
    * @param pos - The position, or a zero-based line number.
    * @param ch - The column, when `pos` is a line number; `0` when omitted.
    */
-  public setCursor(pos: EditorPositionOriginal | number, ch?: number): void {
+  public setCursor(pos: EditorPositionOriginal | number, ch = 0): void {
     const resolved: EditorPositionOriginal = typeof pos === 'number'
-      ? { ch: ch ?? 0, line: pos }
+      ? { ch, line: pos }
       : { ...pos };
     this.anchor = { ...resolved };
     this.head = { ...resolved };

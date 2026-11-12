@@ -196,9 +196,9 @@ describe('ListValue', () => {
   describe('compare', () => {
     it('should short-circuit when both lists share one array', () => {
       const data = ['a'];
-      const comparator = vi.fn(() => false);
-      expect(new ListValue(data).compare(new ListValue(data), comparator)).toBe(true);
-      expect(comparator).not.toHaveBeenCalled();
+      const areEqual = vi.fn(() => false);
+      expect(new ListValue(data).compare(new ListValue(data), areEqual)).toBe(true);
+      expect(areEqual).not.toHaveBeenCalled();
     });
 
     it('should return false when the lengths differ', () => {
@@ -207,15 +207,15 @@ describe('ListValue', () => {
 
     it('should skip the comparator for elements that are the same raw element', () => {
       const shared = new StringValue('a');
-      const comparator = vi.fn(() => false);
-      expect(new ListValue([shared]).compare(new ListValue([shared]), comparator)).toBe(true);
-      expect(comparator).not.toHaveBeenCalled();
+      const areEqual = vi.fn(() => false);
+      expect(new ListValue([shared]).compare(new ListValue([shared]), areEqual)).toBe(true);
+      expect(areEqual).not.toHaveBeenCalled();
     });
 
     it('should hand the comparator the converted elements and honour its answer', () => {
-      const comparator = vi.fn(() => true);
-      expect(new ListValue(['a']).compare(new ListValue(['b']), comparator)).toBe(true);
-      expect(comparator).toHaveBeenCalledWith(expect.any(StringValue), expect.any(StringValue));
+      const areEqual = vi.fn(() => true);
+      expect(new ListValue(['a']).compare(new ListValue(['b']), areEqual)).toBe(true);
+      expect(areEqual).toHaveBeenCalledWith(expect.any(StringValue), expect.any(StringValue));
       expect(new ListValue(['a']).compare(new ListValue(['b']), () => false)).toBe(false);
     });
   });
@@ -369,7 +369,6 @@ describe('ListValue', () => {
       const value = new ListValue(['a', 'b', 'c']);
       expect(value.slice(1).data).toEqual(['b', 'c']);
       expect(value.slice(1, 2).data).toEqual(['b']);
-      // eslint-disable-next-line unicorn/prefer-spread -- This is `ListValue.slice`, which answers a new `ListValue`; a spread would answer a plain array instead.
       expect(value.slice().data).toEqual(['a', 'b', 'c']);
       expect(value.slice(-1).data).toEqual(['c']);
       expect(value.data).toEqual(['a', 'b', 'c']);
