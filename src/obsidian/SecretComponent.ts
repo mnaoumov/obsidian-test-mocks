@@ -81,8 +81,7 @@ export class SecretComponent extends BaseComponent {
   /**
    * Registers the callback run when the selected secret changes, replacing any previous one.
    *
-   * @param callback - The callback, given the new secret id, or
-ull when the secret is cleared.
+   * @param callback - The callback, given the new secret id, or `null` when the secret is cleared.
    * @returns This component, for chaining.
    */
   public onChange(callback: (value: null | string) => unknown): this {

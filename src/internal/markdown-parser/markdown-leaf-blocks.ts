@@ -395,7 +395,7 @@ function continueLazily(state: ScanState, line: string, lineNumber: number, rest
     return;
   }
   const mathLength = getMathOpenerLength(state, text);
-  if (mathLength !== undefined) {
+  if (mathLength !== null) {
     openHidingLeaf(state, { kind: 'math', length: mathLength }, lineNumber);
     return;
   }
@@ -599,17 +599,17 @@ function getMarkerKind(marker: string): string {
  * @param state - The scan.
  * @param text - The line's text past its whitespace.
  * @param containers - The containers that hold the line, outermost first.
- * @returns The length of the run, or `undefined` when the line opens no math block.
+ * @returns The length of the run, or `null` when the line opens no math block.
  */
-function getMathOpenerLength(state: ScanState, text: string, containers: readonly Container[] = state.containers): number | undefined {
+function getMathOpenerLength(state: ScanState, text: string, containers: readonly Container[] = state.containers): null | number {
   if (state.lineNumber === state.lines.length - 1 || !hasLineBreakInItem(state, containers)) {
-    return undefined;
+    return null;
   }
   let length = 0;
   while (text[length] === '$') {
     length++;
   }
-  return length >= MATH_MIN_LENGTH && !text.slice(length).includes('$') ? length : undefined;
+  return length >= MATH_MIN_LENGTH && !text.slice(length).includes('$') ? length : null;
 }
 
 /**
@@ -777,7 +777,7 @@ function isLazyLine(state: ScanState, matchedCount: number, rest: LineRest): boo
   const quoteIndex = state.containers.findIndex((container, index) => index >= matchedCount && container.kind === 'quote');
   const isLeavingQuote = quoteIndex !== -1;
   // A `$$` is read as a math opener in the text of the containers around the blockquote it would end.
-  const isLeavingMathOpener = isLeavingQuote && getMathOpenerLength(state, rest.text, state.containers.slice(0, quoteIndex)) !== undefined;
+  const isLeavingMathOpener = isLeavingQuote && getMathOpenerLength(state, rest.text, state.containers.slice(0, quoteIndex)) !== null;
   // The list items holding the blockquote gather the line lazily and strip it before the blockquote sees it.
   const holdingItems = isLeavingQuote
     ? state.containers.slice(matchedCount, quoteIndex).filter((container): container is ItemContainer => container.kind === 'item')
@@ -837,7 +837,7 @@ function isLeafClosedBy(leaf: ClosableLeaf, text: string, indent: number): boole
  * @returns Whether it does.
  */
 function isMathOpener(state: ScanState, text: string): boolean {
-  return getMathOpenerLength(state, text) !== undefined;
+  return getMathOpenerLength(state, text) !== null;
 }
 
 /**
@@ -1114,7 +1114,7 @@ function openLeaf(state: ScanState, line: string, text: string, lineNumber: numb
     return;
   }
   const mathLength = getMathOpenerLength(state, text);
-  if (mathLength !== undefined) {
+  if (mathLength !== null) {
     openHidingLeaf(state, { kind: 'math', length: mathLength }, lineNumber);
     return;
   }

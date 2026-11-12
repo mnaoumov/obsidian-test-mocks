@@ -61,8 +61,8 @@ function getImportStatement(context: ImportStatementContext): string {
  * Keeps the routes the site has always had for mock-only members: `create__` is served at `create-mock`.
  *
  * @param name - A property's name or a method's overload key.
- * @returns The route segment, or `undefined` for the generator's own.
+ * @returns The route segment, or `null` for the generator's own.
  */
-function getMemberRouteSegment(name: string): string | undefined {
-  return name.endsWith(MOCK_ONLY_SUFFIX) ? `${name.slice(0, -MOCK_ONLY_SUFFIX.length)}-mock` : undefined;
+function getMemberRouteSegment(name: string): null | string {
+  return name.endsWith(MOCK_ONLY_SUFFIX) ? `${name.slice(0, -MOCK_ONLY_SUFFIX.length)}-mock` : null;
 }

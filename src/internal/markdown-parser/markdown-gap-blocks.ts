@@ -122,7 +122,7 @@ interface LineIndent {
 
 type Token = GapToken;
 
-type Tokenizer = (text: string) => Token | undefined;
+type Tokenizer = (text: string) => null | Token;
 
 const ATX_HEADING_MAX_LEVEL = 6;
 const FENCE_MIN_LENGTH = 3;
@@ -274,13 +274,13 @@ export function canHtmlBlockInterrupt(text: string): boolean {
  * @param text - The text, from the line start.
  * @returns The kind.
  */
-export function findHtmlBlockKind(text: string): HtmlBlockKind | undefined {
+export function findHtmlBlockKind(text: string): HtmlBlockKind | null {
   const tagStart = skipSpacesAndTabs(text, 0);
   if (text[tagStart] !== '<') {
-    return undefined;
+    return null;
   }
   const firstLine = text.slice(tagStart, findLineEnd(text, tagStart + 1));
-  return HTML_BLOCK_KINDS.find((kind) => kind.start.test(firstLine));
+  return HTML_BLOCK_KINDS.find((kind) => kind.start.test(firstLine)) ?? null;
 }
 
 /**
@@ -339,7 +339,7 @@ export function scanGapBlocks(text: string, isAtNoteEnd: boolean): GapBlock[] {
  * @param text - The text, from the heading's line start.
  * @returns The heading, if the text starts with one.
  */
-export function tokenizeAtxHeading(text: string): GapToken | undefined {
+export function tokenizeAtxHeading(text: string): GapToken | null {
   let index = skipSpacesAndTabs(text, 0);
   const hashesStart = index;
   while (text[index] === '#') {
@@ -347,11 +347,11 @@ export function tokenizeAtxHeading(text: string): GapToken | undefined {
   }
   const level = index - hashesStart;
   if (level === 0 || level > ATX_HEADING_MAX_LEVEL) {
-    return undefined;
+    return null;
   }
   const textStart = skipSpacesAndTabs(text, index);
   if (textStart === index && index < text.length && text[index] !== '\n') {
-    return undefined;
+    return null;
   }
   index = textStart;
   let headingText = '';
@@ -390,15 +390,15 @@ export function tokenizeAtxHeading(text: string): GapToken | undefined {
  * @param text - The text, from the definition's line start.
  * @returns The definition, if the text starts with one.
  */
-export function tokenizeDefinition(text: string): Token | undefined {
+export function tokenizeDefinition(text: string): null | Token {
   const labelEnd = readDefinitionLabel(text);
   const destinationEnd = labelEnd === NOT_FOUND ? NOT_FOUND : readDefinitionDestination(text, skipWhitespaceAndLineBreaks(text, labelEnd));
   const titleEnd = destinationEnd === NOT_FOUND ? NOT_FOUND : readDefinitionTitle(text, destinationEnd);
   if (titleEnd === NOT_FOUND) {
-    return undefined;
+    return null;
   }
   const end = skipSpacesAndTabs(text, titleEnd);
-  return end === text.length || text[end] === '\n' ? { length: end, type: 'definition' } : undefined;
+  return end === text.length || text[end] === '\n' ? { length: end, type: 'definition' } : null;
 }
 
 /**
@@ -408,7 +408,7 @@ export function tokenizeDefinition(text: string): Token | undefined {
  * @param text - The text, from the table's line start.
  * @returns The table, if the text starts with one.
  */
-export function tokenizeTable(text: string): Token | undefined {
+export function tokenizeTable(text: string): null | Token {
   const rows: string[] = [];
   let end = 0;
   let lineStart = 0;
@@ -431,7 +431,7 @@ export function tokenizeTable(text: string): Token | undefined {
   }
   // A header and a delimiter row are the least a table holds.
   const delimiterRow = rows[1];
-  return delimiterRow === undefined || !isTableDelimiterRow(delimiterRow) ? undefined : { length: end, type: 'table' };
+  return delimiterRow === undefined || !isTableDelimiterRow(delimiterRow) ? null : { length: end, type: 'table' };
 }
 
 function findLineEnd(text: string, from: number): number {
@@ -448,7 +448,7 @@ function isBlockquoteInterrupted(text: string): boolean {
     tokenizeAtxHeading,
     tokenizeSetextHeading,
     tokenizeThematicBreak
-  ].some((tokenizer) => tokenizer(text) !== undefined) || canHtmlBlockInterrupt(text);
+  ].some((tokenizer) => tokenizer(text) !== null) || canHtmlBlockInterrupt(text);
 }
 
 /**
@@ -471,7 +471,7 @@ function isFootnoteDefinitionInterrupted(text: string): boolean {
     tokenizeFootnoteDefinition,
     tokenizeDefinition,
     tokenizeTable
-  ].some((tokenizer) => tokenizer(text) !== undefined) || canHtmlBlockInterrupt(text);
+  ].some((tokenizer) => tokenizer(text) !== null) || canHtmlBlockInterrupt(text);
 }
 
 function isParagraphInterrupted(text: string): boolean {
@@ -482,7 +482,7 @@ function isParagraphInterrupted(text: string): boolean {
     tokenizeComment,
     tokenizeMath,
     tokenizeBlockquoteStart
-  ].some((tokenizer) => tokenizer(text) !== undefined) || canHtmlBlockInterrupt(text);
+  ].some((tokenizer) => tokenizer(text) !== null) || canHtmlBlockInterrupt(text);
 }
 
 /**
@@ -683,7 +683,7 @@ function tokenizeBlock(text: string, isAtNoteEnd: boolean): Token {
     tokenizeFootnoteDefinition,
     tokenizeDefinition,
     tokenizeTable,
-    (blockText): Token | undefined => tokenizeBlockId(blockText, isAtNoteEnd)
+    (blockText): null | Token => tokenizeBlockId(blockText, isAtNoteEnd)
   ];
   for (const tokenizer of tokenizers) {
     const token = tokenizer(text);
@@ -703,14 +703,14 @@ function tokenizeBlock(text: string, isAtNoteEnd: boolean): Token {
  * @param isAtNoteEnd - Whether the text runs to the end of the note, rather than stopping before a later section.
  * @returns The block id, if the text starts with one.
  */
-function tokenizeBlockId(text: string, isAtNoteEnd: boolean): Token | undefined {
+function tokenizeBlockId(text: string, isAtNoteEnd: boolean): null | Token {
   const match = BLOCK_ID_LINE_REGEX.exec(text);
   if (!match) {
-    return undefined;
+    return null;
   }
   const after = text.slice(match[0].length);
   const isFollowedByEnd = isAtNoteEnd && (after === '' || after === '\n');
-  return !isFollowedByEnd && !after.startsWith('\n\n') ? undefined : { blockId: ensureNonNullable(match[1]), length: match[0].length, type: BLOCK_ID_TYPE };
+  return !isFollowedByEnd && !after.startsWith('\n\n') ? null : { blockId: ensureNonNullable(match[1]), length: match[0].length, type: BLOCK_ID_TYPE };
 }
 
 /**
@@ -720,9 +720,9 @@ function tokenizeBlockId(text: string, isAtNoteEnd: boolean): Token | undefined 
  * @param text - The text, from the blockquote's line start.
  * @returns The blockquote, if the text starts with one.
  */
-function tokenizeBlockquote(text: string): Token | undefined {
-  if (tokenizeBlockquoteStart(text) === undefined) {
-    return undefined;
+function tokenizeBlockquote(text: string): null | Token {
+  if (tokenizeBlockquoteStart(text) === null) {
+    return null;
   }
   let lineStart = 0;
   let end = 0;
@@ -748,8 +748,8 @@ function tokenizeBlockquote(text: string): Token | undefined {
   return { length: end, type: isCallout ? 'callout' : 'blockquote' };
 }
 
-function tokenizeBlockquoteStart(text: string): Token | undefined {
-  return text[skipSpacesAndTabs(text, 0)] === '>' ? { length: 0, type: 'blockquote' } : undefined;
+function tokenizeBlockquoteStart(text: string): null | Token {
+  return text[skipSpacesAndTabs(text, 0)] === '>' ? { length: 0, type: 'blockquote' } : null;
 }
 
 /**
@@ -759,14 +759,14 @@ function tokenizeBlockquoteStart(text: string): Token | undefined {
  * @param text - The text, from the comment's line start.
  * @returns The comment, if the text starts with one.
  */
-function tokenizeComment(text: string): Token | undefined {
+function tokenizeComment(text: string): null | Token {
   const markStart = skipSpaces(text, 0);
   if (!text.startsWith(COMMENT_MARK, markStart)) {
-    return undefined;
+    return null;
   }
   const lineEnd = findLineEnd(text, markStart);
   if (text.slice(markStart + COMMENT_MARK.length, lineEnd).includes('%')) {
-    return undefined;
+    return null;
   }
   const closeStart = text.indexOf(COMMENT_MARK, lineEnd);
   return { length: closeStart === -1 ? text.length : closeStart + COMMENT_MARK.length, type: 'comment' };
@@ -778,11 +778,11 @@ function tokenizeComment(text: string): Token | undefined {
  * @param text - The text, from the fence's line start.
  * @returns The code block, if the text starts with one.
  */
-function tokenizeFencedCode(text: string): Token | undefined {
+function tokenizeFencedCode(text: string): null | Token {
   let index = skipSpacesAndTabs(text, 0);
   const fenceChar = text.charAt(index);
   if (fenceChar !== '`' && fenceChar !== '~') {
-    return undefined;
+    return null;
   }
   const fenceStart = index;
   while (text[index] === fenceChar) {
@@ -790,11 +790,11 @@ function tokenizeFencedCode(text: string): Token | undefined {
   }
   const fenceLength = index - fenceStart;
   if (fenceLength < FENCE_MIN_LENGTH) {
-    return undefined;
+    return null;
   }
   const openerEnd = findLineEnd(text, index);
   if (fenceChar === '`' && text.slice(index, openerEnd).includes('`')) {
-    return undefined;
+    return null;
   }
   let lineStart = openerEnd + 1;
   while (lineStart <= text.length) {
@@ -823,10 +823,10 @@ function tokenizeFencedCode(text: string): Token | undefined {
  * @param text - The text, from the definition's line start.
  * @returns The footnote definition, if the text starts with one.
  */
-function tokenizeFootnoteDefinition(text: string): Token | undefined {
+function tokenizeFootnoteDefinition(text: string): null | Token {
   const labelEnd = readFootnoteLabel(text);
   if (labelEnd === NOT_FOUND) {
-    return undefined;
+    return null;
   }
   // The end of the last line that holds more than whitespace; the first line always counts, and is empty only when
   // nothing follows its `:`.
@@ -857,10 +857,10 @@ function tokenizeFootnoteDefinition(text: string): Token | undefined {
  * @param text - The text, from the block's line start.
  * @returns The HTML block, if the text starts with one.
  */
-function tokenizeHtml(text: string): Token | undefined {
+function tokenizeHtml(text: string): null | Token {
   const kind = findHtmlBlockKind(text);
   if (!kind) {
-    return undefined;
+    return null;
   }
   let end = findLineEnd(text, skipSpacesAndTabs(text, 0) + 1);
   if (!kind.end.test(text.slice(skipSpacesAndTabs(text, 0), end))) {
@@ -886,7 +886,7 @@ function tokenizeHtml(text: string): Token | undefined {
  * @param text - The text, from the block's line start.
  * @returns The code block, if the text starts with one.
  */
-function tokenizeIndentedCode(text: string): Token | undefined {
+function tokenizeIndentedCode(text: string): null | Token {
   let end = 0;
   let hasContent = false;
   let lineStart = 0;
@@ -909,7 +909,7 @@ function tokenizeIndentedCode(text: string): Token | undefined {
     }
     lineStart = lineEnd + 1;
   }
-  return hasContent ? { length: end, type: 'code' } : undefined;
+  return hasContent ? { length: end, type: 'code' } : null;
 }
 
 /**
@@ -919,7 +919,7 @@ function tokenizeIndentedCode(text: string): Token | undefined {
  * @param text - The text, from the block's line start.
  * @returns The math block, if the text starts with one.
  */
-function tokenizeMath(text: string): Token | undefined {
+function tokenizeMath(text: string): null | Token {
   const markStart = skipSpaces(text, 0);
   let index = markStart;
   while (text[index] === '$') {
@@ -927,11 +927,11 @@ function tokenizeMath(text: string): Token | undefined {
   }
   const markLength = index - markStart;
   if (markLength < MATH_MIN_LENGTH) {
-    return undefined;
+    return null;
   }
   const openerEnd = findLineEnd(text, index);
   if (text.slice(index, openerEnd).includes('$') || openerEnd === text.length) {
-    return undefined;
+    return null;
   }
   // Obsidian looks for each line's end from one past its start, so an empty line is read together with the next one.
   let lineStart = openerEnd + 1;
@@ -1005,7 +1005,7 @@ function tokenizeParagraph(text: string): Token {
  * @param text - The text, from the heading's line start.
  * @returns The heading, if the text starts with one.
  */
-function tokenizeSetextHeading(text: string): Token | undefined {
+function tokenizeSetextHeading(text: string): null | Token {
   let textStart = 0;
   while (textStart < SETEXT_MAX_INDENT && text[textStart] === ' ') {
     textStart++;
@@ -1013,14 +1013,14 @@ function tokenizeSetextHeading(text: string): Token | undefined {
   const lineEnd = findLineEnd(text, textStart);
   const underlineChar = text.charAt(lineEnd + 1);
   if (lineEnd === text.length || (underlineChar !== '=' && underlineChar !== '-')) {
-    return undefined;
+    return null;
   }
   let underlineEnd = lineEnd + 1;
   while (text[underlineEnd] === underlineChar) {
     underlineEnd++;
   }
   if (underlineEnd < text.length && text[underlineEnd] !== '\n') {
-    return undefined;
+    return null;
   }
   return {
     heading: { level: underlineChar === '=' ? SETEXT_EQUALS_LEVEL : SETEXT_DASHES_LEVEL, text: text.slice(textStart, lineEnd).trim() },
@@ -1035,11 +1035,11 @@ function tokenizeSetextHeading(text: string): Token | undefined {
  * @param text - The text, from the break's line start.
  * @returns The thematic break, if the text starts with one.
  */
-function tokenizeThematicBreak(text: string): Token | undefined {
+function tokenizeThematicBreak(text: string): null | Token {
   let index = skipSpacesAndTabs(text, 0);
   const marker = text.charAt(index);
   if (marker !== '*' && marker !== '-' && marker !== '_') {
-    return undefined;
+    return null;
   }
   let markerCount = 0;
   while (text[index] === marker || text[index] === ' ') {
@@ -1048,5 +1048,5 @@ function tokenizeThematicBreak(text: string): Token | undefined {
     }
     index++;
   }
-  return markerCount < THEMATIC_BREAK_MIN_MARKERS || (index < text.length && text[index] !== '\n') ? undefined : { length: index, type: 'thematicBreak' };
+  return markerCount < THEMATIC_BREAK_MIN_MARKERS || (index < text.length && text[index] !== '\n') ? null : { length: index, type: 'thematicBreak' };
 }

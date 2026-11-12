@@ -103,9 +103,9 @@ export function assignBlockIds(params: AssignBlockIdsParams): Record<string, Blo
       }
       continue;
     }
-    section.id = section.type === FOOTNOTE_LIST_SECTION_TYPE
+    section.id = (section.type === FOOTNOTE_LIST_SECTION_TYPE
       ? findFootnoteListBlockId(footnoteSources)
-      : findSectionBlockId(content, section, headingsByStart.get(section.position.start.offset));
+      : findSectionBlockId(content, section, headingsByStart.get(section.position.start.offset))) ?? undefined;
     kept.push(section);
   }
   sections.splice(0, sections.length, ...kept);
@@ -123,7 +123,7 @@ export function assignBlockIds(params: AssignBlockIdsParams): Record<string, Blo
       continue;
     }
     const id = findListItemBlockId(content, item, listItems);
-    if (id === undefined) {
+    if (id === null) {
       continue;
     }
 
@@ -149,9 +149,9 @@ function findBlockIds(block: string): string[] {
  * @param text - The definition's text, its label included, and the line break after it when the note goes on. The
  *   worker's definition then holds that line break, and so does a comment block the definition leaves unclosed, which
  *   no id can end then.
- * @returns The id.
+ * @returns The id, or `null` when there is none.
  */
-function findFootnoteDefinitionBlockId(text: string): string | undefined {
+function findFootnoteDefinitionBlockId(text: string): null | string {
   return findLastBlockId(splitIntoBlocks(text.replace(FOOTNOTE_LABEL_REGEX, '').split('\n')));
 }
 
@@ -161,10 +161,10 @@ function findFootnoteDefinitionBlockId(text: string): string | undefined {
  * text, which the paragraph holding that footnote does not.
  *
  * @param footnoteSources - The footnotes the note references.
- * @returns The id.
+ * @returns The id, or `null` when there is none.
  */
-function findFootnoteListBlockId(footnoteSources: readonly FootnoteSource[]): string | undefined {
-  let lastId: string | undefined;
+function findFootnoteListBlockId(footnoteSources: readonly FootnoteSource[]): null | string {
+  let lastId: null | string = null;
   for (const source of footnoteSources) {
     lastId = (source.isDefinition ? findFootnoteDefinitionBlockId(source.text) : findInlineNoteBlockId(source.text)) ?? lastId;
   }
@@ -176,10 +176,10 @@ function findFootnoteListBlockId(footnoteSources: readonly FootnoteSource[]): st
  * tokens.
  *
  * @param text - The paragraph's text, without its trailing line breaks.
- * @returns The id.
+ * @returns The id, or `null` when there is none.
  */
-function findInlineBlockId(text: string): string | undefined {
-  return findInlineBlockIds(text).at(-1);
+function findInlineBlockId(text: string): null | string {
+  return findInlineBlockIds(text).at(-1) ?? null;
 }
 
 /**
@@ -187,18 +187,18 @@ function findInlineBlockId(text: string): string | undefined {
  * nested in it, which Obsidian leaves in place inside the outer one rather than turning into references of their own.
  *
  * @param text - What the inline footnote holds.
- * @returns The id.
+ * @returns The id, or `null` when there is none.
  */
-function findInlineNoteBlockId(text: string): string | undefined {
+function findInlineNoteBlockId(text: string): null | string {
   let lastId = findInlineBlockId(text);
-  for (const nestedText of lastId === undefined ? findInlineNoteTexts(text) : []) {
+  for (const nestedText of lastId === null ? findInlineNoteTexts(text) : []) {
     lastId = findInlineNoteBlockId(nestedText) ?? lastId;
   }
   return lastId;
 }
 
-function findLastBlockId(blocks: readonly string[]): string | undefined {
-  let lastId: string | undefined;
+function findLastBlockId(blocks: readonly string[]): null | string {
+  let lastId: null | string = null;
   for (const block of blocks) {
     lastId = findBlockIds(block).at(-1) ?? lastId;
   }
@@ -212,9 +212,9 @@ function findLastBlockId(blocks: readonly string[]): string | undefined {
  * @param content - The note's full text.
  * @param item - The item.
  * @param listItems - Every list item of the note.
- * @returns The id.
+ * @returns The id, or `null` when there is none.
  */
-function findListItemBlockId(content: string, item: ListItemCache, listItems: readonly ListItemCache[]): string | undefined {
+function findListItemBlockId(content: string, item: ListItemCache, listItems: readonly ListItemCache[]): null | string {
   const nestedRanges = getDescendants(item, listItems).map((nested) => [nested.position.start.line, nested.position.end.line]);
   const lines = content.slice(item.position.start.offset, item.position.end.offset).split('\n');
   const ownLines: string[] = [];
@@ -231,7 +231,7 @@ function findListItemBlockId(content: string, item: ListItemCache, listItems: re
       return id;
     }
   }
-  return undefined;
+  return null;
 }
 
 /**
@@ -240,9 +240,9 @@ function findListItemBlockId(content: string, item: ListItemCache, listItems: re
  * @param content - The note's full text.
  * @param section - The section.
  * @param heading - The heading the section is, if it is one.
- * @returns The id.
+ * @returns The id, or `null` when there is none.
  */
-function findSectionBlockId(content: string, section: SectionCache, heading: HeadingCache | undefined): string | undefined {
+function findSectionBlockId(content: string, section: SectionCache, heading: HeadingCache | undefined): null | string {
   const text = content.slice(section.position.start.offset, section.position.end.offset);
   switch (section.type) {
     case 'comment': {
@@ -262,7 +262,7 @@ function findSectionBlockId(content: string, section: SectionCache, heading: Hea
       return findLastBlockId(text.split('\n').flatMap((row) => row.split('|').map((cell) => cell.trim())));
     }
     default: {
-      return QUOTE_SECTION_TYPES.has(section.type) ? findLastBlockId(splitIntoBlocks(text.split('\n'))) : undefined;
+      return QUOTE_SECTION_TYPES.has(section.type) ? findLastBlockId(splitIntoBlocks(text.split('\n'))) : null;
     }
   }
 }
