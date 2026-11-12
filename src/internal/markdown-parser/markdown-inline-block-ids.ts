@@ -123,9 +123,9 @@ function charAtBefore(text: string, index: number, end: number): string {
  * @param text - The text.
  * @param start - The offset just past the `[`.
  * @param end - The offset the inline content ends at.
- * @returns Where it closes, or `undefined` when it does not.
+ * @returns Where it closes, or `null` when it does not.
  */
-function findBracketClose(text: string, start: number, end: number): BracketClose | undefined {
+function findBracketClose(text: string, start: number, end: number): BracketClose | null {
   let depth = 0;
   let isBracketed = false;
   let index = start;
@@ -153,7 +153,7 @@ function findBracketClose(text: string, start: number, end: number): BracketClos
     }
     index++;
   }
-  return undefined;
+  return null;
 }
 
 /**

@@ -88,6 +88,7 @@ export class ViewRegistry extends Events {
    * @param extension - The file extension, without the leading dot.
    * @returns The view type, or `undefined` when the extension is not registered.
    */
+  // eslint-disable-next-line typescript-dev-toolkit/no-undefined-return-type -- Mirrors Obsidian's ViewRegistry.getTypeByExtension.
   public getTypeByExtension(extension: string): string | undefined {
     return this.typeByExtension[extension];
   }
@@ -98,6 +99,7 @@ export class ViewRegistry extends Events {
    * @param type - The view type.
    * @returns The creator, or `undefined` when the type is not registered.
    */
+  // eslint-disable-next-line typescript-dev-toolkit/no-undefined-return-type -- Mirrors Obsidian's ViewRegistry.getViewCreatorByType.
   public getViewCreatorByType(type: string): undefined | ViewCreatorOriginal {
     return this.viewByType[type];
   }

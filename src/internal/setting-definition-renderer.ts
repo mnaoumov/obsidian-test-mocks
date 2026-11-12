@@ -132,18 +132,18 @@ function applyRowDomState(row: RenderedSettingRow): void {
   row.settingEl.toggle(row.isVisible);
 
   const disabled = getDisabledPredicate(row.definition);
-  if (disabled !== undefined) {
+  if (disabled !== null) {
     row.setting.setDisabled(evaluatePredicate(disabled, false));
   }
 }
 
-function getDisabledPredicate(definition: SettingGroupItemOriginal): (() => boolean) | boolean | undefined {
+function getDisabledPredicate(definition: SettingGroupItemOriginal): (() => boolean) | boolean | null {
   /*
    * Obsidian honors `disabled` on any definition it renders, but `obsidian.d.ts` declares it only on the
    * action and control variants, so it is read off the raw object. Obsidian also falls back to
    * `control.disabled`; that fallback belongs with `control` rows, which are not modeled here.
    */
-  return ('disabled' in definition) ? castTo<SettingRowDisabled>(definition).disabled : undefined;
+  return castTo<SettingRowDisabled>(definition).disabled ?? null;
 }
 
 function isGroupDefinition(item: SettingDefinitionItemOriginal): item is SettingDefinitionGroupOriginal {

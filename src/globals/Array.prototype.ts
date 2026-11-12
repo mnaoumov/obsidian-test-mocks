@@ -42,6 +42,7 @@ export function findLastIndex<T>(
  * @typeParam T - The array's element type.
  * @returns The first element, or `undefined` when the array is empty.
  */
+// eslint-disable-next-line typescript-dev-toolkit/no-undefined-return-type -- Mirrors Obsidian's Array.prototype.first.
 export function first<T>(this: T[]): T | undefined {
   return this[0];
 }
@@ -52,6 +53,7 @@ export function first<T>(this: T[]): T | undefined {
  * @typeParam T - The array's element type.
  * @returns The last element, or `undefined` when the array is empty.
  */
+// eslint-disable-next-line typescript-dev-toolkit/no-undefined-return-type -- Mirrors Obsidian's Array.prototype.last.
 export function last<T>(this: T[]): T | undefined {
   return this.length > 0 ? this.at(-1) : undefined;
 }

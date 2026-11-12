@@ -411,6 +411,7 @@ export abstract class Editor {
    */
   public processLines<T>(
     read: (line: number, lineText: string) => null | T,
+    // eslint-disable-next-line typescript-dev-toolkit/no-undefined-return-type -- Mirrors Obsidian's Editor.processLines write callback.
     write: (line: number, lineText: string, value: null | T) => EditorChangeOriginal | undefined,
     ignoreEmpty = true
   ): void {
