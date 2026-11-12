@@ -32,9 +32,9 @@
     },
     "eslint-plugin-unicorn": {
       "section": "devDependencies",
-      "why": "`scripts/eslint-config.ts` is a hand copy of @mnaoumov/typescript-dev-toolkit's shared ESLint config, compared against it on every sweep (eslint-config-divergences.json), and the toolkit builds that config on eslint-plugin-unicorn ^76. Floating this copy to 78 (on 2026-10-18) added rules the shared config has never seen - `unicorn/no-asterisk-prefix-in-documentation-comments` alone reported 2,456 findings, against the `/** ... */` continuation style every TSDoc block here and in the toolkit uses - plus about 25 findings from other new or tightened rules. Those are decisions for the shared config to make first and this copy to follow, not ones a hand copy should make ahead of it. The check records the toolkit's unicorn range: when it moves past ^76, move this pin with it and take the new rules the way the shared config takes them.",
+      "why": "`scripts/eslint-config.ts` is a hand copy of @mnaoumov/typescript-dev-toolkit's shared ESLint config, compared against it on every sweep (eslint-config-divergences.json), and the toolkit builds that config on eslint-plugin-unicorn ^79 (since toolkit 6.0.0; this pin followed it from 76 on 2026-11-11). Floating this copy past the toolkit (to 78 on 2026-10-18, while the toolkit was on 76) added rules the shared config has never seen - `unicorn/no-asterisk-prefix-in-documentation-comments` alone reported 2,456 findings, against the `/** ... */` continuation style every TSDoc block here and in the toolkit uses - plus about 25 findings from other new or tightened rules. Those are decisions for the shared config to make first and this copy to follow, not ones a hand copy should make ahead of it. The check records the toolkit's unicorn range: when it moves past ^79, move this pin with it and take the new rules the way the shared config takes them.",
       "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@mnaoumov/typescript-dev-toolkit/package.json','utf8')).dependencies['eslint-plugin-unicorn'])\"",
-      "expect": "^76.0.0"
+      "expect": "^79.0.0"
     },
     "fflate": {
       "section": "overrides",

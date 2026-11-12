@@ -322,5 +322,5 @@ function splitIntoBlocks(lines: readonly string[]): string[] {
     }
     current.lines.push(line);
   }
-  return groups.flatMap((group) => group.kind === 'quote' ? splitIntoBlocks(group.lines.map((line) => line.replace(QUOTE_PREFIX_REGEX, ''))) : [group.lines.join('\n')]);
+  return groups.flatMap((group) => group.kind === 'quote' ? splitIntoBlocks(group.lines.map((line) => line.replace(QUOTE_PREFIX_REGEX, ''))) : group.lines.join('\n'));
 }

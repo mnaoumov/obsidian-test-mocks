@@ -16,8 +16,8 @@ describe('Object extensions', () => {
     it('should iterate over all entries', () => {
       const keys: string[] = [];
       const values: unknown[] = [];
-      each({ a: 'x', b: 'y' }, (value, key) => {
-        keys.push(key ?? '');
+      each({ a: 'x', b: 'y' }, (value, key = '') => {
+        keys.push(key);
         values.push(value);
       });
       expect(keys).toEqual(['a', 'b']);

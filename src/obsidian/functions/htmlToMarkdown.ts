@@ -28,10 +28,6 @@ export function htmlToMarkdown(html: Document | DocumentFragment | HTMLElement |
   }
 
   const wrapper = createDiv();
-  if (html instanceof Document) {
-    wrapper.append(sanitizeHTMLToDom(html.body.innerHTML));
-  } else {
-    wrapper.append(html.cloneNode(true));
-  }
+  wrapper.append(html instanceof Document ? sanitizeHTMLToDom(html.body.innerHTML) : html.cloneNode(true));
   return turndownService.turndown(wrapper);
 }

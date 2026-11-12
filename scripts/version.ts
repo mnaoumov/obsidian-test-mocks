@@ -443,8 +443,8 @@ function resolvePathFromRoot(path: string, cwd?: string): null | string {
   return rootFolder ? resolve(rootFolder, path) : null;
 }
 
-function resolvePathFromRootSafe(path: string, cwd?: string): string {
-  return resolvePathFromRoot(path, cwd) ?? path;
+function resolvePathFromRootSafe(path: string): string {
+  return resolvePathFromRoot(path) ?? path;
 }
 
 async function writeJson(path: string, data: unknown): Promise<void> {
