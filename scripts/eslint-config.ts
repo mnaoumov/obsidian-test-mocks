@@ -212,6 +212,11 @@ function getEslintConfigs(): Linter.Config[] {
         'no-restricted-syntax': [
           'error',
           {
+            message: 'Destructure originalArguments (or originalArgs) into named parameters from the patched signature instead of indexing positionally.',
+            selector:
+              'Property[key.name="patchHandler"] MemberExpression[computed=true]:matches([property.value=/^[0-9]+$/], [property.raw=/^[0-9]/]):matches([object.type="Identifier"][object.name=/^original(Arguments|Args)$/], [object.type="MemberExpression"][object.property.name=/^original(Arguments|Args)$/], [object.type="MemberExpression"][object.property.value=/^original(Arguments|Args)$/])'
+          },
+          {
             message: 'Do not use definite assignment assertions (!). Initialize the field or make it optional.',
             selector: 'PropertyDefinition[definite=true]'
           },
@@ -594,14 +599,17 @@ function getLocalPluginConfigs(): Linter.Config[] {
     },
     rules: {
       'typescript-dev-toolkit/no-async-callback-to-unsafe-return': 'error',
+      'typescript-dev-toolkit/no-direct-dispose-call': 'error',
       'typescript-dev-toolkit/no-keyword-identifiers': 'error',
       'typescript-dev-toolkit/no-undefined-return-type': 'error',
       'typescript-dev-toolkit/no-unresolved-jsdoc-link': 'error',
       'typescript-dev-toolkit/no-unused-params-members': 'error',
       'typescript-dev-toolkit/no-used-underscore-variables': 'error',
       'typescript-dev-toolkit/params-options-name-match': 'error',
+      'typescript-dev-toolkit/prefer-dedent': 'error',
       'typescript-dev-toolkit/prefer-logical-operator-over-ternary': 'error',
       'typescript-dev-toolkit/prefer-noop-async': 'error',
+      'typescript-dev-toolkit/prefer-spread': 'error',
       'typescript-dev-toolkit/readonly-interface-members': 'error',
       'typescript-dev-toolkit/require-method-template': 'error'
     }
@@ -905,6 +913,8 @@ function getUnicornConfigs(): Linter.Config[] {
               props: false,
               ref: false,
               refs: false,
+              // `repo` is established vocabulary, as in the shared config.
+              repo: false,
               src: false,
               util: false,
               utils: false
@@ -929,11 +939,27 @@ function getUnicornConfigs(): Linter.Config[] {
          */
         'unicorn/no-break-in-nested-loop': 'off',
         /*
+         * Every TSDoc block here, and in the shared config's trees, is written with a ` * ` prefix on each line;
+         * the rule would rewrite every comment to settle a matter of taste. Off, as in the shared config.
+         */
+        'unicorn/no-asterisk-prefix-in-documentation-comments': 'off',
+        /*
+         * The rule cannot see through a hoisted function declaration, so it reports a binding that a nested
+         * function reads before the early exit. Off, as in the shared config.
+         */
+        'unicorn/no-declarations-before-early-exit': 'off',
+        /*
          * Installing and restoring global test doubles by assigning onto the global object is this package's
          * entire purpose — `setupNodePrototype` and its siblings exist to do exactly what the rule forbids.
          * It cannot separate that from an accidental global write, and it has no fixer.
          */
         'unicorn/no-global-object-property-assignment': 'off',
+        /*
+         * The prototype extensions Obsidian adds to the builtins (`Array.prototype.contains`, `String.prototype.contains`,
+         * `Object.each`) are a public part of the surface these mocks reproduce, so every report is the rule not knowing
+         * Obsidian rather than a finding. Off, as in the shared config.
+         */
+        'unicorn/no-nonstandard-builtin-properties': 'off',
         // `null` is load-bearing here: the DOM APIs being mocked return `null` (`getAttribute`, `ownerDocument`), so `null` and `undefined` are not interchangeable.
         'unicorn/no-null': 'off',
         /*
@@ -942,6 +968,12 @@ function getUnicornConfigs(): Linter.Config[] {
          * exist to reproduce.
          */
         'unicorn/no-thenable': 'off',
+        /*
+         * TypeScript's explicit `this` parameter (`function get(this: Holder) { ... }`) types `this` in a function
+         * installed onto a prototype, which is how every `src/globals/` extension is written. Off, as in the shared
+         * config.
+         */
+        'unicorn/no-this-outside-of-class': 'off',
         // Same call as its object counterpart: the destructuring depth flagged here is deliberate and reads well.
         'unicorn/no-unreadable-array-destructuring': 'off',
         /*
@@ -950,6 +982,8 @@ function getUnicornConfigs(): Linter.Config[] {
          * without adding information.
          */
         'unicorn/no-unreadable-for-of-expression': 'off',
+        // Nested destructuring is deliberate here and reads well. Off, as in the shared config.
+        'unicorn/no-unreadable-object-destructuring': 'off',
         /*
          * `checkArguments` strips `undefined` arguments, which shifts the remaining positional arguments into
          * the wrong slots — fatal for mocks that assert exactly what Obsidian passes through. The rule's
@@ -992,6 +1026,7 @@ function getUnicornConfigs(): Linter.Config[] {
          */
         'unicorn/prefer-global-this': 'off',
         // `Iterator#toArray` and the iterator helpers are ES2025. See the ES2022 floor note above.
+        'unicorn/prefer-iterator-helpers': 'off',
         'unicorn/prefer-iterator-to-array': 'off',
         /*
          * Replaced by `typescript-dev-toolkit/prefer-logical-operator-over-ternary`, which reports the same and
@@ -1006,6 +1041,10 @@ function getUnicornConfigs(): Linter.Config[] {
          * exactly that difference.
          */
         'unicorn/prefer-number-coercion': 'off',
+        // `Promise.withResolvers` is ES2024. See the ES2022 floor note above.
+        'unicorn/prefer-promise-with-resolvers': 'off',
+        // `Set#union` and friends are ES2025. See the ES2022 floor note above.
+        'unicorn/prefer-set-methods': 'off',
         /*
          * The rule ranks operands by syntactic shape, not cost, so the reports swap one property read ahead of
          * another and buy nothing. Its own message concedes it cannot check the part that matters — "after
@@ -1013,6 +1052,16 @@ function getUnicornConfigs(): Linter.Config[] {
          * it guards.
          */
         'unicorn/prefer-simple-condition-first': 'off',
+        /*
+         * Replaced by `typescript-dev-toolkit/prefer-spread`, which proves a `slice` receiver is an array before
+         * proposing a spread, so a typed-array copy is not turned into a plain array. As in the shared config.
+         */
+        'unicorn/prefer-spread': 'off',
+        /*
+         * `URL.canParse` needs a newer runtime than the oldest Obsidian installer these mocks stand in for. Off, as
+         * in the shared config.
+         */
+        'unicorn/prefer-url-can-parse': 'off',
         /*
          * Every array reported here holds strings, where the default sort is already well defined and correct.
          * Adding the comparator the rule asks for would mean choosing between code-unit and locale ordering, so
