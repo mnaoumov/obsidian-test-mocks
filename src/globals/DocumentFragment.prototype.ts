@@ -8,8 +8,7 @@
  * Finds the first descendant matching a selector.
  *
  * @param selector - The CSS selector to match.
- * @returns The first matching element, or
-ull when nothing matches.
+ * @returns The first matching element, or `null` when nothing matches.
  */
 export function find(this: DocumentFragment, selector: string): HTMLElement | null {
   return this.querySelector<HTMLElement>(selector);
