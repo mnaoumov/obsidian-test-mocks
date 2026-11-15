@@ -5,12 +5,14 @@ import type {
   UndefinedOnPartialDeep
 } from 'type-fest';
 
+import { renderGroupedChangelogSection } from '@mnaoumov/typescript-dev-toolkit/changelog-grouping';
 import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
 import { getPackageManagerRunCommand } from '@mnaoumov/typescript-dev-toolkit/package-manager';
 import {
   execFromRoot,
   getRootFolder
 } from '@mnaoumov/typescript-dev-toolkit/root';
+import { toChangelogCommitEntry } from '@mnaoumov/typescript-dev-toolkit/version';
 import { toPosixPath } from '@mnaoumov/typescript-lib/path';
 import { existsSync } from 'node:fs';
 import {
@@ -32,6 +34,7 @@ import {
   assertNonNullable,
   ensureNonNullable
 } from '../src/internal/type-guards.ts';
+import { extractChangelogSection } from './helpers/changelog-section.ts';
 import { parseNpmPackFilename } from './helpers/npm-pack.ts';
 
 interface ParsedArguments {
@@ -119,9 +122,10 @@ async function getNewVersion(versionUpdateType: string): Promise<string> {
 async function getReleaseNotes(newVersion: string): Promise<string> {
   const changelogPath = resolvePathFromRootSafe('CHANGELOG.md');
   const content = await readFile(changelogPath, 'utf-8');
-  const newVersionEscaped = newVersion.replace('.', String.raw`\.`);
-  const match = new RegExp(`\n## ${newVersionEscaped}\n\n((.|\n)+?)\n\n##`).exec(content);
-  let releaseNotes = match?.[1] ? `${match[1]}\n\n` : '';
+  // Read up to the next `## ` heading by line: a grouped section carries `### ` subheadings, which a
+  // `\n\n##` pattern would stop at.
+  const section = extractChangelogSection(content, newVersion);
+  let releaseNotes = section ? `${section}\n\n` : '';
 
   const tagOutput = await execFromRoot('git tag --sort=-creatordate', { isQuiet: true });
   const tags = tagOutput.split(/\r?\n/);
@@ -203,10 +207,6 @@ async function publishGitHubRelease(newVersion: string): Promise<void> {
   });
 }
 
-function toFirstLine($string: string): string {
-  return $string.split(/\r?\n/).filter(Boolean).slice(0, 1).join('');
-}
-
 async function updateChangelog(newVersion: string, options: UpdateChangelogOptions = {}): Promise<void> {
   const HEADER_LINES_COUNT = 2;
   const changelogPath = resolvePathFromRootSafe('CHANGELOG.md');
@@ -224,13 +224,12 @@ async function updateChangelog(newVersion: string, options: UpdateChangelogOptio
   const lastTag = (previousChangelogLines[0] ?? '').replaceAll('## ', '');
   const commitRange = lastTag ? `${lastTag}..HEAD` : 'HEAD';
   const commitMessagesString = await execFromRoot(`git log ${commitRange} --format=%B --first-parent -z`, { isQuiet: true });
-  const commitMessages = commitMessagesString.split('\0').filter(Boolean).map((commitMessage) => toFirstLine(commitMessage));
+  const commitMessages = commitMessagesString.split('\0').filter(Boolean);
 
+  // The toolkit's grouped layout, the same one `@mnaoumov/typescript-dev-toolkit/version` writes for other
+  // repos: a summary line, the entries sorted under `### New` / `### Fixed` / ..., maintenance commits counted.
   let newChangeLog = `# CHANGELOG\n\n## ${newVersion}\n\n`;
-
-  for (const message of commitMessages) {
-    newChangeLog += `- ${message}\n`;
-  }
+  newChangeLog += `${renderGroupedChangelogSection(commitMessages.map((message) => toChangelogCommitEntry(message)))}\n`;
 
   if (previousChangelogLines.length > 0) {
     newChangeLog += '\n';
@@ -241,7 +240,7 @@ async function updateChangelog(newVersion: string, options: UpdateChangelogOptio
 
   await writeFile(changelogPath, newChangeLog, 'utf-8');
 
-  // The generated entry is already the commit subjects; the review below is an opportunity to reword it,
+  // The generated entry is already grouped from the commit messages; the review below is an opportunity to reword it,
   // not a required step, so an unattended release can decline it.
   if (!(options.shouldEditChangelog ?? true)) {
     return;
