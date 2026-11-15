@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 8.1.0
+
+This release has 1 new feature and 1 documentation change. 3 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### New
+
+- **release:** group the generated changelog section like the toolkit
+
+### Documentation
+
+- **changelog:** regroup the raw release notes for readers
+
 ## 8.0.0
 
 This release has 1 breaking change, 2 new features and 6 documentation changes. 9 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
