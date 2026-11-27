@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 8.2.0
+
+This release has 1 new feature and 3 documentation changes. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### New
+
+- **plugins:** model Plugins.loadingPluginId, null between loads
+
+### Documentation
+
+- refresh the README See also table, adding obsimian
+- one-line README badge line for an npm package
+- **renderMatches:** correct the offset direction in the TSDoc
+
 ## 8.1.0
 
 This release has 1 new feature and 1 documentation change. 3 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
