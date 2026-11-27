@@ -925,6 +925,12 @@ real-bridge pattern) are now closed. A few affordances worth knowing:
   root and do neither of the last two, so a consumer could not unit-test a decomposed (NFD) name and had to add
   `|| '/'` after the call.
 
+- **`stripHeadingForLink` is a port of Obsidian's own** (2026-11-26, `Wi` in Obsidian 1.15.1's `app.js`). Every `:`,
+  `#`, `|`, `^`, `\`, line break, `%%`, `[[` and `]]` becomes a space, whitespace runs collapse to one space, and the
+  result is trimmed, so `Open questions: what #next?` reads `Open questions what next?`. A lone `[` or `]` is KEPT. The
+  mock used to delete `[`, `]`, `|`, `#`, `^` and `\` outright and keep `:`, line breaks and `%%`, so `A|B` read `AB`
+  where Obsidian reads `A B`.
+
 - **`getFrontMatterInfo` is a port of Obsidian's own, and its `frontmatter` ends WITH the newline** (2026-09-24, `hg`
   in Obsidian 1.14.x's `app.js`). `to` is the index of the closing `---` itself, so `[from, to)` is exactly the region
   to replace, and splicing in `stringifyYaml()` output leaves no blank line before the delimiter. The mock used to stop
