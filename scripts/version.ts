@@ -265,7 +265,7 @@ async function updateChangelog(newVersion: string, options: UpdateChangelogOptio
   }
 }
 
-async function updateVersion(versionUpdateType?: string, options: UpdateVersionOptions = {}): Promise<void> {
+async function updateVersion(versionUpdateType: string | undefined, options: UpdateVersionOptions): Promise<void> {
   if (!versionUpdateType) {
     const npmOldVersion = process.env['npm_old_version'];
     const npmNewVersion = process.env['npm_new_version'];

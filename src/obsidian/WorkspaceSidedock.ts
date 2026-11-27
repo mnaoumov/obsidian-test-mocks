@@ -127,7 +127,7 @@ export class WorkspaceSidedock extends WorkspaceSplit {
     return {
       ...super.serialize(),
       width: this.size,
-      ...this.collapsed && { collapsed: true }
+      ...(this.collapsed && { collapsed: true })
     };
   }
 

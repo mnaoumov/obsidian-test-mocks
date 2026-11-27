@@ -87,7 +87,6 @@ function getAstroConfigs(): Linter.Config[] {
 function getEslintCommentsConfigs(): Linter.Config[] {
   return defineConfig([
     {
-      // eslint-disable-next-line import-x/no-named-as-default-member -- The default export name `recommended` is too confusing.
       extends: [commentsConfigs.recommended],
       files: typeScriptFiles,
       rules: {
@@ -602,6 +601,7 @@ function getLocalPluginConfigs(): Linter.Config[] {
       'typescript-dev-toolkit/no-keyword-identifiers': 'error',
       'typescript-dev-toolkit/no-undefined-return-type': 'error',
       'typescript-dev-toolkit/no-unresolved-jsdoc-link': 'error',
+      'typescript-dev-toolkit/no-unsafe-class-instance-assignment': 'error',
       'typescript-dev-toolkit/no-unused-params-members': 'error',
       'typescript-dev-toolkit/no-used-underscore-variables': 'error',
       'typescript-dev-toolkit/params-options-name-match': 'error',
@@ -641,6 +641,8 @@ function getStylisticConfigs(): Linter.Config[] {
         '@stylistic/indent': 'off',
         '@stylistic/indent-binary-ops': 'off',
         '@stylistic/jsx-one-expression-per-line': 'off',
+        // New in `@stylistic/eslint-plugin` 6, and it disagrees with dprint, which owns this layout: each autofix is undone by `npm run format`.
+        '@stylistic/list-style': 'off',
         '@stylistic/no-extra-semi': 'error',
         '@stylistic/object-curly-newline': [
           'error',
@@ -727,6 +729,9 @@ function getTseslintConfigs(): Linter.Config[] {
             'that'
           ]
         }],
+        // Replaced by `typescript-dev-toolkit/no-unsafe-class-instance-assignment`, which walks a mixin base class
+        // (typescript-eslint/typescript-eslint#13214).
+        '@typescript-eslint/no-unsafe-class-instance-assignment': 'off',
         '@typescript-eslint/no-unused-vars': [
           'error',
           {
@@ -1088,6 +1093,11 @@ function getUnicornConfigs(): Linter.Config[] {
       files: testFiles,
       rules: {
         /*
+         * A test hands a mock where a class instance is expected by design, so every such call site would be a
+         * report. The shared config in `@mnaoumov/typescript-dev-toolkit` scopes it off for tests the same way.
+         */
+        'typescript-dev-toolkit/no-unsafe-class-instance-assignment': 'off',
+        /*
          * A per-suite factory (`createElement`, `createConfiguredApp`) is deliberately local, keeping each
          * suite's fixture next to the assertions that read it. Production code keeps the check.
          */
@@ -1124,6 +1134,20 @@ function getUnicornConfigs(): Linter.Config[] {
       ignores: testFiles,
       rules: {
         'unicorn/consistent-boolean-name': 'off'
+      }
+    },
+    {
+      /*
+       * Handing a mock over where Obsidian's own class is expected is what `src/obsidian/**` exists to do: every
+       * `asOriginalType__()` returns `strictProxy<XxxOriginal>(this)` (L6), and the mocks return or pass each other
+       * as Obsidian's types (`NullValue.value`, a `KeymapEventHandler`'s `scope`). None of those values comes from
+       * Obsidian's constructor, so the rule can never be satisfied on these files. `src/internal/**`, `src/globals/**`
+       * and the scripts keep the check.
+       */
+      files: ['src/obsidian/**/*.ts'],
+      ignores: testFiles,
+      rules: {
+        'typescript-dev-toolkit/no-unsafe-class-instance-assignment': 'off'
       }
     }
   ]);

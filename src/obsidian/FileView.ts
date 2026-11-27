@@ -125,7 +125,7 @@ export abstract class FileView extends ItemView {
   public override getState(): Record<string, unknown> {
     return {
       ...super.getState(),
-      ...this.file && { file: this.file.path }
+      ...(this.file && { file: this.file.path })
     };
   }
 

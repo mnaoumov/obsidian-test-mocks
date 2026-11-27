@@ -582,8 +582,8 @@ export class Workspace extends Events {
       'left-ribbon': this.leftRibbon.serialize(),
       'main': this.rootSplit.serialize(),
       'right': this.rightSplit.serialize(),
-      ...this.floatingSplit.children.length > 0 && { floating: this.floatingSplit.serialize() },
-      ...this.activeLeaf && { active: this.activeLeaf.id }
+      ...(this.floatingSplit.children.length > 0 && { floating: this.floatingSplit.serialize() }),
+      ...(this.activeLeaf && { active: this.activeLeaf.id })
     };
     return castTo<Record<string, unknown>>(layout);
   }
@@ -837,6 +837,7 @@ export class Workspace extends Events {
   public async openLinkText(
     linktext: string,
     sourcePath: string,
+    // eslint-disable-next-line unicorn/prefer-options-parameter -- Mirrors Obsidian's own `openLinkText` signature (L1).
     newLeaf?: boolean | PaneTypeOriginal,
     _openViewState?: OpenViewStateOriginal
   ): Promise<void> {
@@ -1406,7 +1407,7 @@ function mergeTabGroups(entry: SerializedWorkspaceItem): void {
   }
   firstTabGroup.children ??= [];
   for (const tabGroup of otherTabGroups) {
-    firstTabGroup.children.push(...tabGroup.children ?? []);
+    firstTabGroup.children.push(...(tabGroup.children ?? []));
   }
   entry.children = [firstTabGroup];
 }

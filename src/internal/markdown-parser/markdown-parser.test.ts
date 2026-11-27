@@ -148,7 +148,7 @@ describe('parseMarkdownContent', () => {
           section.position.start.col,
           section.position.end.offset
         ]),
-        [...cache.tags ?? [], ...cache.links ?? []].map((reference) => reference.position.start.offset),
+        [...(cache.tags ?? []), ...(cache.links ?? [])].map((reference) => reference.position.start.offset),
         (cache.listItems ?? []).map((item) => [item.parent, item.position.start.col, item.position.end.offset])
       ]).toEqual(expected);
     });

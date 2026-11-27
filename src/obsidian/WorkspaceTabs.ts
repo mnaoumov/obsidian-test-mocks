@@ -177,8 +177,8 @@ export class WorkspaceTabs extends WorkspaceParent {
   public override serialize(): SerializedWorkspaceItem {
     return {
       ...super.serialize(),
-      ...this.currentTab > 0 && { currentTab: this.currentTab },
-      ...this.isStacked && { stacked: true }
+      ...(this.currentTab > 0 && { currentTab: this.currentTab }),
+      ...(this.isStacked && { stacked: true })
     };
   }
 
