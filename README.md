@@ -75,8 +75,9 @@ library's TSDoc — is published at
 | [`jest-environment-obsidian`](https://github.com/community-archive/jest-environment-obsidian) | Jest environment and preset; shims the `obsidian` module; reimplements Obsidian's prototype extensions; warnings for unsupported usage | Same goal as `jest-environment-obsidian`, which is archived at Obsidian 1.1.16: mocks the whole current `obsidian.d.ts` with in-memory behavior; supports Vitest as well as Jest; omits its warnings |
 | [`obsidian-mock`](https://github.com/bobhy/obsidian-mock) | Mock classes for Obsidian's API, imported from `obsidian-mock` in place of `obsidian`; TypeScript types; test utilities | Same goal as `obsidian-mock`, which is not published on npm: published on npm; mocks the `obsidian` module itself through a setup file; adds Obsidian's prototype extensions to DOM and JS builtins |
 | [`obsidian-test-kit`](https://github.com/chhoumann/obsidian-test-kit) | Vitest stub aliased as `obsidian`; jsdom polyfills for DOM helpers, `moment`, globals and animations; `@testing-library/jest-dom` matchers; stub loads in a `node` environment | Same goal as `obsidian-test-kit`: mocks every `obsidian.d.ts` member, with an in-memory vault, metadata cache and workspace; supports Jest as well as Vitest; omits its matchers and its DOM-free `node` stub |
+| [`obsimian`](https://github.com/motif-software/obsimian) | Fake `App`, `Vault` and `MetadataCache` built from JSON a companion Obsidian plugin exports from a real vault; a test vault of edge cases; Jest | Same goal as `obsimian`, inactive since 2021: computes the metadata cache from note content instead of loading an export; mocks the whole `obsidian` module rather than a few fakes passed in as arguments |
 
-Last searched for similar libraries on 2026-11-04.
+Last searched for similar libraries on 2026-11-26.
 
 ## Changelog
 
