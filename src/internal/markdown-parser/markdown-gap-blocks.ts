@@ -320,9 +320,9 @@ export function scanGapBlocks(text: string, isAtNoteEnd: boolean): GapBlock[] {
     }
     const token = tokenizeBlock(rest, isAtNoteEnd);
     blocks.push({
-      ...token.blockId !== undefined && { blockId: token.blockId },
+      ...(token.blockId !== undefined && { blockId: token.blockId }),
       end: index + token.length,
-      ...token.heading !== undefined && { heading: token.heading },
+      ...(token.heading !== undefined && { heading: token.heading }),
       start: index,
       type: token.type
     });

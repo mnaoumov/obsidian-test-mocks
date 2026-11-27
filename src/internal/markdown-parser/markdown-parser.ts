@@ -329,15 +329,15 @@ export function parseMarkdownContent(content: string): CachedMetadata {
   const footnoteListSections = cache.sections?.filter((section) => FOOTNOTE_LIST_SECTION_TYPES.has(section.type)) ?? [];
   const sections = cache.sections?.filter((section) => !FOOTNOTE_LIST_SECTION_TYPES.has(section.type)) ?? [];
   const positions = [
-    ...cache.embeds ?? [],
-    ...cache.footnoteRefs ?? [],
-    ...cache.footnotes ?? [],
-    ...cache.headings ?? [],
-    ...cache.links ?? [],
-    ...cache.listItems ?? [],
-    ...cache.referenceLinks ?? [],
+    ...(cache.embeds ?? []),
+    ...(cache.footnoteRefs ?? []),
+    ...(cache.footnotes ?? []),
+    ...(cache.headings ?? []),
+    ...(cache.links ?? []),
+    ...(cache.listItems ?? []),
+    ...(cache.referenceLinks ?? []),
     ...sections,
-    ...cache.tags ?? []
+    ...(cache.tags ?? [])
   ].map((entry) => entry.position);
   // The sections appended for a note's footnotes sit on the line past the last one, at the offset the line before ends at,
   // which is no line start the original has.
@@ -354,7 +354,7 @@ export function parseMarkdownContent(content: string): CachedMetadata {
     pos.end = moveLocToOriginal(lineStarts, pos.end);
   }
   // A link's text may span a line break, which the original spells with its `\r`.
-  for (const reference of [...cache.embeds ?? [], ...cache.links ?? []]) {
+  for (const reference of [...(cache.embeds ?? []), ...(cache.links ?? [])]) {
     reference.original = content.slice(reference.position.start.offset, reference.position.end.offset);
   }
   return cache;

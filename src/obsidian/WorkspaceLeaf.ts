@@ -301,7 +301,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
    */
   public getViewState(): ViewStateOriginal {
     return {
-      ...this.pinned && { pinned: true },
+      ...(this.pinned && { pinned: true }),
       state: this.view.getState(),
       type: this.view.getViewType()
     };
@@ -390,7 +390,7 @@ export class WorkspaceLeaf extends WorkspaceItem {
     }
 
     const viewState: ViewStateOriginal = {
-      ...options.group && { group: options.group },
+      ...(options.group && { group: options.group }),
       active: options.active ?? this === this.app__.workspace.activeLeaf,
       state: {
         ...options.state,
@@ -411,9 +411,9 @@ export class WorkspaceLeaf extends WorkspaceItem {
   public override serialize(): SerializedWorkspaceItem {
     return {
       ...super.serialize(),
-      ...this.pinned && { pinned: true },
+      ...(this.pinned && { pinned: true }),
       state: this.getViewState(),
-      ...this.group !== null && { group: this.group }
+      ...(this.group !== null && { group: this.group })
     };
   }
 

@@ -375,7 +375,7 @@ export class MetadataCache extends Events {
   private updateLinks(sourcePath: string, cache: CachedMetadataOriginal): void {
     const resolved: Record<string, number> = {};
     const unresolved: Record<string, number> = {};
-    const references = [...cache.links ?? [], ...cache.embeds ?? [], ...cache.frontmatterLinks ?? []];
+    const references = [...(cache.links ?? []), ...(cache.embeds ?? []), ...(cache.frontmatterLinks ?? [])];
     for (const reference of references) {
       const hashIndex = reference.link.indexOf('#');
       const linkpath = hashIndex === -1 ? reference.link : reference.link.slice(0, hashIndex);

@@ -49,6 +49,7 @@ export class WorkspaceWindow extends WorkspaceContainer {
    * @param id - The item id.
    * @param size - The requested window size, which the mock does not keep.
    */
+  // eslint-disable-next-line unicorn/prefer-options-parameter -- Mirrors Obsidian's own `WorkspaceWindow` constructor.
   protected constructor(workspace: Workspace, id?: string, size?: Record<string, number>) {
     super(workspace, 'vertical', id);
     const self = strictProxy(this);
@@ -65,6 +66,7 @@ export class WorkspaceWindow extends WorkspaceContainer {
    * @param size - The requested window size.
    * @returns The new popout container.
    */
+  // eslint-disable-next-line unicorn/prefer-options-parameter -- Takes the constructor's arguments, which mirror Obsidian's (L5).
   public static create3__(workspace: Workspace, id?: string, size?: Record<string, number>): WorkspaceWindow {
     return new WorkspaceWindow(workspace, id, size);
   }
@@ -98,6 +100,7 @@ export class WorkspaceWindow extends WorkspaceContainer {
    * @param _id - The item id the window was created with.
    * @param _size - The window size the window was created with.
    */
+  // eslint-disable-next-line unicorn/prefer-options-parameter -- Takes the constructor's arguments, which mirror Obsidian's (L9).
   public constructor6__(_workspace: Workspace, _id?: string, _size?: Record<string, number>): void {
     noop();
   }

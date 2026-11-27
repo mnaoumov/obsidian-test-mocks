@@ -32,15 +32,21 @@
     },
     "eslint-plugin-unicorn": {
       "section": "devDependencies",
-      "why": "`scripts/eslint-config.ts` is a hand copy of @mnaoumov/typescript-dev-toolkit's shared ESLint config, compared against it on every sweep (eslint-config-divergences.json), and the toolkit builds that config on eslint-plugin-unicorn ^79 (since toolkit 6.0.0; this pin followed it from 76 on 2026-11-11). Floating this copy past the toolkit (to 78 on 2026-10-18, while the toolkit was on 76) added rules the shared config has never seen - `unicorn/no-asterisk-prefix-in-documentation-comments` alone reported 2,456 findings, against the `/** ... */` continuation style every TSDoc block here and in the toolkit uses - plus about 25 findings from other new or tightened rules. Those are decisions for the shared config to make first and this copy to follow, not ones a hand copy should make ahead of it. The check records the toolkit's unicorn range: when it moves past ^79, move this pin with it and take the new rules the way the shared config takes them.",
+      "why": "`scripts/eslint-config.ts` is a hand copy of @mnaoumov/typescript-dev-toolkit's shared ESLint config, compared against it on every sweep (eslint-config-divergences.json), and the toolkit builds that config on eslint-plugin-unicorn ^80 (since toolkit 11; this pin followed it from 76 on 2026-11-11, and from 79 to 80 on 2026-11-26). Floating this copy past the toolkit (to 78 on 2026-10-18, while the toolkit was on 76) added rules the shared config has never seen - `unicorn/no-asterisk-prefix-in-documentation-comments` alone reported 2,456 findings, against the `/** ... */` continuation style every TSDoc block here and in the toolkit uses - plus about 25 findings from other new or tightened rules. Those are decisions for the shared config to make first and this copy to follow, not ones a hand copy should make ahead of it. The check records the toolkit's unicorn range: when it moves past ^80, move this pin with it and take the new rules the way the shared config takes them.",
       "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@mnaoumov/typescript-dev-toolkit/package.json','utf8')).dependencies['eslint-plugin-unicorn'])\"",
-      "expect": "^79.0.0"
+      "expect": "^80.0.0"
     },
     "fflate": {
       "section": "overrides",
       "why": "satori pins fflate at exactly 0.7.3, which sits inside GHSA-px8p-9vwx-vf98 (0.7.0 - 0.7.4: unzipSync can enter an infinite loop on a malformed ZIP64 archive). npm audit's only offer is `--force` down to satori@0.32.0, i.e. a downgrade. 0.7.5 is the patched release on the same minor - and is already what @shuding/opentype.js resolves to in this same tree - so the override clears the advisory without moving satori off the fflate API it pins itself to. The check records the version satori itself asks for: when satori moves onto a patched fflate, this override can be dropped.",
       "check": "node -e \"process.stdout.write(require('satori/package.json').dependencies.fflate)\"",
       "expect": "0.7.3"
+    },
+    "glob": {
+      "section": "overrides",
+      "why": "jest 30 (jest-config, jest-runtime, @jest/reporters ask for ^13.0.6) and test-exclude under babel-plugin-istanbul (^10.4.1) resolve glob 13.x and 10.x, inside GHSA-3g3m-2fjr-6pw4 (9.0.0 - 14.0.1: an AbortSignal cancellation is bypassed, so the filesystem walk goes on after a timeout). Every dependent is on its newest release and npm audit offers only a downgrade of linkinator to 4.1.2, so the override forces the patched 14.x line (added 2026-11-26). glob 14 keeps the 10-13 named-export API (`glob`, `globSync`) these callers use, and the jest suites and coverage runs exercise it - verify with `npm test` and `npm run test:coverage`. The check records the glob range jest-config asks for: when it admits 14.0.2 or later, this override can be dropped.",
+      "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/jest-config/package.json','utf8')).dependencies.glob)\"",
+      "expect": "^13.0.6"
     },
     "js-yaml": {
       "section": "overrides",
@@ -54,6 +60,12 @@
       "why": "markdownlint (through markdownlint-cli2) depends on micromark-extension-math, which asks for katex ^0.16.0 and so resolves 0.16.x - inside GHSA-238p-pmpm-9mq7 (>=0.11.0 <0.18.2: existing prototype pollution can bypass trust restrictions). Every dependent is on its newest release and npm audit offers only a downgrade of markdownlint to 0.36.1, so the override forces the patched line. markdownlint uses the extension to parse math syntax only; nothing in a lint run renders math through katex, so a minor jump on a 0.x package moves no code path the lint exercises - verify with `npm run lint:md`. Exact rather than caret, like the other advisory overrides here. The check records the range micromark-extension-math asks for: when it admits a patched katex, this override can be dropped.",
       "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/micromark-extension-math/package.json','utf8')).dependencies.katex)\"",
       "expect": "^0.16.0"
+    },
+    "minimatch": {
+      "section": "overrides",
+      "why": "typedoc (^10.2.5, through typedoc-plugin-mdn-links), test-exclude (^10.2.2), glob 10 and the typescript-estree eslint-plugin-tsdoc nests resolve minimatch 9.x and 10.x, inside GHSA-g3hv-75wg-m249 (7.0.0 - 11.0.0: denial of service through amplified glob parts). Every dependent is on its newest release and npm audit offers only downgrades, so the override forces the patched 11.x line (added 2026-11-26). minimatch 11 keeps the named `minimatch` / `Minimatch` exports 9 and 10 have. typedoc itself never runs in this repo - the docs site reads only typedoc-plugin-mdn-links' data file - so its only callers here are the lint and test tooling, which `npm run lint` and `npm test` exercise. The check records the minimatch range typedoc asks for: when typedoc takes minimatch 11, this override can be dropped.",
+      "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/typedoc/package.json','utf8')).dependencies.minimatch)\"",
+      "expect": "^10.2.5"
     },
     "moment": {
       "section": "devDependencies",
@@ -75,9 +87,9 @@
     },
     "satori": {
       "section": "devDependencies",
-      "why": "@mnaoumov/typescript-dev-toolkit declares satori as a peer at ^0.33.5, which for a 0.x version admits 0.33.x only, while the caret sweep floats this repo's own range to the newest satori (0.62.0 on 2026-10-18). npm refuses to resolve an optional peer present at a version its range excludes, so a floated satori makes the whole sweep UNRESOLVABLE. The toolkit's docs-site export renders the OG images with it, so it has to be a version that peer range admits. The check records the toolkit's peer range: when it moves, move this pin with it.",
+      "why": "@mnaoumov/typescript-dev-toolkit declares satori as a peer at ^0.33.5 || ^0.63.2 (since toolkit 11; this pin moved from 0.33.5 to 0.63.2 on 2026-11-26), and for a 0.x version each caret admits its own minor only, while the caret sweep floats this repo's own range to the newest satori (0.62.0 on 2026-10-18). npm refuses to resolve an optional peer present at a version its range excludes, so a floated satori makes the whole sweep UNRESOLVABLE. The toolkit's docs-site export renders the OG images with it, so it has to be a version that peer range admits. The check records the toolkit's peer range: when it moves, move this pin with it.",
       "check": "node -e \"process.stdout.write(JSON.parse(require('fs').readFileSync('node_modules/@mnaoumov/typescript-dev-toolkit/package.json','utf8')).peerDependencies.satori)\"",
-      "expect": "^0.33.5"
+      "expect": "^0.33.5 || ^0.63.2"
     },
     "typescript": {
       "section": "devDependencies",
