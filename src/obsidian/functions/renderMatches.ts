@@ -14,7 +14,7 @@ import { noop } from '../../internal/noop.ts';
  * @param _el - The element or fragment to render into.
  * @param _text - The text to render.
  * @param _matches - The matched ranges to highlight, or `null` for none.
- * @param _offset - The offset to subtract from each match range.
+ * @param _offset - The offset to add to each match position before highlighting, as Obsidian adds it.
  */
 export function renderMatches(_el: DocumentFragment | HTMLElement, _text: string, _matches: null | SearchMatchesOriginal, _offset?: number): void {
   noop();
