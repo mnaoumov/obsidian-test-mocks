@@ -1,10 +1,6 @@
 # obsidian-test-mocks
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/mnaoumov)
-[![npm version](https://img.shields.io/npm/v/obsidian-test-mocks)](https://www.npmjs.com/package/obsidian-test-mocks)
-[![npm downloads](https://img.shields.io/npm/dm/obsidian-test-mocks)](https://www.npmjs.com/package/obsidian-test-mocks)
-[![GitHub release](https://img.shields.io/github/v/release/mnaoumov/obsidian-test-mocks)](https://github.com/mnaoumov/obsidian-test-mocks/releases)
-[![Coverage: 100%](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/mnaoumov/obsidian-test-mocks)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/mnaoumov) [![npm version](https://img.shields.io/npm/v/obsidian-test-mocks)](https://www.npmjs.com/package/obsidian-test-mocks) [![npm downloads](https://img.shields.io/npm/dm/obsidian-test-mocks)](https://www.npmjs.com/package/obsidian-test-mocks) [![Coverage: 100%](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/mnaoumov/obsidian-test-mocks) [![License](https://img.shields.io/github/license/mnaoumov/obsidian-test-mocks)](https://github.com/mnaoumov/obsidian-test-mocks/blob/main/LICENSE) [![Types](https://img.shields.io/npm/types/obsidian-test-mocks)](https://www.npmjs.com/package/obsidian-test-mocks)
 
 Comprehensive test mocks for the [Obsidian](https://obsidian.md/) plugin API. Provides in-memory implementations of every class and function in `obsidian.d.ts`, plus prototype extensions Obsidian adds to DOM/JS builtins. The package is tested with **100% code coverage** (lines, branches, functions, and statements) enforced on every build.
 
