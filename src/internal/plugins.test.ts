@@ -98,6 +98,21 @@ describe('Plugins', () => {
     });
   });
 
+  describe('loadingPluginId', () => {
+    it('should be null when no plugin is loading', () => {
+      const app = App.createConfigured__();
+      expect(app.plugins.loadingPluginId).toBeNull();
+    });
+
+    it('should hold an id a test assigns while it drives a load', () => {
+      const app = App.createConfigured__();
+      app.plugins.loadingPluginId = PLUGIN_ID;
+      expect(app.plugins.loadingPluginId).toBe(PLUGIN_ID);
+      app.plugins.loadingPluginId = null;
+      expect(app.plugins.loadingPluginId).toBeNull();
+    });
+  });
+
   describe('manifests', () => {
     it('should be empty for a vault with no community plugins', () => {
       const app = App.createConfigured__();

@@ -49,6 +49,19 @@ export class Plugins extends Events {
    */
   public enabledPlugins = new Set<string>();
   /**
+   * The id of the plugin whose `onload` is running right now, or `null` when none is.
+   *
+   * Obsidian's `enablePlugin` sets it to the plugin's id just before it awaits `loadPlugin` and sets it
+   * back to `null` once that settles, whether it resolved or threw. Code that runs during a load reads it
+   * to learn which plugin it runs for: `Workspace.onLayoutReady` files its callback under it, and
+   * `@mnaoumov/obsidian-lib`'s plugin availability check reads an instance with this id as still loading.
+   *
+   * This mock models no load lifecycle, since `enablePlugin` and `loadPlugin` stay unmocked, so nothing
+   * here ever sets it and it starts as `null`, which is what a running app answers between loads. A test
+   * that drives a load assigns the id itself and puts `null` back afterwards.
+   */
+  public loadingPluginId: null | string = null;
+  /**
    * The manifests of the installed plugins, keyed by plugin id.
    *
    * Empty on a fresh registry for the same reason {@link plugins} is, and filled by
