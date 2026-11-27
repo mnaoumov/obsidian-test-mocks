@@ -641,22 +641,29 @@ function getStylisticConfigs(): Linter.Config[] {
         '@stylistic/indent': 'off',
         '@stylistic/indent-binary-ops': 'off',
         '@stylistic/jsx-one-expression-per-line': 'off',
-        // New in `@stylistic/eslint-plugin` 6, and it disagrees with dprint, which owns this layout: each autofix is undone by `npm run format`.
-        '@stylistic/list-style': 'off',
-        '@stylistic/no-extra-semi': 'error',
-        '@stylistic/object-curly-newline': [
+        // Replaces the deprecated `object-curly-newline`. Only import and export braces are checked, with dprint's
+        // `forceMultiLine: whenMultiple`: one specifier on one line, two or more one per line. Every other bracket kind
+        // stays off, because dprint owns that layout and the rule's defaults fought it (each autofix undone by `npm run format`).
+        '@stylistic/list-style': [
           'error',
           {
-            ExportDeclaration: {
-              minProperties: 2,
-              multiline: true
-            },
-            ImportDeclaration: {
-              minProperties: 2,
-              multiline: true
+            overrides: {
+              '()': 'off',
+              '[]': 'off',
+              '{}': 'off',
+              '<>': 'off',
+              'ExportNamedDeclaration': {
+                multiLine: { minItems: 2 },
+                singleLine: { maxItems: 1, spacing: 'always' }
+              },
+              'ImportDeclaration': {
+                multiLine: { minItems: 2 },
+                singleLine: { maxItems: 1, spacing: 'always' }
+              }
             }
           }
         ],
+        '@stylistic/no-extra-semi': 'error',
         '@stylistic/operator-linebreak': [
           'error',
           'before',
